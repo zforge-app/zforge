@@ -24,20 +24,62 @@ final class ZforgeUITests: XCTestCase {
 
     @MainActor
     func testExample() throws {
-        // UI tests must launch the application that they test.
         let app = XCUIApplication()
+        app.launchArguments = ["--ui-fixtures"]
         app.launch()
+        XCTAssertTrue(app.staticTexts["Fixture Folder"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Welcome.txt"].exists)
+    }
 
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        // XCUIAutomation Documentation
-        // https://developer.apple.com/documentation/xcuiautomation
+    @MainActor
+    func testArrowNavigationKeepsContentFocusAfterChangingView() throws {
+        let app = XCUIApplication()
+        app.launchArguments = [
+            "--ui-fixtures",
+            "--ui-view-mode", "list",
+            "-appLanguagePreference", "english"
+        ]
+        app.launch()
+        XCTAssertTrue(app.staticTexts["Fixture Folder"].waitForExistence(timeout: 5))
+
+        selectView(named: "Icons", in: app)
+        selectView(named: "List", in: app)
+
+        let contextualAction = app.buttons["archive-contextual-action"]
+        XCTAssertTrue(contextualAction.waitForExistence(timeout: 2))
+        XCTAssertFalse(contextualAction.isEnabled)
+
+        app.typeKey(.downArrow, modifierFlags: [])
+
+        let enabled = NSPredicate(format: "enabled == true")
+        expectation(for: enabled, evaluatedWith: contextualAction)
+        waitForExpectations(timeout: 2)
     }
 
     @MainActor
     func testLaunchPerformance() throws {
         // This measures how long it takes to launch your application.
         measure(metrics: [XCTApplicationLaunchMetric()]) {
-            XCUIApplication().launch()
+            let app = XCUIApplication()
+            app.launchArguments = ["--ui-fixtures"]
+            app.launch()
         }
+    }
+
+    @MainActor
+    private func selectView(named name: String, in app: XCUIApplication) {
+        let identifier = "view-mode-\(name.lowercased())"
+        let segment = app.descendants(matching: .any)[identifier]
+        if segment.exists {
+            segment.click()
+            return
+        }
+
+        let compactButton = app.buttons["view-mode-selector-compact"]
+        XCTAssertTrue(compactButton.waitForExistence(timeout: 2))
+        compactButton.click()
+        let menuItem = app.menuItems[name]
+        XCTAssertTrue(menuItem.waitForExistence(timeout: 2))
+        menuItem.click()
     }
 }
