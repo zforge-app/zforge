@@ -36,6 +36,7 @@ final class ZforgeUITests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments = [
             "--ui-fixtures",
+            "--ui-window-width", "1100",
             "--ui-view-mode", "list",
             "-appLanguagePreference", "english"
         ]
@@ -54,6 +55,120 @@ final class ZforgeUITests: XCTestCase {
         let enabled = NSPredicate(format: "enabled == true")
         expectation(for: enabled, evaluatedWith: contextualAction)
         waitForExpectations(timeout: 2)
+    }
+
+    @MainActor
+    func testNarrowToolbarUsesOneFunctionalMenu() throws {
+        let app = XCUIApplication()
+        app.launchArguments = [
+            "--ui-fixtures",
+            "--ui-window-width", "650",
+            "-appLanguagePreference", "english"
+        ]
+        app.launch()
+        XCTAssertTrue(app.staticTexts["Welcome.txt"].waitForExistence(timeout: 5))
+
+        let overflowButton = app.buttons["toolbar-overflow-menu"]
+        XCTAssertTrue(overflowButton.waitForExistence(timeout: 2))
+        XCTAssertEqual(overflowButton.value as? String, "Collapsed")
+        overflowButton.click()
+        XCTAssertEqual(overflowButton.value as? String, "Expanded")
+
+        for title in [
+            "View", "Compress Selected", "Share", "Open", "Quick Look",
+            "Get Info", "Add Tag", "Rename", "Duplicate"
+        ] {
+            XCTAssertTrue(app.menuItems[title].exists, "Missing \(title) from the unified toolbar menu")
+        }
+
+        app.typeKey(.escape, modifierFlags: [])
+        let collapsed = NSPredicate(format: "value == %@", "Collapsed")
+        expectation(for: collapsed, evaluatedWith: overflowButton)
+        waitForExpectations(timeout: 2)
+        app.staticTexts["Welcome.txt"].click()
+        overflowButton.click()
+        let archiveAction = app.menuItems["Compress Selected"]
+        XCTAssertTrue(archiveAction.isEnabled)
+        archiveAction.click()
+        XCTAssertTrue(app.staticTexts["Compress selected items."].waitForExistence(timeout: 2))
+
+        selectView(named: "List", in: app)
+        let listBrowser = app.descendants(matching: .any)["browser-mode-list"]
+        XCTAssertTrue(listBrowser.waitForExistence(timeout: 2))
+    }
+
+    @MainActor
+    func testIntermediateToolbarKeepsViewOutsideOverflow() throws {
+        let app = XCUIApplication()
+        app.launchArguments = [
+            "--ui-fixtures",
+            "--ui-window-width", "720",
+            "-appLanguagePreference", "english"
+        ]
+        app.launch()
+        XCTAssertTrue(app.staticTexts["Welcome.txt"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["view-mode-selector-compact"].waitForExistence(timeout: 2))
+
+        let overflowButton = app.buttons["toolbar-overflow-menu"]
+        XCTAssertTrue(overflowButton.waitForExistence(timeout: 2))
+        overflowButton.click()
+        XCTAssertFalse(app.menuItems["View"].exists)
+        for title in ["Compress Selected", "Share", "Open", "Quick Look", "Get Info"] {
+            XCTAssertTrue(app.menuItems[title].exists, "Missing \(title) from the toolbar overflow")
+        }
+
+        app.typeKey(.escape, modifierFlags: [])
+        selectView(named: "List", in: app)
+        let listBrowser = app.descendants(matching: .any)["browser-mode-list"]
+        XCTAssertTrue(listBrowser.waitForExistence(timeout: 2))
+    }
+
+    @MainActor
+    func testViewCompactsBeforeArchiveActionIsHidden() throws {
+        let app = XCUIApplication()
+        app.launchArguments = [
+            "--ui-fixtures",
+            "--ui-window-width", "860",
+            "-appLanguagePreference", "english"
+        ]
+        app.launch()
+        XCTAssertTrue(app.staticTexts["Fixture Folder"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["view-mode-selector-compact"].waitForExistence(timeout: 2))
+        XCTAssertFalse(app.descendants(matching: .any)["view-mode-icons"].exists)
+        XCTAssertTrue(app.buttons["archive-contextual-action"].waitForExistence(timeout: 2))
+
+        let overflowButton = app.buttons["toolbar-overflow-menu"]
+        XCTAssertTrue(overflowButton.waitForExistence(timeout: 2))
+        overflowButton.click()
+        XCTAssertFalse(app.menuItems["View"].exists)
+        XCTAssertFalse(app.menuItems["Compress Selected"].exists)
+        for title in ["Share", "Open", "Quick Look", "Get Info", "Add Tag", "Rename", "Duplicate"] {
+            XCTAssertTrue(app.menuItems[title].exists, "Missing \(title) from the partial toolbar overflow")
+        }
+    }
+
+    @MainActor
+    func testSidebarCannotConsumeLast360Points() throws {
+        let app = XCUIApplication()
+        app.launchArguments = [
+            "--ui-fixtures",
+            "--ui-window-width", "900",
+            "-appLanguagePreference", "english"
+        ]
+        app.launch()
+        XCTAssertTrue(app.staticTexts["Fixture Folder"].waitForExistence(timeout: 5))
+
+        let window = app.windows.firstMatch
+        XCTAssertTrue(window.waitForExistence(timeout: 2))
+        let sidebar = app.descendants(matching: .any)["browser-sidebar"]
+        XCTAssertTrue(sidebar.waitForExistence(timeout: 2))
+
+        let divider = sidebar.coordinate(withNormalizedOffset: CGVector(dx: 1, dy: 0.5))
+        let farRight = window.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.5))
+        divider.press(forDuration: 0.15, thenDragTo: farRight)
+
+        let maximumSidebarWidth = window.frame.width - 360
+        XCTAssertLessThanOrEqual(sidebar.frame.width, maximumSidebarWidth + 4)
     }
 
     @MainActor
@@ -76,8 +191,20 @@ final class ZforgeUITests: XCTestCase {
         }
 
         let compactButton = app.buttons["view-mode-selector-compact"]
-        XCTAssertTrue(compactButton.waitForExistence(timeout: 2))
-        compactButton.click()
+        if compactButton.exists {
+            compactButton.click()
+            let menuItem = app.menuItems[name]
+            XCTAssertTrue(menuItem.waitForExistence(timeout: 2))
+            menuItem.click()
+            return
+        }
+
+        let overflowButton = app.buttons["toolbar-overflow-menu"]
+        XCTAssertTrue(overflowButton.waitForExistence(timeout: 2))
+        overflowButton.click()
+        let viewItem = app.menuItems["View"]
+        XCTAssertTrue(viewItem.waitForExistence(timeout: 2))
+        viewItem.click()
         let menuItem = app.menuItems[name]
         XCTAssertTrue(menuItem.waitForExistence(timeout: 2))
         menuItem.click()

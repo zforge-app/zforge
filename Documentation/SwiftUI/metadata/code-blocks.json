@@ -1,0 +1,296 @@
+[
+  {
+    "source_url": "https://developer.apple.com/documentation/swiftui/app",
+    "ordinal": 1,
+    "sha256": "26a53411f6534a95ac69eafe20d8a1c99fbd79742fdd18f2d767359be6daeb10",
+    "line_count": 8,
+    "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/swiftui/app",
+    "ordinal": 2,
+    "sha256": "21380c69014716585076231cfbbb01ad96e1153ef1ae00cc969513002f6ff4e7",
+    "line_count": 11,
+    "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/swiftui/app",
+    "ordinal": 3,
+    "sha256": "c3b9368f7531443f74120a3ee4f34360a36bdb5b1571a06708dbf760f3ccab58",
+    "line_count": 14,
+    "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/swiftui/app",
+    "ordinal": 4,
+    "sha256": "93e59b5c441fc3b4fc2d7b90686b2791731a082b80a6dbaef51bb9525c10311d",
+    "line_count": 3,
+    "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/swiftui/app",
+    "ordinal": 5,
+    "sha256": "d0a3db77267851bac4d0c88d1b1dcdaa7e3c945ebf71c9b4c28e9000582be763",
+    "line_count": 3,
+    "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/swiftui/view",
+    "ordinal": 1,
+    "sha256": "7ec419e35fb21d801240ca6a64ea034fad453e71b21f6cd7a16cb0f74c533800",
+    "line_count": 5,
+    "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/swiftui/view",
+    "ordinal": 2,
+    "sha256": "b545dc5de90db77ff7014a28b0983d1f0838e7dd8114141ae1c8417dcc9f1cab",
+    "line_count": 2,
+    "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/swiftui/wishlist-planning-travel-in-a-swiftui-app",
+    "ordinal": 1,
+    "sha256": "09da80ea41d63215dc30418182d3cf103af7180d15d8fc5728ee7484ac6f31a7",
+    "line_count": 24,
+    "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/swiftui/wishlist-planning-travel-in-a-swiftui-app",
+    "ordinal": 2,
+    "sha256": "31aa8bb6f18721f5d52aeac5b04a9c8721ac3de80f816f70d39deec31eb264f8",
+    "line_count": 9,
+    "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/swiftui/wishlist-planning-travel-in-a-swiftui-app",
+    "ordinal": 3,
+    "sha256": "2be5b02c537a289ef00b7263d090dd91473491b08c4a0c0f854b1b0f9a599b36",
+    "line_count": 11,
+    "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/swiftui/wishlist-planning-travel-in-a-swiftui-app",
+    "ordinal": 4,
+    "sha256": "6458bc133d41ae8e0d2b0fb05558ac27e9fdaa5a831bae05d8a93dd55728ff4d",
+    "line_count": 20,
+    "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/swiftui/wishlist-planning-travel-in-a-swiftui-app",
+    "ordinal": 5,
+    "sha256": "4398b8626ad8f1cb2ebbb49fd23772d8ebacbe8a7464ce6447d1a329a9e40d65",
+    "line_count": 12,
+    "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/swiftui/wishlist-planning-travel-in-a-swiftui-app",
+    "ordinal": 6,
+    "sha256": "6408b972005a55b49f8d2c85075f02c769015f368a0f202a817626ba3d71c4eb",
+    "line_count": 12,
+    "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/swiftui/wishlist-planning-travel-in-a-swiftui-app",
+    "ordinal": 7,
+    "sha256": "f71cd415adfbbd8ca7fbcac1fc31b60b2aad6741d95657afafdc6963fbaafb26",
+    "line_count": 5,
+    "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/swiftui/wishlist-planning-travel-in-a-swiftui-app",
+    "ordinal": 8,
+    "sha256": "214a90d0af2bea081ee448c8934e89aecacf57855d75d8ce74677f216db91399",
+    "line_count": 4,
+    "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/swiftui/wishlist-planning-travel-in-a-swiftui-app",
+    "ordinal": 9,
+    "sha256": "0c7f9c3bdc2f3daecc3b2ea19c746a8bf7bd0537ab46a5a0399f8f010ad44a85",
+    "line_count": 34,
+    "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/visionOS/destination-video",
+    "ordinal": 1,
+    "sha256": "e819c4ff131a8bb74d36a8d73801484b7ca338029db355eed56f014afffa22b8",
+    "line_count": 17,
+    "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/visionOS/destination-video",
+    "ordinal": 2,
+    "sha256": "a296744f02c3101c55d7af2019da9da4f4cb165ff32969ed370761677939218d",
+    "line_count": 6,
+    "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/visionOS/destination-video",
+    "ordinal": 3,
+    "sha256": "849641093e84e06dc596ef4c9192383345ace96aaba1381741f400d22d505ae2",
+    "line_count": 22,
+    "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/visionOS/destination-video",
+    "ordinal": 4,
+    "sha256": "f5d19ffd8704f42f8d256e7e560a2701cfa8365cbdc218c2faf40d524aed5fb4",
+    "line_count": 19,
+    "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/visionOS/destination-video",
+    "ordinal": 5,
+    "sha256": "51359d358f978af87d760cc8a263989bd571eb3e75e9a4d4df38fa4a45d48f0f",
+    "line_count": 33,
+    "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/visionOS/destination-video",
+    "ordinal": 6,
+    "sha256": "4893c4762214a2533739b2d364b5bbb3b71e4ce606f33355271780500cd1fa80",
+    "line_count": 6,
+    "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/visionOS/destination-video",
+    "ordinal": 7,
+    "sha256": "9b08ecc70b5f8e4b44103cbcd28741975ef378c402fbf8505b3162bb2f94aea4",
+    "line_count": 18,
+    "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/visionOS/destination-video",
+    "ordinal": 8,
+    "sha256": "a25a193b2af8c1d279c6ce90e8156dc44276aa260dd78f37bde6ddd1523c381b",
+    "line_count": 4,
+    "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/visionOS/destination-video",
+    "ordinal": 9,
+    "sha256": "1becaaf9394004b52bd07741ae7d2e37087e7f920678eea966cc70233578f356",
+    "line_count": 11,
+    "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/swiftui/building-a-document-based-app-with-swiftui",
+    "ordinal": 1,
+    "sha256": "292a8105c0bb3dbb9ef613a48d162198eebf2d535d8b0013698a21553e5c5805",
+    "line_count": 8,
+    "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/swiftui/building-a-document-based-app-with-swiftui",
+    "ordinal": 2,
+    "sha256": "8edfe43bee6a921875275a2fc96c93cd9e1cbec9a80e26f8009f90249c3226ab",
+    "line_count": 8,
+    "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/swiftui/building-a-document-based-app-with-swiftui",
+    "ordinal": 3,
+    "sha256": "97ebe9b97b7a6c6841a99e34879660162ae007c0aedc6d13f2feee0a44ee52a7",
+    "line_count": 3,
+    "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/swiftui/building-a-document-based-app-with-swiftui",
+    "ordinal": 4,
+    "sha256": "ecedc1c526592067918ad36bf3335ea14c6b8d528d84a09434b7994f740befb2",
+    "line_count": 14,
+    "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/swiftui/building-a-document-based-app-with-swiftui",
+    "ordinal": 5,
+    "sha256": "0b4bd2a8cbd78ea3737f767301a2f25717b919b0404bd37a3ec1a2ffb21ab3dc",
+    "line_count": 5,
+    "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/swiftui/building-a-document-based-app-with-swiftui",
+    "ordinal": 6,
+    "sha256": "08633b1f0ef286c3e206730678a132f42b685bed74b906b8194f4228063880a0",
+    "line_count": 1,
+    "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/swiftui/building-a-document-based-app-with-swiftui",
+    "ordinal": 7,
+    "sha256": "7ef7c5857682beb6fc0a8de9ae4267f02e7be0844e8b3559e7fd57ac018f63d7",
+    "line_count": 8,
+    "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/swiftui/building-a-document-based-app-with-swiftui",
+    "ordinal": 8,
+    "sha256": "a531e88c7d8d6e5b47e315bb848fbd64114a085b3875b5ebef08058b5cde18eb",
+    "line_count": 4,
+    "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/swiftui/building-a-document-based-app-with-swiftui",
+    "ordinal": 9,
+    "sha256": "a15f7e9edc0cd1eae319ff1eb27f81b07a289b5184480c91b52f5b42fb7849dd",
+    "line_count": 37,
+    "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/swiftui/building-a-document-based-app-with-swiftui",
+    "ordinal": 10,
+    "sha256": "b6b354fff554fac29b82117ca46da2b94c27272d13793837521ad2c6a0d422fe",
+    "line_count": 5,
+    "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/TechnologyOverviews/adopting-liquid-glass",
+    "ordinal": 1,
+    "sha256": "6ec267c99681d63b97b215129ef3e9a6e26fba8b2c1d9033ed9700b9e2f63fe2",
+    "line_count": 4,
+    "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/TechnologyOverviews/adopting-liquid-glass",
+    "ordinal": 2,
+    "sha256": "c5829d49e0aa4a4054a07f6276fbdffc163a743ca813d5fae1a6e87822588765",
+    "line_count": 1,
+    "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/TechnologyOverviews/adopting-liquid-glass",
+    "ordinal": 3,
+    "sha256": "0da5675e7706efa1631bc4093037ea558dcb427e17efb623ab8292b839b14986",
+    "line_count": 3,
+    "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/TechnologyOverviews/adopting-liquid-glass",
+    "ordinal": 4,
+    "sha256": "46048b6cd2cbf627a7d7224c4751fc8c18e4139e6117f919831bd936620689d1",
+    "line_count": 3,
+    "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/swiftui/technology-specific-views",
+    "ordinal": 1,
+    "sha256": "8b6269d3481133daeb964c1cca2090cffb0098b2be28278b597c9142e00a42e1",
+    "line_count": 14,
+    "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/swiftui/toolbarminimizationbehavior",
+    "ordinal": 1,
+    "sha256": "fb78fbb4fcc93e3a8e586032f73af4ed71e0eb815b95603a47ec3474c78933bd",
+    "line_count": 7,
+    "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/swiftui/toolbarminimizationrestoration",
+    "ordinal": 1,
+    "sha256": "86f5322145cb9c9ed4b08527ebf7abb83497f32b40eeb1aaf120be94ef19b8cb",
+    "line_count": 4,
+    "syntax": "swift"
+  }
+]

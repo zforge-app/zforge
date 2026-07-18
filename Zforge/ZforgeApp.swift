@@ -20,12 +20,22 @@ struct ZforgeApp: App {
         WindowGroup {
             ContentView()
         }
-        .defaultSize(width: 1100, height: 720)
+        .defaultSize(width: defaultWindowWidth, height: 720)
         .commands { BrowserCommands() }
 
         Settings {
             ZforgeSettingsView()
         }
+    }
+
+    private var defaultWindowWidth: CGFloat {
+        let arguments = ProcessInfo.processInfo.arguments
+        guard let flagIndex = arguments.firstIndex(of: "--ui-window-width"),
+              arguments.indices.contains(flagIndex + 1),
+              let width = Double(arguments[flagIndex + 1]) else {
+            return 1100
+        }
+        return CGFloat(width)
     }
 }
 

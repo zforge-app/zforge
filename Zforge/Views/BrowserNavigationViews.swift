@@ -1,24 +1,36 @@
 import AppKit
 import SwiftUI
 
+enum BrowserSidebarLayout {
+    static let minimumWidth: CGFloat = 180
+    static let idealWidth: CGFloat = 220
+    static let minimumDetailWidth: CGFloat = 360
+
+    static func maximumWidth(for windowWidth: CGFloat) -> CGFloat {
+        max(minimumWidth, windowWidth - minimumDetailWidth)
+    }
+}
+
 struct BrowserBreadcrumb: View {
     @Bindable var state: FileBrowserState
+    @State private var scrollTask: Task<Void, Never>?
 
     private let endAnchorID = "breadcrumb-end"
 
     var body: some View {
+        let components = state.breadcrumbComponents
         GeometryReader { geometry in
             ScrollViewReader { proxy in
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 4) {
-                        ForEach(Array(state.pathComponents.enumerated()), id: \.element.id) { index, component in
+                        ForEach(Array(components.enumerated()), id: \.element.id) { index, component in
                             if index > 0 {
                                 Image(systemName: "chevron.right")
                                     .font(.caption2.weight(.semibold))
                                     .foregroundStyle(.tertiary)
                             }
                             Button {
-                                Task { await state.navigateExistingPath(to: component) }
+                                Task { await state.navigateBreadcrumb(to: component) }
                             } label: {
                                 HStack(spacing: 5) {
                                     componentIcon(component)
@@ -26,7 +38,7 @@ struct BrowserBreadcrumb: View {
                                 }
                             }
                             .buttonStyle(.plain)
-                            .foregroundStyle(index == state.pathComponents.count - 1 ? .primary : .secondary)
+                            .foregroundStyle(index == components.count - 1 ? .primary : .secondary)
                         }
 
                         Color.clear
@@ -42,11 +54,15 @@ struct BrowserBreadcrumb: View {
                 .onAppear {
                     scrollToEnd(proxy, animated: false)
                 }
-                .onChange(of: state.pathComponents) {
+                .onChange(of: state.breadcrumbComponents) {
                     scrollToEnd(proxy, animated: true)
                 }
                 .onChange(of: geometry.size.width) {
                     scrollToEnd(proxy, animated: false)
+                }
+                .onDisappear {
+                    scrollTask?.cancel()
+                    scrollTask = nil
                 }
             }
         }
@@ -56,7 +72,10 @@ struct BrowserBreadcrumb: View {
     }
 
     private func scrollToEnd(_ proxy: ScrollViewProxy, animated: Bool) {
-        DispatchQueue.main.async {
+        scrollTask?.cancel()
+        scrollTask = Task { @MainActor in
+            await Task.yield()
+            guard !Task.isCancelled else { return }
             if animated {
                 withAnimation(.easeOut(duration: 0.2)) {
                     proxy.scrollTo(endAnchorID, anchor: .trailing)
@@ -64,12 +83,16 @@ struct BrowserBreadcrumb: View {
             } else {
                 proxy.scrollTo(endAnchorID, anchor: .trailing)
             }
+            scrollTask = nil
         }
     }
 
     @ViewBuilder
     private func componentIcon(_ component: BrowserPathComponent) -> some View {
         switch component.location {
+        case .recents:
+            Image(systemName: "clock")
+                .frame(width: 16, height: 16)
         case let .fileSystem(url):
             Image(nsImage: NSWorkspace.shared.icon(forFile: url.path))
                 .resizable()
@@ -84,17 +107,28 @@ struct BrowserBreadcrumb: View {
 struct BrowserSidebar: View {
     @Bindable var browser: FileBrowserState
     @Bindable var sidebar: SidebarState
+    let windowWidth: CGFloat
     @Binding var showingServerSheet: Bool
     let restoreContentFocus: () -> Void
 
     var body: some View {
         List {
+            Button {
+                restoreContentFocus()
+                Task { await browser.navigateToRecents() }
+            } label: {
+                Label("Recents", systemImage: "clock")
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+
             Section("Favorites") {
                 ForEach(sidebar.favorites) { destination in
                     destinationRow(destination.name, destination.url, destination.systemImage)
                 }
             }
             Section("Locations") {
+                destinationRow(sidebar.userHome.name, sidebar.userHome.url, sidebar.userHome.systemImage)
                 ForEach(sidebar.localVolumes) { volume in
                     destinationRow(volume.name, volume.url, volume.kind == .removable ? "externaldrive" : "internaldrive")
                 }
@@ -113,7 +147,18 @@ struct BrowserSidebar: View {
             }
         }
         .listStyle(.sidebar)
-        .navigationSplitViewColumnWidth(min: 180, ideal: 220, max: 300)
+        .navigationSplitViewColumnWidth(
+            min: BrowserSidebarLayout.minimumWidth,
+            ideal: BrowserSidebarLayout.idealWidth,
+            max: BrowserSidebarLayout.maximumWidth(for: windowWidth)
+        )
+        .background {
+            SidebarSplitConstraint(
+                minimumWidth: BrowserSidebarLayout.minimumWidth,
+                maximumWidth: BrowserSidebarLayout.maximumWidth(for: windowWidth)
+            )
+        }
+        .accessibilityIdentifier("browser-sidebar")
         .task { await sidebar.refresh() }
     }
 

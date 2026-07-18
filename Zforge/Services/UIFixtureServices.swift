@@ -1,5 +1,16 @@
 import Foundation
 
+@MainActor
+final class UIFixtureRecentItemsService: RecentItemsServing {
+    func recentItemURLs() async -> [URL] {
+        ["Fixture Folder", "Welcome.txt", "Sample.zip"].map {
+            URL(fileURLWithPath: "/ZforgeFixtures/\($0)")
+        }
+    }
+
+    func stop() {}
+}
+
 actor UIFixtureFileSystemService: FileSystemServing {
     func items(in directory: URL, showHidden: Bool) async throws -> [BrowserItem] {
         let items = [

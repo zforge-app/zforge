@@ -1,0 +1,952 @@
+{
+  "schema_version": 1,
+  "captured_at": "2026-07-16T23:52:09+00:00",
+  "seed_url": "https://developer.apple.com/documentation/SwiftUI",
+  "scope": "home plus unique first-level links exposed by Overview, Featured samples, and Topics, with audited on-demand expansions",
+  "expected_contexts": 67,
+  "captured_contexts": 67,
+  "failures": [],
+  "captures": [
+    {
+      "source_url": "https://developer.apple.com/documentation/SwiftUI",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui.json",
+      "local_path": "contexts/swiftui.md",
+      "sha256": "aac88c99d0172aec4c7360edbf5efcb30555855f160583d393e747476d561c37",
+      "etag": "W/\"ad5b64d64f0a39bcc213d8664b030952\"",
+      "last_modified": null,
+      "bytes": 40406,
+      "categories": [
+        "Home"
+      ],
+      "depth": 0
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/app",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/app.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/app.json",
+      "local_path": "contexts/swiftui-app.md",
+      "sha256": "7e2a774081033fbc41514d04dad8546cfb6e5985dd5fc90086fbdf4509967811",
+      "etag": "W/\"b29d919abb87f07be813445ff778d85f\"",
+      "last_modified": null,
+      "bytes": 19215,
+      "categories": [
+        "Overview"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/view",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/view.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/view.json",
+      "local_path": "contexts/swiftui-view.md",
+      "sha256": "b562c24ef65197c645bccaecf9fe4e5d9e0bfb88e0b0844b4d0cb189e3121875",
+      "etag": "W/\"e811f5e765b6c249001a4581d406270c\"",
+      "last_modified": null,
+      "bytes": 142431,
+      "categories": [
+        "Overview"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/UIKit",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/uikit.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/uikit.json",
+      "local_path": "contexts/uikit.md",
+      "sha256": "1798eb5b7ec68919c42aec6d007bb95a8b794204abfc1fcc9163f9b87cef6bd3",
+      "etag": "W/\"e787d1a035db099f4f31bcaf07ccfc00\"",
+      "last_modified": null,
+      "bytes": 59102,
+      "categories": [
+        "Overview"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/AppKit",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/appkit.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/appkit.json",
+      "local_path": "contexts/appkit.md",
+      "sha256": "9a841008d1e8b1f8ae93506da53f4604e472f9e350ea73d5bc89ed7a8b3f5519",
+      "etag": "W/\"b5c3f135015e31be5a239fba0febf2d1\"",
+      "last_modified": null,
+      "bytes": 39054,
+      "categories": [
+        "Overview"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/WatchKit",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/watchkit.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/watchkit.json",
+      "local_path": "contexts/watchkit.md",
+      "sha256": "84a0addd5917e8626b809ba9eb5ab0387e8587798e2b0715b22604a80a8eb4e9",
+      "etag": "W/\"8f878e1943d4c0759ca301054ec0a61c\"",
+      "last_modified": null,
+      "bytes": 24711,
+      "categories": [
+        "Overview"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/swiftui/get-started/",
+      "fetch_url": "https://developer.apple.com/swiftui/get-started/",
+      "final_url": "https://developer.apple.com/swiftui/get-started/",
+      "local_path": "contexts/swiftui-pathway.md",
+      "sha256": "692aeb90be537fa5d048267145a9fa25368e953dbf70dbc8ea0aa2a4700221d4",
+      "etag": null,
+      "last_modified": "Thu, 09 Jul 2026 20:31:34 GMT",
+      "bytes": 125625,
+      "categories": [
+        "Overview"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/landmarks-building-an-app-with-liquid-glass",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/landmarks-building-an-app-with-liquid-glass.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/landmarks-building-an-app-with-liquid-glass.json",
+      "local_path": "contexts/swiftui-landmarks-building-an-app-with-liquid-glass.md",
+      "sha256": "671dd4f62d91f3f2ca0a4a4f641754f2c5dd642f1cea3313e4a883dfcb34d0e2",
+      "etag": "W/\"9ece5d173861dc7ad6d286ad07d8e5f8\"",
+      "last_modified": null,
+      "bytes": 32118,
+      "categories": [
+        "Featured samples",
+        "Essentials"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/wishlist-planning-travel-in-a-swiftui-app",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/wishlist-planning-travel-in-a-swiftui-app.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/wishlist-planning-travel-in-a-swiftui-app.json",
+      "local_path": "contexts/swiftui-wishlist-planning-travel-in-a-swiftui-app.md",
+      "sha256": "68d8ba49575d62a1c072e087df5fc3287427f1576d8ab1d309a38739cebeb9fe",
+      "etag": "W/\"66031376af1137a45591230c7dbfcb42\"",
+      "last_modified": null,
+      "bytes": 52449,
+      "categories": [
+        "Featured samples"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/visionOS/destination-video",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/visionos/destination-video.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/visionos/destination-video.json",
+      "local_path": "contexts/visionos-destination-video.md",
+      "sha256": "707bf10777cd03e7ef41ee56628940a75e68ca8e713f559eb1f5045f5cf2ad43",
+      "etag": "W/\"756dca572d40dff52af92cdd2c40bf01\"",
+      "last_modified": null,
+      "bytes": 81680,
+      "categories": [
+        "Featured samples"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/building-a-document-based-app-with-swiftui",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/building-a-document-based-app-with-swiftui.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/building-a-document-based-app-with-swiftui.json",
+      "local_path": "contexts/swiftui-building-a-document-based-app-with-swiftui.md",
+      "sha256": "2cb0e6fd2d9ea5e5b695e1e1b6a035553ed73b520d0eaddcf21f504915c6f385",
+      "etag": "W/\"ee865747b39d560b85016a00c3214660\"",
+      "last_modified": null,
+      "bytes": 44310,
+      "categories": [
+        "Featured samples"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/TechnologyOverviews/adopting-liquid-glass",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/technologyoverviews/adopting-liquid-glass.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/technologyoverviews/adopting-liquid-glass.json",
+      "local_path": "contexts/technologyoverviews-adopting-liquid-glass.md",
+      "sha256": "e5435d0746739d634c8f205ab72883040bb910572a1c7ebcb9f4faf078efe99c",
+      "etag": "W/\"675354a73663f85ffac83dc83852bf5e\"",
+      "last_modified": null,
+      "bytes": 146995,
+      "categories": [
+        "Essentials"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/tutorials/Develop-in-Swift#explore-xcode",
+      "fetch_url": "https://developer.apple.com/tutorials/data/tutorials/develop-in-swift.json",
+      "final_url": "https://developer.apple.com/tutorials/data/tutorials/develop-in-swift.json",
+      "local_path": "contexts/develop-in-swift.md",
+      "sha256": "4de8a884c8a0dcfed92ff2d803ddc6f49c5150f558a29831d0686e799645a94e",
+      "etag": "W/\"c048a6a229566aa67334b7e304b95d3d\"",
+      "last_modified": null,
+      "bytes": 78713,
+      "categories": [
+        "Essentials"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/Updates/SwiftUI",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/updates/swiftui.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/updates/swiftui.json",
+      "local_path": "contexts/updates-swiftui.md",
+      "sha256": "818a25f109c9b6a8296bd116466bafafa37bee5162ad08d412b5265db6f22a96",
+      "etag": "W/\"50823d021c79da2384412d4695309a44\"",
+      "last_modified": null,
+      "bytes": 314462,
+      "categories": [
+        "Essentials"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/app-organization",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/app-organization.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/app-organization.json",
+      "local_path": "contexts/swiftui-app-organization.md",
+      "sha256": "12673edba76772f4f5bf8310829a52c7a36b02528a3644e2bdba3c43bb8456a0",
+      "etag": "W/\"7ea07a75b6a4f46f69ef8c220a4fc02d\"",
+      "last_modified": null,
+      "bytes": 21393,
+      "categories": [
+        "App structure"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/scenes",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/scenes.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/scenes.json",
+      "local_path": "contexts/swiftui-scenes.md",
+      "sha256": "ee58c95c81893e0c9632b04d69ece6a6e63131f693cfe9c19ef5ba69724f1c89",
+      "etag": "W/\"52c0735db730fb7514a7e37f6eb00989\"",
+      "last_modified": null,
+      "bytes": 25275,
+      "categories": [
+        "App structure"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/windows",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/windows.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/windows.json",
+      "local_path": "contexts/swiftui-windows.md",
+      "sha256": "189c72e59a3f636e9e49d9efd4a0f3d5ee8043ecf20096dff39f1f895f625780",
+      "etag": "W/\"d44b356e54221ce52a2e923c15a596e3\"",
+      "last_modified": null,
+      "bytes": 72831,
+      "categories": [
+        "App structure"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/immersive-spaces",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/immersive-spaces.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/immersive-spaces.json",
+      "local_path": "contexts/swiftui-immersive-spaces.md",
+      "sha256": "3b8efdc35a4b9683f2ac73c421fd4d4f45e0c9cbfd728cff3ad183ea16832307",
+      "etag": "W/\"7a78c3aba3be1d46b77bedf3b1c61cc7\"",
+      "last_modified": null,
+      "bytes": 30933,
+      "categories": [
+        "App structure"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/documents",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/documents.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/documents.json",
+      "local_path": "contexts/swiftui-documents.md",
+      "sha256": "64787f2bee6c5e28ad64c32eb3550b4eebfbd4bf63c1064fc6852a446f39eaaa",
+      "etag": "W/\"dc5c44dfb75b6d3c28434f1e99fa6a9e\"",
+      "last_modified": null,
+      "bytes": 43401,
+      "categories": [
+        "App structure"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/navigation",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/navigation.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/navigation.json",
+      "local_path": "contexts/swiftui-navigation.md",
+      "sha256": "8fbbd519584b4a38556fbe2ace918082b08a46fd8faa783a56313ed8a68190bf",
+      "etag": "W/\"788553b429cdb9402b8341657f8d5710\"",
+      "last_modified": null,
+      "bytes": 55833,
+      "categories": [
+        "App structure"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/modal-presentations",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/modal-presentations.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/modal-presentations.json",
+      "local_path": "contexts/swiftui-modal-presentations.md",
+      "sha256": "3f7a66956ce31bd9b48d6b5d3e8b9b0242d524af93a21dc2eb4a225f8009590f",
+      "etag": "W/\"69fa9cf5b7d6438db2189af387c6aac8\"",
+      "last_modified": null,
+      "bytes": 116176,
+      "categories": [
+        "App structure"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/toolbars",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/toolbars.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/toolbars.json",
+      "local_path": "contexts/swiftui-toolbars.md",
+      "sha256": "406106e901ef6c8125d8f2cfac941dfbbba533762e2cad8f71e1eb04bfc02ed1",
+      "etag": "W/\"b8ad34667a0418c27927de1b051ab295\"",
+      "last_modified": null,
+      "bytes": 45604,
+      "categories": [
+        "App structure"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/search",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/search.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/search.json",
+      "local_path": "contexts/swiftui-search.md",
+      "sha256": "bdcf4acde7e2d01d9387e6446709da7f68b76e4b8619939b0b79945da0589475",
+      "etag": "W/\"533d082a76bffe2c1d628e44fa686db5\"",
+      "last_modified": null,
+      "bytes": 37705,
+      "categories": [
+        "App structure"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/app-extensions",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/app-extensions.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/app-extensions.json",
+      "local_path": "contexts/swiftui-app-extensions.md",
+      "sha256": "6d97b3163fb152d7df5fc704f6f632a66157648b80ef6ae6a00b2a4a988a1dc5",
+      "etag": "W/\"13bae6885bad0676379ac67eca9320e1\"",
+      "last_modified": null,
+      "bytes": 27068,
+      "categories": [
+        "App structure"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/model-data",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/model-data.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/model-data.json",
+      "local_path": "contexts/swiftui-model-data.md",
+      "sha256": "f30ed03d27587efbe85ea74b60499c11b921bc7b232915dc67662716f8fa7c10",
+      "etag": "W/\"6b70f12394a95b048ab8771594aa7c40\"",
+      "last_modified": null,
+      "bytes": 22429,
+      "categories": [
+        "Data and storage"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/environment-values",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/environment-values.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/environment-values.json",
+      "local_path": "contexts/swiftui-environment-values.md",
+      "sha256": "abcf87d898fb7a72e59f01a26acf43a018fc955d37a36a176a292ca1ab2007dc",
+      "etag": "W/\"834d1bc0ffb073f3b3801d3ee14ee7fa\"",
+      "last_modified": null,
+      "bytes": 16115,
+      "categories": [
+        "Data and storage"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/preferences",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/preferences.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/preferences.json",
+      "local_path": "contexts/swiftui-preferences.md",
+      "sha256": "97ffada5b1e882ee8f39f6221ea9e3f3e6e5ebb6ce40cedb043b158346747272",
+      "etag": "W/\"d302d54b860552a57a2babdaba7d154d\"",
+      "last_modified": null,
+      "bytes": 22292,
+      "categories": [
+        "Data and storage"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/persistent-storage",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/persistent-storage.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/persistent-storage.json",
+      "local_path": "contexts/swiftui-persistent-storage.md",
+      "sha256": "e44ef095dadc5943ed06bca345a4d26c368a775700a4528bee817b1831fd15a0",
+      "etag": "W/\"8538989f719fe916c21402757a99c3a6\"",
+      "last_modified": null,
+      "bytes": 13715,
+      "categories": [
+        "Data and storage"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/view-fundamentals",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/view-fundamentals.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/view-fundamentals.json",
+      "local_path": "contexts/swiftui-view-fundamentals.md",
+      "sha256": "4f32a275307f35d9a4d36fda2b528290e4cbb82ed08b3920d171382fc609b34a",
+      "etag": "W/\"5bbbe83a1596e52816a31222702ed9a5\"",
+      "last_modified": null,
+      "bytes": 39909,
+      "categories": [
+        "Views"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/view-configuration",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/view-configuration.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/view-configuration.json",
+      "local_path": "contexts/swiftui-view-configuration.md",
+      "sha256": "39cbb23f5bb5da3b87e5aceeb3d5e3245c3ff5a56ff1302f5a74b5f1bb0940cb",
+      "etag": "W/\"4c79ead411f15781507dcc6cdeed0a86\"",
+      "last_modified": null,
+      "bytes": 32803,
+      "categories": [
+        "Views"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/view-styles",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/view-styles.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/view-styles.json",
+      "local_path": "contexts/swiftui-view-styles.md",
+      "sha256": "58c34e0d2c1eb941ef7df0bfae963f2cfa7b1cc341ea94b22be2db8e793d964e",
+      "etag": "W/\"16c08b0fba4eabbbe173e555e526b3b1\"",
+      "last_modified": null,
+      "bytes": 73461,
+      "categories": [
+        "Views"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/animations",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/animations.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/animations.json",
+      "local_path": "contexts/swiftui-animations.md",
+      "sha256": "cba04ec15ab374eca313793347cb808c439f3c48f2107495ea58aed8ae44e11b",
+      "etag": "W/\"85d543fbf7a41c47df6e5df6d2052990\"",
+      "last_modified": null,
+      "bytes": 81544,
+      "categories": [
+        "Views"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/text-input-and-output",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/text-input-and-output.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/text-input-and-output.json",
+      "local_path": "contexts/swiftui-text-input-and-output.md",
+      "sha256": "688f394d0c1edc9a760ef48afcd3612dbfda24ccb616f10514c4dfaa0baf24da",
+      "etag": "W/\"cab8af76d3da8034927c48eccd29b8fe\"",
+      "last_modified": null,
+      "bytes": 93805,
+      "categories": [
+        "Views"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/images",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/images.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/images.json",
+      "local_path": "contexts/swiftui-images.md",
+      "sha256": "315c31e3d7fe10add90558480af1673c1d8a183d2e92c1ac6be1ecd58a28e9a0",
+      "etag": "W/\"3f230109b7a9a0c098655114d35087df\"",
+      "last_modified": null,
+      "bytes": 29326,
+      "categories": [
+        "Views"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/controls-and-indicators",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/controls-and-indicators.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/controls-and-indicators.json",
+      "local_path": "contexts/swiftui-controls-and-indicators.md",
+      "sha256": "91d3ef97276213ba74e2a3eac05a5e0d545f1dac8f8472df83f96519149b0119",
+      "etag": "W/\"c3af4da0639efdb187b55d94c58c6db9\"",
+      "last_modified": null,
+      "bytes": 50205,
+      "categories": [
+        "Views"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/menus-and-commands",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/menus-and-commands.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/menus-and-commands.json",
+      "local_path": "contexts/swiftui-menus-and-commands.md",
+      "sha256": "443eb2622a981d2c87327c5bc1a2bc966eb01164ad244adfcfe046a7f6fd75a0",
+      "etag": "W/\"a9b84b7ca524abe34c976d62e7fc15fb\"",
+      "last_modified": null,
+      "bytes": 36406,
+      "categories": [
+        "Views"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/shapes",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/shapes.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/shapes.json",
+      "local_path": "contexts/swiftui-shapes.md",
+      "sha256": "d21f193fe5ecb8e3c06ac353b260f73e17d94cd5320503dad5b690781f4fb780",
+      "etag": "W/\"b2243aac0f324529696687705ee02d26\"",
+      "last_modified": null,
+      "bytes": 27337,
+      "categories": [
+        "Views"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/drawing-and-graphics",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/drawing-and-graphics.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/drawing-and-graphics.json",
+      "local_path": "contexts/swiftui-drawing-and-graphics.md",
+      "sha256": "15f4689eadb68cba1aeb6b75efaed84545dc03d51823dc5587ac4f32c93b1cf0",
+      "etag": "W/\"06db444bb759a096e729637381773076\"",
+      "last_modified": null,
+      "bytes": 87964,
+      "categories": [
+        "Views"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/layout-fundamentals",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/layout-fundamentals.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/layout-fundamentals.json",
+      "local_path": "contexts/swiftui-layout-fundamentals.md",
+      "sha256": "e74a5ee60e91347e162bbcf9a8ba6d346e036b39a9ca374a0bb63216b591e5ec",
+      "etag": "W/\"2eca5a5d444e92c0b197c1605993cbea\"",
+      "last_modified": null,
+      "bytes": 38473,
+      "categories": [
+        "View layout"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/layout-adjustments",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/layout-adjustments.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/layout-adjustments.json",
+      "local_path": "contexts/swiftui-layout-adjustments.md",
+      "sha256": "10f86c0be772ec2da5ee404117c41b45b2777f81038dc78b68de35fa8fb2aee6",
+      "etag": "W/\"7938a7ff1ef48aab3160adf03e4614a8\"",
+      "last_modified": null,
+      "bytes": 63190,
+      "categories": [
+        "View layout"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/custom-layout",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/custom-layout.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/custom-layout.json",
+      "local_path": "contexts/swiftui-custom-layout.md",
+      "sha256": "b77128410b57c786a71045ec2c4d39d45192a8c09a89f77986de2acee99926b8",
+      "etag": "W/\"32c3d990a656c5a4289d08bf593df2e2\"",
+      "last_modified": null,
+      "bytes": 17914,
+      "categories": [
+        "View layout"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/lists",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/lists.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/lists.json",
+      "local_path": "contexts/swiftui-lists.md",
+      "sha256": "ee43f6257e7601221cedab97f26a164cdd07a431203d51d337ff80d3a06fc700",
+      "etag": "W/\"d5667ace18190a27bbf40600618082f4\"",
+      "last_modified": null,
+      "bytes": 50518,
+      "categories": [
+        "View layout"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/tables",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/tables.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/tables.json",
+      "local_path": "contexts/swiftui-tables.md",
+      "sha256": "44cf4dc439536907fc5aefa93460f9cc8501637fb1c299b58cadc189bc2476cc",
+      "etag": "W/\"b1f5346d793f3703456bb56bac7cb2ec\"",
+      "last_modified": null,
+      "bytes": 23924,
+      "categories": [
+        "View layout"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/view-groupings",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/view-groupings.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/view-groupings.json",
+      "local_path": "contexts/swiftui-view-groupings.md",
+      "sha256": "a8b76666f73b615f6037888894eb7b6386f6563b588b7da9ba36bfd6ce8d989b",
+      "etag": "W/\"b63836d1ca8f94ee94ca860fb400d382\"",
+      "last_modified": null,
+      "bytes": 26336,
+      "categories": [
+        "View layout"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/scroll-views",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/scroll-views.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/scroll-views.json",
+      "local_path": "contexts/swiftui-scroll-views.md",
+      "sha256": "c07db57f0f697e1663abfeb2e721a54753c3196d8cfad3d32d89903d3083191a",
+      "etag": "W/\"211a22ce3dcbca1122c11ead1a0297b2\"",
+      "last_modified": null,
+      "bytes": 62415,
+      "categories": [
+        "View layout"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/gestures",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/gestures.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/gestures.json",
+      "local_path": "contexts/swiftui-gestures.md",
+      "sha256": "13b04edc1622ce2978db04e708cfcb2a2beb01658d1b77813450e64428488ef7",
+      "etag": "W/\"a86bdb207693f9d0af719c38a336a15b\"",
+      "last_modified": null,
+      "bytes": 66937,
+      "categories": [
+        "Event handling"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/input-events",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/input-events.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/input-events.json",
+      "local_path": "contexts/swiftui-input-events.md",
+      "sha256": "a1c2c249312c4bda53f9b311b6faa8d6e1ff477f2941f24ab893ac650462cf75",
+      "etag": "W/\"98863f1cc867d630c51095da2c9da046\"",
+      "last_modified": null,
+      "bytes": 88920,
+      "categories": [
+        "Event handling"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/clipboard",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/clipboard.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/clipboard.json",
+      "local_path": "contexts/swiftui-clipboard.md",
+      "sha256": "02e5684339ad6c6c4cd476e1b902a01b96b36c308fdaac584575fd8bf29af7f0",
+      "etag": "W/\"c1cb30d7dfd2b26efbd1d0c8c3117ff3\"",
+      "last_modified": null,
+      "bytes": 15136,
+      "categories": [
+        "Event handling"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/drag-and-drop",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/drag-and-drop.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/drag-and-drop.json",
+      "local_path": "contexts/swiftui-drag-and-drop.md",
+      "sha256": "d455ccf78fc1b22c79b48073df1d4da68bc337900bfa6abbf5c3a909905ffaaa",
+      "etag": "W/\"934a41b3f616f06d6f31f28d21124ee5\"",
+      "last_modified": null,
+      "bytes": 60639,
+      "categories": [
+        "Event handling"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/focus",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/focus.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/focus.json",
+      "local_path": "contexts/swiftui-focus.md",
+      "sha256": "afc40c7d8f9c89e9ce85e68250c398850fa76ee69f0f1fe252a4c9ab529316f1",
+      "etag": "W/\"1e14931decfb606b6f8b936a01f443b1\"",
+      "last_modified": null,
+      "bytes": 35390,
+      "categories": [
+        "Event handling"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/system-events",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/system-events.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/system-events.json",
+      "local_path": "contexts/swiftui-system-events.md",
+      "sha256": "b541819cfce064e0c8660dce87a6b31656ea8ff52397679f96d7669cac029f62",
+      "etag": "W/\"79634cf1e85cec940aec2072729e824e\"",
+      "last_modified": null,
+      "bytes": 26663,
+      "categories": [
+        "Event handling"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/accessibility-fundamentals",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/accessibility-fundamentals.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/accessibility-fundamentals.json",
+      "local_path": "contexts/swiftui-accessibility-fundamentals.md",
+      "sha256": "4d537ece94d8722d74df45d13b41f67e73942c6bbc38e9db149dca15860d88e8",
+      "etag": "W/\"f49b282d7abf833a910122b9fd85d74c\"",
+      "last_modified": null,
+      "bytes": 23503,
+      "categories": [
+        "Accessibility"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/accessible-appearance",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/accessible-appearance.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/accessible-appearance.json",
+      "local_path": "contexts/swiftui-accessible-appearance.md",
+      "sha256": "d2dbb7d4ad6d077895014f8ca2eb1ba92d6025ceff772de716a02195fc39c98f",
+      "etag": "W/\"10507801a0e0827e81884aab3ae88821\"",
+      "last_modified": null,
+      "bytes": 22113,
+      "categories": [
+        "Accessibility"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/accessible-controls",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/accessible-controls.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/accessible-controls.json",
+      "local_path": "contexts/swiftui-accessible-controls.md",
+      "sha256": "f74aa5badbf5f71a15e049aaefbb563304a41c89a19d1b5bae0a89ee1b7ddcdf",
+      "etag": "W/\"4f8f22aa782fe830083eb315fdd8a520\"",
+      "last_modified": null,
+      "bytes": 44409,
+      "categories": [
+        "Accessibility"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/accessible-descriptions",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/accessible-descriptions.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/accessible-descriptions.json",
+      "local_path": "contexts/swiftui-accessible-descriptions.md",
+      "sha256": "b79c0655418d7ffcc8e6e3fb400b75628b02fd9d4228b277128802c4728fb977",
+      "etag": "W/\"fac42024b8882698ba5a5e7dcaf82ec3\"",
+      "last_modified": null,
+      "bytes": 31791,
+      "categories": [
+        "Accessibility"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/accessible-navigation",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/accessible-navigation.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/accessible-navigation.json",
+      "local_path": "contexts/swiftui-accessible-navigation.md",
+      "sha256": "0446650c211c3312c555bd2c3f0b178892cb61245bd0939eef633e4734f1faa2",
+      "etag": "W/\"9046e06c23bc3c9b5164cfae5f12da28\"",
+      "last_modified": null,
+      "bytes": 20368,
+      "categories": [
+        "Accessibility"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/appkit-integration",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/appkit-integration.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/appkit-integration.json",
+      "local_path": "contexts/swiftui-appkit-integration.md",
+      "sha256": "10a53535b11cd0a1fce1deeb51ac5d2bd2e893e8b03197f3bc73f3d05db7c206",
+      "etag": "W/\"08620d12aee7e65ac60f36d128eb0a84\"",
+      "last_modified": null,
+      "bytes": 18813,
+      "categories": [
+        "Framework integration"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/uikit-integration",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/uikit-integration.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/uikit-integration.json",
+      "local_path": "contexts/swiftui-uikit-integration.md",
+      "sha256": "88142549e5cf001b9fd1bb198101b4b03123effd5ce65961d8aa33930e5616d1",
+      "etag": "W/\"44befdf2195e675c5b02799d476916d5\"",
+      "last_modified": null,
+      "bytes": 23364,
+      "categories": [
+        "Framework integration"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/watchkit-integration",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/watchkit-integration.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/watchkit-integration.json",
+      "local_path": "contexts/swiftui-watchkit-integration.md",
+      "sha256": "30c45bf63867123b0907b507b1c60ee5cbda5b2b110bad4472c7da8a50b2f575",
+      "etag": "W/\"1dd31bd5d060b2acb017ae7e181f6e19\"",
+      "last_modified": null,
+      "bytes": 10257,
+      "categories": [
+        "Framework integration"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/technology-specific-views",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/technology-specific-views.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/technology-specific-views.json",
+      "local_path": "contexts/swiftui-technology-specific-views.md",
+      "sha256": "8b0f4aedad33e508dd9605297302cf1de76ee7253ca0d81e8c5e088007a49ee8",
+      "etag": "W/\"ca44b939da239f04aef4d2780165acc8\"",
+      "last_modified": null,
+      "bytes": 243651,
+      "categories": [
+        "Framework integration"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/previews-in-xcode",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/previews-in-xcode.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/previews-in-xcode.json",
+      "local_path": "contexts/swiftui-previews-in-xcode.md",
+      "sha256": "fdc7a3ed44cc30c7374fb317951823821a07f6c504bf1d6d887feeb0587697d4",
+      "etag": "W/\"bb32ff4dcaf4fc13070e951f2f687231\"",
+      "last_modified": null,
+      "bytes": 33952,
+      "categories": [
+        "Tool support"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/xcode-library-customization",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/xcode-library-customization.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/xcode-library-customization.json",
+      "local_path": "contexts/swiftui-xcode-library-customization.md",
+      "sha256": "6c7025779b9c8dc32ade70873620d314978221ed902dcbfd581a35bb93643c95",
+      "etag": "W/\"010402b104451d67e670a5cb66f6b3eb\"",
+      "last_modified": null,
+      "bytes": 8774,
+      "categories": [
+        "Tool support"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/performance-analysis",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/performance-analysis.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/performance-analysis.json",
+      "local_path": "contexts/swiftui-performance-analysis.md",
+      "sha256": "4d0285db46e20c178f4e4d4de9fc11499735fc3fda3fcc4db8df72f64846a209",
+      "etag": "W/\"5cf04030cb54d189a8bbbac42fede5d4\"",
+      "last_modified": null,
+      "bytes": 5933,
+      "categories": [
+        "Tool support"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/toolbarminimizationbehavior",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/toolbarminimizationbehavior.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/toolbarminimizationbehavior.json",
+      "local_path": "contexts/swiftui-toolbarminimizationbehavior.md",
+      "sha256": "3ebbaaf225b2015b886bb868609918fa3fa3cd7fb760a07e5e6ab44ed4d86ef5",
+      "etag": "W/\"7ef6ee3d09d001fbf6eb5c65f17aadb8\"",
+      "last_modified": null,
+      "bytes": 12904,
+      "categories": [
+        "Structures"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/toolbarminimizationrestoration",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/toolbarminimizationrestoration.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/toolbarminimizationrestoration.json",
+      "local_path": "contexts/swiftui-toolbarminimizationrestoration.md",
+      "sha256": "14d6d7461c34058c702ac7d92615e733e6e4996b9c73397530ec6bea3de2eb61",
+      "etag": "W/\"c8c761e4b6bfc0973e3f8eb1717f0174\"",
+      "last_modified": null,
+      "bytes": 10577,
+      "categories": [
+        "Structures"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/appkit/nssplitviewitem/holdingpriority",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/appkit/nssplitviewitem/holdingpriority.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/appkit/nssplitviewitem/holdingpriority.json",
+      "local_path": "contexts/appkit-nssplitviewitem-holdingpriority.md",
+      "sha256": "2276dea0b847f56c1cd227abe1725e8068e3923357404412ddde003074fe9892",
+      "etag": "W/\"2ee660e156163d2824d880da353925ee\"",
+      "last_modified": null,
+      "bytes": 13230,
+      "categories": [
+        "On-demand expansion",
+        "Framework integration"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/view/navigationsplitviewcolumnwidth(min:ideal:max:)",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/view/navigationsplitviewcolumnwidth(min:ideal:max:).json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/view/navigationsplitviewcolumnwidth(min:ideal:max:).json",
+      "local_path": "contexts/swiftui-navigation-split-view-column-width-flexible.md",
+      "sha256": "6aaf33d60f84d9af6927fcbfb752f2fb5c7a1537b0afea85eeddfea23473d3b3",
+      "etag": "W/\"ec71fe1bbeefcc0c36babfa35669b393\"",
+      "last_modified": null,
+      "bytes": 15122,
+      "categories": [
+        "On-demand expansion",
+        "App structure"
+      ],
+      "depth": 2
+    }
+  ]
+}

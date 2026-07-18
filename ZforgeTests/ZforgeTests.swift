@@ -4,6 +4,62 @@ import Testing
 
 @Suite("File browser domain")
 struct ZforgeTests {
+    @Test("Sidebar maximum width always reserves 360 points for content")
+    func sidebarMaximumWidth() {
+        #expect(BrowserSidebarLayout.maximumWidth(for: 640) == 280)
+        #expect(BrowserSidebarLayout.maximumWidth(for: 900) == 540)
+        #expect(BrowserSidebarLayout.maximumWidth(for: 1_100) == 740)
+    }
+
+    @Test("The sidebar places the real user directory in Locations")
+    @MainActor
+    func sidebarUsesRealUserHome() {
+        let sidebar = SidebarState()
+
+        #expect(sidebar.userHome.url == UserDirectoryService.homeURL)
+        #expect(sidebar.userHome.name == UserDirectoryService.homeURL.lastPathComponent)
+        #expect(sidebar.userHome.name == NSUserName())
+        #expect(!sidebar.userHome.url.path.contains("/Library/Containers/"))
+        #expect(sidebar.userHome.name != "Data")
+        #expect(!sidebar.favorites.contains { $0.url == sidebar.userHome.url })
+
+        let favorites = Dictionary(uniqueKeysWithValues: sidebar.favorites.map { ($0.name, $0.url) })
+        #expect(favorites["Desktop"] == UserDirectoryService.homeURL.appendingPathComponent("Desktop", isDirectory: true))
+        #expect(favorites["Documents"] == UserDirectoryService.homeURL.appendingPathComponent("Documents", isDirectory: true))
+        #expect(favorites["Downloads"] == UserDirectoryService.homeURL.appendingPathComponent("Downloads", isDirectory: true))
+        #expect(sidebar.favorites.allSatisfy { !$0.url.path.contains("/Library/Containers/") })
+    }
+
+    @Test("Filesystem breadcrumbs include the volume and every ancestor")
+    @MainActor
+    func filesystemBreadcrumbShowsCompletePath() async {
+        let home = UserDirectoryService.homeURL
+        let state = FileBrowserState(
+            preferences: FileBrowserPreferences(),
+            fileSystem: UIFixtureFileSystemService(),
+            recentItems: RecentItemsStub(urls: []),
+            grants: UIFixtureAccessGrantStore(),
+            archives: UIFixtureArchiveEngine()
+        )
+
+        await state.navigateToSidebar(home, name: home.lastPathComponent)
+
+        #expect(state.pathComponents.map(\.name) == [home.lastPathComponent])
+        #expect(state.breadcrumbComponents.map(\.location) == [
+            .fileSystem(URL(fileURLWithPath: "/", isDirectory: true)),
+            .fileSystem(URL(fileURLWithPath: "/Users", isDirectory: true)),
+            .fileSystem(home)
+        ])
+        #expect(state.breadcrumbComponents.map(\.name).suffix(2) == ["Users", home.lastPathComponent])
+        #expect(state.breadcrumbComponents.first?.name == "Macintosh HD")
+
+        let users = state.breadcrumbComponents[1]
+        await state.navigateBreadcrumb(to: users)
+        #expect(state.location == .fileSystem(URL(fileURLWithPath: "/Users", isDirectory: true)))
+        #expect(state.pathComponents.map(\.name) == ["Users"])
+        #expect(state.breadcrumbComponents.map(\.name) == ["Macintosh HD", "Users"])
+    }
+
     @Test("Archive registry excludes specialized ZIP documents")
     func archiveRecognition() {
         #expect(ArchiveFormatRegistry.recognizes("backup.7z"))
@@ -294,9 +350,34 @@ struct ZforgeTests {
         #expect(state.archiveToolbarAction == .extractSelected)
     }
 
+    @Test("A regular window starts in Recents and loads Spotlight results")
+    @MainActor
+    func defaultLocationIsRecents() async {
+        let recentURLs = [
+            URL(fileURLWithPath: "/Users/example/Documents/Latest.txt"),
+            URL(fileURLWithPath: "/Users/example/Downloads/Archive.zip")
+        ]
+        let state = FileBrowserState(
+            preferences: FileBrowserPreferences(),
+            fileSystem: UIFixtureFileSystemService(),
+            recentItems: RecentItemsStub(urls: recentURLs),
+            grants: UIFixtureAccessGrantStore(),
+            archives: UIFixtureArchiveEngine()
+        )
+
+        #expect(state.location == .recents)
+        #expect(state.title == "Recents")
+        #expect(state.pathComponents.map(\.location) == [.recents])
+
+        await state.start()
+
+        #expect(Set(state.items.map(\.name)) == ["Latest.txt", "Archive.zip"])
+        #expect(state.archiveToolbarAction == .unavailableOutsideArchive)
+    }
+
     @Test("Preview visibility persists independently for every browser mode")
     @MainActor
-    func previewVisibility() {
+    func previewVisibility() async throws {
         let suiteName = "ZforgeTests.preview.\(UUID().uuidString)"
         let defaults = try! #require(UserDefaults(suiteName: suiteName))
         defer { defaults.removePersistentDomain(forName: suiteName) }
@@ -311,6 +392,7 @@ struct ZforgeTests {
         let document = item("Preview.txt")
         state.items = [document]
         state.select(document)
+        try await Task.sleep(for: .milliseconds(120))
 
         #expect(state.previewVisible)
         #expect(state.previewURL == document.localURL)
@@ -321,6 +403,7 @@ struct ZforgeTests {
 
         preferences.viewMode = .gallery
         state.updatePreview()
+        try await Task.sleep(for: .milliseconds(120))
         #expect(state.previewVisible)
         #expect(state.previewURL == document.localURL)
 
@@ -341,6 +424,44 @@ struct ZforgeTests {
         #expect(!reloaded.previewVisible(in: .list))
         #expect(!reloaded.previewVisible(in: .columns))
         #expect(!reloaded.previewVisible(in: .gallery))
+    }
+
+    @Test("A pending preview never publishes after the focused item changes")
+    @MainActor
+    func obsoletePreviewIsDiscarded() async throws {
+        let state = FileBrowserState()
+        let first = item("First.txt")
+        let second = item("Second.txt")
+        state.items = [first, second]
+
+        state.select(first)
+        try await Task.sleep(for: .milliseconds(20))
+        state.select(second)
+        try await Task.sleep(for: .milliseconds(120))
+
+        #expect(state.focusedItemID == second.id)
+        #expect(state.previewURL == second.localURL)
+        #expect(state.previewURL != first.localURL)
+    }
+
+    @Test("Multiple selection previews every eligible file alongside static items")
+    @MainActor
+    func multipleSelectionPreviewsEligibleFiles() {
+        let state = FileBrowserState()
+        let firstDocument = item("First.pdf")
+        let secondDocument = item("Second.png")
+        let folder = item("Folder", directory: true)
+        let archive = item("Archive.zip", archive: true)
+        state.items = [firstDocument, folder, secondDocument, archive]
+        state.selection = Set(state.items.map(\.id))
+        state.focusedItemID = firstDocument.id
+
+        state.updatePreview()
+
+        #expect(state.previewURL(for: firstDocument) == firstDocument.localURL)
+        #expect(state.previewURL(for: secondDocument) == secondDocument.localURL)
+        #expect(state.previewURL(for: folder) == nil)
+        #expect(state.previewURL(for: archive) == nil)
     }
 
     @Test("Column navigation replaces the obsolete right branch")
@@ -600,4 +721,16 @@ struct ZforgeTests {
             compressionMethod: nil
         )
     }
+}
+
+@MainActor
+private final class RecentItemsStub: RecentItemsServing {
+    let urls: [URL]
+
+    init(urls: [URL]) {
+        self.urls = urls
+    }
+
+    func recentItemURLs() async -> [URL] { urls }
+    func stop() {}
 }

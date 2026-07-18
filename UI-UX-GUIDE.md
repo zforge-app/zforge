@@ -26,11 +26,18 @@ A janela usa `NavigationSplitView` com:
 ### Sidebar
 
 - Usar `List` com `.listStyle(.sidebar)`.
+- Manter Recentes como a primeira linha, sem seção ou cabeçalho de categoria, usando o símbolo `clock` e abrindo a lista virtual correspondente no navegador.
+- Cada janela comum abre inicialmente em Recentes. Quando ainda não houver bookmark para a Home, solicitar essa autorização na abertura porque ela delimita o escopo da consulta do Spotlight; o cancelamento mantém a explicação e a ação para tentar novamente.
+- O diretório real da conta do usuário aparece como a primeira entrada de Locais, identificado pelo nome da pasta (por exemplo, `felipe`) em vez do rótulo genérico “Home”. Não usar como destino o diretório Home redirecionado para o container do App Sandbox.
+- Os favoritos Desktop, Documents e Downloads apontam para as pastas correspondentes dentro do diretório real da conta do usuário. As APIs de busca redirecionadas pelo App Sandbox não devem fazer essas entradas apontarem para `Library/Containers/.../Data`.
+- Para localizações do sistema de arquivos, o breadcrumb sempre mostra o caminho completo desde o volume, por exemplo `Macintosh HD > Users > felipe`, mesmo quando a navegação começou por uma entrada intermediária da sidebar. Esses ancestrais visuais não devem criar níveis vazios na visualização em Colunas.
 - A superfície deve continuar visualmente pelo topo da janela, sem corte entre sidebar e titlebar.
 - Usar material do sistema, atualmente `.ultraThinMaterial`, respeitando as safe areas.
 - Largura mínima: `180 pt`.
 - Largura ideal: `220 pt`.
-- Largura máxima: `300 pt`.
+- Largura máxima: largura atual da janela menos `360 pt`, preservando sempre essa largura mínima para o conteúdo principal.
+- `navigationSplitViewColumnWidth(min:ideal:max:)` expressa larguras preferidas e, isoladamente, não impede que o divisor ultrapasse o máximo no macOS. Manter esse modificador para o layout SwiftUI e aplicar o mesmo teto em `NSSplitViewItem.maximumThickness`, que restringe também o redimensionamento manual.
+- Redimensionar a janela não altera a largura escolhida para a sidebar. Quando a janela fica estreita demais, limitar a sidebar apenas enquanto necessário e restaurar sua largura anterior assim que houver espaço novamente.
 - Se a sidebar for ocultada automaticamente, deve reaparecer quando houver espaço.
 - Se o usuário a ocultar manualmente, essa escolha deve ser preservada.
 
@@ -75,11 +82,12 @@ A janela usa `.windowResizability(.contentMinSize)` para fazer o macOS respeitar
 
 A toolbar deve conter:
 
-1. botões de voltar e avançar;
-2. título nativo com o nome do diretório atual;
-3. seletor do tipo de visualização;
-4. grupo de ações de exemplo;
-5. menu de ações adicionais.
+1. botão para alternar a sidebar;
+2. botões de voltar e avançar;
+3. título nativo com o nome do diretório atual;
+4. seletor do tipo de visualização;
+5. grupo de ações de exemplo;
+6. menu de ações adicionais.
 
 O breadcrumb não deve ocupar a toolbar. A tentativa de usá-lo como `ToolbarItem` prejudicou o cálculo de overflow, a responsividade e a leitura do título.
 
@@ -88,42 +96,50 @@ O breadcrumb não deve ocupar a toolbar. A tentativa de usá-lo como `ToolbarIte
 - As setas mantêm um histórico real de caminhos.
 - Voltar e avançar devem ser desabilitados quando não houver destino.
 - O título usa `navigationTitle`, com apresentação inline, e mostra apenas o nome do diretório atual.
+- A ordem visual à esquerda é sempre: botão da sidebar, cápsula de voltar/avançar e título. No macOS, itens `.navigation` independentes podem ser reordenados pelo sistema; para preservar essa sequência, remover o `.sidebarToggle` automático e reunir o botão equivalente e o `ControlGroup` das setas, nessa ordem, dentro de um único `ToolbarItem` aplicado à coluna da sidebar. O botão envia `NSSplitViewController.toggleSidebar(_:)` pela responder chain, reproduzindo a ação nativa sem observar geometria.
+- O título e os itens à direita pertencem à toolbar da coluna de detalhe. Essa separação impede que o `NavigationSplitView` mova as setas para a seção das ações enquanto preserva o `navigationTitle` nativo.
 - Navegação histórica e seleção de arquivos são estados diferentes.
 
 ### Seletor de visualização
 
-O seletor tem duas apresentações:
+O seletor tem três apresentações:
 
 - completa: quatro segmentos com ícones;
-- compacta: ícone da visualização atual acompanhado de `chevron.up.chevron.down`.
+- compacta: ícone do modo atual acompanhado de chevrons verticais;
+- overflow: submenu `View` dentro do menu do duplo chevron.
 
-Ao clicar na apresentação compacta:
+No menu de overflow:
 
-- abrir menu nativo;
-- mostrar ícone e nome de cada visualização;
+- `View` abre um submenu nativo;
+- o submenu mostra ícone e nome de cada visualização;
 - marcar a visualização atual;
 - permitir escolher ícones, lista, colunas ou galeria.
 
-O seletor começa a compactar abaixo de `780 pt` de largura total da janela.
-
-O seletor mantém sempre uma cápsula própria, separada da cápsula que reúne as três ações à direita. Na apresentação compacta, seu botão deve permanecer dentro de um grupo de controle próprio para que a compactação automática da toolbar não funda os dois grupos.
+Entre `678` e `899 pt`, o seletor usa uma cápsula compacta própria, com o ícone do modo atual e chevrons verticais. Abaixo de `678 pt`, o seletor entra no overflow e passa a ser o submenu `View`. Ao reduzir a janela a partir da apresentação completa, compactar o seletor antes de ocultar a ação contextual de archive e não voltar à apresentação segmentada em larguras menores.
 
 ### Grupo de ações
 
-O grupo permanece com três ações em todas as larguras:
+Na apresentação expandida, o grupo permanece com três ações:
 
 1. ação contextual de archive;
 2. Share;
 3. reticências para ações adicionais.
 
-As três ações compartilham uma única cápsula nativa, separada da cápsula do seletor de visualização.
+As três ações compartilham uma única cápsula nativa, separada da cápsula do seletor de visualização. Cada label preserva uma faixa visual de `25 pt` para manter o padding regular entre os símbolos.
+Elas devem ser declaradas como itens nativos de um `ToolbarItemGroup`, delimitado do seletor por um `ToolbarSpacer` fixo. Não envolver o conjunto em um `ControlGroup` adaptativo dentro de um único `ToolbarItem`: depois de passar pelo overflow, essa composição pode retornar à toolbar conservando o espaçamento compacto.
+
+Quando o grupo de ações não cabe, um botão com duplo chevron reproduz o indicador nativo de overflow da toolbar. Entre `840` e `899 pt`, a ação contextual de archive continua visível em cápsula própria e o menu começa por Share; abaixo de `840 pt`, a ação de archive também entra no menu. Open, Quick Look, Get Info, Add Tag, Rename e Duplicate permanecem sempre expandidos no nível principal desse menu. Diferentemente do Finder, esse conteúdo não vira um submenu `Action`. Abaixo de `678 pt`, o submenu `View` é acrescentado no início. As ações usam os mesmos handlers e estados habilitados da apresentação expandida; não delegar esse comportamento ao overflow automático da `NSToolbar`.
+
+O duplo chevron usa cor secundária enquanto o menu está fechado e só assume a cor primária durante o ciclo real de apresentação do `NSMenu`, retornando ao estado secundário em `menuDidClose`. Quando archive ou overflow aparecem como botões isolados, seus labels usam uma área quadrada de `18 pt` e símbolos menores que os do grupo expandido, preservando um background circular em vez de oval.
 
 ### Breakpoints da toolbar
 
 | Largura da janela | Seletor de visualização | Ações |
 | --- | --- | --- |
-| `≥ 780 pt` | completo | três ações |
-| `< 780 pt` | compacto | três ações |
+| `≥ 900 pt` | completo | três ações |
+| `840–899 pt` | cápsula compacta | archive visível; demais no duplo chevron |
+| `678–839 pt` | cápsula compacta | expandidas no menu de duplo chevron |
+| `< 678 pt` | submenu no menu de duplo chevron | expandidas no mesmo menu |
 
 Esses valores são parâmetros de calibração. Caso tamanhos de ícones, título ou ações mudem, medir novamente antes de alterá-los.
 
@@ -137,6 +153,7 @@ Estas restrições devem ser consideradas antes de tentar corrigir a toolbar:
 - Um `ControlGroup` adaptativo dentro de um único `ToolbarItem` pode conservar sua aparência compacta depois de sair do overflow.
 - Para responsividade determinística, preferir breakpoints explícitos baseados na largura da janela e trocar a hierarquia do controle antes do overflow.
 - Para botões compactos com composição visual própria, usar um `Button` SwiftUI comum.
+- Apresentações condicionais da toolbar usam identificadores próprios por estágio; não reutilizar o mesmo `ToolbarItem` entre hierarquias diferentes, pois o AppKit pode conservar a cápsula nativa enquanto descarta temporariamente seu conteúdo SwiftUI durante o redimensionamento.
 - Para menus que precisam de ícones, estados marcados, seções ou conteúdo plano previsível, uma ponte pequena para `NSMenu` é aceitável.
 - Não usar `.id(windowWidth)` para forçar reconstrução durante cada pixel de redimensionamento; isso mascara o problema e causa trabalho excessivo de layout.
 
@@ -298,6 +315,7 @@ Os headers são clicáveis:
 - Mostrar até cinco ícones no hero.
 - Tamanho base dos ícones: `200 pt`.
 - Criar uma pilha informal, com pequenas rotações e offsets.
+- Ordenar a pilha pela recência da seleção: o último item selecionado aparece sempre no topo.
 - O efeito deve lembrar papéis soltos, sem ângulos extremos.
 - Usar sombra discreta para separar as camadas.
 - Mostrar quantidade de itens, composição entre documentos e pastas, tamanho total, intervalo de datas e etiquetas agregadas.
@@ -373,6 +391,7 @@ Regras:
 - Disclosure arrows devem anunciar expandir ou recolher.
 - Controles da toolbar não devem capturar permanentemente o foco do conteúdo.
 - Após trocar visualização ou executar uma ação de toolbar, devolver foco ao navegador de arquivos.
+- Durante navegação rápida, coalescer restauração de foco, rolagens e carregamentos de preview; antes de publicar um preview pendente, confirmar que o item ainda é a seleção primária.
 - Usar cores semânticas do sistema para temas claro, escuro, contraste aumentado e cor de destaque.
 - Não depender apenas de cor para indicar direção de ordenação, expansão ou tipo de controle.
 - Hitboxes devem ser maiores que o desenho visual sempre que necessário.

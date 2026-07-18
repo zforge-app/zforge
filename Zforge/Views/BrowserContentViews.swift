@@ -91,6 +91,7 @@ struct BrowserContent: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(nsColor: .underPageBackgroundColor))
+        .accessibilityIdentifier("browser-mode-\(state.preferences.viewMode.rawValue)")
         .focusable()
         .focused(contentFocus)
         .focusEffectDisabled()
@@ -259,7 +260,7 @@ private struct BrowserPreviewPane: View {
     private var scale: CGFloat { state.preferences.scale }
 
     var body: some View {
-        if state.selectedItems.isEmpty {
+        if state.previewItems.isEmpty {
             Color.clear
                 .frame(width: BrowserLayoutMetrics.previewWidth * scale)
                 .frame(maxHeight: .infinity)
@@ -269,7 +270,7 @@ private struct BrowserPreviewPane: View {
         } else {
             SelectionOverview(
                 state: state,
-                items: state.selectedItems,
+                items: state.previewItems,
                 presentation: .column,
                 scale: scale
             )
@@ -279,6 +280,7 @@ private struct BrowserPreviewPane: View {
 
 struct IconBrowserView: View {
     @Bindable var state: FileBrowserState
+    @State private var focusedScrollTask: Task<Void, Never>?
 
     private var scale: CGFloat { state.preferences.scale }
     private var itemWidth: CGFloat { BrowserMetrics.iconGridItemWidth * scale }
@@ -321,11 +323,25 @@ struct IconBrowserView: View {
                 }
                 .onChange(of: state.focusedItemID) { _, itemID in
                     guard let itemID else { return }
-                    withAnimation(.easeOut(duration: 0.15)) {
-                        scrollProxy.scrollTo(itemID, anchor: .center)
-                    }
+                    scheduleFocusedScroll(to: itemID, proxy: scrollProxy)
                 }
             }
+        }
+        .onDisappear {
+            focusedScrollTask?.cancel()
+            focusedScrollTask = nil
+        }
+    }
+
+    private func scheduleFocusedScroll(to itemID: BrowserItemID, proxy: ScrollViewProxy) {
+        focusedScrollTask?.cancel()
+        focusedScrollTask = Task { @MainActor in
+            await Task.yield()
+            guard !Task.isCancelled, state.focusedItemID == itemID else { return }
+            withAnimation(.easeOut(duration: 0.15)) {
+                proxy.scrollTo(itemID, anchor: .center)
+            }
+            focusedScrollTask = nil
         }
     }
 }
@@ -366,6 +382,7 @@ private struct BrowserIconCell: View {
 struct ListBrowserView: View {
     @Bindable var state: FileBrowserState
     let obscuredTrailingWidth: CGFloat
+    @State private var focusedScrollTask: Task<Void, Never>?
 
     private var scale: CGFloat { state.preferences.scale }
 
@@ -405,6 +422,10 @@ struct ListBrowserView: View {
                 )
             }
         }
+        .onDisappear {
+            focusedScrollTask?.cancel()
+            focusedScrollTask = nil
+        }
     }
 
     private func listTable(
@@ -427,13 +448,23 @@ struct ListBrowserView: View {
                 }
                 .onChange(of: state.focusedItemID) { _, itemID in
                     guard let itemID else { return }
-                    withAnimation(.easeOut(duration: 0.15)) {
-                        scrollProxy.scrollTo(itemID, anchor: .center)
-                    }
+                    scheduleFocusedScroll(to: itemID, proxy: scrollProxy)
                 }
             }
         }
         .frame(width: width, height: height, alignment: .topLeading)
+    }
+
+    private func scheduleFocusedScroll(to itemID: BrowserItemID, proxy: ScrollViewProxy) {
+        focusedScrollTask?.cancel()
+        focusedScrollTask = Task { @MainActor in
+            await Task.yield()
+            guard !Task.isCancelled, state.focusedItemID == itemID else { return }
+            withAnimation(.easeOut(duration: 0.15)) {
+                proxy.scrollTo(itemID, anchor: .center)
+            }
+            focusedScrollTask = nil
+        }
     }
 }
 
@@ -650,15 +681,16 @@ private struct BrowserListRow: View {
 
 struct ColumnBrowserView: View {
     @Bindable var state: FileBrowserState
+    @State private var terminalScrollTask: Task<Void, Never>?
 
     private var scale: CGFloat { state.preferences.scale }
     private var previewWidth: CGFloat { BrowserLayoutMetrics.previewWidth * scale }
 
     private var previewItems: [BrowserItem] {
-        let selectedItems = state.selectedItems
-        guard !selectedItems.isEmpty,
-              selectedItems.allSatisfy({ !$0.isNavigableContainer }) else { return [] }
+        let selectedItems = state.previewItems
+        guard !selectedItems.isEmpty else { return [] }
         if selectedItems.count > 1 { return selectedItems }
+        guard !selectedItems[0].isNavigableContainer else { return [] }
         if selectedItems[0].usesStaticIconPreview { return selectedItems }
         guard state.previewURL != nil || state.previewRequiresManualLoad else { return [] }
         return selectedItems
@@ -730,30 +762,45 @@ struct ColumnBrowserView: View {
                         Color.clear.contentShape(Rectangle()).onTapGesture { state.clearSelection() }
                     }
                 }
-                .onAppear { scrollProxy.scrollTo("columns-end", anchor: .trailing) }
+                .onAppear { scheduleTerminalScroll(scrollProxy) }
                 .onChange(of: state.pathComponents) { _, _ in
-                    withAnimation(.easeOut(duration: 0.25)) {
-                        scrollProxy.scrollTo("columns-end", anchor: .trailing)
-                    }
+                    scheduleTerminalScroll(scrollProxy, animationDuration: 0.25)
                 }
                 .onChange(of: state.selection) { _, selection in
                     guard !selection.isEmpty else { return }
-                    withAnimation(.easeOut(duration: 0.2)) {
-                        scrollProxy.scrollTo("columns-end", anchor: .trailing)
-                    }
+                    scheduleTerminalScroll(scrollProxy, animationDuration: 0.2)
                 }
                 .onChange(of: state.activeColumnLocation) { _, location in
                     guard location != nil else { return }
-                    withAnimation(.easeOut(duration: 0.15)) {
-                        scrollProxy.scrollTo("columns-end", anchor: .trailing)
-                    }
+                    scheduleTerminalScroll(scrollProxy, animationDuration: 0.15)
                 }
                 .onChange(of: state.previewVisible) { _, _ in
-                    withAnimation(.easeOut(duration: 0.2)) {
-                        scrollProxy.scrollTo("columns-end", anchor: .trailing)
-                    }
+                    scheduleTerminalScroll(scrollProxy, animationDuration: 0.2)
+                }
+                .onDisappear {
+                    terminalScrollTask?.cancel()
+                    terminalScrollTask = nil
                 }
             }
+        }
+    }
+
+    private func scheduleTerminalScroll(
+        _ proxy: ScrollViewProxy,
+        animationDuration: Double? = nil
+    ) {
+        terminalScrollTask?.cancel()
+        terminalScrollTask = Task { @MainActor in
+            await Task.yield()
+            guard !Task.isCancelled else { return }
+            if let animationDuration {
+                withAnimation(.easeOut(duration: animationDuration)) {
+                    proxy.scrollTo("columns-end", anchor: .trailing)
+                }
+            } else {
+                proxy.scrollTo("columns-end", anchor: .trailing)
+            }
+            terminalScrollTask = nil
         }
     }
 }
@@ -836,12 +883,14 @@ private struct FinderColumn: View {
 
 struct GalleryBrowserView: View {
     @Bindable var state: FileBrowserState
+    @State private var initialSelectionTask: Task<Void, Never>?
+    @State private var thumbnailScrollTask: Task<Void, Never>?
 
     private var scale: CGFloat { state.preferences.scale }
 
     var body: some View {
         VStack(spacing: 0) {
-            if state.selectedItems.isEmpty {
+            if state.previewItems.isEmpty {
                 Color.clear
                     .contentShape(Rectangle())
                     .onTapGesture { state.clearSelection() }
@@ -849,7 +898,7 @@ struct GalleryBrowserView: View {
             } else {
                 SelectionOverview(
                     state: state,
-                    items: state.selectedItems,
+                    items: state.previewItems,
                     presentation: .gallery,
                     scale: scale
                 )
@@ -895,22 +944,45 @@ struct GalleryBrowserView: View {
                     }
                     .onChange(of: state.focusedItemID) { _, itemID in
                         guard let itemID else { return }
-                        withAnimation(.easeOut(duration: 0.15)) {
-                            scrollProxy.scrollTo(itemID, anchor: .center)
-                        }
+                        scheduleThumbnailScroll(to: itemID, proxy: scrollProxy)
                     }
                 }
             }
             .frame(height: 96 * scale)
         }
-        .task { selectInitialItemIfNeeded() }
-        .onChange(of: state.location) { _, _ in selectInitialItemIfNeeded() }
-        .onChange(of: state.sortedItems.map(\.id)) { _, _ in selectInitialItemIfNeeded() }
+        .task { scheduleInitialSelection() }
+        .onChange(of: state.location) { _, _ in scheduleInitialSelection() }
+        .onChange(of: state.sortedItems.map(\.id)) { _, _ in scheduleInitialSelection() }
+        .onDisappear {
+            initialSelectionTask?.cancel()
+            thumbnailScrollTask?.cancel()
+            initialSelectionTask = nil
+            thumbnailScrollTask = nil
+        }
     }
 
-    private func selectInitialItemIfNeeded() {
-        if state.selection.isEmpty, let first = state.sortedItems.first {
-            state.select(first)
+    private func scheduleInitialSelection() {
+        initialSelectionTask?.cancel()
+        initialSelectionTask = Task { @MainActor in
+            await Task.yield()
+            guard !Task.isCancelled else { return }
+            if state.selection.isEmpty, let first = state.sortedItems.first {
+                state.select(first)
+            }
+            initialSelectionTask = nil
+        }
+    }
+
+    private func scheduleThumbnailScroll(to itemID: BrowserItemID, proxy: ScrollViewProxy) {
+        thumbnailScrollTask?.cancel()
+        thumbnailScrollTask = Task { @MainActor in
+            await Task.yield()
+            guard !Task.isCancelled,
+                  state.focusedItemID == itemID else { return }
+            withAnimation(.easeOut(duration: 0.15)) {
+                proxy.scrollTo(itemID, anchor: .center)
+            }
+            thumbnailScrollTask = nil
         }
     }
 }

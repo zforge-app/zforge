@@ -6,6 +6,11 @@ import QuickLookUI
 @MainActor
 @Observable
 final class FileBrowserState {
+    private enum AuthorizationPurpose {
+        case navigate(name: String)
+        case loadRecents
+    }
+
     private struct HistoryEntry {
         let components: [BrowserPathComponent]
         let location: BrowserLocation
@@ -35,23 +40,27 @@ final class FileBrowserState {
     }
 
     @ObservationIgnored private let fileSystem: any FileSystemServing
+    @ObservationIgnored private let recentItems: any RecentItemsServing
     @ObservationIgnored private let grants: any AccessGrantStoring
     @ObservationIgnored private let archives: any ArchiveServing
     @ObservationIgnored private let monitor = DirectoryMonitor()
     @ObservationIgnored private var refreshTask: Task<Void, Never>?
     @ObservationIgnored private var previewTask: Task<Void, Never>?
+    @ObservationIgnored private var previewGeneration: UInt64 = 0
     @ObservationIgnored private var backStack: [HistoryEntry] = []
     @ObservationIgnored private var forwardStack: [HistoryEntry] = []
     @ObservationIgnored private var confirmedLargeItems: Set<BrowserItemID> = []
     @ObservationIgnored private var inlineArchiveResults: [BrowserItemID: ArchiveOpenResult] = [:]
     @ObservationIgnored private let initialURL: URL?
     @ObservationIgnored private let quickLookPanel = QuickLookPanelCoordinator()
+    @ObservationIgnored private var pendingAuthorizationPurpose: AuthorizationPurpose?
 
     var preferences: FileBrowserPreferences
     var location: BrowserLocation
     var pathComponents: [BrowserPathComponent] = []
     var items: [BrowserItem] = []
     var selection: Set<BrowserItemID> = []
+    private(set) var selectionOrder: [BrowserItemID] = []
     var selectionAnchor: BrowserItemID?
     var expandedItems: Set<BrowserItemID> = []
     var expandedChildren: [BrowserItemID: [BrowserItem]] = [:]
@@ -65,6 +74,8 @@ final class FileBrowserState {
     var passwordError: String?
     var previewURL: URL?
     var previewRequiresManualLoad = false
+    var previewURLs: [BrowserItemID: URL] = [:]
+    var previewItemsRequiringManualLoad: Set<BrowserItemID> = []
     var pendingLargeOperation: LargeOperation?
     var archiveOperationInProgress = false
     var previewVisible: Bool {
@@ -83,16 +94,44 @@ final class FileBrowserState {
         return knownItems.filter { ids.contains($0.id) }
     }
 
+    /// Selected items ordered for presentation, with the most recently selected item first.
+    var previewItems: [BrowserItem] {
+        let selectedByID = Dictionary(uniqueKeysWithValues: selectedItems.map { ($0.id, $0) })
+        var result = selectionOrder.reversed().compactMap { selectedByID[$0] }
+        let orderedIDs = Set(result.map(\.id))
+        var remaining = selectedItems.filter { !orderedIDs.contains($0.id) }
+        if let focusedItemID,
+           let focusedIndex = remaining.firstIndex(where: { $0.id == focusedItemID }) {
+            result.append(remaining.remove(at: focusedIndex))
+        }
+        result.append(contentsOf: remaining)
+        return result
+    }
+
     var primarySelection: BrowserItem? {
-        if let focusedItemID, let item = knownItems.first(where: { $0.id == focusedItemID }) { return item }
-        return selectedItems.first
+        if let focusedItemID,
+           selection.contains(focusedItemID),
+           let item = knownItems.first(where: { $0.id == focusedItemID }) {
+            return item
+        }
+        return previewItems.first
+    }
+
+    func previewURL(for item: BrowserItem) -> URL? {
+        guard !item.usesStaticIconPreview else { return nil }
+        return previewURLs[item.id] ?? (primarySelection?.id == item.id ? previewURL : nil)
+    }
+
+    func previewRequiresManualLoad(for item: BrowserItem) -> Bool {
+        previewItemsRequiringManualLoad.contains(item.id)
+            || (primarySelection?.id == item.id && previewRequiresManualLoad)
     }
 
     var archiveToolbarAction: ArchiveToolbarAction {
         switch location {
         case .archive:
             return selection.isEmpty ? .unavailableInsideArchive : .extractSelected
-        case .fileSystem:
+        case .recents, .fileSystem:
             let selectedItems = selectedItems
             guard !selectedItems.isEmpty else { return .unavailableOutsideArchive }
             if selectedItems.contains(where: { !$0.isArchive }) { return .compress }
@@ -114,13 +153,21 @@ final class FileBrowserState {
 
     var canGoBack: Bool { !backStack.isEmpty }
     var canGoForward: Bool { !forwardStack.isEmpty }
-    var title: String { pathComponents.last?.name ?? String(localized: "Home") }
+    var title: String { pathComponents.last?.name ?? String(localized: "Recents") }
+    var breadcrumbComponents: [BrowserPathComponent] {
+        guard let first = pathComponents.first,
+              case let .fileSystem(url) = first.location else {
+            return pathComponents
+        }
+        return Array(fileSystemPathComponents(to: url).dropLast()) + pathComponents
+    }
 
     convenience init(initialURL: URL? = nil) {
         if ProcessInfo.processInfo.arguments.contains("--ui-fixtures") {
             self.init(
                 preferences: FileBrowserPreferences.shared,
                 fileSystem: UIFixtureFileSystemService(),
+                recentItems: UIFixtureRecentItemsService(),
                 grants: UIFixtureAccessGrantStore(),
                 archives: UIFixtureArchiveEngine(),
                 initialURL: initialURL
@@ -130,6 +177,7 @@ final class FileBrowserState {
         self.init(
             preferences: FileBrowserPreferences.shared,
             fileSystem: FileSystemService(),
+            recentItems: SpotlightRecentItemsService(),
             grants: AccessGrantStore(),
             archives: SevenZipArchiveEngine(),
             initialURL: initialURL
@@ -139,18 +187,25 @@ final class FileBrowserState {
     init(
         preferences: FileBrowserPreferences,
         fileSystem: any FileSystemServing,
+        recentItems: (any RecentItemsServing)? = nil,
         grants: any AccessGrantStoring,
         archives: any ArchiveServing,
         initialURL: URL? = nil
     ) {
-        let home = FileManager.default.homeDirectoryForCurrentUser
         self.preferences = preferences
         self.fileSystem = fileSystem
+        self.recentItems = recentItems ?? SpotlightRecentItemsService()
         self.grants = grants
         self.archives = archives
         self.initialURL = initialURL
-        location = .fileSystem(home)
-        pathComponents = [BrowserPathComponent(location: .fileSystem(home), name: String(localized: "Home"), isArchive: false)]
+        location = .recents
+        pathComponents = [
+            BrowserPathComponent(
+                location: .recents,
+                name: String(localized: "Recents"),
+                isArchive: false
+            )
+        ]
     }
 
     func start() async {
@@ -168,17 +223,17 @@ final class FileBrowserState {
                 self.error = mapError(error)
             }
         }
-        let home = FileManager.default.homeDirectoryForCurrentUser
+        let home = UserDirectoryService.homeURL
         if await grants.hasGrant(for: home) {
             do {
                 _ = try await grants.activateGrant(for: home)
                 await reload()
             } catch {
                 await grants.removeGrant(for: home)
-                pendingAuthorizationURL = home
+                requestAuthorization(for: home, purpose: .loadRecents)
             }
         } else {
-            pendingAuthorizationURL = home
+            requestAuthorization(for: home, purpose: .loadRecents)
         }
     }
 
@@ -187,7 +242,17 @@ final class FileBrowserState {
             try await grants.storeGrant(for: selectedURL)
             _ = try await grants.activateGrant(for: intendedURL)
             pendingAuthorizationURL = nil
-            await navigate(to: .fileSystem(intendedURL), named: intendedURL == FileManager.default.homeDirectoryForCurrentUser ? String(localized: "Home") : intendedURL.lastPathComponent, resetPath: true)
+            let purpose = pendingAuthorizationPurpose
+            pendingAuthorizationPurpose = nil
+            switch purpose {
+            case .loadRecents:
+                await reload()
+            case let .navigate(name):
+                await navigate(to: .fileSystem(intendedURL), named: name, resetPath: true)
+            case nil:
+                let name = intendedURL.lastPathComponent
+                await navigate(to: .fileSystem(intendedURL), named: name, resetPath: true)
+            }
         } catch {
             self.error = mapError(error)
         }
@@ -199,11 +264,19 @@ final class FileBrowserState {
                 _ = try await grants.activateGrant(for: url)
                 await navigate(to: .fileSystem(url), named: name, resetPath: true)
             } else {
-                pendingAuthorizationURL = url
+                requestAuthorization(for: url, purpose: .navigate(name: name))
             }
         } catch {
             self.error = mapError(error)
         }
+    }
+
+    func navigateToRecents() async {
+        await navigate(
+            to: .recents,
+            named: String(localized: "Recents"),
+            resetPath: true
+        )
     }
 
     func open(
@@ -226,6 +299,8 @@ final class FileBrowserState {
         clearsSelection: Bool = true
     ) async {
         switch item.location {
+        case .recents:
+            return
         case let .fileSystem(url):
             do {
                 let resolved = try await fileSystem.resolveNavigationURL(url)
@@ -275,6 +350,8 @@ final class FileBrowserState {
         do {
             let result: ArchiveOpenResult
             switch item.location {
+            case .recents:
+                return
             case let .fileSystem(url):
                 if let inlineResult = inlineArchiveResults[item.id] {
                     result = inlineResult
@@ -373,6 +450,29 @@ final class FileBrowserState {
         await reload()
     }
 
+    func navigateBreadcrumb(to component: BrowserPathComponent) async {
+        if pathComponents.contains(where: { $0.id == component.id }) {
+            await navigateExistingPath(to: component)
+            return
+        }
+
+        guard case let .fileSystem(url) = component.location else { return }
+        do {
+            if await grants.hasGrant(for: url) {
+                _ = try await grants.activateGrant(for: url)
+                await navigate(
+                    to: component.location,
+                    named: component.name,
+                    resetPath: true
+                )
+            } else {
+                requestAuthorization(for: url, purpose: .navigate(name: component.name))
+            }
+        } catch {
+            self.error = mapError(error)
+        }
+    }
+
     func reload(preservingColumnSelection: Bool = false) async {
         refreshTask?.cancel()
         let currentLocation = location
@@ -382,6 +482,9 @@ final class FileBrowserState {
         do {
             let loaded: [BrowserItem]
             switch currentLocation {
+            case .recents:
+                let urls = await recentItems.recentItemURLs()
+                loaded = await loadRecentItems(at: urls)
             case let .fileSystem(url):
                 loaded = try await fileSystem.items(in: url, showHidden: preferences.showHiddenFiles)
             case let .archive(address):
@@ -394,6 +497,7 @@ final class FileBrowserState {
                 ? Set(knownItems.map(\.id))
                 : Set(loaded.map(\.id))
             selection = validSelection.intersection(validSelectionIDs)
+            selectionOrder.removeAll { !selection.contains($0) }
             if let focusedItemID, !selection.contains(focusedItemID) { self.focusedItemID = nil }
             configureMonitor()
             updatePreview()
@@ -428,34 +532,49 @@ final class FileBrowserState {
         orderedItems: [BrowserItem]? = nil
     ) {
         let ordered = orderedItems ?? sortedItems
+        var selectionActivity: [BrowserItemID] = []
         if modifiers.contains(.shift), let anchor = selectionAnchor,
            let anchorIndex = ordered.firstIndex(where: { $0.id == anchor }),
            let itemIndex = ordered.firstIndex(where: { $0.id == item.id }) {
             let range = min(anchorIndex, itemIndex)...max(anchorIndex, itemIndex)
             let rangeSelection = Set(ordered[range].map(\.id))
+            selectionActivity = anchorIndex <= itemIndex
+                ? Array(ordered[anchorIndex...itemIndex].map(\.id))
+                : Array(ordered[itemIndex...anchorIndex].reversed().map(\.id))
             if modifiers.contains(.command) {
                 selection.formUnion(rangeSelection)
             } else {
                 selection = rangeSelection
             }
         } else if modifiers.contains(.command) {
-            if selection.contains(item.id) { selection.remove(item.id) } else { selection.insert(item.id) }
+            if selection.contains(item.id) {
+                selection.remove(item.id)
+            } else {
+                selection.insert(item.id)
+                selectionActivity = [item.id]
+            }
             selectionAnchor = item.id
         } else {
             selection = [item.id]
+            selectionActivity = [item.id]
             selectionAnchor = item.id
         }
+        updateSelectionOrder(activity: selectionActivity)
         focusedItemID = item.id
         updatePreview()
     }
 
     func clearSelection() {
         selection.removeAll()
+        selectionOrder.removeAll()
         focusedItemID = nil
+        previewGeneration &+= 1
         previewTask?.cancel()
         previewTask = nil
         previewURL = nil
         previewRequiresManualLoad = false
+        previewURLs.removeAll()
+        previewItemsRequiringManualLoad.removeAll()
     }
 
     @discardableResult
@@ -590,6 +709,8 @@ final class FileBrowserState {
                     result = existing
                 } else {
                     switch item.location {
+                    case .recents:
+                        return
                     case let .fileSystem(url):
                         result = try await archives.openArchive(
                             at: url,
@@ -606,6 +727,8 @@ final class FileBrowserState {
                 passwordError = nil
             } else {
                 switch item.location {
+                case .recents:
+                    return
                 case let .fileSystem(url):
                     children = try await fileSystem.items(in: url, showHidden: preferences.showHiddenFiles)
                 case let .archive(address):
@@ -643,49 +766,73 @@ final class FileBrowserState {
     }
 
     func updatePreview(manual: Bool = false) {
+        previewGeneration &+= 1
+        let generation = previewGeneration
         previewTask?.cancel()
         previewTask = nil
         previewURL = nil
         previewRequiresManualLoad = false
+        previewURLs.removeAll()
+        previewItemsRequiringManualLoad.removeAll()
         guard previewVisible || preferences.viewMode == .gallery else { return }
-        guard let item = primarySelection,
-              !item.isContainer,
-              !item.isArchive else { return }
-        if let localURL = item.localURL {
-            previewURL = localURL
-            return
-        }
-        if !manual, let size = item.size, size > 10 * 1_024 * 1_024 {
-            previewRequiresManualLoad = true
-            return
-        }
-        previewTask = Task {
-            do {
-                let url = try await archives.materialize(
-                    item: item,
-                    purpose: .preview,
-                    automaticLimit: manual ? nil : 10 * 1_024 * 1_024
-                )
-                guard !Task.isCancelled,
-                      primarySelection?.id == item.id,
-                      primarySelection?.isContainer == false else { return }
-                previewTask = nil
-                previewURL = url
-            } catch BrowserError.previewTooLarge {
-                guard !Task.isCancelled, primarySelection?.id == item.id else { return }
-                previewTask = nil
-                previewRequiresManualLoad = true
-            } catch {
-                guard !Task.isCancelled, primarySelection?.id == item.id else { return }
-                previewTask = nil
-                self.error = mapError(error)
+        let previewableItems = selectedItems.filter { !$0.usesStaticIconPreview }
+        guard !previewableItems.isEmpty else { return }
+
+        var itemsToMaterialize: [BrowserItem] = []
+        for item in previewableItems {
+            if let localURL = item.localURL {
+                previewURLs[item.id] = localURL
+            } else if !manual,
+                      let size = item.size,
+                      size > 10 * 1_024 * 1_024 {
+                previewItemsRequiringManualLoad.insert(item.id)
+            } else {
+                itemsToMaterialize.append(item)
             }
+        }
+        synchronizePrimaryPreviewState()
+        guard !itemsToMaterialize.isEmpty else { return }
+
+        previewTask = Task { [weak self] in
+            guard let self else { return }
+            if !manual {
+                do {
+                    try await Task.sleep(for: .milliseconds(80))
+                } catch {
+                    return
+                }
+            }
+            for item in itemsToMaterialize {
+                guard isPreviewRequestCurrent(itemID: item.id, generation: generation) else { continue }
+                do {
+                    let url = try await archives.materialize(
+                        item: item,
+                        purpose: .preview,
+                        automaticLimit: manual ? nil : 10 * 1_024 * 1_024
+                    )
+                    guard isPreviewRequestCurrent(itemID: item.id, generation: generation) else { continue }
+                    previewURLs[item.id] = url
+                    synchronizePrimaryPreviewState()
+                } catch BrowserError.previewTooLarge {
+                    guard isPreviewRequestCurrent(itemID: item.id, generation: generation) else { continue }
+                    previewItemsRequiringManualLoad.insert(item.id)
+                    synchronizePrimaryPreviewState()
+                } catch {
+                    guard !Task.isCancelled,
+                          isPreviewRequestCurrent(itemID: item.id, generation: generation) else { continue }
+                    self.error = mapError(error)
+                }
+            }
+            guard generation == previewGeneration else { return }
+            previewTask = nil
         }
     }
 
     func openQuickLook() {
         Task {
-            if let previewURL {
+            let itemID = primarySelection?.id
+            if let previewURL,
+               primarySelection?.id == itemID {
                 quickLookPanel.present([previewURL])
                 return
             }
@@ -697,6 +844,7 @@ final class FileBrowserState {
                 } else {
                     url = try await archives.materialize(item: item, purpose: .preview, automaticLimit: nil)
                 }
+                guard primarySelection?.id == item.id else { return }
                 previewURL = url
                 quickLookPanel.present([url])
             } catch {
@@ -731,6 +879,7 @@ final class FileBrowserState {
 
     func close() {
         monitor.stop()
+        recentItems.stop()
         previewTask?.cancel()
         previewTask = nil
         refreshTask?.cancel()
@@ -754,6 +903,8 @@ final class FileBrowserState {
         do {
             let url: URL
             switch item.location {
+            case .recents:
+                return
             case let .fileSystem(local): url = local
             case .archive:
                 url = try await archives.materialize(item: item, purpose: .openExternally, automaticLimit: nil)
@@ -783,6 +934,7 @@ final class FileBrowserState {
         }
         if clearsSelection {
             selection.removeAll()
+            selectionOrder.removeAll()
             selectionAnchor = nil
             focusedItemID = nil
             activeColumnLocation = location
@@ -797,6 +949,11 @@ final class FileBrowserState {
         forwardStack.removeAll()
     }
 
+    private func updateSelectionOrder(activity: [BrowserItemID]) {
+        selectionOrder.removeAll { !selection.contains($0) || activity.contains($0) }
+        selectionOrder.append(contentsOf: activity.filter { selection.contains($0) })
+    }
+
     private func configureMonitor() {
         guard case let .fileSystem(url) = location else {
             monitor.stop()
@@ -808,10 +965,73 @@ final class FileBrowserState {
         }
     }
 
+    private func loadRecentItems(at urls: [URL]) async -> [BrowserItem] {
+        var loaded: [BrowserItem] = []
+        loaded.reserveCapacity(urls.count)
+        for url in urls {
+            guard !Task.isCancelled else { break }
+            if let item = try? await fileSystem.item(at: url),
+               !item.isDirectory,
+               preferences.showHiddenFiles || !item.isHidden {
+                loaded.append(item)
+            }
+        }
+        return loaded
+    }
+
+    private func fileSystemPathComponents(to url: URL) -> [BrowserPathComponent] {
+        var urls: [URL] = []
+        var current = url.standardizedFileURL
+        while true {
+            urls.append(current)
+            let parent = current.deletingLastPathComponent().standardizedFileURL
+            guard parent.path != current.path else { break }
+            current = parent
+        }
+
+        return urls.reversed().map { componentURL in
+            let name: String
+            if componentURL.path == "/" {
+                name = (try? componentURL.resourceValues(forKeys: [.volumeNameKey]).volumeName)
+                    ?? FileManager.default.displayName(atPath: componentURL.path)
+            } else {
+                name = FileManager.default.displayName(atPath: componentURL.path)
+            }
+            return BrowserPathComponent(
+                location: .fileSystem(componentURL),
+                name: name,
+                isArchive: false
+            )
+        }
+    }
+
+    private func isPreviewRequestCurrent(itemID: BrowserItemID, generation: UInt64) -> Bool {
+        !Task.isCancelled
+            && generation == previewGeneration
+            && selection.contains(itemID)
+            && knownItems.first(where: { $0.id == itemID })?.usesStaticIconPreview == false
+            && (previewVisible || preferences.viewMode == .gallery)
+    }
+
+    private func synchronizePrimaryPreviewState() {
+        guard let primarySelection else {
+            previewURL = nil
+            previewRequiresManualLoad = false
+            return
+        }
+        previewURL = previewURLs[primarySelection.id]
+        previewRequiresManualLoad = previewItemsRequiringManualLoad.contains(primarySelection.id)
+    }
+
     private func mapError(_ error: Error) -> BrowserError {
         if let error = error as? BrowserError { return error }
         if let error = error as? ArchiveEngineError { return .archive(error.localizedDescription) }
         if error is CancellationError { return .cancelled }
         return .unavailable(error.localizedDescription)
+    }
+
+    private func requestAuthorization(for url: URL, purpose: AuthorizationPurpose) {
+        pendingAuthorizationPurpose = purpose
+        pendingAuthorizationURL = url
     }
 }

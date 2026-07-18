@@ -75,6 +75,7 @@ nonisolated struct BrowserSort: Codable, Equatable, Sendable {
 }
 
 nonisolated enum BrowserLocation: Hashable, Sendable {
+    case recents
     case fileSystem(URL)
     case archive(ArchiveAddress)
 
@@ -291,6 +292,8 @@ extension BrowserItem {
     var canNavigateAsArchive: Bool {
         guard isArchive else { return false }
         switch location {
+        case .recents:
+            return false
         case .fileSystem:
             return true
         case let .archive(address):

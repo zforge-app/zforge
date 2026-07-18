@@ -24,15 +24,22 @@ final class SidebarState {
     var serverError: String?
 
     var favorites: [SidebarDestination] {
-        let manager = FileManager.default
-        let home = manager.homeDirectoryForCurrentUser
         return [
-            SidebarDestination(name: String(localized: "Home"), url: home, systemImage: "house", kind: .favorite),
-            destination("Desktop", .desktopDirectory, "menubar.dock.rectangle"),
-            destination("Documents", .documentDirectory, "doc.on.doc"),
-            destination("Downloads", .downloadsDirectory, "arrow.down.circle"),
+            destination("Desktop", UserDirectoryService.desktopURL, "menubar.dock.rectangle"),
+            destination("Documents", UserDirectoryService.documentsURL, "doc.on.doc"),
+            destination("Downloads", UserDirectoryService.downloadsURL, "arrow.down.circle"),
             SidebarDestination(name: String(localized: "Applications"), url: URL(fileURLWithPath: "/Applications"), systemImage: "square.grid.2x2", kind: .favorite)
         ]
+    }
+
+    var userHome: SidebarDestination {
+        let url = UserDirectoryService.homeURL
+        return SidebarDestination(
+            name: url.lastPathComponent,
+            url: url,
+            systemImage: "house",
+            kind: .local
+        )
     }
 
     var localVolumes: [SidebarVolume] { volumes.filter { $0.kind != .network } }
@@ -71,9 +78,7 @@ final class SidebarState {
         return networkVolumes.first?.url
     }
 
-    private func destination(_ name: String.LocalizationValue, _ directory: FileManager.SearchPathDirectory, _ icon: String) -> SidebarDestination {
-        let url = FileManager.default.urls(for: directory, in: .userDomainMask).first
-            ?? FileManager.default.homeDirectoryForCurrentUser
+    private func destination(_ name: String.LocalizationValue, _ url: URL, _ icon: String) -> SidebarDestination {
         return SidebarDestination(name: String(localized: name), url: url, systemImage: icon, kind: .favorite)
     }
 }

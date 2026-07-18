@@ -1,6 +1,22 @@
 import AppKit
 import SwiftUI
 
+enum BrowserToolbarLayout {
+    enum Stage: Equatable {
+        case unifiedOverflow
+        case compactWithActionsOverflow
+        case compactWithArchiveAction
+        case expanded
+    }
+
+    static func stage(for windowWidth: CGFloat) -> Stage {
+        if windowWidth < 678 { return .unifiedOverflow }
+        if windowWidth < 840 { return .compactWithActionsOverflow }
+        if windowWidth < 900 { return .compactWithArchiveAction }
+        return .expanded
+    }
+}
+
 struct ContentView: View {
     @State private var browser: FileBrowserState
     @State private var sidebar = SidebarState()
@@ -8,6 +24,8 @@ struct ContentView: View {
     @State private var authorizationPanelPresented = false
     @State private var toastMessage: String?
     @State private var toastDismissTask: Task<Void, Never>?
+    @State private var focusRestoreTask: Task<Void, Never>?
+    @State private var toolbarOverflowMenuPresented = false
     @FocusState private var contentIsFocused: Bool
 
     init(initialURL: URL? = nil) {
@@ -18,7 +36,7 @@ struct ContentView: View {
         GeometryReader { geometry in
             browserLayout(windowWidth: geometry.size.width)
         }
-        .frame(minWidth: 678, minHeight: 460)
+        .frame(minWidth: 640, minHeight: 460)
     }
 
     @ViewBuilder
@@ -27,9 +45,12 @@ struct ContentView: View {
             BrowserSidebar(
                 browser: browser,
                 sidebar: sidebar,
+                windowWidth: windowWidth,
                 showingServerSheet: $showingServerSheet,
                 restoreContentFocus: restoreContentFocus
             )
+            .toolbar(removing: .sidebarToggle)
+            .toolbar { browserNavigationToolbar }
         } detail: {
             VStack(spacing: 0) {
                 if browser.pendingAuthorizationURL != nil && browser.items.isEmpty {
@@ -40,18 +61,21 @@ struct ContentView: View {
                 BrowserBreadcrumb(state: browser)
             }
             .background(Color(nsColor: .underPageBackgroundColor))
+            .navigationTitle(browser.title)
+            .toolbarTitleDisplayMode(.inline)
+            .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
+            .toolbar { browserPrimaryToolbar(windowWidth: windowWidth) }
         }
-        .navigationTitle(browser.title)
-        .toolbarTitleDisplayMode(.inline)
-        .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
         .environment(\.locale, browser.preferences.language.locale)
-        .toolbar { browserToolbar(windowWidth: windowWidth) }
         .focusedSceneValue(\.fileBrowserState, browser)
         .task {
             await browser.start()
             restoreContentFocus()
         }
-        .onAppear { restoreContentFocus() }
+        .onAppear {
+            applyUITestWindowWidthIfNeeded()
+            restoreContentFocus()
+        }
         .onChange(of: browser.preferences.viewMode) { previousViewMode, viewMode in
             if viewMode == .columns {
                 browser.prepareColumnView()
@@ -71,6 +95,7 @@ struct ContentView: View {
         }
         .onDisappear {
             toastDismissTask?.cancel()
+            focusRestoreTask?.cancel()
             browser.close()
         }
         .sheet(isPresented: $showingServerSheet, onDismiss: restoreContentFocus) {
@@ -131,30 +156,134 @@ struct ContentView: View {
     }
 
     @ToolbarContentBuilder
-    private func browserToolbar(windowWidth: CGFloat) -> some ToolbarContent {
-        ToolbarItemGroup(placement: .navigation) {
-            ControlGroup {
-                Button { Task { await browser.goBack() } } label: { Image(systemName: "chevron.left") }
-                    .disabled(!browser.canGoBack)
-                    .focusable(false)
-                    .help("Back")
-                Button { Task { await browser.goForward() } } label: { Image(systemName: "chevron.right") }
-                    .disabled(!browser.canGoForward)
-                    .focusable(false)
-                    .help("Forward")
+    private var browserNavigationToolbar: some ToolbarContent {
+        ToolbarItem(placement: .navigation) {
+            HStack(spacing: 8) {
+                Button {
+                    NSApp.sendAction(
+                        #selector(NSSplitViewController.toggleSidebar(_:)),
+                        to: nil,
+                        from: nil
+                    )
+                    restoreContentFocus()
+                } label: {
+                    Image(systemName: "sidebar.left")
+                }
+                .focusable(false)
+                .help("Toggle Sidebar")
+                .accessibilityLabel("Toggle Sidebar")
+
+                ControlGroup {
+                    Button { Task { await browser.goBack() } } label: { Image(systemName: "chevron.left") }
+                        .disabled(!browser.canGoBack)
+                        .focusable(false)
+                        .help("Back")
+                    Button { Task { await browser.goForward() } } label: { Image(systemName: "chevron.right") }
+                        .disabled(!browser.canGoForward)
+                        .focusable(false)
+                        .help("Forward")
+                }
+                .id("browser-navigation")
+                .focusable(false)
             }
-            .id("browser-navigation")
             .focusable(false)
         }
-        ToolbarItem(id: "view-mode-selector", placement: .primaryAction) {
-            ViewModeToolbarControl(
-                selection: $browser.preferences.viewMode,
-                usesCompactPresentation: windowWidth < 780
-            )
-        }
+    }
+
+    @ToolbarContentBuilder
+    private func browserPrimaryToolbar(windowWidth: CGFloat) -> some ToolbarContent {
         ToolbarSpacer(.fixed, placement: .primaryAction)
-        ToolbarItem(id: "browser-actions", placement: .primaryAction) {
-            ControlGroup {
+        switch BrowserToolbarLayout.stage(for: windowWidth) {
+        case .unifiedOverflow:
+            ToolbarItem(id: "toolbar-overflow-menu-unified", placement: .primaryAction) {
+                Button {
+                    showToolbarActionsMenu(
+                        includesViewSelector: true,
+                        includesArchiveAction: true,
+                        includesShareAction: true,
+                        tracksOverflowPresentation: true
+                    )
+                } label: {
+                    ToolbarOverflowIcon(isActive: toolbarOverflowMenuPresented)
+                }
+                .focusable(false)
+                .accessibilityIdentifier("toolbar-overflow-menu")
+                .accessibilityValue(toolbarOverflowMenuPresented ? "Expanded" : "Collapsed")
+                .help("More")
+                .accessibilityLabel("More")
+            }
+        case .compactWithActionsOverflow:
+            ToolbarItem(id: "view-mode-selector-compact-actions", placement: .primaryAction) {
+                ViewModeToolbarControl(
+                    selection: $browser.preferences.viewMode,
+                    usesCompactPresentation: true
+                )
+            }
+            ToolbarSpacer(.fixed, placement: .primaryAction)
+            ToolbarItem(id: "toolbar-overflow-menu-compact-actions", placement: .primaryAction) {
+                Button {
+                    showToolbarActionsMenu(
+                        includesViewSelector: false,
+                        includesArchiveAction: true,
+                        includesShareAction: true,
+                        tracksOverflowPresentation: true
+                    )
+                } label: {
+                    ToolbarOverflowIcon(isActive: toolbarOverflowMenuPresented)
+                }
+                .focusable(false)
+                .accessibilityIdentifier("toolbar-overflow-menu")
+                .accessibilityValue(toolbarOverflowMenuPresented ? "Expanded" : "Collapsed")
+                .help("More")
+                .accessibilityLabel("More")
+            }
+        case .compactWithArchiveAction:
+            ToolbarItem(id: "view-mode-selector-compact-archive", placement: .primaryAction) {
+                ViewModeToolbarControl(
+                    selection: $browser.preferences.viewMode,
+                    usesCompactPresentation: true
+                )
+            }
+            ToolbarSpacer(.fixed, placement: .primaryAction)
+            ToolbarItem(id: "archive-contextual-action-compact", placement: .primaryAction) {
+                Button {
+                    performArchiveToolbarAction()
+                } label: {
+                    ArchiveOperationIcon(isExtracting: browser.archiveToolbarAction.usesExtractionIcon)
+                }
+                .disabled(!browser.archiveToolbarAction.isEnabled)
+                .focusable(false)
+                .accessibilityIdentifier("archive-contextual-action")
+                .help(browser.archiveToolbarAction.title)
+                .accessibilityLabel(browser.archiveToolbarAction.title)
+            }
+            ToolbarSpacer(.fixed, placement: .primaryAction)
+            ToolbarItem(id: "toolbar-overflow-menu-compact-archive", placement: .primaryAction) {
+                Button {
+                    showToolbarActionsMenu(
+                        includesViewSelector: false,
+                        includesArchiveAction: false,
+                        includesShareAction: true,
+                        tracksOverflowPresentation: true
+                    )
+                } label: {
+                    ToolbarOverflowIcon(isActive: toolbarOverflowMenuPresented)
+                }
+                .focusable(false)
+                .accessibilityIdentifier("toolbar-overflow-menu")
+                .accessibilityValue(toolbarOverflowMenuPresented ? "Expanded" : "Collapsed")
+                .help("More")
+                .accessibilityLabel("More")
+            }
+        case .expanded:
+            ToolbarItem(id: "view-mode-selector-expanded", placement: .primaryAction) {
+                ViewModeToolbarControl(
+                    selection: $browser.preferences.viewMode,
+                    usesCompactPresentation: false
+                )
+            }
+            ToolbarSpacer(.fixed, placement: .primaryAction)
+            ToolbarItemGroup(placement: .primaryAction) {
                 Button {
                     performArchiveToolbarAction()
                 } label: {
@@ -171,13 +300,17 @@ struct ContentView: View {
                 } label: {
                     ToolbarActionIcon(kind: .share)
                 }
-                .disabled(browser.selectedItems.filter { !$0.isContainer }.isEmpty)
+                .disabled(!canShareSelection)
                 .focusable(false)
                 .help("Share")
                 .accessibilityLabel("Share")
 
                 Button {
-                    showMoreActionsMenu()
+                    showToolbarActionsMenu(
+                        includesViewSelector: false,
+                        includesArchiveAction: false,
+                        includesShareAction: false
+                    )
                 } label: {
                     ToolbarActionIcon(kind: .more)
                 }
@@ -185,8 +318,11 @@ struct ContentView: View {
                 .focusable(false)
                 .accessibilityLabel("More")
             }
-            .focusable(false)
         }
+    }
+
+    private var canShareSelection: Bool {
+        browser.selectedItems.contains { !$0.isContainer }
     }
 
     private func performArchiveToolbarAction() {
@@ -196,12 +332,22 @@ struct ContentView: View {
         restoreContentFocus()
     }
 
-    private func showMoreActionsMenu() {
+    private func showToolbarActionsMenu(
+        includesViewSelector: Bool,
+        includesArchiveAction: Bool,
+        includesShareAction: Bool,
+        tracksOverflowPresentation: Bool = false
+    ) {
         guard let event = NSApp.currentEvent,
               let contentView = event.window?.contentView else { return }
 
         let locale = browser.preferences.language.locale
-        let menu = NSMenu()
+        let menu: NSMenu = tracksOverflowPresentation
+            ? TrackedToolbarMenu(
+                onOpen: { toolbarOverflowMenuPresented = true },
+                onClose: { toolbarOverflowMenuPresented = false }
+            )
+            : NSMenu()
         func addItem(
             _ title: String.LocalizationValue,
             systemImage: String,
@@ -216,6 +362,53 @@ struct ContentView: View {
                     handler: handler
                 )
             )
+        }
+
+        if includesViewSelector {
+            let viewItem = NSMenuItem(
+                title: String(localized: "View", locale: locale),
+                action: nil,
+                keyEquivalent: ""
+            )
+            viewItem.image = NSImage(
+                systemSymbolName: browser.preferences.viewMode.systemImage,
+                accessibilityDescription: viewItem.title
+            )
+            let viewMenu = NSMenu(title: viewItem.title)
+            for mode in BrowserViewMode.allCases {
+                let modeItem = ClosureMenuItem(
+                    title: mode.title(locale: locale),
+                    systemImage: mode.systemImage,
+                    isEnabled: true
+                ) {
+                    browser.preferences.viewMode = mode
+                }
+                modeItem.state = mode == browser.preferences.viewMode ? .on : .off
+                viewMenu.addItem(modeItem)
+            }
+            viewItem.submenu = viewMenu
+            menu.addItem(viewItem)
+            menu.addItem(.separator())
+        }
+
+        if includesArchiveAction {
+            let archiveAction = browser.archiveToolbarAction
+            menu.addItem(
+                ClosureMenuItem(
+                    title: archiveAction.title(locale: locale),
+                    systemImage: "archivebox",
+                    isEnabled: archiveAction.isEnabled,
+                    handler: performArchiveToolbarAction
+                )
+            )
+        }
+        if includesShareAction {
+            addItem("Share", systemImage: "square.and.arrow.up", isEnabled: canShareSelection) {
+                browser.shareItems()
+            }
+        }
+        if includesArchiveAction || includesShareAction {
+            menu.addItem(.separator())
         }
 
         addItem("Open", systemImage: "arrow.up.forward.app", isEnabled: browser.primarySelection != nil) {
@@ -238,9 +431,27 @@ struct ContentView: View {
     }
 
     private func restoreContentFocus() {
-        contentIsFocused = false
-        DispatchQueue.main.async {
-            contentIsFocused = true
+        focusRestoreTask?.cancel()
+        focusRestoreTask = Task { @MainActor in
+            await Task.yield()
+            guard !Task.isCancelled else { return }
+            if !contentIsFocused {
+                contentIsFocused = true
+            }
+            focusRestoreTask = nil
+        }
+    }
+
+    private func applyUITestWindowWidthIfNeeded() {
+        let arguments = ProcessInfo.processInfo.arguments
+        guard let flagIndex = arguments.firstIndex(of: "--ui-window-width"),
+              arguments.indices.contains(flagIndex + 1),
+              let width = Double(arguments[flagIndex + 1]) else { return }
+
+        Task { @MainActor in
+            await Task.yield()
+            guard let window = NSApp.keyWindow ?? NSApp.windows.first else { return }
+            window.setContentSize(NSSize(width: width, height: window.contentView?.bounds.height ?? 720))
         }
     }
 
@@ -337,28 +548,27 @@ private struct ViewModeToolbarControl: View {
     }
 
     private var compactMenu: some View {
-        ControlGroup {
-            Button {
-                ViewModeMenuPresenter.show(selected: selection, locale: locale) { mode in
-                    selection = mode
-                }
-            } label: {
-                HStack(spacing: 7) {
-                    Image(systemName: selection.systemImage)
-                    Image(systemName: "chevron.up.chevron.down")
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(.secondary)
-                }
-                .frame(minWidth: 42, minHeight: 28)
-                .padding(.horizontal, 7)
-                .contentShape(Rectangle())
+        Button {
+            ViewModeMenuPresenter.show(selected: selection, locale: locale) { mode in
+                selection = mode
             }
-            .focusable(false)
-            .accessibilityIdentifier("view-mode-selector-compact")
-            .accessibilityLabel("View")
+        } label: {
+            HStack(spacing: 7) {
+                Image(systemName: selection.systemImage)
+                Image(systemName: "chevron.up.chevron.down")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+            }
+            .frame(minWidth: 42, minHeight: 28)
+            .padding(.horizontal, 7)
+            .contentShape(Rectangle())
         }
-        .fixedSize(horizontal: true, vertical: false)
+        .buttonStyle(.bordered)
+        .buttonBorderShape(.capsule)
         .focusable(false)
+        .accessibilityIdentifier("view-mode-selector-compact")
+        .accessibilityLabel("View")
+        .fixedSize(horizontal: true, vertical: false)
     }
 }
 
@@ -384,6 +594,30 @@ private enum ViewModeMenuPresenter {
             menu.addItem(item)
         }
         NSMenu.popUpContextMenu(menu, with: event, for: contentView)
+    }
+}
+
+private final class TrackedToolbarMenu: NSMenu, NSMenuDelegate {
+    private let onOpen: () -> Void
+    private let onClose: () -> Void
+
+    init(onOpen: @escaping () -> Void, onClose: @escaping () -> Void) {
+        self.onOpen = onOpen
+        self.onClose = onClose
+        super.init(title: "")
+        delegate = self
+    }
+
+    func menuWillOpen(_ menu: NSMenu) {
+        onOpen()
+    }
+
+    func menuDidClose(_ menu: NSMenu) {
+        onClose()
+    }
+
+    required init(coder: NSCoder) {
+        fatalError("init(coder:) is not used")
     }
 }
 
@@ -413,12 +647,20 @@ private final class ClosureMenuItem: NSMenuItem {
 }
 
 private extension ArchiveToolbarAction {
-    var title: String {
+    var titleKey: String.LocalizationValue {
         switch self {
-        case .extractAll: String(localized: "Extract All")
-        case .extractSelected, .unavailableInsideArchive: String(localized: "Extract Selected")
-        case .compress, .unavailableOutsideArchive: String(localized: "Compress Selected")
+        case .extractAll: "Extract All"
+        case .extractSelected, .unavailableInsideArchive: "Extract Selected"
+        case .compress, .unavailableOutsideArchive: "Compress Selected"
         }
+    }
+
+    var title: String {
+        String(localized: titleKey)
+    }
+
+    func title(locale: Locale) -> String {
+        String(localized: titleKey, locale: locale)
     }
 
     var feedbackMessage: String {
@@ -437,9 +679,9 @@ private struct ArchiveOperationIcon: View {
     var body: some View {
         ZStack {
             Image(systemName: "archivebox")
-                .font(.system(size: 15, weight: .regular))
+                .font(.system(size: 14, weight: .regular))
             Image(systemName: isExtracting ? "arrow.up" : "arrow.down")
-                .font(.system(size: 7, weight: .black))
+                .font(.system(size: 6, weight: .black))
                 .offset(y: -1)
         }
         .frame(width: 18, height: 18)
@@ -458,6 +700,18 @@ private struct ToolbarActionIcon: View {
     var body: some View {
         Image(systemName: kind == .share ? "square.and.arrow.up" : "ellipsis")
             .font(.system(size: 15, weight: .regular))
+            .frame(width: 25, height: 18)
+            .accessibilityHidden(true)
+    }
+}
+
+private struct ToolbarOverflowIcon: View {
+    let isActive: Bool
+
+    var body: some View {
+        Image(systemName: "chevron.right.2")
+            .font(.system(size: 15, weight: .medium))
+            .foregroundStyle(isActive ? .primary : .secondary)
             .frame(width: 18, height: 18)
             .accessibilityHidden(true)
     }
