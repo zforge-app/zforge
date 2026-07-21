@@ -29,6 +29,7 @@ A janela usa `NavigationSplitView` com:
 - Manter Recentes como a primeira linha, sem seção ou cabeçalho de categoria, usando o símbolo `clock` e abrindo a lista virtual correspondente no navegador.
 - Cada janela comum abre inicialmente em Recentes. Quando ainda não houver bookmark para a Home, solicitar essa autorização na abertura porque ela delimita o escopo da consulta do Spotlight; o cancelamento mantém a explicação e a ação para tentar novamente.
 - O diretório real da conta do usuário aparece como a primeira entrada de Locais, identificado pelo nome da pasta (por exemplo, `felipe`) em vez do rótulo genérico “Home”. Não usar como destino o diretório Home redirecionado para o container do App Sandbox.
+- Em “Go to Folder”, `~` e caminhos iniciados por `~/` são expandidos a partir desse mesmo diretório real da conta, nunca pela Home redirecionada do App Sandbox.
 - Os favoritos Desktop, Documents e Downloads apontam para as pastas correspondentes dentro do diretório real da conta do usuário. As APIs de busca redirecionadas pelo App Sandbox não devem fazer essas entradas apontarem para `Library/Containers/.../Data`.
 - Para localizações do sistema de arquivos, o breadcrumb sempre mostra o caminho completo desde o volume, por exemplo `Macintosh HD > Users > felipe`, mesmo quando a navegação começou por uma entrada intermediária da sidebar. Esses ancestrais visuais não devem criar níveis vazios na visualização em Colunas.
 - A superfície deve continuar visualmente pelo topo da janela, sem corte entre sidebar e titlebar.
@@ -157,6 +158,14 @@ Estas restrições devem ser consideradas antes de tentar corrigir a toolbar:
 - Para menus que precisam de ícones, estados marcados, seções ou conteúdo plano previsível, uma ponte pequena para `NSMenu` é aceitável.
 - Não usar `.id(windowWidth)` para forçar reconstrução durante cada pixel de redimensionamento; isso mascara o problema e causa trabalho excessivo de layout.
 
+### Abas de janela
+
+- Usar o sistema nativo de abas do `NSWindow`, compartilhando um `tabbingIdentifier` entre as janelas comuns do navegador e mantendo `tabbingMode = .automatic`.
+- `Shift + Command + T` envia `toggleTabBar(_:)` à janela principal para mostrar ou ocultar a barra.
+- A barra de abas pertence à moldura da janela, não ao conteúdo SwiftUI. Portanto, atravessa toda a largura da janela acima da sidebar, do conteúdo e do preview; não deve ser recortada pelo split interno do inspector.
+- A URL do diretório atual deve ser atribuída a `representedURL`, permitindo que o AppKit apresente a hierarquia de pastas ao clicar no título da janela com Command.
+- Referência local: [NSWindow](Documentation/SwiftUI/contexts/appkit-nswindow.md).
+
 ## 6. Barra de caminho no rodapé
 
 O breadcrumb fica no canto inferior do conteúdo, em uma barra persistente com separador superior discreto.
@@ -184,6 +193,14 @@ As quatro visualizações compartilham as mesmas regras fundamentais:
 - botões internos, como disclosure arrows, executam sua ação sem depender do clique no texto ou ícone;
 - trocar o tipo de visualização não deve deixar o foco preso na toolbar;
 - a seleção atual deve continuar coerente ao trocar de visualização sempre que o item ainda for válido.
+- Quando arquivos ocultos estiverem visíveis, atenuar ícone, nome e metadados para `55%` de opacidade nas quatro visualizações. Para um oculto selecionado, usar `72%` para preservar a legibilidade; o fundo de seleção permanece com opacidade integral.
+- `Return` inicia a renomeação inline quando houver exatamente um item local selecionado; `Return` confirma e `Escape` cancela enquanto o campo estiver ativo.
+- Uma pasta criada por `Shift + Command + N` é selecionada e entra imediatamente no mesmo modo de renomeação inline.
+- Itens do navegador não usam `Command + X`: `Command + C` é a única ação que os coloca no Clipboard, `Command + V` sempre os copia e `Option + Command + V` os move.
+- `Command + C` publica as `NSURL` originais diretamente no `NSPasteboard`, usando `clearContents()` e `writeObjects(_:)`, não representações materializadas por `NSItemProvider`. Assim, `Option + Command + V` entrega ao `FileManager.moveItem` a origem real, move os itens para o destino e os remove da localização anterior.
+- No menu Editar, Move Items Here é a alternativa nativa de Paste por meio de `modifierKeyAlternate(.option)`. A movimentação valida as URLs do Clipboard ao ser executada e chama a operação `.move` do serviço de arquivos.
+- A origem de drag anuncia suporte a cópia, movimentação e alias dentro e fora da aplicação. Durante o arraste, `Option` força cópia, `Command` força movimentação e `Option + Command` cria alias; a operação é resolvida a partir dos modificadores acompanhados pelo SwiftUI, não do último evento disponível no AppKit.
+- Referência local: [modifierKeyAlternate(_:_:)](Documentation/SwiftUI/contexts/swiftui-modifier-key-alternate.md).
 
 ### Seleção múltipla
 
@@ -264,8 +281,13 @@ Os headers são clicáveis:
 
 - Pastas exibem chevron à direita quando recolhidas e para baixo quando expandidas.
 - Clicar diretamente no chevron expande ou recolhe.
+- `Option` + clique no chevron alterna toda a hierarquia: expande recursivamente quando o item raiz está recolhido e, quando ele já está expandido, recolhe o item raiz e todos os descendentes expandidos.
 - Filhos usam indentação de `20 pt` por nível.
 - Expandir não deve abrir a pasta como diretório atual.
+- Comandos de criação, cópia, movimentação e alias usam como destino o diretório que contém a linha ativa. Uma linha no nível raiz pertence ao diretório atual; uma linha filha visível pertence à pasta expandida imediatamente acima dela. A pasta selecionada nunca passa a ser o destino apenas por estar selecionada.
+- Pastas expandidas observam alterações no próprio diretório e atualizam seus filhos sem exigir recolher, navegar para outro local ou reabrir a pasta.
+- Quando o item ativo deixa de existir durante uma atualização, o cursor ocupa a mesma posição na ordem achatada, selecionando assim o próximo item; se não houver item nessa posição, seleciona o último item restante.
+- Com muitos itens, ordenação, projeção achatada da hierarquia e consulta de ícones devem ser reutilizadas enquanto suas entradas não mudarem. Atualizações de seleção e layout não podem repetir ordenações `O(n log n)` nem novas consultas ao `NSWorkspace` para cada linha visível.
 
 ## 10. Visualização de colunas
 
@@ -366,6 +388,14 @@ A escala atual varia de 70% a 160%, em passos de 10%.
 - O protótipo usa arquivos reais empacotados em `ExampleFiles`; a aplicação real deve substituir essa origem sem mudar o contrato visual.
 
 ## 15. Localização
+
+### Referência de atalhos
+
+- O menu Ajuda contém `Keyboard Shortcuts…` (`Command + /`), que abre uma janela auxiliar única da aplicação.
+- A janela agrupa comandos de arquivos, navegação, visualização, preview e interações modificadas com mouse ou arraste. A referência deve permanecer sincronizada com os atalhos realmente registrados nos menus e handlers da aplicação.
+- A janela oferece busca nativa na toolbar e filtra ações, categorias e representações dos atalhos sem ocultar o agrupamento dos resultados.
+- As combinações usam os glifos nativos do macOS (`⌃`, `⌥`, `⇧` e `⌘`) e mantêm a ação correspondente legível e localizável.
+- Quando uma mesma ação aceita mais de uma combinação equivalente, como Quick Look com `Space` ou `Command + Y`, ela ocupa uma única linha e apresenta as combinações em cápsulas separadas lado a lado.
 
 Idiomas atuais:
 

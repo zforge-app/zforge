@@ -2,6 +2,48 @@ import AppKit
 import SwiftUI
 import UniformTypeIdentifiers
 
+enum BrowserItemVisualStyle {
+    static let hiddenOpacity = 0.55
+    static let selectedHiddenOpacity = 0.72
+
+    static func contentOpacity(isHidden: Bool, isSelected: Bool) -> Double {
+        guard isHidden else { return 1 }
+        return isSelected ? selectedHiddenOpacity : hiddenOpacity
+    }
+}
+
+extension View {
+    func browserItemEmphasis(_ item: BrowserItem, isSelected: Bool = false) -> some View {
+        opacity(
+            BrowserItemVisualStyle.contentOpacity(
+                isHidden: item.isHidden,
+                isSelected: isSelected
+            )
+        )
+    }
+}
+
+@MainActor
+final class FileIconCache {
+    static let shared = FileIconCache()
+
+    private let cache = NSCache<NSString, NSImage>()
+
+    private init() {
+        cache.countLimit = 2_048
+    }
+
+    func icon(for url: URL) -> NSImage {
+        let key = url.standardizedFileURL.path as NSString
+        if let icon = cache.object(forKey: key) {
+            return icon
+        }
+        let icon = NSWorkspace.shared.icon(forFile: url.path)
+        cache.setObject(icon, forKey: key)
+        return icon
+    }
+}
+
 struct FileIconView: View {
     let item: BrowserItem
     var size: CGFloat = 48
@@ -9,7 +51,7 @@ struct FileIconView: View {
     var body: some View {
         Group {
             if let url = item.localURL {
-                Image(nsImage: NSWorkspace.shared.icon(forFile: url.path))
+                Image(nsImage: FileIconCache.shared.icon(for: url))
                     .resizable()
                     .interpolation(.high)
             } else {

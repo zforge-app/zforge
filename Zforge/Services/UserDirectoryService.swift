@@ -34,4 +34,18 @@ enum UserDirectoryService {
     static var downloadsURL: URL {
         homeURL.appendingPathComponent("Downloads", isDirectory: true)
     }
+
+    static func url(forUserEnteredPath path: String) -> URL {
+        if path == "~" {
+            return homeURL.standardizedFileURL
+        }
+
+        if path.hasPrefix("~/") {
+            return homeURL
+                .appendingPathComponent(String(path.dropFirst(2)), isDirectory: true)
+                .standardizedFileURL
+        }
+
+        return URL(fileURLWithPath: path, isDirectory: true).standardizedFileURL
+    }
 }

@@ -39,7 +39,7 @@ nonisolated enum BrowserSortField: String, CaseIterable, Codable, Sendable {
     case kind
 }
 
-nonisolated struct BrowserSort: Codable, Equatable, Sendable {
+nonisolated struct BrowserSort: Codable, Equatable, Hashable, Sendable {
     var field: BrowserSortField = .name
     var ascending = true
 
@@ -211,6 +211,7 @@ nonisolated struct VisibleBrowserItem: Identifiable, Hashable, Sendable {
     let item: BrowserItem
     let depth: Int
     let isExpanded: Bool
+    let rowIndex: Int
 
     var id: BrowserItemID { item.id }
 }

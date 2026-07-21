@@ -148,6 +148,29 @@ final class ZforgeUITests: XCTestCase {
     }
 
     @MainActor
+    func testKeyboardShortcutHelpOpensAndFilters() throws {
+        let app = XCUIApplication()
+        app.launchArguments = [
+            "--ui-fixtures",
+            "-appLanguagePreference", "english"
+        ]
+        app.launch()
+        XCTAssertTrue(app.staticTexts["Welcome.txt"].waitForExistence(timeout: 5))
+
+        app.typeKey("/", modifierFlags: .command)
+
+        let shortcutsWindow = app.windows["Keyboard Shortcuts"]
+        XCTAssertTrue(shortcutsWindow.waitForExistence(timeout: 3))
+        let searchField = shortcutsWindow.searchFields.firstMatch
+        XCTAssertTrue(searchField.waitForExistence(timeout: 2))
+        searchField.click()
+        searchField.typeText("Rename")
+
+        XCTAssertTrue(shortcutsWindow.staticTexts["Rename"].waitForExistence(timeout: 2))
+        XCTAssertFalse(shortcutsWindow.staticTexts["New Folder"].exists)
+    }
+
+    @MainActor
     func testSidebarCannotConsumeLast360Points() throws {
         let app = XCUIApplication()
         app.launchArguments = [

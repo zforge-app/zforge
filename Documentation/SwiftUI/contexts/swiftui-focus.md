@@ -55,7 +55,7 @@ Focus indicates which element in the display receives the next input. Use view m
 - [focused(_:equals:)](https://developer.apple.com/documentation/swiftui/view/focused(_:equals:)) — Modifies this view by binding its focus state to the given state value. _(Apple Developer; expandir sob demanda)_
 - [focused(_:)](https://developer.apple.com/documentation/swiftui/view/focused(_:)) — Modifies this view by binding its focus state to the given Boolean state value. _(Apple Developer; expandir sob demanda)_
 - [isFocused](https://developer.apple.com/documentation/swiftui/environmentvalues/isfocused) — Returns whether the nearest focusable ancestor has focus. _(Apple Developer; expandir sob demanda)_
-- [FocusState](https://developer.apple.com/documentation/swiftui/focusstate) — A property wrapper type that can read and write a value that SwiftUI updates as the placement of focus within the scene changes. _(Apple Developer; expandir sob demanda)_
+- [FocusState](swiftui-focusstate.md) — A property wrapper type that can read and write a value that SwiftUI updates as the placement of focus within the scene changes. _(contexto local)_
 - [FocusedValue](https://developer.apple.com/documentation/swiftui/focusedvalue) — A property wrapper for observing values from the focused view or one of its ancestors. _(Apple Developer; expandir sob demanda)_
 - [Entry()](https://developer.apple.com/documentation/swiftui/entry()) — Creates an environment values, transaction, container values, or focused values entry. _(Apple Developer; expandir sob demanda)_
 - [FocusedValueKey](https://developer.apple.com/documentation/swiftui/focusedvaluekey) — A protocol for identifier types used when publishing and observing focused values. _(Apple Developer; expandir sob demanda)_

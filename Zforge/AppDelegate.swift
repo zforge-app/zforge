@@ -13,6 +13,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             window.title = url.lastPathComponent
             window.setContentSize(NSSize(width: 1100, height: 720))
             window.minSize = NSSize(width: 678, height: 460)
+            window.tabbingIdentifier = "io.libor.Zforge.browser"
+            window.tabbingMode = .automatic
+            window.representedURL = url
             window.center()
             window.delegate = self
             externalWindows.append(controller)

@@ -11,6 +11,17 @@ struct ZforgeTests {
         #expect(BrowserSidebarLayout.maximumWidth(for: 1_100) == 740)
     }
 
+    @Test("Hidden items remain distinguishable while preserving selected legibility")
+    func hiddenItemVisualEmphasis() {
+        let regular = BrowserItemVisualStyle.contentOpacity(isHidden: false, isSelected: false)
+        let hidden = BrowserItemVisualStyle.contentOpacity(isHidden: true, isSelected: false)
+        let selectedHidden = BrowserItemVisualStyle.contentOpacity(isHidden: true, isSelected: true)
+
+        #expect(regular == 1)
+        #expect(hidden < selectedHidden)
+        #expect(selectedHidden < regular)
+    }
+
     @Test("The sidebar places the real user directory in Locations")
     @MainActor
     func sidebarUsesRealUserHome() {
@@ -28,6 +39,22 @@ struct ZforgeTests {
         #expect(favorites["Documents"] == UserDirectoryService.homeURL.appendingPathComponent("Documents", isDirectory: true))
         #expect(favorites["Downloads"] == UserDirectoryService.homeURL.appendingPathComponent("Downloads", isDirectory: true))
         #expect(sidebar.favorites.allSatisfy { !$0.url.path.contains("/Library/Containers/") })
+    }
+
+    @Test("Go to Folder expands tilde from the real user directory")
+    func goToFolderUsesRealUserHome() {
+        let home = UserDirectoryService.homeURL.standardizedFileURL
+
+        #expect(UserDirectoryService.url(forUserEnteredPath: "~") == home)
+        #expect(
+            UserDirectoryService.url(forUserEnteredPath: "~/Documents")
+                == home.appendingPathComponent("Documents", isDirectory: true).standardizedFileURL
+        )
+        #expect(
+            UserDirectoryService.url(forUserEnteredPath: "/Applications")
+                == URL(fileURLWithPath: "/Applications", isDirectory: true).standardizedFileURL
+        )
+        #expect(!UserDirectoryService.url(forUserEnteredPath: "~").path.contains("/Library/Containers/"))
     }
 
     @Test("Filesystem breadcrumbs include the volume and every ancestor")

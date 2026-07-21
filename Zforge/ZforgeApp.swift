@@ -17,15 +17,32 @@ struct ZforgeApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
     var body: some Scene {
-        WindowGroup {
-            ContentView()
+        WindowGroup(
+            "Zforge",
+            id: "browser",
+            for: BrowserWindowRequest.self
+        ) { request in
+            ContentView(initialURL: request.wrappedValue.initialURL)
+        } defaultValue: {
+            BrowserWindowRequest()
         }
         .defaultSize(width: defaultWindowWidth, height: 720)
-        .commands { BrowserCommands() }
+        .commands {
+            BrowserCommands()
+            KeyboardShortcutHelpCommands()
+        }
 
         Settings {
             ZforgeSettingsView()
         }
+        .commands { KeyboardShortcutHelpCommands() }
+
+        Window("Keyboard Shortcuts", id: "keyboard-shortcuts") {
+            KeyboardShortcutsView()
+        }
+        .defaultSize(width: 720, height: 680)
+        .windowResizability(.contentMinSize)
+        .commands { KeyboardShortcutHelpCommands() }
     }
 
     private var defaultWindowWidth: CGFloat {
@@ -41,8 +58,108 @@ struct ZforgeApp: App {
 
 private struct BrowserCommands: Commands {
     @FocusedValue(\.fileBrowserState) private var browser
+    @Environment(\.openWindow) private var openWindow
 
     var body: some Commands {
+        CommandGroup(replacing: .newItem) {
+            Button("New Zforge Window") {
+                openWindow(id: "browser", value: BrowserWindowRequest())
+            }
+            .keyboardShortcut("n", modifiers: .command)
+
+            Button("New Folder") { browser?.createNewFolder() }
+                .keyboardShortcut("n", modifiers: [.command, .shift])
+                .disabled(browser?.canModifyCurrentDirectory != true)
+        }
+
+        CommandGroup(after: .newItem) {
+            Button("Duplicate") { browser?.duplicateSelectedFiles() }
+                .keyboardShortcut("d", modifiers: .command)
+                .disabled(browser?.hasLocalSelection != true)
+            Button("Get Info") { browser?.showGetInfo() }
+                .keyboardShortcut("i", modifiers: .command)
+                .disabled(browser?.selectedItems.isEmpty != false)
+            Button("Show Original") { browser?.showOriginal() }
+                .keyboardShortcut("r", modifiers: .command)
+                .disabled(browser?.canShowOriginal != true)
+            Button("Make Alias") { browser?.makeAliasesForSelection() }
+                .keyboardShortcut("a", modifiers: [.control, .command])
+                .disabled(browser?.hasLocalSelection != true)
+            Button("Rename") { browser?.beginRenamingSelectedItem() }
+                .keyboardShortcut(.return, modifiers: [])
+                .disabled(browser?.canRenameSelection != true)
+            Divider()
+            Button("Quick Look") { browser?.openQuickLook() }
+                .keyboardShortcut("y", modifiers: .command)
+                .disabled(browser?.selectedItems.contains(where: { !$0.isContainer }) != true)
+            Button("Quick Look Slideshow") { browser?.openQuickLook(slideshow: true) }
+                .keyboardShortcut("y", modifiers: [.option, .command])
+                .disabled(browser?.selectedItems.contains(where: { !$0.isContainer }) != true)
+            Divider()
+            Button("Move to Trash") { browser?.moveSelectionToTrash() }
+                .keyboardShortcut(.delete, modifiers: .command)
+                .disabled(browser?.hasLocalSelection != true)
+            Button("Eject") { browser?.ejectSelectedVolume() }
+                .keyboardShortcut("e", modifiers: .command)
+                .disabled(browser?.canEjectSelection != true)
+        }
+
+        CommandGroup(replacing: .pasteboard) {
+            Button("Copy") {
+                if NSApp.keyWindow?.firstResponder is NSTextView {
+                    NSApp.sendAction(#selector(NSText.copy(_:)), to: nil, from: nil)
+                } else if browser?.copySelectionToPasteboard() != true {
+                    NSApp.sendAction(#selector(NSText.copy(_:)), to: nil, from: nil)
+                }
+            }
+            .keyboardShortcut("c", modifiers: .command)
+
+            Button("Paste") {
+                NSApp.sendAction(#selector(NSText.paste(_:)), to: nil, from: nil)
+            }
+            .keyboardShortcut("v", modifiers: .command)
+            .modifierKeyAlternate(.option) {
+                Button("Move Items Here") { browser?.moveClipboardItemsHere() }
+                    .disabled(browser?.canModifyCurrentDirectory != true)
+            }
+
+            Button("Paste and Match Style") {
+                NSApp.sendAction(#selector(NSTextView.pasteAsPlainText(_:)), to: nil, from: nil)
+            }
+            .keyboardShortcut("v", modifiers: [.option, .shift, .command])
+        }
+
+        CommandMenu("Go") {
+            Button("Computer") { Task { await browser?.navigateToComputer() } }
+                .keyboardShortcut("c", modifiers: [.command, .shift])
+            Button("Desktop") { Task { await browser?.navigateToDesktop() } }
+                .keyboardShortcut("d", modifiers: [.command, .shift])
+            Button("Recents") { Task { await browser?.navigateToRecents() } }
+                .keyboardShortcut("f", modifiers: [.command, .shift])
+            Button("Go to Folder…") { browser?.showingGoToFolder = true }
+                .keyboardShortcut("g", modifiers: [.command, .shift])
+            Button("Home") { Task { await browser?.navigateToHome() } }
+                .keyboardShortcut("h", modifiers: [.command, .shift])
+            Button("Network") { Task { await browser?.navigateToNetwork() } }
+            Button("Downloads") { Task { await browser?.navigateToDownloads() } }
+                .keyboardShortcut("l", modifiers: [.option, .command])
+            Button("Documents") { Task { await browser?.navigateToDocuments() } }
+                .keyboardShortcut("o", modifiers: [.command, .shift])
+            Divider()
+            Button("Connect to Server…") { browser?.showingServerConnection = true }
+                .keyboardShortcut("k", modifiers: .command)
+            Button("Open Enclosing Folder in New Window") {
+                if let parent = browser?.parentDirectoryURL {
+                    openWindow(
+                        id: "browser",
+                        value: BrowserWindowRequest(initialURL: parent)
+                    )
+                }
+            }
+            .keyboardShortcut(.upArrow, modifiers: [.control, .command])
+            .disabled(browser?.parentDirectoryURL == nil)
+        }
+
         CommandGroup(after: .sidebar) {
             Button("Back") { Task { await browser?.goBack() } }
                 .keyboardShortcut("[", modifiers: .command)
@@ -55,6 +172,20 @@ private struct BrowserCommands: Commands {
             Button("Open") { Task { if let item = browser?.primarySelection { await browser?.open(item) } } }
                 .keyboardShortcut(.downArrow, modifiers: .command)
             Divider()
+            Button("Icons") { browser?.preferences.viewMode = .icons }
+                .keyboardShortcut("1", modifiers: .command)
+            Button("List") { browser?.preferences.viewMode = .list }
+                .keyboardShortcut("2", modifiers: .command)
+            Button("Columns") { browser?.preferences.viewMode = .columns }
+                .keyboardShortcut("3", modifiers: .command)
+            Button("Gallery") { browser?.preferences.viewMode = .gallery }
+                .keyboardShortcut("4", modifiers: .command)
+            Divider()
+            Button("Show or Hide Tab Bar") {
+                NSApp.keyWindow?.toggleTabBar(nil)
+            }
+            .keyboardShortcut("t", modifiers: [.command, .shift])
+            Divider()
             Button("Show Hidden Files") { browser?.toggleHiddenFiles() }
                 .keyboardShortcut(".", modifiers: [.command, .shift])
             Button(browser?.previewVisible == true ? "Hide Preview" : "Show Preview") {
@@ -63,6 +194,20 @@ private struct BrowserCommands: Commands {
             .keyboardShortcut("p", modifiers: [.command, .shift])
             Button("Quick Look") { browser?.openQuickLook() }
                 .keyboardShortcut(.space, modifiers: [])
+        }
+
+    }
+}
+
+private struct KeyboardShortcutHelpCommands: Commands {
+    @Environment(\.openWindow) private var openWindow
+
+    var body: some Commands {
+        CommandGroup(replacing: .help) {
+            Button("Keyboard Shortcuts…") {
+                openWindow(id: "keyboard-shortcuts")
+            }
+            .keyboardShortcut("/", modifiers: .command)
         }
     }
 }

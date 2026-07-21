@@ -12,6 +12,8 @@ O produto deve ser tratado como uma aplicação completa de gerenciamento de arq
 - Utilizar as técnicas e APIs modernas e atuais do macOS sempre que forem compatíveis com os requisitos do projeto.
 - Aplicar os recursos visuais e de interação do Liquid Glass de forma adequada ao contexto, preservando legibilidade, hierarquia, acessibilidade e usabilidade. O efeito não deve ser usado apenas como decoração.
 - A experiência deve parecer pertencente ao macOS: menus, comandos, atalhos de teclado, barras de ferramentas, navegação, seleção, drag and drop, janelas, diálogos e feedback de operações devem seguir as convenções da plataforma.
+- Para itens do navegador, não oferecer `Command + X`: `Command + C` publica as `NSURL` originais diretamente no `NSPasteboard`, `Command + V` as copia e `Option + Command + V` as move com `FileManager.moveItem`.
+- No drag and drop, a origem declara suporte a cópia, movimentação e alias dentro e fora da aplicação. Acompanhar os modificadores durante a interação: `Option` copia, `Command` move e `Option + Command` cria alias; não inferir a operação consultando apenas o evento corrente no momento do drop.
 - Ao tomar decisões de UI/UX, considerar tanto usuários casuais quanto usuários avançados que esperam eficiência semelhante à do 7-Zip File Manager.
 
 ## Referência obrigatória de UI/UX
@@ -92,6 +94,7 @@ O primeiro marco funcional do Zforge é um gerenciador de arquivos nativo soment
 - Cada nova janela comum começa em Recentes. Preferências visuais podem persistir globalmente, mas o último caminho visitado não deve ser restaurado.
 - A primeira linha da sidebar é Recentes, sem cabeçalho de categoria, e abre uma lista virtual de arquivos usados recentemente fornecida pelo índice do Spotlight.
 - O diretório real da conta do usuário é a primeira entrada de Locais, fora de Favoritos, e usa como rótulo o nome da própria pasta. A resolução desse caminho não pode usar o Home redirecionado para o container do App Sandbox.
+- Em “Go to Folder”, expandir `~` e `~/...` com o diretório real fornecido por `UserDirectoryService.homeURL`, nunca com `NSString.expandingTildeInPath` ou outra Home redirecionada pelo App Sandbox.
 - Desktop, Documents e Downloads na sidebar sempre representam as pastas da conta real do usuário, nunca os diretórios homônimos dentro do container do aplicativo.
 - Breadcrumbs de localizações do sistema de arquivos exibem toda a hierarquia desde o volume, como `Macintosh HD > Users > felipe`, inclusive quando a entrada ocorreu pela sidebar. Os ancestrais acrescentados apenas para apresentação não podem alterar o histórico nem produzir colunas vazias no modo Colunas.
 - Janelas abertas a partir de um arquivo enviado pelo Finder são dedicadas a esse arquivo compactado.
@@ -99,7 +102,7 @@ O primeiro marco funcional do Zforge é um gerenciador de arquivos nativo soment
 - O acesso persistente a locais externos ao container usa security-scoped bookmarks. Como Recentes pesquisa a Home pelo Spotlight, a primeira janela comum deve solicitar autorização para a Home quando ainda não houver bookmark; o cancelamento mantém uma explicação com uma ação clara para tentar novamente.
 - A sidebar observa mount, unmount e rename. A conexão de servidor cobre `smb`, `afp` e `nfs` por meio do fluxo do macOS; descoberta Bonjour não faz parte deste marco.
 - Packages são tratados como arquivos. Aliases e symlinks são resolvidos ao abrir e ciclos devem ser impedidos.
-- Arquivos ocultos permanecem ocultos por padrão e podem ser alternados com `Command + Shift + .`.
+- Arquivos ocultos permanecem ocultos por padrão e podem ser alternados com `Command + Shift + .`. Quando visíveis, ícone, nome e metadados usam `55%` de opacidade em Ícones, Lista, Colunas e Galeria; ocultos selecionados usam `72%`, sem atenuar o fundo de seleção.
 - A experiência permanece independente por janela e o monitoramento do diretório atual deve preservar seleções ainda válidas após atualizações.
 
 ### Navegação transparente em arquivos compactados
@@ -142,6 +145,7 @@ O primeiro marco funcional do Zforge é um gerenciador de arquivos nativo soment
 - Archives e diretórios nunca devem iniciar Quick Look embutido nem exibir um indicador de preview carregando indefinidamente. Nas superfícies de preview que representam o próprio item, incluindo Galeria e inspectors, eles usam diretamente o ícone fornecido pelo `NSWorkspace` para a URL local ou o símbolo virtual equivalente.
 - `Command + Shift + P` alterna o preview da janela em qualquer um dos quatro modos. Em Ícones e Lista, o preview aparece como painel lateral de 300 pt, igual ao inspector da Galeria, com o mesmo hero e metadados compartilhados; em Colunas, controla uma área terminal também de 300 pt e sua reserva de largura; em Galeria, controla o inspector lateral sem remover o hero central inerente ao modo. A visibilidade é persistida de forma independente para Ícones, Lista, Colunas e Galeria; ao trocar de modo ou reabrir a aplicação, restaurar o último estado usado naquele modo sem sobrescrever os demais. Quando oculto fora da Galeria, não materializar previews internos em segundo plano. Após a alternância, restaurar o foco da área principal.
 - O foco de teclado de cada janela pertence por padrão a uma superfície persistente da área de conteúdo, situada acima das quatro visualizações para não ser destruída durante a troca de modo. Ele deve ser restaurado após inicialização, navegação, carregamento e interação com sidebar, toolbar ou diálogos. Controles da toolbar não capturam foco; as setas continuam operando a visualização ativa sem exigir clique prévio na área de arquivos.
+- Na referência de atalhos, combinações equivalentes para a mesma ação ocupam uma única linha e aparecem em cápsulas separadas lado a lado; Quick Look apresenta `Space` e `Command + Y` dessa forma.
 - A sidebar mantém largura mínima de 180 pt e ideal de 220 pt; sua largura máxima é sempre a largura atual da janela menos 360 pt, reservando esse espaço para o conteúdo principal. Esse teto deve limitar efetivamente o arraste do divisor nativo e não pode depender apenas da preferência declarada por `navigationSplitViewColumnWidth`. A janela continua respeitando os breakpoints definidos no guia.
 - O produto oferece inglês e português do Brasil por String Catalog e mantém Settings para idioma, preferências visuais e segurança da navegação em archives. Os controles de profundidade e tamanho raiz devem exibir textos curtos explicando, respectivamente, que o archive raiz não entra na contagem e que volumes relacionados são somados para avaliar o limite de tamanho.
 - O Zforge é registrado apenas como Viewer de formatos de archive comuns. Não assumir associação de DMG, documentos Office nem outros formatos especializados baseados em ZIP.

@@ -94,7 +94,7 @@ struct BrowserBreadcrumb: View {
             Image(systemName: "clock")
                 .frame(width: 16, height: 16)
         case let .fileSystem(url):
-            Image(nsImage: NSWorkspace.shared.icon(forFile: url.path))
+            Image(nsImage: FileIconCache.shared.icon(for: url))
                 .resizable()
                 .frame(width: 16, height: 16)
         case .archive:

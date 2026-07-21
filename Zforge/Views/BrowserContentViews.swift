@@ -66,21 +66,31 @@ enum BrowserListLayout {
     }
 }
 
+enum BrowserFocusTarget: Hashable {
+    case content
+    case rename(BrowserItemID)
+}
+
 struct BrowserContent: View {
     @Bindable var state: FileBrowserState
-    let contentFocus: FocusState<Bool>.Binding
+    let contentFocus: FocusState<BrowserFocusTarget?>.Binding
     @State private var contentWidth: CGFloat = 1
+    @State private var dragModifiers: EventModifiers = []
 
     var body: some View {
         GeometryReader { geometry in
             Group {
                 switch state.preferences.viewMode {
                 case .icons:
-                    contentWithOptionalPreview { IconBrowserView(state: state) }
+                    contentWithOptionalPreview {
+                        IconBrowserView(state: state, contentFocus: contentFocus)
+                    }
                 case .list:
                     listWithOptionalPreview
-                case .columns: ColumnBrowserView(state: state)
-                case .gallery: GalleryBrowserView(state: state)
+                case .columns:
+                    ColumnBrowserView(state: state, contentFocus: contentFocus)
+                case .gallery:
+                    GalleryBrowserView(state: state, contentFocus: contentFocus)
                 }
             }
             .onAppear { updateContentWidth(geometry.size.width) }
@@ -93,9 +103,25 @@ struct BrowserContent: View {
         .background(Color(nsColor: .underPageBackgroundColor))
         .accessibilityIdentifier("browser-mode-\(state.preferences.viewMode.rawValue)")
         .focusable()
-        .focused(contentFocus)
+        .focused(contentFocus, equals: .content)
         .focusEffectDisabled()
         .onMoveCommand(perform: handleMoveCommand)
+        .onCopyCommand { state.copyItemProviders() }
+        .onPasteCommand(of: [.fileURL]) { providers in
+            state.pasteItemProviders(providers)
+        }
+        .onModifierKeysChanged(mask: [.option, .command]) { _, modifiers in
+            dragModifiers = modifiers
+        }
+        .onDrop(
+            of: [UTType.fileURL.identifier],
+            delegate: BrowserFileDropDelegate(state: state, modifiers: dragModifiers)
+        )
+        .onChange(of: state.renamingItemURL) { _, url in
+            if url == nil {
+                contentFocus.wrappedValue = .content
+            }
+        }
         .overlay {
             if state.isLoading && state.items.isEmpty {
                 ProgressView("Loading…")
@@ -125,7 +151,8 @@ struct BrowserContent: View {
         return ZStack(alignment: .trailing) {
             ListBrowserView(
                 state: state,
-                obscuredTrailingWidth: previewWidth
+                obscuredTrailingWidth: previewWidth,
+                contentFocus: contentFocus
             )
 
             if state.previewVisible {
@@ -174,7 +201,7 @@ struct BrowserContent: View {
     }
 
     private func handleListMoveCommand(_ direction: MoveCommandDirection, extending: Bool) {
-        let visibleItems = state.flattenedList().map(\.item)
+        let visibleItems = state.flattenedItems()
         switch direction {
         case .up, .down:
             state.moveSelection(
@@ -208,7 +235,7 @@ struct BrowserContent: View {
                 return
             }
 
-            let items = state.preferences.sort.sorted(state.columnItems[activeLocation] ?? [])
+            let items = state.sortedColumnItems(at: activeLocation)
             guard let selectedID = state.columnSelections[activeLocation],
                   let selectedItem = items.first(where: { $0.id == selectedID }),
                   selectedItem.isNavigableContainer else { return }
@@ -220,7 +247,7 @@ struct BrowserContent: View {
                 focusColumn(at: nextIndex, selectsFirstItemWhenNeeded: true)
             }
         case .up, .down:
-            let items = state.preferences.sort.sorted(state.columnItems[activeLocation] ?? [])
+            let items = state.sortedColumnItems(at: activeLocation)
             guard !items.isEmpty else { return }
             let selectedID = state.columnSelections[activeLocation]
             let currentIndex = selectedID.flatMap { id in items.firstIndex(where: { $0.id == id }) }
@@ -239,7 +266,7 @@ struct BrowserContent: View {
     private func focusColumn(at index: Int, selectsFirstItemWhenNeeded: Bool) {
         guard state.pathComponents.indices.contains(index) else { return }
         let location = state.pathComponents[index].location
-        let items = state.preferences.sort.sorted(state.columnItems[location] ?? [])
+        let items = state.sortedColumnItems(at: location)
         let selectedItem = state.columnSelections[location].flatMap { selectedID in
             items.first(where: { $0.id == selectedID })
         } ?? (selectsFirstItemWhenNeeded ? items.first : nil)
@@ -280,6 +307,7 @@ private struct BrowserPreviewPane: View {
 
 struct IconBrowserView: View {
     @Bindable var state: FileBrowserState
+    let contentFocus: FocusState<BrowserFocusTarget?>.Binding
     @State private var focusedScrollTask: Task<Void, Never>?
 
     private var scale: CGFloat { state.preferences.scale }
@@ -301,15 +329,21 @@ struct IconBrowserView: View {
                         ) {
                             ForEach(state.sortedItems) { item in
                                 BrowserIconCell(
+                                    state: state,
                                     item: item,
                                     isSelected: state.selection.contains(item.id),
-                                    scale: scale
+                                    scale: scale,
+                                    contentFocus: contentFocus
                                 )
                                 .id(item.id)
                                 .finderClickGesture(
                                     onSingleClick: { state.select(item, modifiers: NSEvent.modifierFlags) },
-                                    onDoubleClick: { Task { await state.open(item) } }
+                                    onDoubleClick: {
+                                        let modifiers = NSEvent.modifierFlags
+                                        Task { await state.openFromDoubleClick(item, modifiers: modifiers) }
+                                    }
                                 )
+                                .browserDraggable(state: state, item: item)
                                 .contextMenu { BrowserItemActionsMenu(state: state, item: item) }
                             }
                         }
@@ -347,23 +381,31 @@ struct IconBrowserView: View {
 }
 
 private struct BrowserIconCell: View {
+    @Bindable var state: FileBrowserState
     let item: BrowserItem
     let isSelected: Bool
     let scale: CGFloat
+    let contentFocus: FocusState<BrowserFocusTarget?>.Binding
 
     var body: some View {
         VStack(spacing: 8 * scale) {
             FileIconView(item: item, size: 64 * scale)
+                .browserItemEmphasis(item, isSelected: isSelected)
                 .frame(width: 84 * scale, height: 72 * scale)
                 .background {
                     RoundedRectangle(cornerRadius: 8 * scale)
                         .fill(isSelected ? Color.primary.opacity(0.12) : .clear)
                 }
 
-            Text(item.name)
+            BrowserItemNameView(
+                state: state,
+                item: item,
+                lineLimit: 2,
+                textAlignment: .center,
+                contentFocus: contentFocus
+            )
+                .browserItemEmphasis(item, isSelected: isSelected)
                 .font(.system(size: 13 * scale))
-                .lineLimit(2)
-                .multilineTextAlignment(.center)
                 .foregroundStyle(isSelected ? .white : .primary)
                 .padding(.horizontal, 5 * scale)
                 .padding(.vertical, 2 * scale)
@@ -382,6 +424,7 @@ private struct BrowserIconCell: View {
 struct ListBrowserView: View {
     @Bindable var state: FileBrowserState
     let obscuredTrailingWidth: CGFloat
+    let contentFocus: FocusState<BrowserFocusTarget?>.Binding
     @State private var focusedScrollTask: Task<Void, Never>?
 
     private var scale: CGFloat { state.preferences.scale }
@@ -443,7 +486,8 @@ struct ListBrowserView: View {
                         scale: scale,
                         width: width,
                         minimumHeight: max(height - (28 * scale), 1),
-                        usesEdgeToEdgeRows: usesEdgeToEdgeRows
+                        usesEdgeToEdgeRows: usesEdgeToEdgeRows,
+                        contentFocus: contentFocus
                     )
                 }
                 .onChange(of: state.focusedItemID) { _, itemID in
@@ -474,6 +518,7 @@ private struct BrowserListRows: View {
     let width: CGFloat
     let minimumHeight: CGFloat
     let usesEdgeToEdgeRows: Bool
+    let contentFocus: FocusState<BrowserFocusTarget?>.Binding
 
     private var horizontalMargin: CGFloat {
         usesEdgeToEdgeRows ? 0 : BrowserMetrics.horizontalInset * scale
@@ -490,13 +535,14 @@ private struct BrowserListRows: View {
                 .onTapGesture { state.clearSelection() }
 
             LazyVStack(spacing: 0) {
-                ForEach(Array(state.flattenedList().enumerated()), id: \.element.id) { index, entry in
+                ForEach(state.flattenedList()) { entry in
                     BrowserListRow(
                         state: state,
                         entry: entry,
-                        index: index,
+                        index: entry.rowIndex,
                         scale: scale,
-                        usesEdgeToEdgeBackground: usesEdgeToEdgeRows
+                        usesEdgeToEdgeBackground: usesEdgeToEdgeRows,
+                        contentFocus: contentFocus
                     )
                     .id(entry.id)
                     .contextMenu { BrowserItemActionsMenu(state: state, item: entry.item) }
@@ -577,6 +623,7 @@ private struct BrowserListRow: View {
     let index: Int
     let scale: CGFloat
     let usesEdgeToEdgeBackground: Bool
+    let contentFocus: FocusState<BrowserFocusTarget?>.Binding
 
     private var isSelected: Bool { state.selection.contains(entry.item.id) }
     private var horizontalContentInset: CGFloat {
@@ -591,7 +638,14 @@ private struct BrowserListRow: View {
                 Color.clear.frame(width: CGFloat(entry.depth * 20) * scale)
                 if entry.item.canExpandInlineInList {
                     Button {
-                        Task { await state.toggleExpansion(entry.item) }
+                        let expandsAll = NSEvent.modifierFlags.contains(.option)
+                        Task {
+                            if expandsAll {
+                                await state.toggleAllDescendants(of: entry.item)
+                            } else {
+                                await state.toggleExpansion(entry.item)
+                            }
+                        }
                     } label: {
                         Group {
                             if state.expandingItems.contains(entry.item.id) {
@@ -617,7 +671,11 @@ private struct BrowserListRow: View {
 
             HStack(spacing: 0) {
                 Label {
-                    Text(entry.item.name).lineLimit(1)
+                    BrowserItemNameView(
+                        state: state,
+                        item: entry.item,
+                        contentFocus: contentFocus
+                    )
                 } icon: {
                     FileIconView(item: entry.item, size: BrowserMetrics.iconSize * scale)
                 }
@@ -648,12 +706,16 @@ private struct BrowserListRow: View {
                     state.select(
                         entry.item,
                         modifiers: NSEvent.modifierFlags,
-                        orderedItems: state.flattenedList().map(\.item)
+                        orderedItems: state.flattenedItems()
                     )
                 },
-                onDoubleClick: { Task { await state.open(entry.item) } }
+                onDoubleClick: {
+                    let modifiers = NSEvent.modifierFlags
+                    Task { await state.openFromDoubleClick(entry.item, modifiers: modifiers) }
+                }
             )
         }
+        .browserItemEmphasis(entry.item, isSelected: isSelected)
         .font(.system(size: 13 * scale))
         .frame(
             maxWidth: .infinity,
@@ -676,11 +738,13 @@ private struct BrowserListRow: View {
                         : (index.isMultiple(of: 2) ? .clear : Color.primary.opacity(0.06))
                 )
         }
+        .browserDraggable(state: state, item: entry.item)
     }
 }
 
 struct ColumnBrowserView: View {
     @Bindable var state: FileBrowserState
+    let contentFocus: FocusState<BrowserFocusTarget?>.Binding
     @State private var terminalScrollTask: Task<Void, Never>?
 
     private var scale: CGFloat { state.preferences.scale }
@@ -719,16 +783,16 @@ struct ColumnBrowserView: View {
                             FinderColumn(
                                 state: state,
                                 component: component,
-                                items: state.preferences.sort.sorted(
-                                    state.columnItems[component.location]
-                                        ?? (component.location == state.location ? state.sortedItems : [])
-                                ),
+                                items: state.columnItems[component.location] != nil
+                                    ? state.sortedColumnItems(at: component.location)
+                                    : (component.location == state.location ? state.sortedItems : []),
                                 isActive: component.location == (state.activeColumnLocation ?? state.location),
                                 selectedID: state.columnSelections[component.location],
                                 scale: scale,
                                 width: state.previewVisible && index == activeColumnIndex + 1
                                     ? previewWidth
-                                    : BrowserMetrics.finderColumnWidth * scale
+                                    : BrowserMetrics.finderColumnWidth * scale,
+                                contentFocus: contentFocus
                             )
                             .id("column-\(index)")
                         }
@@ -813,6 +877,7 @@ private struct FinderColumn: View {
     let selectedID: BrowserItemID?
     let scale: CGFloat
     let width: CGFloat
+    let contentFocus: FocusState<BrowserFocusTarget?>.Binding
 
     var body: some View {
         GeometryReader { geometry in
@@ -824,7 +889,11 @@ private struct FinderColumn: View {
                             let activeSelection = isActive && state.selection.contains(item.id)
                             HStack(spacing: 0) {
                                 Label {
-                                    Text(item.name).lineLimit(1)
+                                    BrowserItemNameView(
+                                        state: state,
+                                        item: item,
+                                        contentFocus: contentFocus
+                                    )
                                 } icon: {
                                     FileIconView(item: item, size: BrowserMetrics.iconSize * scale)
                                 }
@@ -835,6 +904,10 @@ private struct FinderColumn: View {
                                         .frame(width: BrowserMetrics.disclosureWidth * scale)
                                 }
                             }
+                            .browserItemEmphasis(
+                                item,
+                                isSelected: activeSelection || item.id == selectedID
+                            )
                             .frame(
                                 maxWidth: .infinity,
                                 minHeight: BrowserMetrics.rowHeight * scale,
@@ -859,9 +932,15 @@ private struct FinderColumn: View {
                                     )
                                 },
                                 onDoubleClick: {
-                                    if !item.isNavigableContainer { Task { await state.open(item) } }
+                                    let modifiers = NSEvent.modifierFlags
+                                    if modifiers.contains(.command), item.isContainer, item.localURL != nil {
+                                        state.openInNewWindow(item)
+                                    } else if !item.isNavigableContainer {
+                                        Task { await state.open(item) }
+                                    }
                                 }
                             )
+                            .browserDraggable(state: state, item: item)
                             .contextMenu { BrowserItemActionsMenu(state: state, item: item) }
                         }
                     }
@@ -883,6 +962,7 @@ private struct FinderColumn: View {
 
 struct GalleryBrowserView: View {
     @Bindable var state: FileBrowserState
+    let contentFocus: FocusState<BrowserFocusTarget?>.Binding
     @State private var initialSelectionTask: Task<Void, Never>?
     @State private var thumbnailScrollTask: Task<Void, Never>?
 
@@ -916,10 +996,14 @@ struct GalleryBrowserView: View {
                                     let isSelected = state.selection.contains(item.id)
                                     VStack(spacing: 5 * scale) {
                                         FileIconView(item: item, size: 44 * scale)
-                                        Text(item.name)
+                                        BrowserItemNameView(
+                                            state: state,
+                                            item: item,
+                                            contentFocus: contentFocus
+                                        )
                                             .font(.system(size: 11 * scale))
-                                            .lineLimit(1)
                                     }
+                                    .browserItemEmphasis(item, isSelected: isSelected)
                                     .frame(width: 96 * scale, height: 72 * scale)
                                     .contentShape(Rectangle())
                                     .background {
@@ -929,8 +1013,12 @@ struct GalleryBrowserView: View {
                                     .id(item.id)
                                     .finderClickGesture(
                                         onSingleClick: { state.select(item, modifiers: NSEvent.modifierFlags) },
-                                        onDoubleClick: { Task { await state.open(item) } }
+                                        onDoubleClick: {
+                                            let modifiers = NSEvent.modifierFlags
+                                            Task { await state.openFromDoubleClick(item, modifiers: modifiers) }
+                                        }
                                     )
+                                    .browserDraggable(state: state, item: item)
                                     .contextMenu { BrowserItemActionsMenu(state: state, item: item) }
                                 }
                             }
@@ -995,10 +1083,78 @@ private struct BrowserItemActionsMenu: View {
         Button("Open", systemImage: "arrow.up.forward.app") { Task { await state.open(item) } }
         Button("Get Info", systemImage: "info.circle") {
             state.select(item)
-            state.previewVisible = true
-            state.updatePreview()
+            state.showGetInfo()
         }
         Button("Quick Look", systemImage: "eye") { state.select(item); state.openQuickLook() }
+        if item.localURL != nil {
+            Divider()
+            Button("Rename", systemImage: "pencil") {
+                state.select(item)
+                state.beginRenaming(item)
+            }
+            Button("Duplicate", systemImage: "plus.square.on.square") {
+                state.select(item)
+                state.duplicateSelectedFiles()
+            }
+            Button("Make Alias", systemImage: "link") {
+                state.select(item)
+                state.makeAliasesForSelection()
+            }
+            Button("Move to Trash", systemImage: "trash", role: .destructive) {
+                state.select(item)
+                state.moveSelectionToTrash()
+            }
+        }
+    }
+}
+
+private struct BrowserItemNameView: View {
+    @Bindable var state: FileBrowserState
+    let item: BrowserItem
+    var lineLimit = 1
+    var textAlignment: TextAlignment = .leading
+    let contentFocus: FocusState<BrowserFocusTarget?>.Binding
+
+    var body: some View {
+        Group {
+            if state.renamingItemID == item.id {
+                TextField("Rename", text: $state.renameDraft)
+                    .textFieldStyle(.plain)
+                    .lineLimit(1)
+                    .multilineTextAlignment(textAlignment)
+                    .foregroundStyle(.primary)
+                    .padding(.horizontal, 3)
+                    .padding(.vertical, 1)
+                    .background(Color(nsColor: .textBackgroundColor))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 3)
+                            .stroke(.tint, lineWidth: 1)
+                    }
+                    .focused(contentFocus, equals: .rename(item.id))
+                    .disabled(state.renameInProgress)
+                    .accessibilityIdentifier("rename-field-\(item.id.rawValue)")
+                    .onSubmit { state.commitRename() }
+                    .onExitCommand { state.cancelRenaming() }
+                    .task(id: state.renamingItemURL) {
+                        guard state.renamingItemID == item.id else { return }
+                        await focusAndSelectName()
+                    }
+            } else {
+                Text(item.name)
+                    .lineLimit(lineLimit)
+                    .multilineTextAlignment(textAlignment)
+            }
+        }
+    }
+
+    @MainActor
+    private func focusAndSelectName() async {
+        await Task.yield()
+        let target = BrowserFocusTarget.rename(item.id)
+        contentFocus.wrappedValue = target
+        await Task.yield()
+        guard contentFocus.wrappedValue == target else { return }
+        (NSApp.keyWindow?.firstResponder as? NSTextView)?.selectAll(nil)
     }
 }
 
@@ -1010,7 +1166,84 @@ private extension BrowserItem {
     }
 }
 
+private struct BrowserFileDropDelegate: DropDelegate {
+    let state: FileBrowserState
+    let modifiers: EventModifiers
+
+    func validateDrop(info: DropInfo) -> Bool {
+        state.canModifyCurrentDirectory
+            && info.hasItemsConforming(to: [UTType.fileURL.identifier])
+    }
+
+    func dropUpdated(info: DropInfo) -> DropProposal? {
+        let operation = transferOperation
+        let dropOperation: DropOperation = switch operation {
+        case .move: .move
+        case .alias: .alias
+        case .automatic, .copy: .copy
+        }
+        return DropProposal(operation: dropOperation)
+    }
+
+    func performDrop(info: DropInfo) -> Bool {
+        guard validateDrop(info: info) else { return false }
+        state.performDrop(
+            providers: info.itemProviders(for: [UTType.fileURL.identifier]),
+            operation: transferOperation
+        )
+        return true
+    }
+
+    private var transferOperation: BrowserFileTransferOperation {
+        BrowserFileDropOperationResolver.operation(for: modifiers)
+    }
+}
+
+nonisolated enum BrowserFileDropOperationResolver {
+    static func operation(for modifiers: EventModifiers) -> BrowserFileTransferOperation {
+        if modifiers.contains([.option, .command]) { return .alias }
+        if modifiers.contains(.option) { return .copy }
+        if modifiers.contains(.command) { return .move }
+        return .automatic
+    }
+}
+
+private extension DragConfiguration {
+    static var browserFileOperations: DragConfiguration {
+        var withinApp = OperationsWithinApp(
+            allowCopy: true,
+            allowMove: true,
+            allowDelete: false
+        )
+        withinApp.allowAlias = true
+
+        var outsideApp = OperationsOutsideApp(
+            allowCopy: true,
+            allowMove: true,
+            allowDelete: false
+        )
+        outsideApp.allowAlias = true
+
+        return DragConfiguration(
+            operationsWithinApp: withinApp,
+            operationsOutsideApp: outsideApp
+        )
+    }
+}
+
 private extension View {
+    @ViewBuilder
+    func browserDraggable(state: FileBrowserState, item: BrowserItem) -> some View {
+        if item.localURL != nil {
+            onDrag {
+                state.itemProvider(for: item) ?? NSItemProvider()
+            }
+            .dragConfiguration(.browserFileOperations)
+        } else {
+            self
+        }
+    }
+
     func finderClickGesture(
         onSingleClick: @escaping () -> Void,
         onDoubleClick: @escaping () -> Void

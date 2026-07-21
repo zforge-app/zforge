@@ -10,7 +10,7 @@ Entrada principal: [SwiftUI](contexts/swiftui.md).
 
 Síntese transversal: [Princípios SwiftUI para o Zforge](GUIDANCE.md).
 
-Cobertura inicial: home + 64 destinos únicos de primeiro nível (65 contextos).
+Cobertura inicial: home + 64 destinos únicos de primeiro nível (65 contextos), além das expansões sob demanda auditadas abaixo.
 
 Para consultar, leia primeiro este índice e use `rg -n -i '<termos|símbolos>' Documentation/SwiftUI/contexts`. Links absolutos apontam para páginas ainda não ingeridas.
 
@@ -117,5 +117,8 @@ Para consultar, leia primeiro este índice e use `rg -n -i '<termos|símbolos>' 
 
 ## Expansões sob demanda
 
+- [FocusState](contexts/swiftui-focusstate.md)
+- [modifierKeyAlternate(_:_:)](contexts/swiftui-modifier-key-alternate.md)
 - [navigationSplitViewColumnWidth(min:ideal:max:)](contexts/swiftui-navigation-split-view-column-width-flexible.md)
 - [NSSplitViewItem.holdingPriority](contexts/appkit-nssplitviewitem-holdingpriority.md)
+- [NSWindow](contexts/appkit-nswindow.md)

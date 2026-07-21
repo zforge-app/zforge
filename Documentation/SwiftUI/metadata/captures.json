@@ -3,8 +3,8 @@
   "captured_at": "2026-07-16T23:52:09+00:00",
   "seed_url": "https://developer.apple.com/documentation/SwiftUI",
   "scope": "home plus unique first-level links exposed by Overview, Featured samples, and Topics, with audited on-demand expansions",
-  "expected_contexts": 67,
-  "captured_contexts": 67,
+  "expected_contexts": 69,
+  "captured_contexts": 69,
   "failures": [],
   "captures": [
     {
@@ -945,6 +945,51 @@
       "categories": [
         "On-demand expansion",
         "App structure"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/appkit/nswindow",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/appkit/nswindow.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/appkit/nswindow.json",
+      "local_path": "contexts/appkit-nswindow.md",
+      "sha256": "9c0bb122b670afc94781687540aed350531019f089410341a5c37d9749f5a172",
+      "etag": null,
+      "last_modified": null,
+      "bytes": 487681,
+      "categories": [
+        "On-demand expansion",
+        "Framework integration"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/focusstate",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/focusstate.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/focusstate.json",
+      "local_path": "contexts/swiftui-focusstate.md",
+      "sha256": "1c22c2f51ca851696edd2494294a6af7cfb7ff4de6b0ecbb92ad0b94876082d6",
+      "etag": "W/\"f3760b7b8936f022ed3abf9a929a9548\"",
+      "last_modified": null,
+      "bytes": 31259,
+      "categories": [
+        "On-demand expansion",
+        "Event handling"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/view/modifierkeyalternate(_:_:)",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/view/modifierkeyalternate(_:_:).json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/view/modifierkeyalternate(_:_:).json",
+      "local_path": "contexts/swiftui-modifier-key-alternate.md",
+      "sha256": "9e5dc4ed7b20d55f7f42d007ceee6a6c2ab7166cefc3229f038c2da412c80a76",
+      "etag": "W/\"7c8be7da34a833f21f892e12b65d3f7c\"",
+      "last_modified": null,
+      "bytes": 12540,
+      "categories": [
+        "On-demand expansion",
+        "Event handling"
       ],
       "depth": 2
     }

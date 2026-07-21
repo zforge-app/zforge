@@ -18,15 +18,15 @@ enum BrowserToolbarLayout {
 }
 
 struct ContentView: View {
+    @Environment(\.openWindow) private var openWindow
     @State private var browser: FileBrowserState
     @State private var sidebar = SidebarState()
-    @State private var showingServerSheet = false
     @State private var authorizationPanelPresented = false
     @State private var toastMessage: String?
     @State private var toastDismissTask: Task<Void, Never>?
     @State private var focusRestoreTask: Task<Void, Never>?
     @State private var toolbarOverflowMenuPresented = false
-    @FocusState private var contentIsFocused: Bool
+    @FocusState private var browserFocus: BrowserFocusTarget?
 
     init(initialURL: URL? = nil) {
         _browser = State(initialValue: FileBrowserState(initialURL: initialURL))
@@ -46,7 +46,7 @@ struct ContentView: View {
                 browser: browser,
                 sidebar: sidebar,
                 windowWidth: windowWidth,
-                showingServerSheet: $showingServerSheet,
+                showingServerSheet: serverSheetBinding,
                 restoreContentFocus: restoreContentFocus
             )
             .toolbar(removing: .sidebarToggle)
@@ -56,7 +56,7 @@ struct ContentView: View {
                 if browser.pendingAuthorizationURL != nil && browser.items.isEmpty {
                     authorizationPlaceholder
                 } else {
-                    BrowserContent(state: browser, contentFocus: $contentIsFocused)
+                    BrowserContent(state: browser, contentFocus: $browserFocus)
                 }
                 BrowserBreadcrumb(state: browser)
             }
@@ -68,11 +68,21 @@ struct ContentView: View {
         }
         .environment(\.locale, browser.preferences.language.locale)
         .focusedSceneValue(\.fileBrowserState, browser)
+        .background {
+            BrowserWindowConfigurationView(representedURL: browser.currentDirectoryURL)
+                .frame(width: 0, height: 0)
+        }
         .task {
             await browser.start()
             restoreContentFocus()
         }
         .onAppear {
+            browser.configureOpenWindowAction { url in
+                openWindow(
+                    id: "browser",
+                    value: BrowserWindowRequest(initialURL: url)
+                )
+            }
             applyUITestWindowWidthIfNeeded()
             restoreContentFocus()
         }
@@ -98,10 +108,13 @@ struct ContentView: View {
             focusRestoreTask?.cancel()
             browser.close()
         }
-        .sheet(isPresented: $showingServerSheet, onDismiss: restoreContentFocus) {
+        .sheet(isPresented: serverSheetBinding, onDismiss: restoreContentFocus) {
             ServerConnectionSheet(sidebar: sidebar) { url in
                 Task { await browser.navigateToSidebar(url, name: url.lastPathComponent) }
             }
+        }
+        .sheet(isPresented: goToFolderBinding, onDismiss: restoreContentFocus) {
+            GoToFolderSheet(browser: browser)
         }
         .sheet(isPresented: passwordSheetBinding, onDismiss: restoreContentFocus) {
             ArchivePasswordSheet(state: browser)
@@ -418,13 +431,16 @@ struct ContentView: View {
             browser.openQuickLook()
         }
         addItem("Get Info", systemImage: "info.circle", isEnabled: browser.primarySelection != nil) {
-            browser.previewVisible = true
-            browser.updatePreview()
+            browser.showGetInfo()
         }
         menu.addItem(.separator())
         addItem("Add Tag", systemImage: "tag", isEnabled: false) { }
-        addItem("Rename", systemImage: "pencil", isEnabled: false) { }
-        addItem("Duplicate", systemImage: "plus.square.on.square", isEnabled: false) { }
+        addItem("Rename", systemImage: "pencil", isEnabled: browser.canRenameSelection) {
+            browser.beginRenamingSelectedItem()
+        }
+        addItem("Duplicate", systemImage: "plus.square.on.square", isEnabled: browser.hasLocalSelection) {
+            browser.duplicateSelectedFiles()
+        }
 
         NSMenu.popUpContextMenu(menu, with: event, for: contentView)
         restoreContentFocus()
@@ -434,9 +450,9 @@ struct ContentView: View {
         focusRestoreTask?.cancel()
         focusRestoreTask = Task { @MainActor in
             await Task.yield()
-            guard !Task.isCancelled else { return }
-            if !contentIsFocused {
-                contentIsFocused = true
+            guard !Task.isCancelled, browser.renamingItemID == nil else { return }
+            if browserFocus != .content {
+                browserFocus = .content
             }
             focusRestoreTask = nil
         }
@@ -487,6 +503,20 @@ struct ContentView: View {
         Binding(
             get: { browser.passwordOperation != nil },
             set: { if !$0 { browser.passwordOperation = nil; browser.passwordError = nil } }
+        )
+    }
+
+    private var serverSheetBinding: Binding<Bool> {
+        Binding(
+            get: { browser.showingServerConnection },
+            set: { browser.showingServerConnection = $0 }
+        )
+    }
+
+    private var goToFolderBinding: Binding<Bool> {
+        Binding(
+            get: { browser.showingGoToFolder },
+            set: { browser.showingGoToFolder = $0 }
         )
     }
 

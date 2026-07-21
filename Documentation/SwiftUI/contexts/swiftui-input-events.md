@@ -62,7 +62,7 @@ SwiftUI provides view modifiers that enable your app to listen for and react to 
 ### Responding to modifier keys
 
 - [onModifierKeysChanged(mask:initial:_:)](https://developer.apple.com/documentation/swiftui/view/onmodifierkeyschanged(mask:initial:_:)) — Performs an action whenever the user presses or releases a hardware modifier key. _(Apple Developer; expandir sob demanda)_
-- [modifierKeyAlternate(_:_:)](https://developer.apple.com/documentation/swiftui/view/modifierkeyalternate(_:_:)) — Builds a view to use in place of the modified view when the user presses the modifier key(s) indicated by the given set. _(Apple Developer; expandir sob demanda)_
+- [modifierKeyAlternate(_:_:)](swiftui-modifier-key-alternate.md) — Builds a view to use in place of the modified view when the user presses the modifier key(s) indicated by the given set. _(contexto local)_
 
 ### Responding to hover events
 

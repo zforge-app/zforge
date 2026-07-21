@@ -10,13 +10,16 @@ enum BrowserLayoutMetrics {
 final class QuickLookPanelCoordinator: NSObject, QLPreviewPanelDataSource {
     private var urls: [URL] = []
 
-    func present(_ urls: [URL]) {
+    func present(_ urls: [URL], slideshow: Bool = false) {
         self.urls = urls
         guard let panel = QLPreviewPanel.shared() else { return }
         panel.dataSource = self
         panel.currentPreviewItemIndex = 0
         panel.reloadData()
         panel.makeKeyAndOrderFront(nil)
+        if slideshow, let screen = panel.screen ?? NSScreen.main {
+            panel.enterFullScreenMode(screen, withOptions: nil)
+        }
     }
 
     func numberOfPreviewItems(in panel: QLPreviewPanel!) -> Int { urls.count }
@@ -112,6 +115,11 @@ struct SelectionOverview: View {
         BrowserSelectionSummary(items: items, locale: .current)
     }
 
+    private var singleItemContentOpacity: Double {
+        guard items.count == 1, let item = items.first else { return 1 }
+        return BrowserItemVisualStyle.contentOpacity(isHidden: item.isHidden, isSelected: true)
+    }
+
     var body: some View {
         if presentation == .gallery {
             galleryOverview
@@ -163,6 +171,7 @@ struct SelectionOverview: View {
                             .font(.system(size: 12 * scale))
                             .foregroundStyle(.secondary)
                     }
+                    .opacity(singleItemContentOpacity)
                     .padding(.horizontal, 12 * scale)
                     .padding(.top, 14 * scale)
 
@@ -173,6 +182,7 @@ struct SelectionOverview: View {
                             PreviewMetadataRow(title: "Last opened", value: summary.accessRange, scale: scale)
                         }
                     }
+                    .opacity(singleItemContentOpacity)
 
                     PreviewSection(title: "Tags", scale: scale) {
                         Text(summary.tags)
@@ -181,6 +191,7 @@ struct SelectionOverview: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.vertical, 7 * scale)
                     }
+                    .opacity(singleItemContentOpacity)
                 }
                 .frame(width: geometry.size.width, alignment: .topLeading)
                 .padding(.bottom, 12 * scale)
@@ -194,6 +205,11 @@ private struct SelectionHero: View {
     @Bindable var state: FileBrowserState
     let items: [BrowserItem]
     let scale: CGFloat
+
+    private var singleItemContentOpacity: Double {
+        guard items.count == 1, let item = items.first else { return 1 }
+        return BrowserItemVisualStyle.contentOpacity(isHidden: item.isHidden, isSelected: true)
+    }
 
     var body: some View {
         Group {
@@ -247,6 +263,7 @@ private struct SelectionHero: View {
                 }
             }
         }
+        .opacity(singleItemContentOpacity)
     }
 
     private func rotation(for index: Int) -> Double {
@@ -299,6 +316,7 @@ private struct SelectionHeroItem: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
+        .browserItemEmphasis(item, isSelected: true)
         .frame(width: width, height: height)
     }
 }
@@ -309,6 +327,11 @@ private struct SelectionInspector: View {
 
     private var summary: BrowserSelectionSummary {
         BrowserSelectionSummary(items: items, locale: .current)
+    }
+
+    private var singleItemContentOpacity: Double {
+        guard items.count == 1, let item = items.first else { return 1 }
+        return BrowserItemVisualStyle.contentOpacity(isHidden: item.isHidden, isSelected: true)
     }
 
     var body: some View {
@@ -325,6 +348,7 @@ private struct SelectionInspector: View {
                             .foregroundStyle(.secondary)
                             .lineLimit(2)
                     }
+                    .opacity(singleItemContentOpacity)
                 }
                 .padding(.horizontal, 12 * scale)
                 .padding(.top, 16 * scale)
@@ -336,6 +360,7 @@ private struct SelectionInspector: View {
                         PreviewMetadataRow(title: "Last opened", value: summary.accessRange, scale: scale)
                     }
                 }
+                .opacity(singleItemContentOpacity)
 
                 PreviewSection(title: "Tags", scale: scale) {
                     Text(summary.tags)
@@ -344,6 +369,7 @@ private struct SelectionInspector: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.vertical, 7 * scale)
                 }
+                .opacity(singleItemContentOpacity)
             }
             .padding(.bottom, 16 * scale)
         }
@@ -358,6 +384,7 @@ private struct SelectionInspectorIcon: View {
         ZStack {
             ForEach(Array(items.prefix(3).enumerated()).reversed(), id: \.element.id) { index, item in
                 FileIconView(item: item, size: 44 * scale)
+                    .browserItemEmphasis(item, isSelected: true)
                     .offset(x: CGFloat(index) * 5 * scale, y: CGFloat(index) * -2 * scale)
             }
         }
@@ -365,7 +392,7 @@ private struct SelectionInspectorIcon: View {
     }
 }
 
-private struct BrowserSelectionSummary {
+struct BrowserSelectionSummary {
     let items: [BrowserItem]
     let locale: Locale
 
