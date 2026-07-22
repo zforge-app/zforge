@@ -19,8 +19,10 @@ enum BrowserToolbarLayout {
 
 struct ContentView: View {
     @Environment(\.openWindow) private var openWindow
+    @Environment(\.undoManager) private var undoManager
     @State private var browser: FileBrowserState
     @State private var sidebar = SidebarState()
+    @State private var dragSession = BrowserFileDragSession()
     @State private var authorizationPanelPresented = false
     @State private var toastMessage: String?
     @State private var toastDismissTask: Task<Void, Never>?
@@ -47,7 +49,8 @@ struct ContentView: View {
                 sidebar: sidebar,
                 windowWidth: windowWidth,
                 showingServerSheet: serverSheetBinding,
-                restoreContentFocus: restoreContentFocus
+                restoreContentFocus: restoreContentFocus,
+                dragSession: dragSession
             )
             .toolbar(removing: .sidebarToggle)
             .toolbar { browserNavigationToolbar }
@@ -56,7 +59,11 @@ struct ContentView: View {
                 if browser.pendingAuthorizationURL != nil && browser.items.isEmpty {
                     authorizationPlaceholder
                 } else {
-                    BrowserContent(state: browser, contentFocus: $browserFocus)
+                    BrowserContent(
+                        state: browser,
+                        contentFocus: $browserFocus,
+                        dragSession: dragSession
+                    )
                 }
                 BrowserBreadcrumb(state: browser)
             }
@@ -73,10 +80,12 @@ struct ContentView: View {
                 .frame(width: 0, height: 0)
         }
         .task {
+            browser.configureUndoManager(undoManager)
             await browser.start()
             restoreContentFocus()
         }
         .onAppear {
+            browser.configureUndoManager(undoManager)
             browser.configureOpenWindowAction { url in
                 openWindow(
                     id: "browser",
@@ -163,6 +172,7 @@ struct ContentView: View {
                     .padding(.vertical, 10)
                     .glassEffect(.regular, in: .capsule)
                     .padding(.top, 12)
+                    .accessibilityIdentifier("browser-toast")
                     .transition(.move(edge: .top).combined(with: .opacity))
             }
         }

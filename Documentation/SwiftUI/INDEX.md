@@ -117,6 +117,9 @@ Para consultar, leia primeiro este índice e use `rg -n -i '<termos|símbolos>' 
 
 ## Expansões sob demanda
 
+- [NSItemProvider](contexts/foundation-nsitemprovider.md)
+- [performDrop(info:)](contexts/swiftui-dropdelegate-performdrop.md)
+- [onModifierKeysChanged(mask:initial:_:)](contexts/swiftui-onmodifierkeyschanged.md)
 - [FocusState](contexts/swiftui-focusstate.md)
 - [modifierKeyAlternate(_:_:)](contexts/swiftui-modifier-key-alternate.md)
 - [navigationSplitViewColumnWidth(min:ideal:max:)](contexts/swiftui-navigation-split-view-column-width-flexible.md)

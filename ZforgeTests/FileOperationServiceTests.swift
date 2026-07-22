@@ -201,6 +201,7 @@ struct FileOperationServiceTests {
     }
 
     @Test("Drag modifiers resolve to Finder-style file operations")
+    @MainActor
     func dragModifierOperations() {
         #expect(BrowserFileDropOperationResolver.operation(for: []) == .automatic)
         #expect(BrowserFileDropOperationResolver.operation(for: [.option]) == .copy)
@@ -208,6 +209,148 @@ struct FileOperationServiceTests {
         #expect(
             BrowserFileDropOperationResolver.operation(for: [.option, .command]) == .alias
         )
+
+        let session = BrowserFileDragSession()
+        session.modifiers = [.option]
+        #expect(BrowserFileDropOperationResolver.operation(for: session.modifiers) == .copy)
+        session.modifiers = [.option, .command]
+        #expect(BrowserFileDropOperationResolver.operation(for: session.modifiers) == .alias)
+
+    }
+
+    @Test("Dropped providers copy files and create aliases")
+    @MainActor
+    func droppedProvidersTransferFiles() async throws {
+        let root = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let source = root.appendingPathComponent("Dropped.txt")
+        let destination = root.appendingPathComponent("Destination", isDirectory: true)
+        try Data("Zforge".utf8).write(to: source)
+        try FileManager.default.createDirectory(at: destination, withIntermediateDirectories: false)
+
+        let suiteName = "ZforgeDropTest-\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let state = FileBrowserState(
+            preferences: FileBrowserPreferences(defaults: defaults),
+            fileSystem: FileSystemService(),
+            fileOperations: FileOperationService(),
+            grants: UIFixtureAccessGrantStore(),
+            archives: UIFixtureArchiveEngine()
+        )
+        defer { state.close() }
+        await state.navigateToSidebar(root, name: root.lastPathComponent)
+        let draggedItem = try #require(state.items.first(where: {
+            $0.localURL?.standardizedFileURL == source.standardizedFileURL
+        }))
+
+        #expect(
+            state.performDrop(
+                providers: [try #require(state.itemProvider(for: draggedItem))],
+                to: destination,
+                operation: .copy
+            )
+        )
+        let copy = destination.appendingPathComponent("Dropped.txt")
+        for _ in 0..<100 where !FileManager.default.fileExists(atPath: copy.path) {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        #expect(FileManager.default.fileExists(atPath: copy.path))
+
+        #expect(
+            state.performDrop(
+                providers: [try #require(state.itemProvider(for: draggedItem))],
+                to: destination,
+                operation: .alias
+            )
+        )
+        let alias = destination.appendingPathComponent("Dropped.txt alias")
+        for _ in 0..<100 where !FileManager.default.fileExists(atPath: alias.path) {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        #expect(FileManager.default.fileExists(atPath: alias.path))
+        #expect(
+            try await FileOperationService().aliasTarget(for: alias)
+                == source.standardizedFileURL.resolvingSymlinksInPath()
+        )
+    }
+
+    @Test("Command-Z undo records reverse creation, rename, and copy")
+    @MainActor
+    func undoReversesFileOperations() async throws {
+        let root = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let suiteName = "ZforgeUndoTest-\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let state = FileBrowserState(
+            preferences: FileBrowserPreferences(defaults: defaults),
+            fileSystem: FileSystemService(),
+            fileOperations: FileOperationService(),
+            grants: UIFixtureAccessGrantStore(),
+            archives: UIFixtureArchiveEngine()
+        )
+        defer { state.close() }
+        let undoManager = UndoManager()
+        state.configureUndoManager(undoManager)
+        await state.navigateToSidebar(root, name: root.lastPathComponent)
+
+        state.createNewFolder()
+        let folder = root.appendingPathComponent("Untitled Folder", isDirectory: true)
+        for _ in 0..<100 where !FileManager.default.fileExists(atPath: folder.path) {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        #expect(undoManager.canUndo)
+        state.cancelRenaming()
+        undoManager.undo()
+        for _ in 0..<100 where FileManager.default.fileExists(atPath: folder.path) {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        #expect(!FileManager.default.fileExists(atPath: folder.path))
+
+        let source = root.appendingPathComponent("Original.txt")
+        try Data("Zforge".utf8).write(to: source)
+        await state.reload()
+        let sourceItem = try #require(state.items.first(where: {
+            $0.localURL?.standardizedFileURL == source.standardizedFileURL
+        }))
+        state.beginRenaming(sourceItem)
+        state.renameDraft = "Renamed.txt"
+        state.commitRename()
+        let renamed = root.appendingPathComponent("Renamed.txt")
+        for _ in 0..<100 where !FileManager.default.fileExists(atPath: renamed.path) {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        undoManager.undo()
+        for _ in 0..<100 where !FileManager.default.fileExists(atPath: source.path) {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        #expect(FileManager.default.fileExists(atPath: source.path))
+        #expect(!FileManager.default.fileExists(atPath: renamed.path))
+
+        let destination = root.appendingPathComponent("Destination", isDirectory: true)
+        try FileManager.default.createDirectory(at: destination, withIntermediateDirectories: false)
+        await state.reload()
+        let draggedItem = try #require(state.items.first(where: {
+            $0.localURL?.standardizedFileURL == source.standardizedFileURL
+        }))
+        #expect(
+            state.performDrop(
+                providers: [try #require(state.itemProvider(for: draggedItem))],
+                to: destination,
+                operation: .copy
+            )
+        )
+        let copy = destination.appendingPathComponent("Original.txt")
+        for _ in 0..<100 where !FileManager.default.fileExists(atPath: copy.path) {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        undoManager.undo()
+        for _ in 0..<100 where FileManager.default.fileExists(atPath: copy.path) {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        #expect(FileManager.default.fileExists(atPath: source.path))
+        #expect(!FileManager.default.fileExists(atPath: copy.path))
     }
 
     private func makeTemporaryDirectory() throws -> URL {
@@ -222,8 +365,13 @@ struct FileOperationServiceTests {
 private struct RenameBrowserHarness: View {
     @Bindable var state: FileBrowserState
     @FocusState private var browserFocus: BrowserFocusTarget?
+    @State private var dragSession = BrowserFileDragSession()
 
     var body: some View {
-        BrowserContent(state: state, contentFocus: $browserFocus)
+        BrowserContent(
+            state: state,
+            contentFocus: $browserFocus,
+            dragSession: dragSession
+        )
     }
 }

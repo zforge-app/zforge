@@ -39,7 +39,7 @@ When people issue standard Copy and Cut commands, they expect to move items to t
 ### Overview and featured references
 
 - [Transferable](https://developer.apple.com/documentation/CoreTransferable/Transferable) — A protocol that describes how a type interacts with transport APIs such as drag and drop or copy and paste. _(Apple Developer; expandir sob demanda)_
-- [NSItemProvider](https://developer.apple.com/documentation/Foundation/NSItemProvider) — An item provider for conveying data or a file between processes during drag-and-drop or copy-and-paste activities, or from a host app to an app… _(Apple Developer; expandir sob demanda)_
+- [NSItemProvider](foundation-nsitemprovider.md) — An item provider for conveying data or a file between processes during drag-and-drop or copy-and-paste activities. _(contexto local)_
 
 ### Copying transferable items
 

@@ -186,6 +186,7 @@ private struct KeyboardShortcutItem: Identifiable {
 private enum KeyboardShortcutCatalog {
     static let sections: [KeyboardShortcutSection] = [
         section("files", "Files and Items", "doc.on.doc", [
+            ("Undo", "⌘Z"),
             ("New Zforge Window", "⌘N"),
             ("New Folder", "⇧⌘N"),
             ("Duplicate", "⌘D"),

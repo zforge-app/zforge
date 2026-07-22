@@ -110,6 +110,7 @@ struct BrowserSidebar: View {
     let windowWidth: CGFloat
     @Binding var showingServerSheet: Bool
     let restoreContentFocus: () -> Void
+    let dragSession: BrowserFileDragSession
 
     var body: some View {
         List {
@@ -159,6 +160,9 @@ struct BrowserSidebar: View {
             )
         }
         .accessibilityIdentifier("browser-sidebar")
+        .onModifierKeysChanged(mask: [.option, .command]) { _, modifiers in
+            dragSession.modifiers = modifiers
+        }
         .task { await sidebar.refresh() }
     }
 
@@ -168,15 +172,54 @@ struct BrowserSidebar: View {
             Task { await browser.navigateToSidebar(url, name: name) }
         } label: {
             HStack {
-                Label(name, systemImage: icon)
+                SidebarDropDestinationLabel(name: name, url: url, systemImage: icon)
                 Spacer()
                 if browser.pendingAuthorizationURL == url {
                     Image(systemName: "lock.fill").font(.caption).foregroundStyle(.secondary)
                 }
             }
             .contentShape(Rectangle())
+            .padding(.horizontal, 4)
+            .padding(.vertical, 4)
         }
         .buttonStyle(.plain)
+        .browserFileDropTarget(
+            state: browser,
+            destinationURL: url,
+            dragSession: dragSession
+        )
+    }
+}
+
+private struct SidebarDropDestinationLabel: View {
+    @Environment(\.browserDropTargetURL) private var dropTargetURL
+    let name: String
+    let url: URL
+    let systemImage: String
+
+    private var isOpenDropTarget: Bool {
+        dropTargetURL?.standardizedFileURL == url.standardizedFileURL
+    }
+
+    var body: some View {
+        Label {
+            Text(name)
+        } icon: {
+            Group {
+                if isOpenDropTarget {
+                    Image(nsImage: FileIconCache.shared.openFolderIcon)
+                        .resizable()
+                        .interpolation(.high)
+                        .transition(.scale(scale: 0.88).combined(with: .opacity))
+                } else {
+                    Image(systemName: systemImage)
+                        .transition(.scale(scale: 0.88).combined(with: .opacity))
+                }
+            }
+            .id(isOpenDropTarget)
+            .frame(width: 16, height: 16)
+            .animation(.snappy(duration: 0.18), value: isOpenDropTarget)
+        }
     }
 }
 

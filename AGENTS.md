@@ -13,7 +13,7 @@ O produto deve ser tratado como uma aplicação completa de gerenciamento de arq
 - Aplicar os recursos visuais e de interação do Liquid Glass de forma adequada ao contexto, preservando legibilidade, hierarquia, acessibilidade e usabilidade. O efeito não deve ser usado apenas como decoração.
 - A experiência deve parecer pertencente ao macOS: menus, comandos, atalhos de teclado, barras de ferramentas, navegação, seleção, drag and drop, janelas, diálogos e feedback de operações devem seguir as convenções da plataforma.
 - Para itens do navegador, não oferecer `Command + X`: `Command + C` publica as `NSURL` originais diretamente no `NSPasteboard`, `Command + V` as copia e `Option + Command + V` as move com `FileManager.moveItem`.
-- No drag and drop, a origem declara suporte a cópia, movimentação e alias dentro e fora da aplicação. Acompanhar os modificadores durante a interação: `Option` copia, `Command` move e `Option + Command` cria alias; não inferir a operação consultando apenas o evento corrente no momento do drop.
+- No drag and drop, a origem declara suporte a cópia, movimentação e alias dentro e fora da aplicação. Acompanhar os modificadores durante a interação em um estado de referência compartilhado com o `DropDelegate`: `Option` copia, `Command` move e `Option + Command` cria alias. Dentro de `performDrop(info:)`, iniciar imediatamente o carregamento de cada `NSItemProvider` antes de retornar; apenas a conclusão e a transferência subsequente podem ser assíncronas.
 - Ao tomar decisões de UI/UX, considerar tanto usuários casuais quanto usuários avançados que esperam eficiência semelhante à do 7-Zip File Manager.
 
 ## Referência obrigatória de UI/UX

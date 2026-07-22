@@ -28,6 +28,12 @@ final class FileBrowserState {
         }
     }
 
+    private struct FileUndoRecord {
+        let removals: [URL]
+        let moves: [BrowserExactFileMove]
+        let actionName: String
+    }
+
     enum PasswordOperation {
         case openFile(URL)
         case openNested(BrowserItem)
@@ -69,6 +75,7 @@ final class FileBrowserState {
     @ObservationIgnored private let quickLookPanel = QuickLookPanelCoordinator()
     @ObservationIgnored private var pendingAuthorizationPurpose: AuthorizationPurpose?
     @ObservationIgnored private var openWindowHandler: ((URL?) -> Void)?
+    @ObservationIgnored private weak var undoManager: UndoManager?
     @ObservationIgnored private var rootItemsRevision: UInt64 = 0
     @ObservationIgnored private var hierarchyRevision: UInt64 = 0
     @ObservationIgnored private var knownItemsRevision: UInt64 = 0
@@ -783,9 +790,16 @@ final class FileBrowserState {
     func duplicateSelectedFiles() {
         guard hasLocalSelection else { return }
         let urls = selectedLocalURLs
-        NSWorkspace.shared.duplicate(urls) { [weak self] _, operationError in
+        NSWorkspace.shared.duplicate(urls) { [weak self] newURLs, operationError in
             Task { @MainActor in
                 guard let self else { return }
+                let duplicatedURLs = Array(newURLs.values)
+                if !duplicatedURLs.isEmpty {
+                    self.registerUndo(
+                        removing: duplicatedURLs,
+                        actionName: String(localized: "Duplicate")
+                    )
+                }
                 if let operationError {
                     self.error = self.mapError(operationError)
                 }
@@ -809,6 +823,10 @@ final class FileBrowserState {
         Task {
             do {
                 let createdURL = try await fileOperations.createFolder(in: directory)
+                registerUndo(
+                    removing: [createdURL],
+                    actionName: String(localized: "New Folder")
+                )
                 renamingItemURL = createdURL.standardizedFileURL
                 renameDraft = createdURL.lastPathComponent
                 await reload()
@@ -859,6 +877,15 @@ final class FileBrowserState {
             defer { renameInProgress = false }
             do {
                 let renamedURL = try await fileOperations.rename(sourceURL, to: requestedName)
+                registerUndo(
+                    moving: [
+                        BrowserExactFileMove(
+                            sourceURL: renamedURL,
+                            destinationURL: sourceURL
+                        )
+                    ],
+                    actionName: String(localized: "Rename")
+                )
                 renamingItemURL = nil
                 renameDraft = ""
                 await reload()
@@ -890,6 +917,10 @@ final class FileBrowserState {
                     }
                     created = aliases
                 }
+                registerUndo(
+                    removing: created,
+                    actionName: String(localized: "Make Alias")
+                )
                 await reload()
                 selectLocalItems(at: created)
             } catch {
@@ -931,9 +962,21 @@ final class FileBrowserState {
     func moveSelectionToTrash() {
         guard hasLocalSelection else { return }
         let urls = selectedLocalURLs
-        NSWorkspace.shared.recycle(urls) { [weak self] _, operationError in
+        NSWorkspace.shared.recycle(urls) { [weak self] newURLs, operationError in
             Task { @MainActor in
                 guard let self else { return }
+                let restoreMoves = newURLs.map { originalURL, trashURL in
+                    BrowserExactFileMove(
+                        sourceURL: trashURL,
+                        destinationURL: originalURL
+                    )
+                }
+                if !restoreMoves.isEmpty {
+                    self.registerUndo(
+                        moving: restoreMoves,
+                        actionName: String(localized: "Move to Trash")
+                    )
+                }
                 if let operationError {
                     self.error = self.mapError(operationError)
                 }
@@ -947,7 +990,7 @@ final class FileBrowserState {
         if !selection.contains(item.id) {
             select(item)
         }
-        return NSItemProvider(contentsOf: url)
+        return NSItemProvider(object: url as NSURL)
     }
 
     func copyItemProviders() -> [NSItemProvider] {
@@ -966,12 +1009,37 @@ final class FileBrowserState {
         transferItemProviders(providers, to: destination, operation: .copy)
     }
 
+    @discardableResult
     func performDrop(
         providers: [NSItemProvider],
+        to destination: URL,
         operation: BrowserFileTransferOperation
-    ) {
-        guard let destination = currentDirectoryURL else { return }
-        transferItemProviders(providers, to: destination, operation: operation)
+    ) -> Bool {
+        guard !providers.isEmpty else { return false }
+        let destination = destination.standardizedFileURL
+
+        let collector = BrowserDroppedFileURLCollector(count: providers.count) { [weak self] urls, failures in
+            guard let self else { return }
+            guard failures == 0, !urls.isEmpty else {
+                self.error = .unavailable(
+                    String(localized: "The dropped file URLs could not be loaded.")
+                )
+                return
+            }
+            Task {
+                await self.transfer(urls, to: destination, operation: operation)
+            }
+        }
+
+        for (index, provider) in providers.enumerated() {
+            provider.loadObject(ofClass: NSURL.self) { object, error in
+                let url = (object as? NSURL).map { $0 as URL }
+                Task { @MainActor in
+                    collector.receive(url, error: error, at: index)
+                }
+            }
+        }
+        return true
     }
 
     private func transferItemProviders(
@@ -1458,6 +1526,7 @@ final class FileBrowserState {
     }
 
     func close() {
+        undoManager?.removeAllActions(withTarget: self)
         monitor.stop()
         stopExpandedDirectoryMonitors()
         recentItems.stop()
@@ -1856,10 +1925,87 @@ final class FileBrowserState {
                 to: destination,
                 operation: operation
             )
+            registerTransferUndo(
+                sourceURLs: urls,
+                resultingURLs: resultingURLs,
+                operation: operation
+            )
             await reload()
             selectLocalItems(at: resultingURLs)
         } catch {
             self.error = mapError(error)
+        }
+    }
+
+    func configureUndoManager(_ undoManager: UndoManager?) {
+        guard self.undoManager !== undoManager else { return }
+        self.undoManager?.removeAllActions(withTarget: self)
+        self.undoManager = undoManager
+    }
+
+    private func registerTransferUndo(
+        sourceURLs: [URL],
+        resultingURLs: [URL],
+        operation: BrowserFileTransferOperation
+    ) {
+        var removals: [URL] = []
+        var moves: [BrowserExactFileMove] = []
+
+        for (sourceURL, resultingURL) in zip(sourceURLs, resultingURLs) {
+            let source = sourceURL.standardizedFileURL
+            let result = resultingURL.standardizedFileURL
+            guard source != result else { continue }
+            if FileManager.default.fileExists(atPath: source.path) {
+                removals.append(result)
+            } else {
+                moves.append(
+                    BrowserExactFileMove(
+                        sourceURL: result,
+                        destinationURL: source
+                    )
+                )
+            }
+        }
+
+        let actionName: String = switch operation {
+        case .copy:
+            String(localized: "Copy")
+        case .alias:
+            String(localized: "Make Alias")
+        case .move:
+            String(localized: "Move")
+        case .automatic:
+            moves.isEmpty ? String(localized: "Copy") : String(localized: "Move")
+        }
+        registerUndo(removing: removals, moving: moves, actionName: actionName)
+    }
+
+    private func registerUndo(
+        removing removals: [URL] = [],
+        moving moves: [BrowserExactFileMove] = [],
+        actionName: String
+    ) {
+        guard !removals.isEmpty || !moves.isEmpty, let undoManager else { return }
+        let record = FileUndoRecord(
+            removals: removals.map(\.standardizedFileURL),
+            moves: moves,
+            actionName: actionName
+        )
+        undoManager.registerUndo(withTarget: self) { state in
+            state.performUndo(record)
+        }
+        undoManager.setActionName(actionName)
+    }
+
+    private func performUndo(_ record: FileUndoRecord) {
+        Task {
+            do {
+                try await fileOperations.moveItems(record.moves)
+                try await fileOperations.removeItems(at: record.removals)
+                await reload()
+            } catch {
+                self.error = mapError(error)
+            }
         }
     }
 
@@ -1930,5 +2076,30 @@ final class FileBrowserState {
     private func requestAuthorization(for url: URL, purpose: AuthorizationPurpose) {
         pendingAuthorizationPurpose = purpose
         pendingAuthorizationURL = url
+    }
+}
+
+@MainActor
+private final class BrowserDroppedFileURLCollector {
+    private var urls: [URL?]
+    private var remaining: Int
+    private var failures = 0
+    private let completion: ([URL], Int) -> Void
+
+    init(count: Int, completion: @escaping ([URL], Int) -> Void) {
+        urls = Array(repeating: nil, count: count)
+        remaining = count
+        self.completion = completion
+    }
+
+    func receive(_ url: URL?, error: Error?, at index: Int) {
+        guard remaining > 0, urls.indices.contains(index) else { return }
+        urls[index] = url
+        if url == nil || error != nil {
+            failures += 1
+        }
+        remaining -= 1
+        guard remaining == 0 else { return }
+        completion(urls.compactMap { $0 }, failures)
     }
 }

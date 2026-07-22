@@ -992,6 +992,51 @@
         "Event handling"
       ],
       "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/foundation/nsitemprovider",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/foundation/nsitemprovider.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/foundation/nsitemprovider.json",
+      "local_path": "contexts/foundation-nsitemprovider.md",
+      "sha256": "d497a61d31294da0fbf6e42981f82efec2fe5be095e0d1842dbf32c7bb3c0d33",
+      "etag": null,
+      "last_modified": null,
+      "bytes": 122656,
+      "categories": [
+        "On-demand expansion",
+        "Event handling"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/dropdelegate/performdrop(info:)",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/dropdelegate/performdrop(info:).json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/dropdelegate/performdrop(info:).json",
+      "local_path": "contexts/swiftui-dropdelegate-performdrop.md",
+      "sha256": "3db5711d2cafc098fb699efb050de5cb7f70d84885882445646c97fa52361934",
+      "etag": null,
+      "last_modified": null,
+      "bytes": 12345,
+      "categories": [
+        "On-demand expansion",
+        "Event handling"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/view/onmodifierkeyschanged(mask:initial:_:)",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/view/onmodifierkeyschanged(mask:initial:_:).json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/view/onmodifierkeyschanged(mask:initial:_:).json",
+      "local_path": "contexts/swiftui-onmodifierkeyschanged.md",
+      "sha256": "227d3b6efe67d062b86163ed14ca9b91dae234fb43b267ae74e706be5f3913e6",
+      "etag": null,
+      "last_modified": null,
+      "bytes": 13155,
+      "categories": [
+        "On-demand expansion",
+        "Event handling"
+      ],
+      "depth": 2
     }
   ]
 }

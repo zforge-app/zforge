@@ -82,6 +82,7 @@ Drag and drop offers people a convenient way to move content from one part of yo
 - [onDrop(of:isTargeted:perform:)](https://developer.apple.com/documentation/swiftui/view/ondrop(of:istargeted:perform:)) — Defines the destination of a drag-and-drop operation that handles the dropped content with a closure that you specify. _(Apple Developer; expandir sob demanda)_
 - [onDrop(of:delegate:)](https://developer.apple.com/documentation/swiftui/view/ondrop(of:delegate:)) — Defines the destination of a drag and drop operation using behavior controlled by the delegate that you provide. _(Apple Developer; expandir sob demanda)_
 - [DropDelegate](https://developer.apple.com/documentation/swiftui/dropdelegate) — An interface that you implement to interact with a drop operation in a view modified to accept drops. _(Apple Developer; expandir sob demanda)_
+- [performDrop(info:)](swiftui-dropdelegate-performdrop.md) — Inicia o carregamento dos item providers aceitos antes de o delegate retornar. _(contexto local)_
 - [DropProposal](https://developer.apple.com/documentation/swiftui/dropproposal) — The behavior of a drop. _(Apple Developer; expandir sob demanda)_
 - [DropOperation](https://developer.apple.com/documentation/swiftui/dropoperation) — Operation types that determine how a drag and drop session resolves when the user drops a drag item. _(Apple Developer; expandir sob demanda)_
 - [DropInfo](https://developer.apple.com/documentation/swiftui/dropinfo) — The current state of a drop. _(Apple Developer; expandir sob demanda)_

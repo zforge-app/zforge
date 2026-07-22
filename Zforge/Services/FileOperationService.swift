@@ -7,6 +7,11 @@ nonisolated enum BrowserFileTransferOperation: Equatable, Sendable {
     case alias
 }
 
+nonisolated struct BrowserExactFileMove: Equatable, Sendable {
+    let sourceURL: URL
+    let destinationURL: URL
+}
+
 nonisolated protocol FileOperationServing: Sendable {
     func createFolder(in directory: URL) async throws -> URL
     func rename(_ sourceURL: URL, to newName: String) async throws -> URL
@@ -17,15 +22,20 @@ nonisolated protocol FileOperationServing: Sendable {
         operation: BrowserFileTransferOperation
     ) async throws -> [URL]
     func aliasTarget(for url: URL) async throws -> URL?
+    func removeItems(at urls: [URL]) async throws
+    func moveItems(_ moves: [BrowserExactFileMove]) async throws
 }
 
 nonisolated enum BrowserFileOperationError: LocalizedError, Equatable, Sendable {
     case invalidName
+    case undoDestinationExists(String)
 
     var errorDescription: String? {
         switch self {
         case .invalidName:
             String(localized: "Enter a valid file name without slashes or colons.")
+        case let .undoDestinationExists(name):
+            String(localized: "Cannot undo because an item named \(name) already exists.")
         }
     }
 }
@@ -149,6 +159,26 @@ actor FileOperationService: FileOperationServing {
             resolvingAliasFileAt: url,
             options: [.withoutUI, .withoutMounting]
         ).standardizedFileURL.resolvingSymlinksInPath()
+    }
+
+    func removeItems(at urls: [URL]) async throws {
+        for url in urls.reversed() where fileManager.fileExists(atPath: url.path) {
+            try fileManager.removeItem(at: url)
+        }
+    }
+
+    func moveItems(_ moves: [BrowserExactFileMove]) async throws {
+        for move in moves {
+            let source = move.sourceURL.standardizedFileURL
+            let destination = move.destinationURL.standardizedFileURL
+            guard fileManager.fileExists(atPath: source.path) else { continue }
+            guard !fileManager.fileExists(atPath: destination.path) else {
+                throw BrowserFileOperationError.undoDestinationExists(
+                    destination.lastPathComponent
+                )
+            }
+            try fileManager.moveItem(at: source, to: destination)
+        }
     }
 
     private func resolvedOperation(

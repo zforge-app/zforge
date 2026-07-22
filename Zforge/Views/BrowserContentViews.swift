@@ -74,8 +74,8 @@ enum BrowserFocusTarget: Hashable {
 struct BrowserContent: View {
     @Bindable var state: FileBrowserState
     let contentFocus: FocusState<BrowserFocusTarget?>.Binding
+    let dragSession: BrowserFileDragSession
     @State private var contentWidth: CGFloat = 1
-    @State private var dragModifiers: EventModifiers = []
 
     var body: some View {
         GeometryReader { geometry in
@@ -83,14 +83,26 @@ struct BrowserContent: View {
                 switch state.preferences.viewMode {
                 case .icons:
                     contentWithOptionalPreview {
-                        IconBrowserView(state: state, contentFocus: contentFocus)
+                        IconBrowserView(
+                            state: state,
+                            contentFocus: contentFocus,
+                            dragSession: dragSession
+                        )
                     }
                 case .list:
                     listWithOptionalPreview
                 case .columns:
-                    ColumnBrowserView(state: state, contentFocus: contentFocus)
+                    ColumnBrowserView(
+                        state: state,
+                        contentFocus: contentFocus,
+                        dragSession: dragSession
+                    )
                 case .gallery:
-                    GalleryBrowserView(state: state, contentFocus: contentFocus)
+                    GalleryBrowserView(
+                        state: state,
+                        contentFocus: contentFocus,
+                        dragSession: dragSession
+                    )
                 }
             }
             .onAppear { updateContentWidth(geometry.size.width) }
@@ -111,11 +123,15 @@ struct BrowserContent: View {
             state.pasteItemProviders(providers)
         }
         .onModifierKeysChanged(mask: [.option, .command]) { _, modifiers in
-            dragModifiers = modifiers
+            dragSession.modifiers = modifiers
         }
         .onDrop(
             of: [UTType.fileURL.identifier],
-            delegate: BrowserFileDropDelegate(state: state, modifiers: dragModifiers)
+            delegate: BrowserFileDropDelegate(
+                state: state,
+                destinationURL: state.fileOperationDestinationURL,
+                dragSession: dragSession
+            )
         )
         .onChange(of: state.renamingItemURL) { _, url in
             if url == nil {
@@ -152,7 +168,8 @@ struct BrowserContent: View {
             ListBrowserView(
                 state: state,
                 obscuredTrailingWidth: previewWidth,
-                contentFocus: contentFocus
+                contentFocus: contentFocus,
+                dragSession: dragSession
             )
 
             if state.previewVisible {
@@ -308,6 +325,7 @@ private struct BrowserPreviewPane: View {
 struct IconBrowserView: View {
     @Bindable var state: FileBrowserState
     let contentFocus: FocusState<BrowserFocusTarget?>.Binding
+    let dragSession: BrowserFileDragSession
     @State private var focusedScrollTask: Task<Void, Never>?
 
     private var scale: CGFloat { state.preferences.scale }
@@ -344,6 +362,11 @@ struct IconBrowserView: View {
                                     }
                                 )
                                 .browserDraggable(state: state, item: item)
+                                .browserDirectoryDropTarget(
+                                    state: state,
+                                    item: item,
+                                    dragSession: dragSession
+                                )
                                 .contextMenu { BrowserItemActionsMenu(state: state, item: item) }
                             }
                         }
@@ -425,6 +448,7 @@ struct ListBrowserView: View {
     @Bindable var state: FileBrowserState
     let obscuredTrailingWidth: CGFloat
     let contentFocus: FocusState<BrowserFocusTarget?>.Binding
+    let dragSession: BrowserFileDragSession
     @State private var focusedScrollTask: Task<Void, Never>?
 
     private var scale: CGFloat { state.preferences.scale }
@@ -487,7 +511,8 @@ struct ListBrowserView: View {
                         width: width,
                         minimumHeight: max(height - (28 * scale), 1),
                         usesEdgeToEdgeRows: usesEdgeToEdgeRows,
-                        contentFocus: contentFocus
+                        contentFocus: contentFocus,
+                        dragSession: dragSession
                     )
                 }
                 .onChange(of: state.focusedItemID) { _, itemID in
@@ -519,6 +544,7 @@ private struct BrowserListRows: View {
     let minimumHeight: CGFloat
     let usesEdgeToEdgeRows: Bool
     let contentFocus: FocusState<BrowserFocusTarget?>.Binding
+    let dragSession: BrowserFileDragSession
 
     private var horizontalMargin: CGFloat {
         usesEdgeToEdgeRows ? 0 : BrowserMetrics.horizontalInset * scale
@@ -542,7 +568,8 @@ private struct BrowserListRows: View {
                         index: entry.rowIndex,
                         scale: scale,
                         usesEdgeToEdgeBackground: usesEdgeToEdgeRows,
-                        contentFocus: contentFocus
+                        contentFocus: contentFocus,
+                        dragSession: dragSession
                     )
                     .id(entry.id)
                     .contextMenu { BrowserItemActionsMenu(state: state, item: entry.item) }
@@ -624,6 +651,7 @@ private struct BrowserListRow: View {
     let scale: CGFloat
     let usesEdgeToEdgeBackground: Bool
     let contentFocus: FocusState<BrowserFocusTarget?>.Binding
+    let dragSession: BrowserFileDragSession
 
     private var isSelected: Bool { state.selection.contains(entry.item.id) }
     private var horizontalContentInset: CGFloat {
@@ -739,12 +767,18 @@ private struct BrowserListRow: View {
                 )
         }
         .browserDraggable(state: state, item: entry.item)
+        .browserDirectoryDropTarget(
+            state: state,
+            item: entry.item,
+            dragSession: dragSession
+        )
     }
 }
 
 struct ColumnBrowserView: View {
     @Bindable var state: FileBrowserState
     let contentFocus: FocusState<BrowserFocusTarget?>.Binding
+    let dragSession: BrowserFileDragSession
     @State private var terminalScrollTask: Task<Void, Never>?
 
     private var scale: CGFloat { state.preferences.scale }
@@ -792,7 +826,8 @@ struct ColumnBrowserView: View {
                                 width: state.previewVisible && index == activeColumnIndex + 1
                                     ? previewWidth
                                     : BrowserMetrics.finderColumnWidth * scale,
-                                contentFocus: contentFocus
+                                contentFocus: contentFocus,
+                                dragSession: dragSession
                             )
                             .id("column-\(index)")
                         }
@@ -878,6 +913,7 @@ private struct FinderColumn: View {
     let scale: CGFloat
     let width: CGFloat
     let contentFocus: FocusState<BrowserFocusTarget?>.Binding
+    let dragSession: BrowserFileDragSession
 
     var body: some View {
         GeometryReader { geometry in
@@ -941,6 +977,11 @@ private struct FinderColumn: View {
                                 }
                             )
                             .browserDraggable(state: state, item: item)
+                            .browserDirectoryDropTarget(
+                                state: state,
+                                item: item,
+                                dragSession: dragSession
+                            )
                             .contextMenu { BrowserItemActionsMenu(state: state, item: item) }
                         }
                     }
@@ -963,6 +1004,7 @@ private struct FinderColumn: View {
 struct GalleryBrowserView: View {
     @Bindable var state: FileBrowserState
     let contentFocus: FocusState<BrowserFocusTarget?>.Binding
+    let dragSession: BrowserFileDragSession
     @State private var initialSelectionTask: Task<Void, Never>?
     @State private var thumbnailScrollTask: Task<Void, Never>?
 
@@ -1019,6 +1061,11 @@ struct GalleryBrowserView: View {
                                         }
                                     )
                                     .browserDraggable(state: state, item: item)
+                                    .browserDirectoryDropTarget(
+                                        state: state,
+                                        item: item,
+                                        dragSession: dragSession
+                                    )
                                     .contextMenu { BrowserItemActionsMenu(state: state, item: item) }
                                 }
                             }
@@ -1166,12 +1213,14 @@ private extension BrowserItem {
     }
 }
 
-private struct BrowserFileDropDelegate: DropDelegate {
+struct BrowserFileDropDelegate: DropDelegate {
     let state: FileBrowserState
-    let modifiers: EventModifiers
+    let destinationURL: URL?
+    let dragSession: BrowserFileDragSession
+    var onTargetedChange: (Bool) -> Void = { _ in }
 
     func validateDrop(info: DropInfo) -> Bool {
-        state.canModifyCurrentDirectory
+        destinationURL != nil
             && info.hasItemsConforming(to: [UTType.fileURL.identifier])
     }
 
@@ -1185,18 +1234,35 @@ private struct BrowserFileDropDelegate: DropDelegate {
         return DropProposal(operation: dropOperation)
     }
 
+    func dropEntered(info: DropInfo) {
+        guard validateDrop(info: info) else { return }
+        onTargetedChange(true)
+    }
+
+    func dropExited(info: DropInfo) {
+        onTargetedChange(false)
+    }
+
     func performDrop(info: DropInfo) -> Bool {
+        onTargetedChange(false)
         guard validateDrop(info: info) else { return false }
-        state.performDrop(
+        guard let destinationURL else { return false }
+        let operation = transferOperation
+        return state.performDrop(
             providers: info.itemProviders(for: [UTType.fileURL.identifier]),
-            operation: transferOperation
+            to: destinationURL,
+            operation: operation
         )
-        return true
     }
 
     private var transferOperation: BrowserFileTransferOperation {
-        BrowserFileDropOperationResolver.operation(for: modifiers)
+        BrowserFileDropOperationResolver.operation(for: dragSession.modifiers)
     }
+}
+
+@MainActor
+final class BrowserFileDragSession {
+    var modifiers: EventModifiers = []
 }
 
 nonisolated enum BrowserFileDropOperationResolver {
@@ -1231,7 +1297,7 @@ private extension DragConfiguration {
     }
 }
 
-private extension View {
+extension View {
     @ViewBuilder
     func browserDraggable(state: FileBrowserState, item: BrowserItem) -> some View {
         if item.localURL != nil {
@@ -1242,6 +1308,37 @@ private extension View {
         } else {
             self
         }
+    }
+
+    @ViewBuilder
+    func browserDirectoryDropTarget(
+        state: FileBrowserState,
+        item: BrowserItem,
+        dragSession: BrowserFileDragSession
+    ) -> some View {
+        if item.isDirectory, let destinationURL = item.localURL {
+            browserFileDropTarget(
+                state: state,
+                destinationURL: destinationURL,
+                dragSession: dragSession
+            )
+        } else {
+            self
+        }
+    }
+
+    func browserFileDropTarget(
+        state: FileBrowserState,
+        destinationURL: URL,
+        dragSession: BrowserFileDragSession
+    ) -> some View {
+        modifier(
+            BrowserFileDropTargetModifier(
+                state: state,
+                destinationURL: destinationURL,
+                dragSession: dragSession
+            )
+        )
     }
 
     func finderClickGesture(
@@ -1259,5 +1356,41 @@ private extension View {
                 },
             including: .gesture
         )
+    }
+}
+
+private struct BrowserFileDropTargetModifier: ViewModifier {
+    let state: FileBrowserState
+    let destinationURL: URL
+    let dragSession: BrowserFileDragSession
+    @State private var isTargeted = false
+
+    func body(content: Content) -> some View {
+        content
+            .environment(\.browserDropTargetURL, isTargeted ? destinationURL : nil)
+            .onDrop(
+                of: [UTType.fileURL.identifier],
+                delegate: BrowserFileDropDelegate(
+                    state: state,
+                    destinationURL: destinationURL,
+                    dragSession: dragSession,
+                    onTargetedChange: { targeted in
+                        isTargeted = targeted
+                    }
+                )
+            )
+            .overlay {
+                if isTargeted {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(Color.accentColor.opacity(0.14))
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Color.accentColor, lineWidth: 2)
+                    }
+                    .allowsHitTesting(false)
+                }
+            }
+            .animation(.easeOut(duration: 0.12), value: isTargeted)
+            .onDisappear { isTargeted = false }
     }
 }
