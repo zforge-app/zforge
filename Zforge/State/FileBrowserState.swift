@@ -258,6 +258,9 @@ final class FileBrowserState {
     var canGoBack: Bool { !backStack.isEmpty }
     var canGoForward: Bool { !forwardStack.isEmpty }
     var currentDirectoryURL: URL? { location.fileSystemURL }
+    /// Drops on the unoccupied list/content area always target the directory
+    /// being browsed, independently of the focused row's contextual target.
+    var fileDropDestinationURL: URL? { currentDirectoryURL }
     var fileOperationDestinationURL: URL? {
         guard let currentDirectoryURL else { return nil }
         guard preferences.viewMode == .list, let focusedItemID else {

@@ -129,7 +129,9 @@ struct BrowserContent: View {
             of: [UTType.fileURL.identifier],
             delegate: BrowserFileDropDelegate(
                 state: state,
-                destinationURL: state.fileOperationDestinationURL,
+                // The blank area represents the directory currently being
+                // browsed, even when List has a focused expanded descendant.
+                destinationURL: state.fileDropDestinationURL,
                 dragSession: dragSession
             )
         )

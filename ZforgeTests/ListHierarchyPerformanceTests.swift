@@ -141,6 +141,7 @@ struct ListHierarchyPerformanceTests {
 
         state.select(uiDemoItem, orderedItems: orderedItems)
         #expect(state.fileOperationDestinationURL == dev.standardizedFileURL)
+        #expect(state.fileDropDestinationURL == root.standardizedFileURL)
 
         state.createNewFolder()
         for _ in 0..<100 where state.renamingItemID == nil {
