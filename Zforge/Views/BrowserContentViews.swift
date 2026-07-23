@@ -921,12 +921,12 @@ private struct FinderColumn: View {
     let width: CGFloat
     let contentFocus: FocusState<BrowserFocusTarget?>.Binding
     let dragSession: BrowserFileDragSession
+    @State private var isRootDropTargeted = false
 
     var body: some View {
         GeometryReader { geometry in
             ScrollView(.vertical) {
-                ZStack(alignment: .topLeading) {
-                    Color.clear.contentShape(Rectangle()).onTapGesture { state.clearSelection() }
+                VStack(spacing: 0) {
                     LazyVStack(spacing: 0) {
                         ForEach(items) { item in
                             let activeSelection = isActive && state.selection.contains(item.id)
@@ -992,19 +992,43 @@ private struct FinderColumn: View {
                             .contextMenu { BrowserItemActionsMenu(state: state, item: item) }
                         }
                     }
+
+                    Color.clear
+                        .frame(maxWidth: .infinity)
+                        .frame(height: columnRootDropAreaHeight(in: geometry.size.height))
+                        .contentShape(Rectangle())
+                        .onTapGesture { state.clearSelection() }
+                        .browserColumnRootDropTarget(
+                            state: state,
+                            location: component.location,
+                            dragSession: dragSession,
+                            isTargeted: $isRootDropTargeted
+                        )
                 }
                 .frame(maxWidth: .infinity, minHeight: geometry.size.height, alignment: .topLeading)
             }
         }
         .frame(width: width)
         .frame(maxHeight: .infinity)
+        .overlay {
+            if isRootDropTargeted {
+                BrowserFileDropHighlight()
+            }
+        }
         .overlay(alignment: .trailing) { Divider() }
+        .animation(.easeOut(duration: 0.12), value: isRootDropTargeted)
+        .onDisappear { isRootDropTargeted = false }
     }
 
     private func rowBackground(_ item: BrowserItem, activeSelection: Bool) -> Color {
         if activeSelection { return BrowserMetrics.selectionColor }
         if item.id == selectedID { return .gray.opacity(0.28) }
         return .clear
+    }
+
+    private func columnRootDropAreaHeight(in visibleHeight: CGFloat) -> CGFloat {
+        let rowsHeight = CGFloat(items.count) * BrowserMetrics.rowHeight * scale
+        return max(visibleHeight - rowsHeight, 0)
     }
 }
 
@@ -1348,6 +1372,30 @@ extension View {
         }
     }
 
+    @ViewBuilder
+    func browserColumnRootDropTarget(
+        state: FileBrowserState,
+        location: BrowserLocation,
+        dragSession: BrowserFileDragSession,
+        isTargeted: Binding<Bool>
+    ) -> some View {
+        if let destinationURL = location.fileSystemURL {
+            onDrop(
+                of: [UTType.fileURL.identifier],
+                delegate: BrowserFileDropDelegate(
+                    state: state,
+                    destinationURL: destinationURL,
+                    dragSession: dragSession,
+                    onTargetedChange: { targeted in
+                        isTargeted.wrappedValue = targeted
+                    }
+                )
+            )
+        } else {
+            self
+        }
+    }
+
     func browserFileDropTarget(
         state: FileBrowserState,
         destinationURL: URL,
@@ -1402,16 +1450,22 @@ private struct BrowserFileDropTargetModifier: ViewModifier {
             )
             .overlay {
                 if isTargeted {
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(Color.accentColor.opacity(0.14))
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(Color.accentColor, lineWidth: 2)
-                    }
-                    .allowsHitTesting(false)
+                    BrowserFileDropHighlight()
                 }
             }
             .animation(.easeOut(duration: 0.12), value: isTargeted)
             .onDisappear { isTargeted = false }
+    }
+}
+
+private struct BrowserFileDropHighlight: View {
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 8)
+                .fill(Color.accentColor.opacity(0.14))
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(Color.accentColor, lineWidth: 2)
+        }
+        .allowsHitTesting(false)
     }
 }

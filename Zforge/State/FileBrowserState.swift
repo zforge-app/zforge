@@ -738,7 +738,10 @@ final class FileBrowserState {
         }
     }
 
-    func reload(preservingColumnSelection: Bool = false) async {
+    func reload(
+        preservingColumnSelection: Bool = false,
+        refreshingColumnLocations: Set<BrowserLocation> = []
+    ) async {
         refreshTask?.cancel()
         let currentLocation = location
         let validSelection = selection
@@ -761,6 +764,9 @@ final class FileBrowserState {
             items = loaded
             purgeRemovedHierarchies(previous: previousRootItems, current: loaded)
             columnItems[currentLocation] = preferences.sort.sorted(loaded)
+            for columnLocation in refreshingColumnLocations where columnLocation != currentLocation {
+                await reloadColumnItems(at: columnLocation)
+            }
             await refreshExpandedFileSystemHierarchy()
             let validSelectionIDs = preservingColumnSelection
                 ? Set(knownItems.map(\.id))
@@ -1966,10 +1972,35 @@ final class FileBrowserState {
                 resultingURLs: resultingURLs,
                 operation: operation
             )
-            await reload()
+            if preferences.viewMode == .columns {
+                var affectedColumnLocations = Set<BrowserLocation>(urls.map {
+                    .fileSystem($0.deletingLastPathComponent().standardizedFileURL)
+                })
+                affectedColumnLocations.insert(.fileSystem(destination))
+                await reload(refreshingColumnLocations: affectedColumnLocations)
+            } else {
+                await reload()
+            }
             selectLocalItems(at: resultingURLs)
         } catch {
             self.error = mapError(error)
+        }
+    }
+
+    private func reloadColumnItems(at location: BrowserLocation) async {
+        guard case let .fileSystem(url) = location else { return }
+        do {
+            let loaded = try await fileSystem.items(
+                in: url,
+                showHidden: preferences.showHiddenFiles
+            )
+            columnItems[location] = preferences.sort.sorted(loaded)
+        } catch {
+            if !FileManager.default.fileExists(atPath: url.path) {
+                columnItems.removeValue(forKey: location)
+            } else {
+                self.error = mapError(error)
+            }
         }
     }
 

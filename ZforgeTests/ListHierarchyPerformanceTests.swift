@@ -155,6 +155,73 @@ struct ListHierarchyPerformanceTests {
         #expect(state.renamingItemID == state.primarySelection?.id)
     }
 
+    @Test("Column transfers refresh both the source and destination columns")
+    @MainActor
+    func columnTransferRefreshesBothColumns() async throws {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ZforgeColumnTransfer-" + UUID().uuidString, isDirectory: true)
+        let destination = root.appendingPathComponent("dev", isDirectory: true)
+        let source = root.appendingPathComponent("work.zip")
+        try FileManager.default.createDirectory(at: destination, withIntermediateDirectories: true)
+        try Data("Zforge".utf8).write(to: source)
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        let suiteName = "ZforgeColumnTransfer-" + UUID().uuidString
+        let defaults = try #require(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let preferences = FileBrowserPreferences(defaults: defaults)
+        preferences.viewMode = .columns
+        preferences.language = .english
+        let state = FileBrowserState(
+            preferences: preferences,
+            fileSystem: FileSystemService(),
+            fileOperations: FileOperationService(),
+            grants: UIFixtureAccessGrantStore(),
+            archives: UIFixtureArchiveEngine()
+        )
+        defer { state.close() }
+
+        await state.navigateToSidebar(root, name: root.lastPathComponent)
+        let devItem = try #require(state.items.first(where: { $0.name == "dev" }))
+        let openingTask = state.activateColumnItem(devItem, in: state.location)
+        await openingTask.value
+
+        let sourceItem = try #require(
+            state.columnItems[.fileSystem(root)]?.first(where: { $0.name == source.lastPathComponent })
+        )
+        #expect(state.columnItems[.fileSystem(root)]?.contains(where: { $0.name == source.lastPathComponent }) == true)
+        #expect(state.columnItems[.fileSystem(destination)]?.contains(where: { $0.name == source.lastPathComponent }) != true)
+
+        #expect(
+            state.performDrop(
+                providers: [try #require(state.itemProvider(for: sourceItem))],
+                to: destination,
+                operation: .move
+            )
+        )
+
+        for _ in 0..<100 where FileManager.default.fileExists(atPath: source.path) {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        for _ in 0..<100 where state.columnItems[.fileSystem(destination)]?.contains(where: {
+            $0.name == source.lastPathComponent
+        }) != true {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+
+        #expect(!FileManager.default.fileExists(atPath: source.path))
+        #expect(
+            state.columnItems[.fileSystem(root)]?.contains(where: {
+                $0.name == source.lastPathComponent
+            }) != true
+        )
+        #expect(
+            state.columnItems[.fileSystem(destination)]?.contains(where: {
+                $0.name == source.lastPathComponent
+            }) == true
+        )
+    }
+
     private func item(_ name: String, isFolder: Bool) -> BrowserItem {
         BrowserItem(
             id: BrowserItemID(rawValue: name),
