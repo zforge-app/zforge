@@ -28,7 +28,7 @@ final class SidebarState {
             destination("Desktop", UserDirectoryService.desktopURL, "menubar.dock.rectangle"),
             destination("Documents", UserDirectoryService.documentsURL, "doc.on.doc"),
             destination("Downloads", UserDirectoryService.downloadsURL, "arrow.down.circle"),
-            SidebarDestination(name: String(localized: "Applications"), url: URL(fileURLWithPath: "/Applications"), systemImage: "square.grid.2x2", kind: .favorite)
+            SidebarDestination(name: AppLocalization.string("Applications"), url: URL(fileURLWithPath: "/Applications"), systemImage: "square.grid.2x2", kind: .favorite)
         ]
     }
 
@@ -66,12 +66,12 @@ final class SidebarState {
     func connectToServer() async -> URL? {
         serverError = nil
         guard let url = URL(string: serverAddress), ["smb", "afp", "nfs"].contains(url.scheme?.lowercased() ?? "") else {
-            serverError = String(localized: "Use an smb://, afp://, or nfs:// address.")
+            serverError = AppLocalization.string("Use an smb://, afp://, or nfs:// address.")
             return nil
         }
         isConnecting = true
         let opened = NSWorkspace.shared.open(url)
-        if !opened { serverError = String(localized: "The server could not be opened.") }
+        if !opened { serverError = AppLocalization.string("The server could not be opened.") }
         try? await Task.sleep(for: .seconds(1))
         await refresh()
         isConnecting = false
@@ -79,6 +79,6 @@ final class SidebarState {
     }
 
     private func destination(_ name: String.LocalizationValue, _ url: URL, _ icon: String) -> SidebarDestination {
-        return SidebarDestination(name: String(localized: name), url: url, systemImage: icon, kind: .favorite)
+        return SidebarDestination(name: AppLocalization.string(name), url: url, systemImage: icon, kind: .favorite)
     }
 }

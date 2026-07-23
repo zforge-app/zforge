@@ -28,7 +28,7 @@ nonisolated enum BrowserViewMode: String, CaseIterable, Identifiable, Codable, S
     }
 
     func title(locale: Locale) -> String {
-        String(localized: titleKey, locale: locale)
+        AppLocalization.string(titleKey, locale: locale)
     }
 }
 
@@ -227,15 +227,15 @@ nonisolated enum BrowserError: LocalizedError, Equatable {
     var errorDescription: String? {
         switch self {
         case let .permissionDenied(url):
-            String(localized: "error.permission \(url.lastPathComponent)")
+            AppLocalization.string("error.permission \(url.lastPathComponent)")
         case let .unavailable(message), let .archive(message):
             message
         case .cancelled:
-            String(localized: "error.cancelled")
+            AppLocalization.string("error.cancelled")
         case .invalidServerURL:
-            String(localized: "error.invalid_server")
+            AppLocalization.string("error.invalid_server")
         case let .previewTooLarge(size):
-            String(localized: "error.preview_too_large \(ByteCountFormatter.string(fromByteCount: size, countStyle: .file))")
+            AppLocalization.string("error.preview_too_large \(ByteCountFormatter.string(fromByteCount: size, countStyle: .file))")
         }
     }
 }

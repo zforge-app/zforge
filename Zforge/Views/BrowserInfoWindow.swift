@@ -16,8 +16,8 @@ final class BrowserInfoWindowCoordinator: NSObject, NSWindowDelegate {
         let window = NSWindow(contentViewController: content)
         let controller = NSWindowController(window: window)
         window.title = items.count == 1
-            ? String(localized: "Info: \(items[0].name)", locale: locale)
-            : String(localized: "Info: \(items.count) Items", locale: locale)
+            ? AppLocalization.string("Info: \(items[0].name)", locale: locale)
+            : AppLocalization.string("Info: \(items.count) Items", locale: locale)
         window.styleMask = [.titled, .closable, .miniaturizable, .resizable]
         window.setContentSize(NSSize(width: 360, height: 470))
         window.minSize = NSSize(width: 320, height: 360)

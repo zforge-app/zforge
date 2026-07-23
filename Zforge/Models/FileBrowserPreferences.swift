@@ -16,7 +16,7 @@ final class FileBrowserPreferences {
         static let previewVisibleList = "browser.previewVisible.list"
         static let previewVisibleColumns = "browser.previewVisible.columns"
         static let previewVisibleGallery = "browser.previewVisible.gallery"
-        static let language = "appLanguagePreference"
+        static let language = AppLanguagePreference.defaultsKey
         static let archiveNestingLimit = "archive.nestingLimit"
         static let archiveRootSizeLimitGB = "archive.rootSizeLimitGB"
     }
@@ -140,10 +140,12 @@ final class FileBrowserPreferences {
     }
 }
 
-enum AppLanguagePreference: String, CaseIterable, Identifiable {
+nonisolated enum AppLanguagePreference: String, CaseIterable, Identifiable {
     case system
     case english
     case portugueseBrazil
+
+    static let defaultsKey = "appLanguagePreference"
 
     var id: Self { self }
 

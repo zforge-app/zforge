@@ -379,7 +379,7 @@ struct ContentView: View {
         ) {
             menu.addItem(
                 ClosureMenuItem(
-                    title: String(localized: title, locale: locale),
+                    title: AppLocalization.string(title, locale: locale),
                     systemImage: systemImage,
                     isEnabled: isEnabled,
                     handler: handler
@@ -389,7 +389,7 @@ struct ContentView: View {
 
         if includesViewSelector {
             let viewItem = NSMenuItem(
-                title: String(localized: "View", locale: locale),
+                title: AppLocalization.string("View", locale: locale),
                 action: nil,
                 keyEquivalent: ""
             )
@@ -545,8 +545,14 @@ struct ContentView: View {
         guard !authorizationPanelPresented else { return }
         authorizationPanelPresented = true
         let panel = NSOpenPanel()
-        panel.title = String(localized: "Allow Zforge to Access This Folder")
-        panel.message = String(localized: "Choose the requested folder or one of its parents.")
+        panel.title = AppLocalization.string(
+            "Allow Zforge to Access This Folder",
+            locale: browser.preferences.language.locale
+        )
+        panel.message = AppLocalization.string(
+            "Choose the requested folder or one of its parents.",
+            locale: browser.preferences.language.locale
+        )
         panel.directoryURL = intendedURL
         panel.canChooseFiles = false
         panel.canChooseDirectories = true
@@ -696,18 +702,18 @@ private extension ArchiveToolbarAction {
     }
 
     var title: String {
-        String(localized: titleKey)
+        AppLocalization.string(titleKey)
     }
 
     func title(locale: Locale) -> String {
-        String(localized: titleKey, locale: locale)
+        AppLocalization.string(titleKey, locale: locale)
     }
 
     var feedbackMessage: String {
         switch self {
-        case .extractAll: String(localized: "Extract all selected archives.")
-        case .extractSelected: String(localized: "Extract selected items.")
-        case .compress: String(localized: "Compress selected items.")
+        case .extractAll: AppLocalization.string("Extract all selected archives.")
+        case .extractSelected: AppLocalization.string("Extract selected items.")
+        case .compress: AppLocalization.string("Compress selected items.")
         case .unavailableInsideArchive, .unavailableOutsideArchive: title
         }
     }

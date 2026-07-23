@@ -13,7 +13,7 @@ nonisolated struct BrowserExactFileMove: Equatable, Sendable {
 }
 
 nonisolated protocol FileOperationServing: Sendable {
-    func createFolder(in directory: URL) async throws -> URL
+    func createFolder(in directory: URL, locale: Locale?) async throws -> URL
     func rename(_ sourceURL: URL, to newName: String) async throws -> URL
     func createAliases(for sourceURLs: [URL], in directory: URL) async throws -> [URL]
     func transfer(
@@ -33,9 +33,9 @@ nonisolated enum BrowserFileOperationError: LocalizedError, Equatable, Sendable 
     var errorDescription: String? {
         switch self {
         case .invalidName:
-            String(localized: "Enter a valid file name without slashes or colons.")
+            AppLocalization.string("Enter a valid file name without slashes or colons.")
         case let .undoDestinationExists(name):
-            String(localized: "Cannot undo because an item named \(name) already exists.")
+            AppLocalization.string("Cannot undo because an item named \(name) already exists.")
         }
     }
 }
@@ -47,10 +47,10 @@ actor FileOperationService: FileOperationServing {
         self.fileManager = fileManager
     }
 
-    func createFolder(in directory: URL) async throws -> URL {
+    func createFolder(in directory: URL, locale: Locale? = nil) async throws -> URL {
         let destination = uniqueDestination(
             in: directory,
-            baseName: String(localized: "Untitled Folder"),
+            baseName: AppLocalization.string("untitled folder", locale: locale),
             pathExtension: nil
         )
         try fileManager.createDirectory(
@@ -86,7 +86,7 @@ actor FileOperationService: FileOperationServing {
         for sourceURL in sourceURLs {
             let destination = uniqueDestination(
                 in: directory,
-                baseName: sourceURL.lastPathComponent + " " + String(localized: "alias"),
+                baseName: sourceURL.lastPathComponent + " " + AppLocalization.string("alias"),
                 pathExtension: nil
             )
             let bookmark = try sourceURL.bookmarkData(
@@ -128,7 +128,7 @@ actor FileOperationService: FileOperationServing {
                     : source.deletingPathExtension().lastPathComponent
                 destination = uniqueDestination(
                     in: directory,
-                    baseName: stem + " " + String(localized: "copy"),
+                    baseName: stem + " " + AppLocalization.string("copy"),
                     pathExtension: extensionName.isEmpty ? nil : extensionName
                 )
             } else {

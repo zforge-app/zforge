@@ -302,7 +302,7 @@ final class FileBrowserState {
         return (try? url.resourceValues(forKeys: [.isAliasFileKey]).isAliasFile) == true
     }
     var canEjectSelection: Bool { ejectableVolumeURL != nil }
-    var title: String { pathComponents.last?.name ?? String(localized: "Recents") }
+    var title: String { pathComponents.last?.name ?? AppLocalization.string("Recents", locale: preferences.language.locale) }
     var breadcrumbComponents: [BrowserPathComponent] {
         guard let first = pathComponents.first,
               case let .fileSystem(url) = first.location else {
@@ -353,7 +353,7 @@ final class FileBrowserState {
         pathComponents = [
             BrowserPathComponent(
                 location: .recents,
-                name: String(localized: "Recents"),
+                name: AppLocalization.string("Recents", locale: preferences.language.locale),
                 isArchive: false
             )
         ]
@@ -427,18 +427,21 @@ final class FileBrowserState {
     func navigateToRecents() async {
         await navigate(
             to: .recents,
-            named: String(localized: "Recents"),
+            named: AppLocalization.string("Recents", locale: preferences.language.locale),
             resetPath: true
         )
     }
 
     func navigateToComputer() async {
         let root = URL(fileURLWithPath: "/", isDirectory: true)
-        await navigateToSidebar(root, name: String(localized: "Computer"))
+        await navigateToSidebar(root, name: AppLocalization.string("Computer", locale: preferences.language.locale))
     }
 
     func navigateToDesktop() async {
-        await navigateToSidebar(UserDirectoryService.desktopURL, name: String(localized: "Desktop"))
+        await navigateToSidebar(
+            UserDirectoryService.desktopURL,
+            name: AppLocalization.string("Desktop", locale: preferences.language.locale)
+        )
     }
 
     func navigateToHome() async {
@@ -448,15 +451,21 @@ final class FileBrowserState {
 
     func navigateToNetwork() async {
         let network = URL(fileURLWithPath: "/Network", isDirectory: true)
-        await navigateToSidebar(network, name: String(localized: "Network"))
+        await navigateToSidebar(network, name: AppLocalization.string("Network", locale: preferences.language.locale))
     }
 
     func navigateToDownloads() async {
-        await navigateToSidebar(UserDirectoryService.downloadsURL, name: String(localized: "Downloads"))
+        await navigateToSidebar(
+            UserDirectoryService.downloadsURL,
+            name: AppLocalization.string("Downloads", locale: preferences.language.locale)
+        )
     }
 
     func navigateToDocuments() async {
-        await navigateToSidebar(UserDirectoryService.documentsURL, name: String(localized: "Documents"))
+        await navigateToSidebar(
+            UserDirectoryService.documentsURL,
+            name: AppLocalization.string("Documents", locale: preferences.language.locale)
+        )
     }
 
     @discardableResult
@@ -465,7 +474,7 @@ final class FileBrowserState {
         var isDirectory: ObjCBool = false
         if FileManager.default.fileExists(atPath: url.path, isDirectory: &isDirectory),
            !isDirectory.boolValue {
-            error = .unavailable(String(localized: "The path is not a folder."))
+            error = .unavailable(AppLocalization.string("The path is not a folder.", locale: preferences.language.locale))
             return false
         }
 
@@ -481,7 +490,7 @@ final class FileBrowserState {
         do {
             let item = try await fileSystem.item(at: url)
             guard item.isContainer else {
-                error = .unavailable(String(localized: "The path is not a folder."))
+                error = .unavailable(AppLocalization.string("The path is not a folder.", locale: preferences.language.locale))
                 return false
             }
             await navigateToSidebar(url, name: item.name)
@@ -555,7 +564,12 @@ final class FileBrowserState {
                     return ancestorURL.resolvingSymlinksInPath().standardizedFileURL.path
                 })
                 guard !ancestorPaths.contains(key) else {
-                    error = .unavailable(String(localized: "A symbolic-link cycle was prevented."))
+                    error = .unavailable(
+                        AppLocalization.string(
+                            "A symbolic-link cycle was prevented.",
+                            locale: preferences.language.locale
+                        )
+                    )
                     return
                 }
                 await navigate(
@@ -622,7 +636,10 @@ final class FileBrowserState {
         } catch ArchiveEngineError.passwordRequired {
             passwordOperation = item.localURL.map(PasswordOperation.openFile) ?? .openNested(item)
         } catch ArchiveEngineError.invalidPassword {
-            passwordError = String(localized: "Incorrect password. Try again.")
+            passwordError = AppLocalization.string(
+                "Incorrect password. Try again.",
+                locale: preferences.language.locale
+            )
             passwordOperation = item.localURL.map(PasswordOperation.openFile) ?? .openNested(item)
         } catch {
             self.error = mapError(error)
@@ -797,7 +814,10 @@ final class FileBrowserState {
                 if !duplicatedURLs.isEmpty {
                     self.registerUndo(
                         removing: duplicatedURLs,
-                        actionName: String(localized: "Duplicate")
+                        actionName: AppLocalization.string(
+                            "Duplicate",
+                            locale: self.preferences.language.locale
+                        )
                     )
                 }
                 if let operationError {
@@ -820,12 +840,16 @@ final class FileBrowserState {
 
     func createNewFolder() {
         guard let directory = fileOperationDestinationURL else { return }
+        let locale = preferences.language.locale
         Task {
             do {
-                let createdURL = try await fileOperations.createFolder(in: directory)
+                let createdURL = try await fileOperations.createFolder(
+                    in: directory,
+                    locale: locale
+                )
                 registerUndo(
                     removing: [createdURL],
-                    actionName: String(localized: "New Folder")
+                    actionName: AppLocalization.string("New Folder", locale: preferences.language.locale)
                 )
                 renamingItemURL = createdURL.standardizedFileURL
                 renameDraft = createdURL.lastPathComponent
@@ -884,7 +908,7 @@ final class FileBrowserState {
                             destinationURL: sourceURL
                         )
                     ],
-                    actionName: String(localized: "Rename")
+                    actionName: AppLocalization.string("Rename", locale: preferences.language.locale)
                 )
                 renamingItemURL = nil
                 renameDraft = ""
@@ -919,7 +943,7 @@ final class FileBrowserState {
                 }
                 registerUndo(
                     removing: created,
-                    actionName: String(localized: "Make Alias")
+                    actionName: AppLocalization.string("Make Alias", locale: preferences.language.locale)
                 )
                 await reload()
                 selectLocalItems(at: created)
@@ -974,7 +998,10 @@ final class FileBrowserState {
                 if !restoreMoves.isEmpty {
                     self.registerUndo(
                         moving: restoreMoves,
-                        actionName: String(localized: "Move to Trash")
+                        actionName: AppLocalization.string(
+                            "Move to Trash",
+                            locale: self.preferences.language.locale
+                        )
                     )
                 }
                 if let operationError {
@@ -1022,7 +1049,10 @@ final class FileBrowserState {
             guard let self else { return }
             guard failures == 0, !urls.isEmpty else {
                 self.error = .unavailable(
-                    String(localized: "The dropped file URLs could not be loaded.")
+                    AppLocalization.string(
+                        "The dropped file URLs could not be loaded.",
+                        locale: self.preferences.language.locale
+                    )
                 )
                 return
             }
@@ -1326,7 +1356,10 @@ final class FileBrowserState {
             synchronizeExpandedDirectoryMonitors()
         } catch ArchiveEngineError.invalidPassword {
             passwordOperation = .expandInline(item)
-            passwordError = String(localized: "Incorrect password. Try again.")
+            passwordError = AppLocalization.string(
+                "Incorrect password. Try again.",
+                locale: preferences.language.locale
+            )
             expandedItems.remove(item.id)
             synchronizeExpandedDirectoryMonitors()
         } catch {
@@ -1969,13 +2002,15 @@ final class FileBrowserState {
 
         let actionName: String = switch operation {
         case .copy:
-            String(localized: "Copy")
+            AppLocalization.string("Copy", locale: preferences.language.locale)
         case .alias:
-            String(localized: "Make Alias")
+            AppLocalization.string("Make Alias", locale: preferences.language.locale)
         case .move:
-            String(localized: "Move")
+            AppLocalization.string("Move", locale: preferences.language.locale)
         case .automatic:
-            moves.isEmpty ? String(localized: "Copy") : String(localized: "Move")
+            moves.isEmpty
+                ? AppLocalization.string("Copy", locale: preferences.language.locale)
+                : AppLocalization.string("Move", locale: preferences.language.locale)
         }
         registerUndo(removing: removals, moving: moves, actionName: actionName)
     }

@@ -12,10 +12,11 @@ struct FileOperationServiceTests {
         defer { try? FileManager.default.removeItem(at: root) }
         let service = FileOperationService()
 
-        let firstFolder = try await service.createFolder(in: root)
-        let secondFolder = try await service.createFolder(in: root)
-        #expect(firstFolder.lastPathComponent == "Untitled Folder")
-        #expect(secondFolder.lastPathComponent == "Untitled Folder 2")
+        let english = Locale(identifier: "en")
+        let firstFolder = try await service.createFolder(in: root, locale: english)
+        let secondFolder = try await service.createFolder(in: root, locale: english)
+        #expect(firstFolder.lastPathComponent == "untitled folder")
+        #expect(secondFolder.lastPathComponent == "untitled folder 2")
 
         let source = root.appendingPathComponent("Document.txt")
         try Data("Zforge".utf8).write(to: source)
@@ -76,6 +77,7 @@ struct FileOperationServiceTests {
             defer { defaults.removePersistentDomain(forName: suiteName) }
             let preferences = FileBrowserPreferences(defaults: defaults)
             preferences.viewMode = viewMode
+            preferences.language = .english
             let state = FileBrowserState(
                 preferences: preferences,
                 fileSystem: FileSystemService(),
@@ -96,7 +98,7 @@ struct FileOperationServiceTests {
             }
 
             #expect(
-                state.primarySelection?.name == "Untitled Folder",
+                state.primarySelection?.name == "untitled folder",
                 "New folder was not selected in \(viewMode.rawValue) view"
             )
             #expect(
@@ -104,7 +106,7 @@ struct FileOperationServiceTests {
                 "Rename state was not assigned in \(viewMode.rawValue) view"
             )
             #expect(
-                state.renameDraft == "Untitled Folder",
+                state.renameDraft == "untitled folder",
                 "Rename draft was not populated in \(viewMode.rawValue) view"
             )
             #expect(
@@ -291,6 +293,33 @@ struct FileOperationServiceTests {
         )
     }
 
+    @Test("Localizes the default folder name in the requested locale")
+    func localizedDefaultFolderName() throws {
+        let appBundle = try #require(Self.applicationBundle)
+        let folderName = AppLocalization.string(
+            "untitled folder",
+            locale: Locale(identifier: "pt-BR"),
+            bundle: appBundle
+        )
+
+        #expect(folderName == "pasta sem título")
+    }
+
+    private static var applicationBundle: Bundle? {
+        let testBundle = Bundle.main
+        let siblingAppBundleURL = testBundle.bundleURL
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let candidates = [
+            testBundle,
+            Bundle(url: siblingAppBundleURL)
+        ].compactMap { $0 }
+        return candidates.first {
+            $0.path(forResource: "pt-BR", ofType: "lproj") != nil
+        }
+    }
+
     @Test("Command-Z undo records reverse creation, rename, and copy")
     @MainActor
     func undoReversesFileOperations() async throws {
@@ -299,8 +328,10 @@ struct FileOperationServiceTests {
         let suiteName = "ZforgeUndoTest-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suiteName))
         defer { defaults.removePersistentDomain(forName: suiteName) }
+        let preferences = FileBrowserPreferences(defaults: defaults)
+        preferences.language = .english
         let state = FileBrowserState(
-            preferences: FileBrowserPreferences(defaults: defaults),
+            preferences: preferences,
             fileSystem: FileSystemService(),
             fileOperations: FileOperationService(),
             grants: UIFixtureAccessGrantStore(),
@@ -312,7 +343,7 @@ struct FileOperationServiceTests {
         await state.navigateToSidebar(root, name: root.lastPathComponent)
 
         state.createNewFolder()
-        let folder = root.appendingPathComponent("Untitled Folder", isDirectory: true)
+        let folder = root.appendingPathComponent("untitled folder", isDirectory: true)
         for _ in 0..<100 where !FileManager.default.fileExists(atPath: folder.path) {
             try await Task.sleep(for: .milliseconds(10))
         }

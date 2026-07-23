@@ -15,6 +15,7 @@ extension FocusedValues {
 @main
 struct ZforgeApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+    @State private var preferences = FileBrowserPreferences.shared
 
     var body: some Scene {
         WindowGroup(
@@ -27,6 +28,7 @@ struct ZforgeApp: App {
             BrowserWindowRequest()
         }
         .defaultSize(width: defaultWindowWidth, height: 720)
+        .environment(\.locale, preferences.language.locale)
         .commands {
             BrowserCommands()
             KeyboardShortcutHelpCommands()
@@ -35,6 +37,7 @@ struct ZforgeApp: App {
         Settings {
             ZforgeSettingsView()
         }
+        .environment(\.locale, preferences.language.locale)
         .commands { KeyboardShortcutHelpCommands() }
 
         Window("Keyboard Shortcuts", id: "keyboard-shortcuts") {
@@ -42,6 +45,7 @@ struct ZforgeApp: App {
         }
         .defaultSize(width: 720, height: 680)
         .windowResizability(.contentMinSize)
+        .environment(\.locale, preferences.language.locale)
         .commands { KeyboardShortcutHelpCommands() }
     }
 
@@ -224,7 +228,10 @@ private struct ZforgeSettingsView: View {
             }
             Picker("Default View", selection: $preferences.viewMode) {
                 ForEach(BrowserViewMode.allCases) { mode in
-                    Label(String(localized: mode.titleKey), systemImage: mode.systemImage).tag(mode)
+                    Label(
+                        AppLocalization.string(mode.titleKey, locale: preferences.language.locale),
+                        systemImage: mode.systemImage
+                    ).tag(mode)
                 }
             }
             Toggle("Show hidden files", isOn: $preferences.showHiddenFiles)

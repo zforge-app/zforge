@@ -112,7 +112,7 @@ struct SelectionOverview: View {
     let scale: CGFloat
 
     private var summary: BrowserSelectionSummary {
-        BrowserSelectionSummary(items: items, locale: .current)
+        BrowserSelectionSummary(items: items, locale: state.preferences.language.locale)
     }
 
     private var singleItemContentOpacity: Double {
@@ -142,7 +142,11 @@ struct SelectionOverview: View {
                 .onTapGesture { state.clearSelection() }
 
             if state.previewVisible {
-                SelectionInspector(items: items, scale: scale)
+                SelectionInspector(
+                    state: state,
+                    items: items,
+                    scale: scale
+                )
                     .frame(width: BrowserLayoutMetrics.previewWidth * scale)
                     .frame(maxHeight: .infinity, alignment: .top)
                     .overlay(alignment: .leading) {
@@ -322,11 +326,12 @@ private struct SelectionHeroItem: View {
 }
 
 private struct SelectionInspector: View {
+    @Bindable var state: FileBrowserState
     let items: [BrowserItem]
     let scale: CGFloat
 
     private var summary: BrowserSelectionSummary {
-        BrowserSelectionSummary(items: items, locale: .current)
+        BrowserSelectionSummary(items: items, locale: state.preferences.language.locale)
     }
 
     private var singleItemContentOpacity: Double {
@@ -398,7 +403,7 @@ struct BrowserSelectionSummary {
 
     var title: String {
         guard items.count != 1 else { return items[0].name }
-        return "\(items.count) items"
+        return AppLocalization.string("\(items.count) items", locale: locale)
     }
 
     var subtitle: String {
@@ -410,8 +415,18 @@ struct BrowserSelectionSummary {
         let folders = items.filter(\.isContainer).count
         let documents = items.count - folders
         var parts: [String] = []
-        if documents > 0 { parts.append("\(documents) \(documents == 1 ? "document" : "documents")") }
-        if folders > 0 { parts.append("\(folders) \(folders == 1 ? "folder" : "folders")") }
+        if documents > 0 {
+            let key: String.LocalizationValue = documents == 1
+                ? "\(documents) document"
+                : "\(documents) documents"
+            parts.append(AppLocalization.string(key, locale: locale))
+        }
+        if folders > 0 {
+            let key: String.LocalizationValue = folders == 1
+                ? "\(folders) folder"
+                : "\(folders) folders"
+            parts.append(AppLocalization.string(key, locale: locale))
+        }
         let totalSize = items.compactMap(\.size).reduce(0, +)
         if totalSize > 0 {
             parts.append(ByteCountFormatter.string(fromByteCount: totalSize, countStyle: .file))
@@ -425,13 +440,15 @@ struct BrowserSelectionSummary {
 
     var tags: String {
         let tags = Set(items.flatMap(\.tags)).sorted()
-        return tags.isEmpty ? String(localized: "No tags") : tags.joined(separator: ", ")
+        return tags.isEmpty
+            ? AppLocalization.string("No tags", locale: locale)
+            : tags.joined(separator: ", ")
     }
 
     private func kind(_ item: BrowserItem) -> String {
-        if item.isDirectory { return String(localized: "Folder") }
-        if item.isArchive { return String(localized: "Archive") }
-        return item.contentType?.localizedDescription ?? String(localized: "Document")
+        if item.isDirectory { return AppLocalization.string("Folder", locale: locale) }
+        if item.isArchive { return AppLocalization.string("Archive", locale: locale) }
+        return item.contentType?.localizedDescription ?? AppLocalization.string("Document", locale: locale)
     }
 
     private func dateRange(_ dates: [Date]) -> String {

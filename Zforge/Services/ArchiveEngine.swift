@@ -15,18 +15,18 @@ nonisolated enum ArchiveEngineError: LocalizedError, Equatable {
 
     var errorDescription: String? {
         switch self {
-        case .helperUnavailable: String(localized: "archive.helper_unavailable")
-        case .passwordRequired: String(localized: "archive.password_required")
-        case .invalidPassword: String(localized: "archive.invalid_password")
+        case .helperUnavailable: AppLocalization.string("archive.helper_unavailable")
+        case .passwordRequired: AppLocalization.string("archive.password_required")
+        case .invalidPassword: AppLocalization.string("archive.invalid_password")
         case let .invalidArchive(message): message
         case let .commandFailed(_, message): message
-        case .itemNotFound: String(localized: "archive.item_not_found")
-        case .unsafePath: String(localized: "archive.unsafe_path")
-        case .insufficientSpace: String(localized: "archive.insufficient_space")
-        case .sizeLimitExceeded: String(localized: "archive.size_limit")
+        case .itemNotFound: AppLocalization.string("archive.item_not_found")
+        case .unsafePath: AppLocalization.string("archive.unsafe_path")
+        case .insufficientSpace: AppLocalization.string("archive.insufficient_space")
+        case .sizeLimitExceeded: AppLocalization.string("archive.size_limit")
         case .nestedArchiveNotAllowed:
-            String(localized: "The nested archive navigation limit has been reached.")
-        case .cancelled: String(localized: "error.cancelled")
+            AppLocalization.string("The nested archive navigation limit has been reached.")
+        case .cancelled: AppLocalization.string("error.cancelled")
         }
     }
 }
@@ -153,7 +153,7 @@ actor SevenZipArchiveEngine: ArchiveServing {
     func items(at address: ArchiveAddress) throws -> [BrowserItem] {
         guard let session = sessions[address.sessionID],
               let archive = session.archives[address.archiveID] else {
-            throw ArchiveEngineError.invalidArchive(String(localized: "archive.session_closed"))
+            throw ArchiveEngineError.invalidArchive(AppLocalization.string("archive.session_closed"))
         }
 
         let parent = normalized(address.internalPath)
@@ -326,7 +326,7 @@ actor SevenZipArchiveEngine: ArchiveServing {
         let output = String(decoding: result.stdout, as: UTF8.self)
         let entries = try parseListing(output)
         guard !entries.isEmpty else {
-            throw ArchiveEngineError.invalidArchive(String(localized: "archive.empty_or_unsupported"))
+            throw ArchiveEngineError.invalidArchive(AppLocalization.string("archive.empty_or_unsupported"))
         }
         return ArchiveRecord(id: UUID(), fileURL: url, displayName: displayName, entries: entries)
     }

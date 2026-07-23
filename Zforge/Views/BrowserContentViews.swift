@@ -710,7 +710,12 @@ private struct BrowserListRow: View {
                 .tint(isSelected ? .white : .primary)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-                Text(entry.item.formattedDate(entry.item.modificationDate, locale: .current))
+                Text(
+                    entry.item.formattedDate(
+                        entry.item.modificationDate,
+                        locale: state.preferences.language.locale
+                    )
+                )
                     .foregroundStyle(isSelected ? Color.white.opacity(0.8) : .secondary)
                     .padding(.leading, BrowserMetrics.columnContentInset * scale)
                     .frame(
@@ -1207,9 +1212,9 @@ private struct BrowserItemNameView: View {
 
 private extension BrowserItem {
     var displayKind: String {
-        if isDirectory { return String(localized: "Folder") }
-        if isArchive { return String(localized: "Archive") }
-        return contentType?.localizedDescription ?? String(localized: "Document")
+        if isDirectory { return AppLocalization.string("Folder") }
+        if isArchive { return AppLocalization.string("Archive") }
+        return contentType?.localizedDescription ?? AppLocalization.string("Document")
     }
 }
 

@@ -65,6 +65,7 @@ struct ListHierarchyPerformanceTests {
         let preferences = FileBrowserPreferences(defaults: defaults)
         preferences.viewMode = .list
         preferences.sort = BrowserSort(field: .name, ascending: true)
+        preferences.language = .english
         let state = FileBrowserState(
             preferences: preferences,
             fileSystem: FileSystemService(),
@@ -119,6 +120,7 @@ struct ListHierarchyPerformanceTests {
         let preferences = FileBrowserPreferences(defaults: defaults)
         preferences.viewMode = .list
         preferences.sort = BrowserSort(field: .name, ascending: true)
+        preferences.language = .english
         let state = FileBrowserState(
             preferences: preferences,
             fileSystem: FileSystemService(),
@@ -145,9 +147,9 @@ struct ListHierarchyPerformanceTests {
             try await Task.sleep(for: .milliseconds(10))
         }
 
-        let createdFolder = dev.appendingPathComponent("Untitled Folder", isDirectory: true)
+        let createdFolder = dev.appendingPathComponent("untitled folder", isDirectory: true)
         #expect(FileManager.default.fileExists(atPath: createdFolder.path))
-        #expect(!FileManager.default.fileExists(atPath: root.appendingPathComponent("Untitled Folder").path))
+        #expect(!FileManager.default.fileExists(atPath: root.appendingPathComponent("untitled folder").path))
         #expect(state.primarySelection?.localURL?.standardizedFileURL == createdFolder.standardizedFileURL)
         #expect(state.renamingItemID == state.primarySelection?.id)
     }
