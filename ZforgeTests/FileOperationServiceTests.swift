@@ -218,6 +218,22 @@ struct FileOperationServiceTests {
 
     }
 
+    @Test("The default drag proposal does not advertise a copy")
+    func defaultDragProposalDoesNotShowCopyIndicator() {
+        #expect(
+            BrowserFileDropProposalResolver.operation(for: .automatic) == .move
+        )
+        #expect(
+            BrowserFileDropProposalResolver.operation(for: .copy) == .copy
+        )
+        #expect(
+            BrowserFileDropProposalResolver.operation(for: .move) == .move
+        )
+        #expect(
+            BrowserFileDropProposalResolver.operation(for: .alias) == .alias
+        )
+    }
+
     @Test("Dropped providers copy files and create aliases")
     @MainActor
     func droppedProvidersTransferFiles() async throws {

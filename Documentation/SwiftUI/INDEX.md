@@ -125,3 +125,5 @@ Para consultar, leia primeiro este índice e use `rg -n -i '<termos|símbolos>' 
 - [navigationSplitViewColumnWidth(min:ideal:max:)](contexts/swiftui-navigation-split-view-column-width-flexible.md)
 - [NSSplitViewItem.holdingPriority](contexts/appkit-nssplitviewitem-holdingpriority.md)
 - [NSWindow](contexts/appkit-nswindow.md)
+- [NSWorkspace.icon(forFile:)](contexts/appkit-nsworkspace-icon-for-file.md)
+- [NSImage.init(size:flipped:drawingHandler:)](contexts/appkit-nsimage-dynamic-drawing.md)

@@ -1225,13 +1225,11 @@ struct BrowserFileDropDelegate: DropDelegate {
     }
 
     func dropUpdated(info: DropInfo) -> DropProposal? {
-        let operation = transferOperation
-        let dropOperation: DropOperation = switch operation {
-        case .move: .move
-        case .alias: .alias
-        case .automatic, .copy: .copy
-        }
-        return DropProposal(operation: dropOperation)
+        DropProposal(
+            operation: BrowserFileDropProposalResolver.operation(
+                for: transferOperation
+            )
+        )
     }
 
     func dropEntered(info: DropInfo) {
@@ -1271,6 +1269,22 @@ nonisolated enum BrowserFileDropOperationResolver {
         if modifiers.contains(.option) { return .copy }
         if modifiers.contains(.command) { return .move }
         return .automatic
+    }
+}
+
+nonisolated enum BrowserFileDropProposalResolver {
+    static func operation(
+        for transferOperation: BrowserFileTransferOperation
+    ) -> DropOperation {
+        switch transferOperation {
+        case .copy: .copy
+        case .move: .move
+        case .alias: .alias
+        // FileOperationService resolves automatic to move on the same volume
+        // and copy across volumes. The default drag proposal must not advertise
+        // a copy before an explicit copy operation has been requested.
+        case .automatic: .move
+        }
     }
 }
 

@@ -4,6 +4,31 @@ import Testing
 
 @Suite("File browser domain")
 struct ZforgeTests {
+    @Test("Folder icons distinguish empty directories from directories with contents")
+    func folderContentsDetection() throws {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ZforgeFolderIcon-\(UUID().uuidString)", isDirectory: true)
+        let empty = root.appendingPathComponent("Empty", isDirectory: true)
+        let nonEmpty = root.appendingPathComponent("NonEmpty", isDirectory: true)
+        let hiddenOnly = root.appendingPathComponent("HiddenOnly", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        try FileManager.default.createDirectory(at: empty, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: nonEmpty, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: hiddenOnly, withIntermediateDirectories: true)
+        try Data().write(to: nonEmpty.appendingPathComponent("document.txt"))
+        try Data().write(to: hiddenOnly.appendingPathComponent(".hidden"))
+
+        var cache: [String: FolderContentsCacheEntry] = [:]
+        let emptyDate = try empty.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate
+        let nonEmptyDate = try nonEmpty.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate
+        let hiddenOnlyDate = try hiddenOnly.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate
+
+        #expect(!FolderContentsDetector.hasContents(at: empty, modificationDate: emptyDate, cache: &cache))
+        #expect(FolderContentsDetector.hasContents(at: nonEmpty, modificationDate: nonEmptyDate, cache: &cache))
+        #expect(FolderContentsDetector.hasContents(at: hiddenOnly, modificationDate: hiddenOnlyDate, cache: &cache))
+    }
+
     @Test("Sidebar maximum width always reserves 360 points for content")
     func sidebarMaximumWidth() {
         #expect(BrowserSidebarLayout.maximumWidth(for: 640) == 280)

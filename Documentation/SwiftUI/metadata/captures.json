@@ -3,8 +3,8 @@
   "captured_at": "2026-07-16T23:52:09+00:00",
   "seed_url": "https://developer.apple.com/documentation/SwiftUI",
   "scope": "home plus unique first-level links exposed by Overview, Featured samples, and Topics, with audited on-demand expansions",
-  "expected_contexts": 69,
-  "captured_contexts": 69,
+  "expected_contexts": 75,
+  "captured_contexts": 75,
   "failures": [],
   "captures": [
     {
@@ -1035,6 +1035,36 @@
       "categories": [
         "On-demand expansion",
         "Event handling"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/appkit/nsworkspace/icon(forfile:)",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/appkit/nsworkspace/icon(forfile:).json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/appkit/nsworkspace/icon(forfile:).json",
+      "local_path": "contexts/appkit-nsworkspace-icon-for-file.md",
+      "sha256": "20e1ae982edde88c9efefb3288a5a7dedc4360f692cf32fde6d9c03279e299f4",
+      "etag": "W/\"794ad20386b359b938cbbf2b7e42a2cf\"",
+      "last_modified": null,
+      "bytes": 20077,
+      "categories": [
+        "On-demand expansion",
+        "Framework integration"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/appkit/nsimage/init(size:flipped:drawinghandler:)",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/appkit/nsimage/init(size:flipped:drawinghandler:).json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/appkit/nsimage/init(size:flipped:drawinghandler:).json",
+      "local_path": "contexts/appkit-nsimage-dynamic-drawing.md",
+      "sha256": "bedbe97d1088e42fbec356508312ac39e036285757dc0a3c46d5f728b23f58a5",
+      "etag": "W/\"785f8cebc910c90c93b19d36acbaf1b6\"",
+      "last_modified": null,
+      "bytes": 21174,
+      "categories": [
+        "On-demand expansion",
+        "Drawing and graphics"
       ],
       "depth": 2
     }

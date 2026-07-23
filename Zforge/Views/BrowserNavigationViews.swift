@@ -205,20 +205,19 @@ private struct SidebarDropDestinationLabel: View {
         Label {
             Text(name)
         } icon: {
-            Group {
-                if isOpenDropTarget {
-                    Image(nsImage: FileIconCache.shared.openFolderIcon)
-                        .resizable()
-                        .interpolation(.high)
-                        .transition(.scale(scale: 0.88).combined(with: .opacity))
-                } else {
-                    Image(systemName: systemImage)
-                        .transition(.scale(scale: 0.88).combined(with: .opacity))
-                }
+            ZStack {
+                Image(systemName: systemImage)
+                    .resizable()
+                    .scaledToFit()
+                    .opacity(isOpenDropTarget ? 0 : 1)
+
+                Image(nsImage: FileIconCache.shared.openFolderIcon(for: url))
+                    .resizable()
+                    .interpolation(.high)
+                    .opacity(isOpenDropTarget ? 1 : 0)
             }
-            .id(isOpenDropTarget)
             .frame(width: 16, height: 16)
-            .animation(.snappy(duration: 0.18), value: isOpenDropTarget)
+            .animation(.easeInOut(duration: 0.18), value: isOpenDropTarget)
         }
     }
 }
