@@ -445,6 +445,27 @@ struct ZforgeTests {
         #expect(state.archiveToolbarAction == .extractAll)
     }
 
+    @Test("Dragging a selected item includes every selected local item")
+    @MainActor
+    func dragPayloadUsesTheFullSelection() {
+        let first = item("First.zip", archive: true)
+        let second = item("Second.zip", archive: true)
+        let unselected = item("Third.zip", archive: true)
+        let state = FileBrowserState()
+        state.items = [first, second, unselected]
+        state.selection = [first.id, second.id]
+        state.focusedItemID = second.id
+
+        let selectedURLs = state.dragSelectionURLs
+        #expect(Set(selectedURLs) == Set([first.localURL, second.localURL].compactMap { $0 }))
+        #expect(state.prepareDragPayload(selectedURLs) == selectedURLs)
+        #expect(state.selection == [first.id, second.id])
+
+        let unselectedURL = try! #require(unselected.localURL)
+        #expect(state.prepareDragPayload([unselectedURL]) == [unselectedURL])
+        #expect(state.selection == [unselected.id])
+    }
+
     @Test("Column compression creates the archive beside the selected folder")
     @MainActor
     func columnCompressionUsesSelectedItemParent() async throws {

@@ -125,6 +125,12 @@ struct BrowserContent: View {
         .onModifierKeysChanged(mask: [.option, .command]) { _, modifiers in
             dragSession.modifiers = modifiers
         }
+        .dragContainer(for: URL.self, itemID: \.self) { (draggedURLs: [URL]) in
+            state.prepareDragPayload(draggedURLs)
+        }
+        .dragContainerSelection(state.dragSelectionURLs)
+        .dragConfiguration(.browserFileOperations)
+        .dragPreviewsFormation(state.preferences.viewMode.fileDragPreviewsFormation)
         .onDrop(
             of: [UTType.fileURL.identifier],
             delegate: BrowserFileDropDelegate(
@@ -135,6 +141,7 @@ struct BrowserContent: View {
                 dragSession: dragSession
             )
         )
+        .dropPreviewsFormation(state.preferences.viewMode.fileDragPreviewsFormation)
         .onChange(of: state.renamingItemURL) { _, url in
             if url == nil {
                 contentFocus.wrappedValue = .content
@@ -366,7 +373,7 @@ struct IconBrowserView: View {
                                         Task { await state.openFromDoubleClick(item, modifiers: modifiers) }
                                     }
                                 )
-                                .browserDraggable(state: state, item: item)
+                                .browserDraggable(item: item)
                                 .browserDirectoryDropTarget(
                                     state: state,
                                     item: item,
@@ -776,7 +783,7 @@ private struct BrowserListRow: View {
                         : (index.isMultiple(of: 2) ? .clear : Color.primary.opacity(0.06))
                 )
         }
-        .browserDraggable(state: state, item: entry.item)
+        .browserDraggable(item: entry.item)
         .browserDirectoryDropTarget(
             state: state,
             item: entry.item,
@@ -986,7 +993,7 @@ private struct FinderColumn: View {
                                     }
                                 }
                             )
-                            .browserDraggable(state: state, item: item)
+                            .browserDraggable(item: item)
                             .browserDirectoryDropTarget(
                                 state: state,
                                 item: item,
@@ -1094,7 +1101,7 @@ struct GalleryBrowserView: View {
                                             Task { await state.openFromDoubleClick(item, modifiers: modifiers) }
                                         }
                                     )
-                                    .browserDraggable(state: state, item: item)
+                                    .browserDraggable(item: item)
                                     .browserDirectoryDropTarget(
                                         state: state,
                                         item: item,
@@ -1347,12 +1354,9 @@ private extension DragConfiguration {
 
 extension View {
     @ViewBuilder
-    func browserDraggable(state: FileBrowserState, item: BrowserItem) -> some View {
-        if item.localURL != nil {
-            onDrag {
-                state.itemProvider(for: item) ?? NSItemProvider()
-            }
-            .dragConfiguration(.browserFileOperations)
+    func browserDraggable(item: BrowserItem) -> some View {
+        if let url = item.localURL {
+            draggable(containerItemID: url)
         } else {
             self
         }
@@ -1394,6 +1398,7 @@ extension View {
                     }
                 )
             )
+            .dropPreviewsFormation(state.preferences.viewMode.fileDragPreviewsFormation)
         } else {
             self
         }
@@ -1451,6 +1456,7 @@ private struct BrowserFileDropTargetModifier: ViewModifier {
                     }
                 )
             )
+            .dropPreviewsFormation(state.preferences.viewMode.fileDragPreviewsFormation)
             .overlay {
                 if isTargeted {
                     BrowserFileDropHighlight()
@@ -1458,6 +1464,17 @@ private struct BrowserFileDropTargetModifier: ViewModifier {
             }
             .animation(.easeOut(duration: 0.12), value: isTargeted)
             .onDisappear { isTargeted = false }
+    }
+}
+
+private extension BrowserViewMode {
+    var fileDragPreviewsFormation: DragDropPreviewsFormation {
+        switch self {
+        case .list, .columns:
+            .list
+        case .icons, .gallery:
+            .default
+        }
     }
 }
 

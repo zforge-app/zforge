@@ -1559,6 +1559,23 @@ final class FileBrowserState {
         }
     }
 
+    var dragSelectionURLs: [URL] {
+        selectedLocalURLs
+    }
+
+    func prepareDragPayload(_ draggedURLs: [URL]) -> [URL] {
+        guard draggedURLs.count == 1,
+              let draggedURL = draggedURLs.first?.standardizedFileURL,
+              let item = knownItemsByID.values.first(where: {
+                  $0.localURL?.standardizedFileURL == draggedURL
+              }),
+              !selection.contains(item.id) else {
+            return draggedURLs
+        }
+        select(item)
+        return draggedURLs
+    }
+
     func itemProvider(for item: BrowserItem) -> NSItemProvider? {
         guard let url = item.localURL else { return nil }
         if !selection.contains(item.id) {
