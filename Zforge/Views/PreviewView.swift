@@ -110,9 +110,35 @@ struct SelectionOverview: View {
     let items: [BrowserItem]
     let presentation: SelectionOverviewPresentation
     let scale: CGFloat
+    @State private var resolvedFolderSizes: [BrowserItemID: Int64] = [:]
+    @State private var calculatingFolderSizes: Set<BrowserItemID> = []
+
+    init(
+        state: FileBrowserState,
+        items: [BrowserItem],
+        presentation: SelectionOverviewPresentation,
+        scale: CGFloat
+    ) {
+        _state = Bindable(state)
+        self.items = items
+        self.presentation = presentation
+        self.scale = scale
+        _calculatingFolderSizes = State(
+            initialValue: Set(
+                items
+                    .filter { $0.isDirectory && !$0.isSymbolicLink }
+                    .map(\.id)
+            )
+        )
+    }
 
     private var summary: BrowserSelectionSummary {
-        BrowserSelectionSummary(items: items, locale: state.preferences.language.locale)
+        BrowserSelectionSummary(
+            items: items,
+            locale: state.preferences.language.locale,
+            sizeOverrides: resolvedFolderSizes,
+            calculatingSizeIDs: calculatingFolderSizes
+        )
     }
 
     private var singleItemContentOpacity: Double {
@@ -121,14 +147,19 @@ struct SelectionOverview: View {
     }
 
     var body: some View {
-        if presentation == .gallery {
-            galleryOverview
-        } else {
-            columnOverview
-                .frame(width: BrowserLayoutMetrics.previewWidth * scale)
-                .overlay(alignment: .leading) {
-                    Rectangle().fill(.separator).frame(width: 1)
-                }
+        Group {
+            if presentation == .gallery {
+                galleryOverview
+            } else {
+                columnOverview
+                    .frame(width: BrowserLayoutMetrics.previewWidth * scale)
+                    .overlay(alignment: .leading) {
+                        Rectangle().fill(.separator).frame(width: 1)
+                    }
+            }
+        }
+        .task(id: items.map(\.id)) {
+            await calculateFolderSizes()
         }
     }
 
@@ -145,6 +176,7 @@ struct SelectionOverview: View {
                 SelectionInspector(
                     state: state,
                     items: items,
+                    summary: summary,
                     scale: scale
                 )
                     .frame(width: BrowserLayoutMetrics.previewWidth * scale)
@@ -202,6 +234,28 @@ struct SelectionOverview: View {
             }
         }
         .frame(maxHeight: .infinity, alignment: .top)
+    }
+
+    private func calculateFolderSizes() async {
+        let folders = items.filter {
+            $0.isDirectory && !$0.isSymbolicLink
+        }
+        calculatingFolderSizes = Set(folders.map(\.id))
+        resolvedFolderSizes = [:]
+
+        for folder in folders {
+            do {
+                let size = try await state.recursiveSize(of: folder)
+                try Task.checkCancellation()
+                resolvedFolderSizes[folder.id] = size
+            } catch is CancellationError {
+                return
+            } catch {
+                calculatingFolderSizes.remove(folder.id)
+                continue
+            }
+            calculatingFolderSizes.remove(folder.id)
+        }
     }
 }
 
@@ -328,11 +382,8 @@ private struct SelectionHeroItem: View {
 private struct SelectionInspector: View {
     @Bindable var state: FileBrowserState
     let items: [BrowserItem]
+    let summary: BrowserSelectionSummary
     let scale: CGFloat
-
-    private var summary: BrowserSelectionSummary {
-        BrowserSelectionSummary(items: items, locale: state.preferences.language.locale)
-    }
 
     private var singleItemContentOpacity: Double {
         guard items.count == 1, let item = items.first else { return 1 }
@@ -400,6 +451,8 @@ private struct SelectionInspectorIcon: View {
 struct BrowserSelectionSummary {
     let items: [BrowserItem]
     let locale: Locale
+    var sizeOverrides: [BrowserItemID: Int64] = [:]
+    var calculatingSizeIDs: Set<BrowserItemID> = []
 
     var title: String {
         guard items.count != 1 else { return items[0].name }
@@ -409,7 +462,7 @@ struct BrowserSelectionSummary {
     var subtitle: String {
         guard items.count > 1 else {
             let item = items[0]
-            return "\(kind(item)) · \(item.formattedSize)"
+            return "\(kind(item)) · \(formattedSize(for: item))"
         }
 
         let folders = items.filter(\.isContainer).count
@@ -427,9 +480,14 @@ struct BrowserSelectionSummary {
                 : "\(folders) folders"
             parts.append(AppLocalization.string(key, locale: locale))
         }
-        let totalSize = items.compactMap(\.size).reduce(0, +)
-        if totalSize > 0 {
-            parts.append(ByteCountFormatter.string(fromByteCount: totalSize, countStyle: .file))
+        if items.contains(where: { calculatingSizeIDs.contains($0.id) }) {
+            parts.append(AppLocalization.string("Calculating…", locale: locale))
+        } else {
+            let sizes = items.compactMap(effectiveSize)
+            let totalSize = sizes.reduce(0, +)
+            if !sizes.isEmpty {
+                parts.append(ByteCountFormatter.string(fromByteCount: totalSize, countStyle: .file))
+            }
         }
         return parts.joined(separator: " · ")
     }
@@ -449,6 +507,18 @@ struct BrowserSelectionSummary {
         if item.isDirectory { return AppLocalization.string("Folder", locale: locale) }
         if item.isArchive { return AppLocalization.string("Archive", locale: locale) }
         return item.contentType?.localizedDescription ?? AppLocalization.string("Document", locale: locale)
+    }
+
+    private func formattedSize(for item: BrowserItem) -> String {
+        if calculatingSizeIDs.contains(item.id) {
+            return AppLocalization.string("Calculating…", locale: locale)
+        }
+        guard let size = effectiveSize(item) else { return "—" }
+        return ByteCountFormatter.string(fromByteCount: size, countStyle: .file)
+    }
+
+    private func effectiveSize(_ item: BrowserItem) -> Int64? {
+        sizeOverrides[item.id] ?? item.size
     }
 
     private func dateRange(_ dates: [Date]) -> String {

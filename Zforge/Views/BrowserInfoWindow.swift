@@ -7,10 +7,20 @@ final class BrowserInfoWindowCoordinator: NSObject, NSWindowDelegate {
 
     private var controllers: [ObjectIdentifier: NSWindowController] = [:]
 
-    func present(items: [BrowserItem], locale: Locale) {
+    func present(
+        items: [BrowserItem],
+        locale: Locale,
+        fileSystem: any FileSystemServing,
+        archives: any ArchiveServing
+    ) {
         guard !items.isEmpty else { return }
         let content = NSHostingController(
-            rootView: BrowserInfoWindow(items: items, locale: locale)
+            rootView: BrowserInfoWindow(
+                items: items,
+                locale: locale,
+                fileSystem: fileSystem,
+                archives: archives
+            )
                 .environment(\.locale, locale)
         )
         let window = NSWindow(contentViewController: content)
@@ -37,9 +47,38 @@ final class BrowserInfoWindowCoordinator: NSObject, NSWindowDelegate {
 private struct BrowserInfoWindow: View {
     let items: [BrowserItem]
     let locale: Locale
+    let fileSystem: any FileSystemServing
+    let archives: any ArchiveServing
+
+    @State private var resolvedFolderSizes: [BrowserItemID: Int64] = [:]
+    @State private var calculatingFolderSizes: Set<BrowserItemID> = []
+
+    init(
+        items: [BrowserItem],
+        locale: Locale,
+        fileSystem: any FileSystemServing,
+        archives: any ArchiveServing
+    ) {
+        self.items = items
+        self.locale = locale
+        self.fileSystem = fileSystem
+        self.archives = archives
+        _calculatingFolderSizes = State(
+            initialValue: Set(
+                items
+                    .filter { $0.isDirectory && !$0.isSymbolicLink }
+                    .map(\.id)
+            )
+        )
+    }
 
     private var summary: BrowserSelectionSummary {
-        BrowserSelectionSummary(items: items, locale: locale)
+        BrowserSelectionSummary(
+            items: items,
+            locale: locale,
+            sizeOverrides: resolvedFolderSizes,
+            calculatingSizeIDs: calculatingFolderSizes
+        )
     }
 
     var body: some View {
@@ -80,6 +119,9 @@ private struct BrowserInfoWindow: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(nsColor: .underPageBackgroundColor))
+        .task(id: items.map(\.id)) {
+            await calculateFolderSizes()
+        }
     }
 
     private var infoIcon: some View {
@@ -99,5 +141,42 @@ private struct BrowserInfoWindow: View {
             Text(value).multilineTextAlignment(.trailing)
         }
         .padding(.vertical, 8)
+    }
+
+    private func calculateFolderSizes() async {
+        let folders = items.filter {
+            $0.isDirectory && !$0.isSymbolicLink
+        }
+        calculatingFolderSizes = Set(folders.map(\.id))
+        resolvedFolderSizes = [:]
+
+        await withTaskGroup(of: (BrowserItemID, Int64?).self) { group in
+            for folder in folders {
+                group.addTask {
+                    do {
+                        let size: Int64
+                        if let url = folder.localURL {
+                            size = try await fileSystem.recursiveSize(at: url)
+                        } else {
+                            size = try await archives.recursiveSize(of: folder)
+                        }
+                        return (folder.id, size)
+                    } catch {
+                        return (folder.id, nil)
+                    }
+                }
+            }
+
+            for await (id, size) in group {
+                guard !Task.isCancelled else {
+                    group.cancelAll()
+                    return
+                }
+                if let size {
+                    resolvedFolderSizes[id] = size
+                }
+                calculatingFolderSizes.remove(id)
+            }
+        }
     }
 }

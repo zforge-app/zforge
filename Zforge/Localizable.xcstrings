@@ -389,6 +389,16 @@
         }
       }
     },
+    "Calculating…" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Calculando…"
+          }
+        }
+      }
+    },
     "Cancel" : {
       "localizations" : {
         "pt-BR" : {
@@ -1836,6 +1846,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Não foi possível carregar as URLs dos arquivos soltos."
+          }
+        }
+      }
+    },
+    "The folder size could not be calculated." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível calcular o tamanho da pasta."
           }
         }
       }

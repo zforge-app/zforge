@@ -29,6 +29,42 @@ struct ZforgeTests {
         #expect(FolderContentsDetector.hasContents(at: hiddenOnly, modificationDate: hiddenOnlyDate, cache: &cache))
     }
 
+    @Test("Get Info calculates the recursive size of folders")
+    func getInfoCalculatesRecursiveFolderSize() async throws {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ZforgeFolderSize-\(UUID().uuidString)", isDirectory: true)
+        let nested = root.appendingPathComponent("Nested", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        try FileManager.default.createDirectory(at: nested, withIntermediateDirectories: true)
+        try Data(repeating: 0, count: 3).write(to: root.appendingPathComponent("Root.bin"))
+        try Data(repeating: 0, count: 5).write(to: nested.appendingPathComponent(".Hidden.bin"))
+
+        let size = try await FileSystemService().recursiveSize(at: root)
+
+        #expect(size == 8)
+    }
+
+    @Test("Get Info reports folder size calculation and its result")
+    func getInfoFolderSizeSummary() {
+        let folder = item("Folder", directory: true, size: nil)
+        let locale = Locale(identifier: "en")
+
+        let calculating = BrowserSelectionSummary(
+            items: [folder],
+            locale: locale,
+            calculatingSizeIDs: [folder.id]
+        )
+        #expect(calculating.subtitle == "Folder · Calculating…")
+
+        let resolved = BrowserSelectionSummary(
+            items: [folder],
+            locale: locale,
+            sizeOverrides: [folder.id: 8]
+        )
+        #expect(resolved.subtitle == "Folder · 8 bytes")
+    }
+
     @Test("Sidebar maximum width always reserves 360 points for content")
     func sidebarMaximumWidth() {
         #expect(BrowserSidebarLayout.maximumWidth(for: 640) == 280)
@@ -495,6 +531,102 @@ struct ZforgeTests {
         )
     }
 
+    @Test("Extracting from nested archives preserves every archive boundary")
+    @MainActor
+    func columnNestedArchiveExtractionPreservesHierarchy() async throws {
+        let fileManager = FileManager.default
+        let buildRoot = fileManager.temporaryDirectory
+            .appendingPathComponent("ZforgeNestedArchiveBuild-\(UUID().uuidString)", isDirectory: true)
+        let browsingRoot = fileManager.temporaryDirectory
+            .appendingPathComponent("ZforgeNestedArchiveExtraction-\(UUID().uuidString)", isDirectory: true)
+        let sourceFolder = buildRoot
+            .appendingPathComponent("Payload", isDirectory: true)
+            .appendingPathComponent("work", isDirectory: true)
+        let selectedFolder = sourceFolder
+            .appendingPathComponent("qintess", isDirectory: true)
+            .appendingPathComponent("sgo", isDirectory: true)
+            .appendingPathComponent("gestao-orcamentaria-nginx", isDirectory: true)
+        let readmeURL = selectedFolder.appendingPathComponent("README.md")
+        let workArchiveURL = buildRoot.appendingPathComponent("work.zip")
+        let middleArchiveURL = buildRoot.appendingPathComponent("Archive.zip")
+        let outerArchiveURL = browsingRoot.appendingPathComponent("Archive 2.zip")
+        try fileManager.createDirectory(at: selectedFolder, withIntermediateDirectories: true)
+        try fileManager.createDirectory(at: browsingRoot, withIntermediateDirectories: true)
+        try Data("# Nested archive".utf8).write(to: readmeURL)
+        defer {
+            try? fileManager.removeItem(at: buildRoot)
+            try? fileManager.removeItem(at: browsingRoot)
+        }
+
+        let engine = SevenZipArchiveEngine(helperURL: helperURL)
+        try await engine.createArchive(
+            from: [sourceFolder],
+            outputURL: workArchiveURL,
+            format: .zip,
+            progress: { _ in }
+        )
+        try await engine.createArchive(
+            from: [workArchiveURL],
+            outputURL: middleArchiveURL,
+            format: .zip,
+            progress: { _ in }
+        )
+        try await engine.createArchive(
+            from: [middleArchiveURL],
+            outputURL: outerArchiveURL,
+            format: .zip,
+            progress: { _ in }
+        )
+
+        let suiteName = "ZforgeNestedArchiveExtraction-\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let preferences = FileBrowserPreferences(defaults: defaults)
+        preferences.viewMode = .columns
+        preferences.language = .english
+        let state = FileBrowserState(
+            preferences: preferences,
+            fileSystem: FileSystemService(),
+            fileOperations: FileOperationService(),
+            grants: UIFixtureAccessGrantStore(),
+            archives: engine
+        )
+        defer { state.close() }
+
+        await state.navigateToSidebar(browsingRoot, name: browsingRoot.lastPathComponent)
+        let outerArchive = try #require(state.items.first(where: { $0.name == "Archive 2.zip" }))
+        await state.activateColumnItem(outerArchive, in: state.location).value
+        let middleArchive = try #require(state.items.first(where: { $0.name == "Archive.zip" }))
+        await state.activateColumnItem(middleArchive, in: state.location).value
+        let workArchive = try #require(state.items.first(where: { $0.name == "work.zip" }))
+        await state.activateColumnItem(workArchive, in: state.location).value
+
+        for folderName in ["work", "qintess", "sgo", "gestao-orcamentaria-nginx"] {
+            let folder = try #require(state.items.first(where: { $0.name == folderName }))
+            await state.activateColumnItem(folder, in: state.location).value
+        }
+        let readme = try #require(state.items.first(where: { $0.name == "README.md" }))
+        state.select(readme)
+
+        #expect(state.archiveToolbarAction == .extractSelected)
+        #expect(await state.performArchiveToolbarAction() != nil)
+        let expectedURL = browsingRoot
+            .appendingPathComponent("Archive 2", isDirectory: true)
+            .appendingPathComponent("Archive", isDirectory: true)
+            .appendingPathComponent("work", isDirectory: true)
+            .appendingPathComponent("work", isDirectory: true)
+            .appendingPathComponent("qintess", isDirectory: true)
+            .appendingPathComponent("sgo", isDirectory: true)
+            .appendingPathComponent("gestao-orcamentaria-nginx", isDirectory: true)
+            .appendingPathComponent("README.md")
+        #expect(fileManager.fileExists(atPath: expectedURL.path))
+        #expect(
+            state.columnItems[.fileSystem(browsingRoot)]?.contains(where: {
+                $0.name == "Archive 2"
+            }) == true
+        )
+    }
+
     @Test("Column action extracts an external archive selected in the base column")
     @MainActor
     func columnExternalArchiveExtractionFromBaseColumn() async throws {
@@ -912,6 +1044,18 @@ struct ZforgeTests {
         #expect(rootItems.contains(where: { $0.name == "Folder" && $0.isDirectory }))
 
         let hello = try #require(rootItems.first(where: { $0.name == "hello.txt" }))
+        let folder = try #require(rootItems.first(where: { $0.name == "Folder" }))
+        let folderAddress: ArchiveAddress
+        switch folder.location {
+        case let .archive(address):
+            folderAddress = address
+        case .fileSystem, .recents:
+            Issue.record("The archive folder did not have a virtual address")
+            return
+        }
+        let folderItems = try await engine.items(at: folderAddress)
+        let expectedFolderSize = folderItems.compactMap(\.size).reduce(0, +)
+        #expect(try await engine.recursiveSize(of: folder) == expectedFolderSize)
         let materialized = try await engine.materialize(item: hello, purpose: .preview, automaticLimit: 10 * 1_024 * 1_024)
         #expect(try String(contentsOf: materialized, encoding: .utf8) == "Hello from Zforge.\n")
         await engine.closeSession(opened.address.sessionID)
@@ -1118,6 +1262,11 @@ struct ZforgeTests {
         #expect(nested.address.nestedArchiveDepth == 1)
         #expect(nested.address.maximumNestedArchiveDepth == 1)
         #expect(!nested.address.canOpenNestedArchive)
+        let hierarchy = try await engine.archiveHierarchy(for: nested.address)
+        #expect(
+            hierarchy == ["nested.7z", "inner.zip"],
+            "Unexpected archive hierarchy: \(hierarchy)"
+        )
         let nestedItems = try await engine.items(at: nested.address)
         #expect(nestedItems.contains(where: { $0.name == "hello.txt" }))
         await engine.closeSession(outer.address.sessionID)
@@ -1364,6 +1513,8 @@ private actor ColumnArchiveRaceEngine: ArchiveServing {
         resolveConflict: @escaping ArchiveConflictResolver,
         progress: @escaping ArchiveProgressHandler
     ) async throws {}
+
+    func recursiveSize(of item: BrowserItem) async throws -> Int64 { item.size ?? 0 }
 
     func archiveRootURL(for address: ArchiveAddress) async throws -> URL {
         URL(fileURLWithPath: "/tmp/\(namesByArchiveID[address.archiveID] ?? "Unknown.zip")")

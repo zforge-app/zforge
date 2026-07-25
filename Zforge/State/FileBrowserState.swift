@@ -321,9 +321,16 @@ final class FileBrowserState {
                     return nil
                 }
                 let rootURL = try await archives.archiveRootURL(for: address)
-                let destination = rootURL
-                    .deletingLastPathComponent()
-                    .appendingPathComponent(archiveBaseName(rootURL.lastPathComponent), isDirectory: true)
+                let hierarchy = try await archives.archiveHierarchy(for: address)
+                guard !hierarchy.isEmpty else { return nil }
+                let destination = hierarchy.reduce(
+                    rootURL.deletingLastPathComponent()
+                ) { partialDestination, archiveName in
+                    partialDestination.appendingPathComponent(
+                        archiveExtractionDirectoryName(for: archiveName),
+                        isDirectory: true
+                    )
+                }
                 return await executeInternalExtraction(
                     items: virtualItems,
                     destination: destination,
@@ -644,8 +651,17 @@ final class FileBrowserState {
     func showGetInfo() {
         BrowserInfoWindowCoordinator.shared.present(
             items: previewItems,
-            locale: preferences.language.locale
+            locale: preferences.language.locale,
+            fileSystem: fileSystem,
+            archives: archives
         )
+    }
+
+    func recursiveSize(of item: BrowserItem) async throws -> Int64 {
+        if let url = item.localURL {
+            return try await fileSystem.recursiveSize(at: url)
+        }
+        return try await archives.recursiveSize(of: item)
     }
 
     func open(
@@ -981,6 +997,15 @@ final class FileBrowserState {
             return
         }
 
+        let loadedFileSystemLocations = Set(
+            pathComponents.compactMap { component -> URL? in
+                guard case let .fileSystem(url) = component.location else { return nil }
+                return url.standardizedFileURL
+            } + columnItems.keys.compactMap { location -> URL? in
+                guard case let .fileSystem(url) = location else { return nil }
+                return url.standardizedFileURL
+            }
+        )
         var affectedColumnLocations = Set<BrowserLocation>()
         for destinationDirectory in destinationDirectories {
             let destination = destinationDirectory.standardizedFileURL
@@ -988,6 +1013,10 @@ final class FileBrowserState {
             affectedColumnLocations.insert(
                 .fileSystem(destination.deletingLastPathComponent().standardizedFileURL)
             )
+            for loadedLocation in loadedFileSystemLocations
+            where destination.pathComponents.starts(with: loadedLocation.pathComponents) {
+                affectedColumnLocations.insert(.fileSystem(loadedLocation))
+            }
         }
         await reload(
             preservingColumnSelection: true,
@@ -1068,6 +1097,13 @@ final class FileBrowserState {
             }
         }
         return URL(fileURLWithPath: name).deletingPathExtension().lastPathComponent
+    }
+
+    private func archiveExtractionDirectoryName(for archiveName: String) -> String {
+        let baseName = archiveBaseName(archiveName)
+        return baseName.isEmpty || baseName == "." || baseName == ".."
+            ? AppLocalization.string("Archive", locale: preferences.language.locale)
+            : baseName
     }
 
     private func isDirectory(at url: URL) -> Bool {

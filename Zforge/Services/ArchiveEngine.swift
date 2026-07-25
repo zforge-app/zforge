@@ -107,6 +107,8 @@ nonisolated protocol ArchiveServing: Sendable {
         resolveConflict: @escaping ArchiveConflictResolver,
         progress: @escaping ArchiveProgressHandler
     ) async throws
+    func recursiveSize(of item: BrowserItem) async throws -> Int64
+    func archiveHierarchy(for address: ArchiveAddress) async throws -> [String]
     func archiveRootURL(for address: ArchiveAddress) async throws -> URL
     func setPassword(_ password: String?, for sessionID: UUID) async
     func closeSession(_ sessionID: UUID) async
@@ -118,6 +120,10 @@ nonisolated protocol ArchiveServing: Sendable {
 extension ArchiveServing {
     func openArchive(at url: URL, password: String?) async throws -> ArchiveOpenResult {
         try await openArchive(at: url, password: password, policy: .standard)
+    }
+
+    func archiveHierarchy(for address: ArchiveAddress) async throws -> [String] {
+        [try await archiveRootURL(for: address).lastPathComponent]
     }
 }
 
@@ -140,6 +146,7 @@ actor SevenZipArchiveEngine: ArchiveServing {
         let id: UUID
         let fileURL: URL
         let displayName: String
+        let parentArchiveID: UUID?
         let entries: [String: Entry]
         let isRawStream: Bool
     }
@@ -258,11 +265,31 @@ actor SevenZipArchiveEngine: ArchiveServing {
         }
     }
 
+    func recursiveSize(of item: BrowserItem) throws -> Int64 {
+        guard case let .archive(address) = item.location,
+              let session = sessions[address.sessionID],
+              let archive = session.archives[address.archiveID] else {
+            throw ArchiveEngineError.itemNotFound
+        }
+
+        let path = normalized(address.internalPath)
+        let prefix = path.isEmpty ? "" : "\(path)/"
+        return archive.entries.values.reduce(into: Int64(0)) { total, entry in
+            guard !entry.isDirectory, entry.path.hasPrefix(prefix) else { return }
+            total += entry.size ?? 0
+        }
+    }
+
     func openNestedArchive(item: BrowserItem, password: String?) async throws -> ArchiveOpenResult {
         guard case let .archive(address) = item.location else { throw ArchiveEngineError.itemNotFound }
         guard address.canOpenNestedArchive else { throw ArchiveEngineError.nestedArchiveNotAllowed }
         let url = try await materialize(item: item, purpose: .nestedArchive, automaticLimit: nil)
-        let archive = try await listArchive(at: url, displayName: item.name, password: password)
+        let archive = try await listArchive(
+            at: url,
+            displayName: item.name,
+            password: password,
+            parentArchiveID: address.archiveID
+        )
         guard var session = sessions[address.sessionID] else { throw ArchiveEngineError.itemNotFound }
         session.archives[archive.id] = archive
         if let password { session.password = password }
@@ -521,6 +548,25 @@ actor SevenZipArchiveEngine: ArchiveServing {
         return session.originalURL
     }
 
+    func archiveHierarchy(for address: ArchiveAddress) async throws -> [String] {
+        guard let session = sessions[address.sessionID] else {
+            throw ArchiveEngineError.itemNotFound
+        }
+
+        var names: [String] = []
+        var currentArchiveID: UUID? = address.archiveID
+        var visitedArchiveIDs = Set<UUID>()
+        while let archiveID = currentArchiveID {
+            guard visitedArchiveIDs.insert(archiveID).inserted,
+                  let archive = session.archives[archiveID] else {
+                throw ArchiveEngineError.itemNotFound
+            }
+            names.append(archive.displayName)
+            currentArchiveID = archive.parentArchiveID
+        }
+        return Array(names.reversed())
+    }
+
     func setPassword(_ password: String?, for sessionID: UUID) {
         guard var session = sessions[sessionID] else { return }
         session.password = password
@@ -558,7 +604,12 @@ actor SevenZipArchiveEngine: ArchiveServing {
         }
     }
 
-    private func listArchive(at url: URL, displayName: String, password: String?) async throws -> ArchiveRecord {
+    private func listArchive(
+        at url: URL,
+        displayName: String,
+        password: String?,
+        parentArchiveID: UUID? = nil
+    ) async throws -> ArchiveRecord {
         let result = try await processRunner.run(
             arguments: listingArguments(archive: url),
             password: password,
@@ -592,6 +643,7 @@ actor SevenZipArchiveEngine: ArchiveServing {
             id: UUID(),
             fileURL: url,
             displayName: displayName,
+            parentArchiveID: parentArchiveID,
             entries: entries,
             isRawStream: isRawStream
         )

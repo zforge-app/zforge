@@ -26,6 +26,8 @@ actor UIFixtureFileSystemService: FileSystemServing {
         makeItem(name: url.lastPathComponent, archive: ArchiveFormatRegistry.recognizes(url.lastPathComponent))
     }
 
+    func recursiveSize(at url: URL) async throws -> Int64 { 0 }
+
     func resolveNavigationURL(_ url: URL) async throws -> URL { url }
 
     private func makeItem(
@@ -142,6 +144,8 @@ actor UIFixtureArchiveEngine: ArchiveServing {
     ) async throws {
         progress(ArchiveProgress(phase: .extracting, fraction: 1))
     }
+
+    func recursiveSize(of item: BrowserItem) async throws -> Int64 { item.size ?? 0 }
 
     func archiveRootURL(for address: ArchiveAddress) async throws -> URL {
         URL(fileURLWithPath: "/ZforgeFixtures/Sample.zip")

@@ -4,6 +4,7 @@ import UniformTypeIdentifiers
 nonisolated protocol FileSystemServing: Sendable {
     func items(in directory: URL, showHidden: Bool) async throws -> [BrowserItem]
     func item(at url: URL) async throws -> BrowserItem
+    func recursiveSize(at url: URL) async throws -> Int64
     func resolveNavigationURL(_ url: URL) async throws -> URL
 }
 
@@ -47,6 +48,45 @@ actor FileSystemService: FileSystemServing {
 
     func item(at url: URL) async throws -> BrowserItem {
         try makeItem(at: url)
+    }
+
+    func recursiveSize(at url: URL) async throws -> Int64 {
+        do {
+            let values = try url.resourceValues(forKeys: [.isDirectoryKey, .fileSizeKey])
+            guard values.isDirectory == true else {
+                return Int64(values.fileSize ?? 0)
+            }
+
+            guard let enumerator = fileManager.enumerator(
+                at: url,
+                includingPropertiesForKeys: [.isRegularFileKey, .fileSizeKey],
+                options: []
+            ) else {
+                throw BrowserError.unavailable(
+                    AppLocalization.string("The folder size could not be calculated.")
+                )
+            }
+
+            var total: Int64 = 0
+            while let childURL = enumerator.nextObject() as? URL {
+                try Task.checkCancellation()
+                let childValues = try childURL.resourceValues(
+                    forKeys: [.isRegularFileKey, .fileSizeKey]
+                )
+                if childValues.isRegularFile == true {
+                    total += Int64(childValues.fileSize ?? 0)
+                }
+            }
+            return total
+        } catch is CancellationError {
+            throw CancellationError()
+        } catch CocoaError.fileReadNoPermission {
+            throw BrowserError.permissionDenied(url)
+        } catch let error as BrowserError {
+            throw error
+        } catch {
+            throw BrowserError.unavailable(error.localizedDescription)
+        }
     }
 
     func resolveNavigationURL(_ url: URL) async throws -> URL {
