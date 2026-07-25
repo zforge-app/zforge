@@ -19,6 +19,7 @@ final class FileBrowserPreferences {
         static let language = AppLanguagePreference.defaultsKey
         static let archiveNestingLimit = "archive.nestingLimit"
         static let archiveRootSizeLimitGB = "archive.rootSizeLimitGB"
+        static let defaultCompressionFormat = "archive.defaultCompressionFormat"
     }
 
     private let defaults: UserDefaults
@@ -64,6 +65,9 @@ final class FileBrowserPreferences {
                 defaults.set(archiveRootSizeLimitGB, forKey: Key.archiveRootSizeLimitGB)
             }
         }
+    }
+    var defaultCompressionFormat: ArchiveCompressionFormat {
+        didSet { defaults.set(defaultCompressionFormat.rawValue, forKey: Key.defaultCompressionFormat) }
     }
 
     var archiveBrowsingPolicy: ArchiveBrowsingPolicy {
@@ -127,6 +131,9 @@ final class FileBrowserPreferences {
         archiveRootSizeLimitGB = defaults.object(forKey: Key.archiveRootSizeLimitGB) == nil
             ? 1
             : min(max(defaults.integer(forKey: Key.archiveRootSizeLimitGB), 1), 5)
+        defaultCompressionFormat = ArchiveCompressionFormat(
+            rawValue: defaults.string(forKey: Key.defaultCompressionFormat) ?? ""
+        ) ?? .zip
 
         if let argumentIndex = ProcessInfo.processInfo.arguments.firstIndex(of: "--ui-view-mode"),
            ProcessInfo.processInfo.arguments.indices.contains(argumentIndex + 1),

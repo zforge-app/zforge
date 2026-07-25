@@ -114,6 +114,39 @@ actor UIFixtureArchiveEngine: ArchiveServing {
         return url
     }
 
+    func createArchive(
+        from sourceURLs: [URL],
+        outputURL: URL,
+        format: ArchiveCompressionFormat,
+        progress: @escaping ArchiveProgressHandler
+    ) async throws {
+        progress(ArchiveProgress(phase: .compressing, fraction: 1))
+    }
+
+    func extractArchive(
+        at url: URL,
+        to destinationURL: URL,
+        password: String?,
+        resolveConflict: @escaping ArchiveConflictResolver,
+        progress: @escaping ArchiveProgressHandler
+    ) async throws {
+        progress(ArchiveProgress(phase: .extracting, fraction: 1))
+    }
+
+    func extractItems(
+        _ items: [BrowserItem],
+        to destinationURL: URL,
+        password: String?,
+        resolveConflict: @escaping ArchiveConflictResolver,
+        progress: @escaping ArchiveProgressHandler
+    ) async throws {
+        progress(ArchiveProgress(phase: .extracting, fraction: 1))
+    }
+
+    func archiveRootURL(for address: ArchiveAddress) async throws -> URL {
+        URL(fileURLWithPath: "/ZforgeFixtures/Sample.zip")
+    }
+
     func setPassword(_ password: String?, for sessionID: UUID) async {}
     func closeSession(_ sessionID: UUID) async {}
     func closeAllSessions() async {}

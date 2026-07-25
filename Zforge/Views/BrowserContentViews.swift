@@ -285,12 +285,15 @@ struct BrowserContent: View {
     private func focusColumn(at index: Int, selectsFirstItemWhenNeeded: Bool) {
         guard state.pathComponents.indices.contains(index) else { return }
         let location = state.pathComponents[index].location
+        if selectsFirstItemWhenNeeded {
+            state.activateFirstItemInColumn(at: location)
+            return
+        }
+
         let items = state.sortedColumnItems(at: location)
         let selectedItem = state.columnSelections[location].flatMap { selectedID in
             items.first(where: { $0.id == selectedID })
-        } ?? (selectsFirstItemWhenNeeded ? items.first : nil)
-
-        guard !selectsFirstItemWhenNeeded || selectedItem != nil else { return }
+        }
 
         if let selectedItem {
             state.columnSelections[location] = selectedItem.id

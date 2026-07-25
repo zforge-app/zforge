@@ -38,9 +38,17 @@ final class FileBrowserState {
         case openFile(URL)
         case openNested(BrowserItem)
         case expandInline(BrowserItem)
+        case extractArchive(BrowserItem)
+        case extractItems([BrowserItem], destinationURL: URL)
 
         var sessionID: UUID? {
-            guard case let .openNested(item) = self,
+            let item: BrowserItem?
+            switch self {
+            case let .openNested(value), let .extractArchive(value): item = value
+            case let .extractItems(values, _): item = values.first
+            case .openFile, .expandInline: item = nil
+            }
+            guard let item,
                   case let .archive(address) = item.location else { return nil }
             return address.sessionID
         }
@@ -67,10 +75,14 @@ final class FileBrowserState {
     @ObservationIgnored private var refreshTask: Task<Void, Never>?
     @ObservationIgnored private var previewTask: Task<Void, Never>?
     @ObservationIgnored private var previewGeneration: UInt64 = 0
+    @ObservationIgnored private var columnActivationTask: Task<Void, Never>?
+    @ObservationIgnored private var columnActivationGeneration: UInt64 = 0
     @ObservationIgnored private var backStack: [HistoryEntry] = []
     @ObservationIgnored private var forwardStack: [HistoryEntry] = []
     @ObservationIgnored private var confirmedLargeItems: Set<BrowserItemID> = []
     @ObservationIgnored private var inlineArchiveResults: [BrowserItemID: ArchiveOpenResult] = [:]
+    @ObservationIgnored private var pendingArchiveExtractionItems: [BrowserItem] = []
+    @ObservationIgnored private var pendingArchiveExtractionIndex = 0
     @ObservationIgnored private let initialURL: URL?
     @ObservationIgnored private let quickLookPanel = QuickLookPanelCoordinator()
     @ObservationIgnored private var pendingAuthorizationPurpose: AuthorizationPurpose?
@@ -81,6 +93,7 @@ final class FileBrowserState {
     @ObservationIgnored private var knownItemsRevision: UInt64 = 0
     @ObservationIgnored private var columnItemsRevision: UInt64 = 0
     @ObservationIgnored private var recursiveExpansionGeneration: UInt64 = 0
+    @ObservationIgnored private var activeFileTransferCount = 0
     @ObservationIgnored private var sortedItemsCache: (
         revision: UInt64,
         sort: BrowserSort,
@@ -142,7 +155,11 @@ final class FileBrowserState {
     var previewURLs: [BrowserItemID: URL] = [:]
     var previewItemsRequiringManualLoad: Set<BrowserItemID> = []
     var pendingLargeOperation: LargeOperation?
+    var fileOperationInProgress = false
+    var fileOperationDescription = ""
     var archiveOperationInProgress = false
+    var archiveProgress: ArchiveProgress?
+    var archiveOperationDescription = "Working with archive…"
     var showingGoToFolder = false
     var showingServerConnection = false
     var renamingItemURL: URL?
@@ -208,14 +225,116 @@ final class FileBrowserState {
     }
 
     var archiveToolbarAction: ArchiveToolbarAction {
-        switch location {
-        case .archive:
-            return selection.isEmpty ? .unavailableInsideArchive : .extractSelected
-        case .recents, .fileSystem:
-            let selectedItems = selectedItems
-            guard !selectedItems.isEmpty else { return .unavailableOutsideArchive }
-            if selectedItems.contains(where: { !$0.isArchive }) { return .compress }
-            return .extractAll
+        let selectedItems = selectedItems
+        if case .recents = location {
+            return .unavailableOutsideArchive
+        }
+        guard !selectedItems.isEmpty else {
+            if case .archive = location { return .unavailableInsideArchive }
+            return .unavailableOutsideArchive
+        }
+
+        let virtualItems = selectedItems.filter {
+            if case .archive = $0.location { return true }
+            return false
+        }
+        if !virtualItems.isEmpty {
+            return virtualItems.count == selectedItems.count
+                ? .extractSelected
+                : .unavailableInsideArchive
+        }
+
+        guard selectedItems.allSatisfy({ $0.localURL != nil }) else {
+            if case .archive = location { return .unavailableInsideArchive }
+            return .unavailableOutsideArchive
+        }
+        if selectedItems.contains(where: { !$0.isArchive }) { return .compress }
+        return .extractAll
+    }
+
+    func performArchiveToolbarAction() async -> String? {
+        guard !archiveOperationInProgress else { return nil }
+        switch archiveToolbarAction {
+        case .compress:
+            let sources = selectedItems.compactMap(\.localURL)
+            guard sources.count == selectedItems.count, !sources.isEmpty else { return nil }
+            guard let destinationDirectory = archiveCreationDirectory(for: sources) else { return nil }
+            let format = preferences.defaultCompressionFormat
+            let outputURL = uniqueArchiveOutputURL(
+                for: sources,
+                in: destinationDirectory,
+                format: format
+            )
+            return await runArchiveOperation(
+                description: AppLocalization.string(
+                    "Compressing selected items…",
+                    locale: preferences.language.locale
+                )
+            ) {
+                try await self.archives.createArchive(
+                    from: sources,
+                    outputURL: outputURL,
+                    format: format,
+                    progress: self.archiveProgressHandler()
+                )
+                if self.preferences.viewMode == .columns {
+                    await self.reload(
+                        preservingColumnSelection: true,
+                        refreshingColumnLocations: [
+                            .fileSystem(destinationDirectory.standardizedFileURL)
+                        ]
+                    )
+                } else {
+                    await self.reload()
+                }
+                return AppLocalization.string(
+                    "Archive created successfully.",
+                    locale: self.preferences.language.locale
+                )
+            }
+        case .extractAll:
+            let externalArchives = selectedItems
+            guard !externalArchives.isEmpty,
+                  externalArchives.allSatisfy({
+                      $0.isArchive && $0.localURL != nil
+                  }) else { return nil }
+            pendingArchiveExtractionItems = externalArchives
+            pendingArchiveExtractionIndex = 0
+            return await processNextArchiveExtraction(password: nil)
+        case .extractSelected:
+            let virtualItems = selectedItems
+            guard !virtualItems.isEmpty,
+                  virtualItems.allSatisfy({
+                      if case .archive = $0.location { return true }
+                      return false
+                  }) else { return nil }
+            do {
+                let address: ArchiveAddress
+                if case let .archive(currentAddress) = location {
+                    address = currentAddress
+                } else if let selectedAddress = selectedItems.compactMap({ item -> ArchiveAddress? in
+                    guard case let .archive(itemAddress) = item.location else { return nil }
+                    return itemAddress
+                }).first {
+                    address = selectedAddress
+                } else {
+                    return nil
+                }
+                let rootURL = try await archives.archiveRootURL(for: address)
+                let destination = rootURL
+                    .deletingLastPathComponent()
+                    .appendingPathComponent(archiveBaseName(rootURL.lastPathComponent), isDirectory: true)
+                return await executeInternalExtraction(
+                    items: virtualItems,
+                    destination: destination,
+                    password: nil
+                )
+            } catch {
+                self.error = mapError(error)
+                return nil
+            }
+        case .unavailableInsideArchive, .unavailableOutsideArchive:
+            return nil
         }
     }
 
@@ -262,6 +381,10 @@ final class FileBrowserState {
     /// being browsed, independently of the focused row's contextual target.
     var fileDropDestinationURL: URL? { currentDirectoryURL }
     var fileOperationDestinationURL: URL? {
+        if preferences.viewMode == .columns,
+           let activeColumnLocation {
+            return activeColumnLocation.fileSystemURL?.standardizedFileURL
+        }
         guard let currentDirectoryURL else { return nil }
         guard preferences.viewMode == .list, let focusedItemID else {
             return currentDirectoryURL
@@ -561,6 +684,7 @@ final class FileBrowserState {
         case let .fileSystem(url):
             do {
                 let resolved = try await fileSystem.resolveNavigationURL(url)
+                guard !Task.isCancelled else { return }
                 let key = resolved.standardizedFileURL.path
                 let ancestorPaths = Set(pathComponents.compactMap { component -> String? in
                     guard case let .fileSystem(ancestorURL) = component.location else { return nil }
@@ -582,6 +706,7 @@ final class FileBrowserState {
                     clearsSelection: clearsSelection
                 )
             } catch {
+                guard !Task.isCancelled else { return }
                 self.error = mapError(error)
             }
         case let .archive(address):
@@ -607,8 +732,16 @@ final class FileBrowserState {
             pendingLargeOperation = .openNested(item)
             return
         }
+        archiveOperationDescription = AppLocalization.string(
+            "Loading…",
+            locale: preferences.language.locale
+        )
+        archiveProgress = nil
         archiveOperationInProgress = true
-        defer { archiveOperationInProgress = false }
+        defer {
+            archiveOperationInProgress = false
+            archiveProgress = nil
+        }
         do {
             let result: ArchiveOpenResult
             switch item.location {
@@ -627,6 +760,12 @@ final class FileBrowserState {
             case .archive:
                 result = try await archives.openNestedArchive(item: item, password: password)
             }
+            guard !Task.isCancelled else {
+                if case .fileSystem = item.location {
+                    await archives.closeSession(result.address.sessionID)
+                }
+                return
+            }
             passwordOperation = nil
             passwordError = nil
             await navigate(
@@ -637,14 +776,17 @@ final class FileBrowserState {
                 clearsSelection: clearsSelection
             )
         } catch ArchiveEngineError.passwordRequired {
+            guard !Task.isCancelled else { return }
             passwordOperation = item.localURL.map(PasswordOperation.openFile) ?? .openNested(item)
         } catch ArchiveEngineError.invalidPassword {
+            guard !Task.isCancelled else { return }
             passwordError = AppLocalization.string(
                 "Incorrect password. Try again.",
                 locale: preferences.language.locale
             )
             passwordOperation = item.localURL.map(PasswordOperation.openFile) ?? .openNested(item)
         } catch {
+            guard !Task.isCancelled else { return }
             self.error = mapError(error)
         }
     }
@@ -664,6 +806,16 @@ final class FileBrowserState {
             await openArchive(item, password: password)
         case let .expandInline(item):
             await toggleExpansion(item, password: password)
+        case .extractArchive:
+            passwordOperation = nil
+            _ = await processNextArchiveExtraction(password: password)
+        case let .extractItems(items, destinationURL):
+            passwordOperation = nil
+            _ = await executeInternalExtraction(
+                items: items,
+                destination: destinationURL,
+                password: password
+            )
         }
     }
 
@@ -680,6 +832,258 @@ final class FileBrowserState {
 
     func cancelArchiveOperation() {
         Task { await archives.cancelAllOperations() }
+    }
+
+    private func runArchiveOperation(
+        description: String,
+        operation: @escaping () async throws -> String
+    ) async -> String? {
+        archiveOperationDescription = description
+        archiveOperationInProgress = true
+        archiveProgress = nil
+        defer {
+            archiveOperationInProgress = false
+            archiveProgress = nil
+        }
+        do {
+            return try await operation()
+        } catch {
+            self.error = mapError(error)
+            return nil
+        }
+    }
+
+    private func processNextArchiveExtraction(password: String?) async -> String? {
+        guard !pendingArchiveExtractionItems.isEmpty else { return nil }
+        archiveOperationDescription = AppLocalization.string(
+            "Extracting archives…",
+            locale: preferences.language.locale
+        )
+        archiveOperationInProgress = true
+        archiveProgress = nil
+
+        while pendingArchiveExtractionIndex < pendingArchiveExtractionItems.count {
+            let item = pendingArchiveExtractionItems[pendingArchiveExtractionIndex]
+            guard let sourceURL = item.localURL else {
+                pendingArchiveExtractionIndex += 1
+                continue
+            }
+            let destination = sourceURL
+                .deletingLastPathComponent()
+                .appendingPathComponent(
+                    archiveBaseName(sourceURL.lastPathComponent),
+                    isDirectory: true
+                )
+            do {
+                try await archives.extractArchive(
+                    at: sourceURL,
+                    to: destination,
+                    password: password,
+                    resolveConflict: archiveConflictResolver(),
+                    progress: archiveProgressHandler()
+                )
+                pendingArchiveExtractionIndex += 1
+            } catch ArchiveEngineError.passwordRequired {
+                passwordOperation = .extractArchive(item)
+                passwordError = nil
+                archiveOperationInProgress = false
+                archiveProgress = nil
+                return nil
+            } catch ArchiveEngineError.invalidPassword {
+                passwordOperation = .extractArchive(item)
+                passwordError = AppLocalization.string(
+                    "Incorrect password. Try again.",
+                    locale: preferences.language.locale
+                )
+                archiveOperationInProgress = false
+                archiveProgress = nil
+                return nil
+            } catch {
+                self.error = mapError(error)
+                archiveOperationInProgress = false
+                archiveProgress = nil
+                return nil
+            }
+        }
+
+        let extractionDestinations = pendingArchiveExtractionItems.compactMap { item -> URL? in
+            guard let sourceURL = item.localURL else { return nil }
+            return sourceURL
+                .deletingLastPathComponent()
+                .appendingPathComponent(
+                    archiveBaseName(sourceURL.lastPathComponent),
+                    isDirectory: true
+                )
+        }
+        pendingArchiveExtractionItems.removeAll()
+        pendingArchiveExtractionIndex = 0
+        archiveOperationInProgress = false
+        archiveProgress = nil
+        await refreshAfterArchiveExtraction(to: extractionDestinations)
+        return AppLocalization.string(
+            "Archives extracted successfully.",
+            locale: preferences.language.locale
+        )
+    }
+
+    private func executeInternalExtraction(
+        items: [BrowserItem],
+        destination: URL,
+        password: String?
+    ) async -> String? {
+        archiveOperationDescription = AppLocalization.string(
+            "Extracting selected items…",
+            locale: preferences.language.locale
+        )
+        archiveOperationInProgress = true
+        archiveProgress = nil
+        do {
+            try await archives.extractItems(
+                items,
+                to: destination,
+                password: password,
+                resolveConflict: archiveConflictResolver(),
+                progress: archiveProgressHandler()
+            )
+            archiveOperationInProgress = false
+            archiveProgress = nil
+            await refreshAfterArchiveExtraction(to: [destination])
+            return AppLocalization.string(
+                "Selected items extracted successfully.",
+                locale: preferences.language.locale
+            )
+        } catch ArchiveEngineError.passwordRequired {
+            passwordOperation = .extractItems(items, destinationURL: destination)
+            passwordError = nil
+            archiveOperationInProgress = false
+            archiveProgress = nil
+            return nil
+        } catch ArchiveEngineError.invalidPassword {
+            passwordOperation = .extractItems(items, destinationURL: destination)
+            passwordError = AppLocalization.string(
+                "Incorrect password. Try again.",
+                locale: preferences.language.locale
+            )
+            archiveOperationInProgress = false
+            archiveProgress = nil
+            return nil
+        } catch {
+            self.error = mapError(error)
+            archiveOperationInProgress = false
+            archiveProgress = nil
+            return nil
+        }
+    }
+
+    private func refreshAfterArchiveExtraction(to destinationDirectories: [URL]) async {
+        guard preferences.viewMode == .columns else {
+            await reload()
+            return
+        }
+
+        var affectedColumnLocations = Set<BrowserLocation>()
+        for destinationDirectory in destinationDirectories {
+            let destination = destinationDirectory.standardizedFileURL
+            affectedColumnLocations.insert(.fileSystem(destination))
+            affectedColumnLocations.insert(
+                .fileSystem(destination.deletingLastPathComponent().standardizedFileURL)
+            )
+        }
+        await reload(
+            preservingColumnSelection: true,
+            refreshingColumnLocations: affectedColumnLocations
+        )
+    }
+
+    private func archiveProgressHandler() -> ArchiveProgressHandler {
+        { [weak self] progress in
+            Task { @MainActor [weak self] in
+                self?.archiveProgress = progress
+            }
+        }
+    }
+
+    private func archiveConflictResolver() -> ArchiveConflictResolver {
+        { [weak self] conflict in
+            guard let state = self else { return .cancel }
+            return await MainActor.run {
+                state.resolveArchiveConflict(conflict)
+            }
+        }
+    }
+
+    private func resolveArchiveConflict(_ conflict: ArchiveConflict) -> ArchiveConflictDecision {
+        let locale = preferences.language.locale
+        let alert = NSAlert()
+        alert.messageText = AppLocalization.string("Replace existing item?", locale: locale)
+        alert.informativeText = conflict.destinationURL.path
+        alert.addButton(withTitle: AppLocalization.string("Replace", locale: locale))
+        alert.addButton(withTitle: AppLocalization.string("Keep", locale: locale))
+        alert.addButton(withTitle: AppLocalization.string("Cancel", locale: locale))
+
+        let applyToAll = NSButton(
+            checkboxWithTitle: AppLocalization.string("Apply this decision to all conflicts", locale: locale),
+            target: nil,
+            action: nil
+        )
+        alert.accessoryView = applyToAll
+
+        let response = alert.runModal()
+        let applies = applyToAll.state == .on
+        switch response {
+        case .alertFirstButtonReturn: return .replace(applyToAll: applies)
+        case .alertSecondButtonReturn: return .keep(applyToAll: applies)
+        default: return .cancel
+        }
+    }
+
+    private func uniqueArchiveOutputURL(
+        for sourceURLs: [URL],
+        in directory: URL,
+        format: ArchiveCompressionFormat
+    ) -> URL {
+        let baseName = sourceURLs.count == 1
+            ? sourceURLs[0].deletingPathExtension().lastPathComponent
+            : "Archive"
+        let containsDirectory = sourceURLs.contains { isDirectory(at: $0) }
+        let usesTar = format.isStream && (sourceURLs.count != 1 || containsDirectory)
+        let extensionName = usesTar
+            ? "tar.\(format.fileExtension)"
+            : format.fileExtension
+
+        var candidate = directory.appendingPathComponent("\(baseName).\(extensionName)")
+        var index = 2
+        while FileManager.default.fileExists(atPath: candidate.path) {
+            candidate = directory.appendingPathComponent("\(baseName) \(index).\(extensionName)")
+            index += 1
+        }
+        return candidate
+    }
+
+    private func archiveBaseName(_ name: String) -> String {
+        let lowercased = name.lowercased()
+        for suffix in [".tar.gz", ".tar.bz2", ".tar.xz", ".tgz", ".tbz2", ".txz"] {
+            if lowercased.hasSuffix(suffix) {
+                return String(name.dropLast(suffix.count))
+            }
+        }
+        return URL(fileURLWithPath: name).deletingPathExtension().lastPathComponent
+    }
+
+    private func isDirectory(at url: URL) -> Bool {
+        (try? url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true
+    }
+
+    private func archiveCreationDirectory(for sourceURLs: [URL]) -> URL? {
+        guard let firstSource = sourceURLs.first else { return nil }
+        let firstParent = firstSource.deletingLastPathComponent().standardizedFileURL
+        let allSourcesShareParent = sourceURLs.dropFirst().allSatisfy {
+            $0.deletingLastPathComponent().standardizedFileURL.path == firstParent.path
+        }
+        guard allSourcesShareParent else {
+            return fileOperationDestinationURL ?? location.fileSystemURL
+        }
+        return firstParent
     }
 
     func goBack() async {
@@ -782,6 +1186,13 @@ final class FileBrowserState {
             updatePreview()
             synchronizeRenamingSelection()
         } catch {
+            if preferences.viewMode == .columns,
+               case let .fileSystem(currentURL) = currentLocation,
+               !FileManager.default.fileExists(atPath: currentURL.path) {
+                await refreshColumnsAfterRemovingLocalItems([currentURL])
+                isLoading = false
+                return
+            }
             self.error = mapError(error)
             items = []
             stopExpandedDirectoryMonitors()
@@ -832,7 +1243,11 @@ final class FileBrowserState {
                 if let operationError {
                     self.error = self.mapError(operationError)
                 }
-                await self.reload()
+                if self.preferences.viewMode == .columns {
+                    await self.refreshColumnsAfterRemovingLocalItems(Array(newURLs.keys))
+                } else {
+                    await self.reload()
+                }
             }
         }
     }
@@ -905,6 +1320,17 @@ final class FileBrowserState {
         }
 
         let requestedName = renameDraft
+        let openedColumnParentLocation: BrowserLocation? = {
+            guard preferences.viewMode == .columns,
+                  let sourceIndex = pathComponents.firstIndex(where: {
+                      $0.location.fileSystemURL?.standardizedFileURL.path
+                          == sourceURL.standardizedFileURL.path
+                  }),
+                  sourceIndex > 0 else {
+                return nil
+            }
+            return pathComponents[sourceIndex - 1].location
+        }()
         renameInProgress = true
         Task {
             defer { renameInProgress = false }
@@ -921,12 +1347,84 @@ final class FileBrowserState {
                 )
                 renamingItemURL = nil
                 renameDraft = ""
-                await reload()
-                selectLocalItem(at: renamedURL)
+                await refreshAfterRename(
+                    from: sourceURL,
+                    to: renamedURL,
+                    openedColumnParentLocation: openedColumnParentLocation
+                )
             } catch {
                 self.error = mapError(error)
             }
         }
+    }
+
+    private func refreshAfterRename(
+        from sourceURL: URL,
+        to renamedURL: URL,
+        openedColumnParentLocation: BrowserLocation?
+    ) async {
+        guard preferences.viewMode == .columns else {
+            await reload()
+            selectLocalItem(at: renamedURL)
+            return
+        }
+
+        let source = sourceURL.standardizedFileURL
+        let renamed = renamedURL.standardizedFileURL
+        let parentLocation = BrowserLocation.fileSystem(
+            renamed.deletingLastPathComponent().standardizedFileURL
+        )
+
+        if let openedColumnParentLocation,
+           let parentIndex = pathComponents.firstIndex(where: {
+               $0.location == openedColumnParentLocation
+           }) {
+            pathComponents = Array(pathComponents.prefix(parentIndex + 1))
+            columnItems = columnItems.filter { columnLocation, _ in
+                guard let columnURL = columnLocation.fileSystemURL else { return true }
+                return !isSameOrDescendant(columnURL, of: source)
+            }
+            columnSelections = columnSelections.filter { columnLocation, _ in
+                guard let columnURL = columnLocation.fileSystemURL else { return true }
+                return !isSameOrDescendant(columnURL, of: source)
+            }
+            columnSelections.removeValue(forKey: openedColumnParentLocation)
+            location = openedColumnParentLocation
+            activeColumnLocation = openedColumnParentLocation
+            items = columnItems[openedColumnParentLocation] ?? []
+            selection.removeAll()
+            selectionOrder.removeAll()
+            selectionAnchor = nil
+            focusedItemID = nil
+            updatePreview()
+
+            await reload(
+                refreshingColumnLocations: [openedColumnParentLocation]
+            )
+            guard let renamedItem = columnItems[openedColumnParentLocation]?.first(where: {
+                $0.localURL?.standardizedFileURL.path == renamed.path
+            }) else { return }
+            await activateColumnItem(
+                renamedItem,
+                in: openedColumnParentLocation,
+                recordsHistory: false
+            ).value
+            return
+        }
+
+        await reload(
+            preservingColumnSelection: true,
+            refreshingColumnLocations: [parentLocation]
+        )
+        guard let renamedItem = columnItems[parentLocation]?.first(where: {
+            $0.localURL?.standardizedFileURL.path == renamed.path
+        }) else { return }
+        columnSelections[parentLocation] = renamedItem.id
+        activeColumnLocation = parentLocation
+        select(
+            renamedItem,
+            orderedItems: sortedColumnItems(at: parentLocation)
+        )
     }
 
     func makeAliasesForSelection() {
@@ -1016,7 +1514,11 @@ final class FileBrowserState {
                 if let operationError {
                     self.error = self.mapError(operationError)
                 }
-                await self.reload()
+                if self.preferences.viewMode == .columns, !newURLs.isEmpty {
+                    await self.refreshColumnsAfterRemovingLocalItems(Array(newURLs.keys))
+                } else {
+                    await self.reload()
+                }
             }
         }
     }
@@ -1203,6 +1705,138 @@ final class FileBrowserState {
         }
     }
 
+    /// Removes deleted filesystem branches from the Columns state before a
+    /// refresh. When the selected container is open in the next column,
+    /// `location` points at that container while `activeColumnLocation` still
+    /// points at its parent. Reloading first would therefore try to enumerate
+    /// a path that no longer exists and surface a misleading error.
+    func refreshColumnsAfterRemovingLocalItems(_ urls: [URL]) async {
+        guard preferences.viewMode == .columns, !urls.isEmpty else {
+            await reload()
+            return
+        }
+
+        let removedURLs = urls.map(\.standardizedFileURL)
+        var archiveAddressesBySession: [UUID: ArchiveAddress] = [:]
+        for component in pathComponents {
+            if case let .archive(address) = component.location {
+                archiveAddressesBySession[address.sessionID] = address
+            }
+        }
+        for columnLocation in columnItems.keys {
+            if case let .archive(address) = columnLocation {
+                archiveAddressesBySession[address.sessionID] = address
+            }
+        }
+        var removedArchiveRoots: [UUID: URL] = [:]
+        for (sessionID, address) in archiveAddressesBySession {
+            guard let rootURL = try? await archives.archiveRootURL(for: address),
+                  removedURLs.contains(where: { isSameOrDescendant(rootURL, of: $0) }) else {
+                continue
+            }
+            removedArchiveRoots[sessionID] = rootURL.standardizedFileURL
+        }
+        let cachedItems = items + columnItems.values.flatMap { $0 }
+        let removedItemIDs = Set(
+            cachedItems.compactMap { item -> BrowserItemID? in
+                guard let itemURL = item.localURL,
+                      removedURLs.contains(where: { isSameOrDescendant(itemURL, of: $0) }) else {
+                    return nil
+                }
+                return item.id
+            }
+        )
+        let staleColumnLocations = Set(
+            columnItems.keys.filter { columnLocation in
+                switch columnLocation {
+                case let .fileSystem(columnURL):
+                    return removedURLs.contains(where: { isSameOrDescendant(columnURL, of: $0) })
+                case let .archive(address):
+                    return removedArchiveRoots[address.sessionID] != nil
+                case .recents:
+                    return false
+                }
+            }
+        )
+
+        columnItems = columnItems.filter { !staleColumnLocations.contains($0.key) }
+        columnSelections = columnSelections.filter {
+            !staleColumnLocations.contains($0.key) && !removedItemIDs.contains($0.value)
+        }
+        selection.subtract(removedItemIDs)
+        selectionOrder.removeAll { removedItemIDs.contains($0) }
+        if let selectionAnchor, removedItemIDs.contains(selectionAnchor) {
+            self.selectionAnchor = nil
+        }
+        if let focusedItemID, removedItemIDs.contains(focusedItemID) {
+            self.focusedItemID = nil
+        }
+        purgeCachedHierarchies(rootedAt: removedItemIDs)
+
+        let firstRemovedPathIndex = pathComponents.firstIndex { component in
+            switch component.location {
+            case let .fileSystem(componentURL):
+                return removedURLs.contains(where: { isSameOrDescendant(componentURL, of: $0) })
+            case let .archive(address):
+                return removedArchiveRoots[address.sessionID] != nil
+            case .recents:
+                return false
+            }
+        }
+
+        let targetLocation: BrowserLocation
+        if let firstRemovedPathIndex,
+           firstRemovedPathIndex > 0 {
+            let retainedComponents = Array(pathComponents.prefix(firstRemovedPathIndex))
+            pathComponents = retainedComponents
+            targetLocation = retainedComponents.last?.location ?? location
+        } else if let currentURL = location.fileSystemURL,
+                  removedURLs.contains(where: { isSameOrDescendant(currentURL, of: $0) }) {
+            let parentURL = currentURL.deletingLastPathComponent().standardizedFileURL
+            targetLocation = .fileSystem(parentURL)
+            pathComponents = [
+                BrowserPathComponent(
+                    location: targetLocation,
+                    name: parentURL.lastPathComponent,
+                    isArchive: false
+                )
+            ]
+            columnItems.removeAll()
+            columnSelections.removeAll()
+        } else if case let .archive(currentAddress) = location,
+                  let rootURL = removedArchiveRoots[currentAddress.sessionID] {
+            let parentURL = rootURL.deletingLastPathComponent().standardizedFileURL
+            targetLocation = .fileSystem(parentURL)
+            pathComponents = [
+                BrowserPathComponent(
+                    location: targetLocation,
+                    name: parentURL.lastPathComponent,
+                    isArchive: false
+                )
+            ]
+            columnItems.removeAll()
+            columnSelections.removeAll()
+        } else {
+            targetLocation = location
+        }
+
+        for sessionID in removedArchiveRoots.keys {
+            await archives.closeSession(sessionID)
+        }
+        location = targetLocation
+        activeColumnLocation = targetLocation
+        items = columnItems[targetLocation] ?? []
+        updatePreview()
+        var affectedColumnLocations = Set<BrowserLocation>(removedURLs.map {
+            .fileSystem($0.deletingLastPathComponent().standardizedFileURL)
+        })
+        affectedColumnLocations.insert(targetLocation)
+        await reload(
+            preservingColumnSelection: true,
+            refreshingColumnLocations: affectedColumnLocations
+        )
+    }
+
     @discardableResult
     func activateColumnItem(
         _ item: BrowserItem,
@@ -1213,6 +1847,11 @@ final class FileBrowserState {
         guard let parentIndex = pathComponents.firstIndex(where: { $0.location == parentLocation }) else {
             return Task {}
         }
+        columnActivationGeneration &+= 1
+        let activationGeneration = columnActivationGeneration
+        let previousActivationTask = columnActivationTask
+        previousActivationTask?.cancel()
+
         let parentItems = sortedColumnItems(at: parentLocation)
         columnSelections[parentLocation] = item.id
         activeColumnLocation = parentLocation
@@ -1236,10 +1875,37 @@ final class FileBrowserState {
         expandedChildren.removeAll()
         configureMonitor()
 
-        return Task { [weak self] in
-            guard opensBranch, let self else { return }
+        let activationTask = Task { [weak self] in
+            if let previousActivationTask {
+                await previousActivationTask.value
+            }
+            guard let self,
+                  !Task.isCancelled,
+                  activationGeneration == self.columnActivationGeneration,
+                  self.activeColumnLocation == parentLocation,
+                  self.columnSelections[parentLocation] == item.id else {
+                return
+            }
+            defer {
+                if activationGeneration == self.columnActivationGeneration {
+                    self.columnActivationTask = nil
+                }
+            }
+            guard opensBranch else { return }
             await self.open(item, recordsHistory: false, clearsSelection: false)
         }
+        columnActivationTask = activationTask
+        return activationTask
+    }
+
+    @discardableResult
+    func activateFirstItemInColumn(
+        at location: BrowserLocation
+    ) -> Task<Void, Never> {
+        guard let firstItem = sortedColumnItems(at: location).first else {
+            return Task {}
+        }
+        return activateColumnItem(firstItem, in: location)
     }
 
     func moveSelection(
@@ -1575,6 +2241,8 @@ final class FileBrowserState {
         previewTask?.cancel()
         previewTask = nil
         refreshTask?.cancel()
+        columnActivationTask?.cancel()
+        columnActivationTask = nil
         Task {
             await archives.cancelAllOperations()
             await archives.closeAllSessions()
@@ -1590,8 +2258,16 @@ final class FileBrowserState {
             pendingLargeOperation = .openExternally(item)
             return
         }
+        archiveOperationDescription = AppLocalization.string(
+            "Loading…",
+            locale: preferences.language.locale
+        )
+        archiveProgress = nil
         archiveOperationInProgress = true
-        defer { archiveOperationInProgress = false }
+        defer {
+            archiveOperationInProgress = false
+            archiveProgress = nil
+        }
         do {
             let url: URL
             switch item.location {
@@ -1961,6 +2637,17 @@ final class FileBrowserState {
         to destination: URL,
         operation: BrowserFileTransferOperation
     ) async {
+        activeFileTransferCount += 1
+        fileOperationInProgress = true
+        fileOperationDescription = fileTransferDescription(for: operation)
+        defer {
+            activeFileTransferCount -= 1
+            if activeFileTransferCount == 0 {
+                fileOperationInProgress = false
+                fileOperationDescription = ""
+            }
+        }
+
         do {
             let resultingURLs = try await fileOperations.transfer(
                 urls,
@@ -1987,6 +2674,33 @@ final class FileBrowserState {
         }
     }
 
+    private func fileTransferDescription(
+        for operation: BrowserFileTransferOperation
+    ) -> String {
+        switch operation {
+        case .copy:
+            AppLocalization.string(
+                "Copying items…",
+                locale: preferences.language.locale
+            )
+        case .move:
+            AppLocalization.string(
+                "Moving items…",
+                locale: preferences.language.locale
+            )
+        case .alias:
+            AppLocalization.string(
+                "Creating aliases…",
+                locale: preferences.language.locale
+            )
+        case .automatic:
+            AppLocalization.string(
+                "Transferring items…",
+                locale: preferences.language.locale
+            )
+        }
+    }
+
     private func reloadColumnItems(at location: BrowserLocation) async {
         guard case let .fileSystem(url) = location else { return }
         do {
@@ -2002,6 +2716,14 @@ final class FileBrowserState {
                 self.error = mapError(error)
             }
         }
+    }
+
+    private func isSameOrDescendant(_ candidate: URL, of ancestor: URL) -> Bool {
+        let candidatePath = candidate.standardizedFileURL.path
+        let ancestorPath = ancestor.standardizedFileURL.path
+        guard candidatePath != ancestorPath else { return true }
+        let prefix = ancestorPath.hasSuffix("/") ? ancestorPath : ancestorPath + "/"
+        return candidatePath.hasPrefix(prefix)
     }
 
     func configureUndoManager(_ undoManager: UndoManager?) {

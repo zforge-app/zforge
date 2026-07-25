@@ -237,6 +237,13 @@ private struct ZforgeSettingsView: View {
             Toggle("Show hidden files", isOn: $preferences.showHiddenFiles)
 
             Section("Archive Navigation") {
+                Picker("Default compression format", selection: $preferences.defaultCompressionFormat) {
+                    ForEach(ArchiveCompressionFormat.allCases) { format in
+                        Text(AppLocalization.string(format.titleKey, locale: preferences.language.locale))
+                            .tag(format)
+                    }
+                }
+
                 VStack(alignment: .leading, spacing: 5) {
                     LabeledContent("Maximum nesting depth") {
                         Stepper(value: $preferences.archiveNestingLimit, in: 1...10) {

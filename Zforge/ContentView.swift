@@ -154,10 +154,23 @@ struct ContentView: View {
             Text("Extracting \(operation.item.name) may require more than 1 GB of temporary disk space.")
         }
         .overlay {
-            if browser.archiveOperationInProgress {
+            if browser.fileOperationInProgress {
                 VStack(spacing: 12) {
                     ProgressView()
-                    Text("Working with archive…")
+                    Text(browser.fileOperationDescription)
+                }
+                .padding(22)
+                .glassEffect(.regular, in: .rect(cornerRadius: 18))
+                .accessibilityIdentifier("file-operation-progress")
+            } else if browser.archiveOperationInProgress {
+                VStack(spacing: 12) {
+                    if let fraction = browser.archiveProgress?.fraction {
+                        ProgressView(value: fraction)
+                            .frame(width: 180)
+                    } else {
+                        ProgressView()
+                    }
+                    Text(browser.archiveOperationDescription)
                     Button("Cancel") { browser.cancelArchiveOperation() }
                 }
                 .padding(22)
@@ -351,8 +364,12 @@ struct ContentView: View {
     private func performArchiveToolbarAction() {
         let action = browser.archiveToolbarAction
         guard action.isEnabled else { return }
-        showToast(action.feedbackMessage)
-        restoreContentFocus()
+        Task {
+            if let message = await browser.performArchiveToolbarAction() {
+                showToast(message)
+            }
+            restoreContentFocus()
+        }
     }
 
     private func showToolbarActionsMenu(

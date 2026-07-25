@@ -107,6 +107,49 @@ nonisolated enum ArchiveToolbarAction: Equatable, Sendable {
     }
 }
 
+nonisolated enum ArchiveCompressionFormat: String, CaseIterable, Codable, Identifiable, Sendable {
+    case sevenZip = "7z"
+    case zip
+    case tar
+    case xz
+    case bzip2
+    case gzip
+    case wim
+
+    var id: Self { self }
+
+    var fileExtension: String {
+        switch self {
+        case .bzip2: "bz2"
+        case .gzip: "gz"
+        default: rawValue
+        }
+    }
+
+    var titleKey: String.LocalizationValue {
+        switch self {
+        case .sevenZip: "7z"
+        case .zip: "ZIP"
+        case .tar: "TAR"
+        case .xz: "XZ"
+        case .bzip2: "BZIP2"
+        case .gzip: "GZIP"
+        case .wim: "WIM"
+        }
+    }
+
+    var isStream: Bool {
+        switch self {
+        case .xz, .bzip2, .gzip: true
+        case .sevenZip, .zip, .tar, .wim: false
+        }
+    }
+
+    var sevenZipTypeSwitch: String {
+        "-t\(rawValue)"
+    }
+}
+
 nonisolated struct ArchiveAddress: Hashable, Sendable {
     let sessionID: UUID
     let archiveID: UUID

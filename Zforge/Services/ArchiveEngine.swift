@@ -37,6 +37,38 @@ nonisolated enum ArchiveMaterializationPurpose: Sendable, Equatable {
     case nestedArchive
 }
 
+nonisolated enum ArchiveProgressPhase: Sendable, Equatable {
+    case staging
+    case compressing
+    case extracting
+}
+
+nonisolated struct ArchiveProgress: Sendable, Equatable {
+    let phase: ArchiveProgressPhase
+    let fraction: Double?
+
+    init(phase: ArchiveProgressPhase, fraction: Double? = nil) {
+        self.phase = phase
+        self.fraction = fraction
+    }
+}
+
+typealias ArchiveProgressHandler = @Sendable (ArchiveProgress) -> Void
+
+nonisolated struct ArchiveConflict: Sendable, Equatable {
+    let path: String
+    let destinationURL: URL
+    let isDirectory: Bool
+}
+
+nonisolated enum ArchiveConflictDecision: Sendable, Equatable {
+    case replace(applyToAll: Bool)
+    case keep(applyToAll: Bool)
+    case cancel
+}
+
+typealias ArchiveConflictResolver = @Sendable (ArchiveConflict) async -> ArchiveConflictDecision
+
 nonisolated struct ArchiveOpenResult: Sendable {
     let address: ArchiveAddress
     let displayName: String
@@ -55,6 +87,27 @@ nonisolated protocol ArchiveServing: Sendable {
         purpose: ArchiveMaterializationPurpose,
         automaticLimit: Int64?
     ) async throws -> URL
+    func createArchive(
+        from sourceURLs: [URL],
+        outputURL: URL,
+        format: ArchiveCompressionFormat,
+        progress: @escaping ArchiveProgressHandler
+    ) async throws
+    func extractArchive(
+        at url: URL,
+        to destinationURL: URL,
+        password: String?,
+        resolveConflict: @escaping ArchiveConflictResolver,
+        progress: @escaping ArchiveProgressHandler
+    ) async throws
+    func extractItems(
+        _ items: [BrowserItem],
+        to destinationURL: URL,
+        password: String?,
+        resolveConflict: @escaping ArchiveConflictResolver,
+        progress: @escaping ArchiveProgressHandler
+    ) async throws
+    func archiveRootURL(for address: ArchiveAddress) async throws -> URL
     func setPassword(_ password: String?, for sessionID: UUID) async
     func closeSession(_ sessionID: UUID) async
     func closeAllSessions() async
@@ -88,6 +141,7 @@ actor SevenZipArchiveEngine: ArchiveServing {
         let fileURL: URL
         let displayName: String
         let entries: [String: Entry]
+        let isRawStream: Bool
     }
 
     private struct Session: Sendable {
@@ -124,7 +178,16 @@ actor SevenZipArchiveEngine: ArchiveServing {
         do {
             let allowsNestedArchives = policy.allowsNestedArchives(forOutermostSize: totalArchiveSize(at: url))
             let stagedURL = try stageArchiveAndVolumes(at: url, in: sessionDirectory)
-            let archive = try await listArchive(at: stagedURL, displayName: url.lastPathComponent, password: password)
+            let browsableURL = try await archiveURLForBrowsing(
+                stagedURL,
+                in: sessionDirectory,
+                password: password
+            )
+            let archive = try await listArchive(
+                at: browsableURL,
+                displayName: url.lastPathComponent,
+                password: password
+            )
             sessions[sessionID] = Session(
                 id: sessionID,
                 originalURL: url,
@@ -253,8 +316,14 @@ actor SevenZipArchiveEngine: ArchiveServing {
         let safeName = sanitizedFileName(item.name)
         let outputURL = purposeDirectory.appendingPathComponent(safeName)
 
+        let arguments = archive.isRawStream
+            ? ["x", "-so", "-sccUTF-8", "-bso0", "-bse2", "-bsp0", "-spd", "-y", archive.fileURL.path]
+            : materializationExtractionArguments(
+                archive: archive.fileURL,
+                path: address.internalPath
+            )
         let result = try await processRunner.run(
-            arguments: extractionArguments(archive: archive.fileURL, path: address.internalPath),
+            arguments: arguments,
             password: session.password,
             standardOutputURL: outputURL,
             workingDirectory: session.directoryURL,
@@ -276,6 +345,180 @@ actor SevenZipArchiveEngine: ArchiveServing {
         session.materialized[cacheKey] = outputURL
         sessions[address.sessionID] = session
         return outputURL
+    }
+
+    func createArchive(
+        from sourceURLs: [URL],
+        outputURL: URL,
+        format: ArchiveCompressionFormat,
+        progress: @escaping ArchiveProgressHandler
+    ) async throws {
+        guard !sourceURLs.isEmpty else { throw ArchiveEngineError.itemNotFound }
+
+        let operationDirectory = sessionsRoot
+            .appendingPathComponent("Operations", isDirectory: true)
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        let inputDirectory = operationDirectory.appendingPathComponent("Input", isDirectory: true)
+        try fileManager.createDirectory(at: inputDirectory, withIntermediateDirectories: true)
+        defer { try? fileManager.removeItem(at: operationDirectory) }
+
+        progress(ArchiveProgress(phase: .staging, fraction: 0))
+        var stagedNames: [String] = []
+        for (index, sourceURL) in sourceURLs.enumerated() {
+            let baseName = sourceURL.lastPathComponent.isEmpty ? "Item (index + 1)" : sourceURL.lastPathComponent
+            let stagedName = uniqueStagedName(baseName, in: stagedNames)
+            try fileManager.copyItem(
+                at: sourceURL,
+                to: inputDirectory.appendingPathComponent(stagedName)
+            )
+            stagedNames.append(stagedName)
+            progress(ArchiveProgress(
+                phase: .staging,
+                fraction: Double(index + 1) / Double(sourceURLs.count)
+            ))
+        }
+
+        let stagedOutput = operationDirectory.appendingPathComponent(outputURL.lastPathComponent)
+        if format.isStream && (sourceURLs.count != 1 || isDirectory(at: sourceURLs[0])) {
+            let tarURL = operationDirectory.appendingPathComponent("Payload.tar")
+            try await runCreate(
+                outputURL: tarURL,
+                format: .tar,
+                sourceNames: stagedNames,
+                workingDirectory: inputDirectory
+            )
+            progress(ArchiveProgress(phase: .compressing, fraction: 0.5))
+            try await runCreate(
+                outputURL: stagedOutput,
+                format: format,
+                sourceNames: [tarURL.lastPathComponent],
+                workingDirectory: operationDirectory
+            )
+        } else {
+            try await runCreate(
+                outputURL: stagedOutput,
+                format: format,
+                sourceNames: stagedNames,
+                workingDirectory: inputDirectory
+            )
+        }
+
+        progress(ArchiveProgress(phase: .compressing, fraction: 1))
+        try fileManager.createDirectory(
+            at: outputURL.deletingLastPathComponent(),
+            withIntermediateDirectories: true
+        )
+        try fileManager.copyItem(at: stagedOutput, to: outputURL)
+    }
+
+    func extractArchive(
+        at url: URL,
+        to destinationURL: URL,
+        password: String?,
+        resolveConflict: @escaping ArchiveConflictResolver,
+        progress: @escaping ArchiveProgressHandler
+    ) async throws {
+        let operationDirectory = sessionsRoot
+            .appendingPathComponent("Operations", isDirectory: true)
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        try fileManager.createDirectory(at: operationDirectory, withIntermediateDirectories: true)
+        defer { try? fileManager.removeItem(at: operationDirectory) }
+
+        progress(ArchiveProgress(phase: .staging, fraction: 0))
+        let stagedURL = try stageArchiveAndVolumes(at: url, in: operationDirectory)
+        let extractionArchive = try await archiveURLForBrowsing(
+            stagedURL,
+            in: operationDirectory,
+            password: password
+        )
+        progress(ArchiveProgress(phase: .staging, fraction: 1))
+        try fileManager.createDirectory(at: destinationURL, withIntermediateDirectories: true)
+        let archive = try await listArchive(
+            at: extractionArchive,
+            displayName: url.lastPathComponent,
+            password: password
+        )
+        let replacements = try await conflictFilesToReplace(
+            entries: archive.entries,
+            selectedPaths: [],
+            destinationURL: destinationURL,
+            resolveConflict: resolveConflict
+        )
+        for replacement in replacements {
+            try fileManager.removeItem(at: replacement)
+        }
+
+        progress(ArchiveProgress(phase: .extracting, fraction: 0))
+        let result = try await processRunner.run(
+            arguments: extractionArguments(
+                archive: extractionArchive,
+                destination: destinationURL,
+                paths: []
+            ),
+            password: password,
+            standardOutputURL: nil,
+            workingDirectory: operationDirectory
+        )
+        try validate(result, passwordWasProvided: password != nil)
+        progress(ArchiveProgress(phase: .extracting, fraction: 1))
+    }
+
+    func extractItems(
+        _ items: [BrowserItem],
+        to destinationURL: URL,
+        password: String?,
+        resolveConflict: @escaping ArchiveConflictResolver,
+        progress: @escaping ArchiveProgressHandler
+    ) async throws {
+        guard !items.isEmpty,
+              case let .archive(firstAddress) = items[0].location,
+              let session = sessions[firstAddress.sessionID],
+              let archive = session.archives[firstAddress.archiveID] else {
+            throw ArchiveEngineError.itemNotFound
+        }
+
+        let paths = try items.map { item -> String in
+            guard case let .archive(address) = item.location,
+                  address.sessionID == firstAddress.sessionID,
+                  address.archiveID == firstAddress.archiveID else {
+                throw ArchiveEngineError.itemNotFound
+            }
+            return try safeArchivePath(address.internalPath)
+        }
+        try fileManager.createDirectory(at: destinationURL, withIntermediateDirectories: true)
+        let replacements = try await conflictFilesToReplace(
+            entries: archive.entries,
+            selectedPaths: paths,
+            destinationURL: destinationURL,
+            resolveConflict: resolveConflict
+        )
+        for replacement in replacements {
+            try fileManager.removeItem(at: replacement)
+        }
+        progress(ArchiveProgress(phase: .extracting, fraction: 0))
+        let effectivePassword = password ?? session.password
+        let result = try await processRunner.run(
+            arguments: extractionArguments(
+                archive: archive.fileURL,
+                destination: destinationURL,
+                paths: archive.isRawStream ? [] : paths
+            ),
+            password: effectivePassword,
+            standardOutputURL: nil,
+            workingDirectory: session.directoryURL
+        )
+        try validate(result, passwordWasProvided: effectivePassword != nil)
+        if let password {
+            self.sessions[firstAddress.sessionID]?.password = password
+        }
+        progress(ArchiveProgress(phase: .extracting, fraction: 1))
+    }
+
+    func archiveRootURL(for address: ArchiveAddress) async throws -> URL {
+        guard let session = sessions[address.sessionID] else {
+            throw ArchiveEngineError.itemNotFound
+        }
+        return session.originalURL
     }
 
     func setPassword(_ password: String?, for sessionID: UUID) {
@@ -324,11 +567,34 @@ actor SevenZipArchiveEngine: ArchiveServing {
         )
         try validate(result, passwordWasProvided: password != nil)
         let output = String(decoding: result.stdout, as: UTF8.self)
-        let entries = try parseListing(output)
+        var entries = try parseListing(output)
+        let isRawStream = entries.isEmpty && isStreamURL(url)
+        if isRawStream {
+            let path = rawStreamOutputName(for: displayName)
+            entries[path] = Entry(
+                path: path,
+                isDirectory: false,
+                size: nil,
+                packedSize: nil,
+                modified: nil,
+                created: nil,
+                accessed: nil,
+                encrypted: false,
+                checksum: nil,
+                method: nil,
+                attributes: nil
+            )
+        }
         guard !entries.isEmpty else {
             throw ArchiveEngineError.invalidArchive(AppLocalization.string("archive.empty_or_unsupported"))
         }
-        return ArchiveRecord(id: UUID(), fileURL: url, displayName: displayName, entries: entries)
+        return ArchiveRecord(
+            id: UUID(),
+            fileURL: url,
+            displayName: displayName,
+            entries: entries,
+            isRawStream: isRawStream
+        )
     }
 
     private func validate(_ result: SevenZipCommandResult, passwordWasProvided: Bool) throws {
@@ -450,8 +716,161 @@ actor SevenZipArchiveEngine: ArchiveServing {
         ["l", "-slt", "-ba", "-sccUTF-8", "-bso1", "-bse2", "-bsp0", archive.path]
     }
 
-    private func extractionArguments(archive: URL, path: String) -> [String] {
+    private func runCreate(
+        outputURL: URL,
+        format: ArchiveCompressionFormat,
+        sourceNames: [String],
+        workingDirectory: URL
+    ) async throws {
+        let result = try await processRunner.run(
+            arguments: [
+                "a",
+                format.sevenZipTypeSwitch,
+                "-sccUTF-8",
+                "-bso1",
+                "-bse2",
+                "-bsp0",
+                "-y",
+                outputURL.path,
+                "--"
+            ] + sourceNames,
+            password: nil,
+            standardOutputURL: nil,
+            workingDirectory: workingDirectory
+        )
+        try validate(result, passwordWasProvided: false)
+    }
+
+    private func extractionArguments(
+        archive: URL,
+        destination: URL,
+        paths: [String]
+    ) -> [String] {
+        [
+            "x",
+            "-sccUTF-8",
+            "-bso0",
+            "-bse2",
+            "-bsp0",
+            "-spd",
+            "-aos",
+            "-y",
+            "-o\(destination.path)",
+            archive.path,
+            "--"
+        ] + paths
+    }
+
+    private func archiveURLForBrowsing(
+        _ url: URL,
+        in operationDirectory: URL,
+        password: String?
+    ) async throws -> URL {
+        guard isTarStreamURL(url) else { return url }
+
+        let payloadDirectory = operationDirectory.appendingPathComponent(
+            "StreamPayload",
+            isDirectory: true
+        )
+        try fileManager.createDirectory(at: payloadDirectory, withIntermediateDirectories: true)
+        let result = try await processRunner.run(
+            arguments: [
+                "x", "-sccUTF-8", "-bso0", "-bse2", "-bsp0", "-spd", "-aos", "-y",
+                "-o\(payloadDirectory.path)", url.path
+            ],
+            password: password,
+            standardOutputURL: nil,
+            workingDirectory: operationDirectory
+        )
+        try validate(result, passwordWasProvided: password != nil)
+
+        let payloads = try fileManager.contentsOfDirectory(
+            at: payloadDirectory,
+            includingPropertiesForKeys: [.isRegularFileKey],
+            options: [.skipsHiddenFiles]
+        ).filter {
+            (try? $0.resourceValues(forKeys: [.isRegularFileKey]).isRegularFile) == true
+                && $0.pathExtension.lowercased() == "tar"
+        }
+        guard let payload = payloads.first else {
+            throw ArchiveEngineError.invalidArchive(AppLocalization.string("archive.empty_or_unsupported"))
+        }
+        return payload
+    }
+
+    private func isTarStreamURL(_ url: URL) -> Bool {
+        let name = url.lastPathComponent.lowercased()
+        return [".tar.gz", ".tar.bz2", ".tar.xz", ".tgz", ".tbz", ".tbz2", ".txz"].contains {
+            name.hasSuffix($0)
+        }
+    }
+
+    private func isStreamURL(_ url: URL) -> Bool {
+        ["gz", "gzip", "bz2", "bzip2", "xz"].contains(url.pathExtension.lowercased())
+    }
+
+    private func rawStreamOutputName(for displayName: String) -> String {
+        let lowercased = displayName.lowercased()
+        for suffix in [".bzip2", ".bzip", ".bz2", ".gzip", ".gz", ".xz"] {
+            if lowercased.hasSuffix(suffix) {
+                return String(displayName.dropLast(suffix.count))
+            }
+        }
+        return URL(fileURLWithPath: displayName).deletingPathExtension().lastPathComponent
+    }
+
+    private func materializationExtractionArguments(archive: URL, path: String) -> [String] {
         ["x", "-so", "-sccUTF-8", "-bso0", "-bse2", "-bsp0", "-spd", "-y", archive.path, "--", path]
+    }
+
+    private func conflictFilesToReplace(
+        entries: [String: Entry],
+        selectedPaths: [String],
+        destinationURL: URL,
+        resolveConflict: @escaping ArchiveConflictResolver
+    ) async throws -> [URL] {
+        let selected = selectedPaths.compactMap { try? safeArchivePath($0) }
+        let relevantEntries = entries.values
+            .filter { entry in
+                selected.isEmpty || selected.contains { path in
+                    entry.path == path || entry.path.hasPrefix(path + "/")
+                }
+            }
+            .sorted { $0.path.localizedStandardCompare($1.path) == .orderedAscending }
+
+        var replacements: [URL] = []
+        var applyToAll: ArchiveConflictDecision?
+        for entry in relevantEntries where !entry.isDirectory {
+            let destination = destinationURL.appendingPathComponent(entry.path)
+            guard fileManager.fileExists(atPath: destination.path) else { continue }
+
+            let decision: ArchiveConflictDecision
+            if let applyToAll {
+                decision = applyToAll
+            } else {
+                decision = await resolveConflict(ArchiveConflict(
+                    path: entry.path,
+                    destinationURL: destination,
+                    isDirectory: false
+                ))
+                switch decision {
+                case .replace(applyToAll: true), .keep(applyToAll: true):
+                    applyToAll = decision
+                case .replace, .keep, .cancel:
+                    break
+                }
+            }
+
+            switch decision {
+            case .replace:
+                replacements.append(destination)
+            case .keep:
+                continue
+            case .cancel:
+                throw ArchiveEngineError.cancelled
+            }
+        }
+        return replacements
     }
 
     private func immediateChildName(path: String, parent: String) -> String? {
@@ -489,6 +908,26 @@ actor SevenZipArchiveEngine: ArchiveServing {
     private func sanitizedFileName(_ name: String) -> String {
         let value = name.replacingOccurrences(of: "/", with: "_").replacingOccurrences(of: "\0", with: "_")
         return value.isEmpty ? "Archive Item" : value
+    }
+
+    private func isDirectory(at url: URL) -> Bool {
+        (try? url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true
+    }
+
+    private func uniqueStagedName(_ name: String, in existing: [String]) -> String {
+        guard existing.contains(name) else { return name }
+        let extensionName = URL(fileURLWithPath: name).pathExtension
+        let stem = extensionName.isEmpty
+            ? name
+            : URL(fileURLWithPath: name).deletingPathExtension().lastPathComponent
+        var index = 2
+        while true {
+            let candidate = extensionName.isEmpty
+                ? "\(stem) \(index)"
+                : "\(stem) \(index).\(extensionName)"
+            if !existing.contains(candidate) { return candidate }
+            index += 1
+        }
     }
 
     private func purposeDirectoryName(_ purpose: ArchiveMaterializationPurpose) -> String {

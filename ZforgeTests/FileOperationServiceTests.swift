@@ -202,6 +202,99 @@ struct FileOperationServiceTests {
         #expect(FileManager.default.fileExists(atPath: movedURL.path))
     }
 
+    @Test("Paste shows progress until the file transfer finishes")
+    @MainActor
+    func pasteShowsProgressUntilTransferFinishes() async throws {
+        let root = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let source = root.appendingPathComponent("Document.txt")
+        let destination = root.appendingPathComponent("Destination", isDirectory: true)
+        try Data("Zforge".utf8).write(to: source)
+        try FileManager.default.createDirectory(at: destination, withIntermediateDirectories: false)
+
+        let suiteName = "ZforgePasteProgressTest-\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let preferences = FileBrowserPreferences(defaults: defaults)
+        preferences.language = .english
+        let fileOperations = SuspendedTransferFileOperationService()
+        let state = FileBrowserState(
+            preferences: preferences,
+            fileSystem: FileSystemService(),
+            fileOperations: fileOperations,
+            grants: UIFixtureAccessGrantStore(),
+            archives: UIFixtureArchiveEngine()
+        )
+        defer { state.close() }
+        await state.navigateToSidebar(destination, name: destination.lastPathComponent)
+
+        state.pasteItemProviders([NSItemProvider(object: source as NSURL)])
+        for _ in 0..<100 {
+            if await fileOperations.transferStarted() { break }
+            try await Task.sleep(for: .milliseconds(10))
+        }
+
+        #expect(await fileOperations.transferStarted())
+        #expect(state.fileOperationInProgress)
+        #expect(state.fileOperationDescription == "Copying items…")
+
+        await fileOperations.finishTransfer()
+        for _ in 0..<100 where state.fileOperationInProgress {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        #expect(!state.fileOperationInProgress)
+        #expect(state.fileOperationDescription.isEmpty)
+    }
+
+    @Test("Column paste targets the active column instead of its open child")
+    @MainActor
+    func columnPasteTargetsActiveColumn() async throws {
+        let root = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let source = root.appendingPathComponent("Codex", isDirectory: true)
+        try FileManager.default.createDirectory(at: source, withIntermediateDirectories: false)
+        try Data("Zforge".utf8).write(to: source.appendingPathComponent("README.txt"))
+
+        let suiteName = "ZforgeColumnPasteTest-\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let preferences = FileBrowserPreferences(defaults: defaults)
+        preferences.viewMode = .columns
+        preferences.language = .english
+        let state = FileBrowserState(
+            preferences: preferences,
+            fileSystem: FileSystemService(),
+            fileOperations: FileOperationService(),
+            grants: UIFixtureAccessGrantStore(),
+            archives: UIFixtureArchiveEngine()
+        )
+        defer { state.close() }
+
+        await state.navigateToSidebar(root, name: root.lastPathComponent)
+        let rootLocation = state.location
+        let sourceItem = try #require(state.items.first(where: { $0.name == "Codex" }))
+        await state.activateColumnItem(sourceItem, in: rootLocation).value
+
+        #expect(state.location == .fileSystem(source))
+        #expect(state.activeColumnLocation == rootLocation)
+        #expect(state.fileOperationDestinationURL == root.standardizedFileURL)
+
+        state.pasteItemProviders([NSItemProvider(object: source as NSURL)])
+        let copy = root.appendingPathComponent("Codex copy", isDirectory: true)
+        for _ in 0..<100 where !FileManager.default.fileExists(atPath: copy.path) {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+
+        #expect(FileManager.default.fileExists(atPath: copy.path))
+        #expect(FileManager.default.fileExists(
+            atPath: copy.appendingPathComponent("README.txt").path
+        ))
+        #expect(!FileManager.default.fileExists(
+            atPath: source.appendingPathComponent("Codex").path
+        ))
+        #expect(state.columnItems[rootLocation]?.contains(where: { $0.name == "Codex copy" }) == true)
+    }
+
     @Test("Drag modifiers resolve to Finder-style file operations")
     @MainActor
     func dragModifierOperations() {
@@ -420,5 +513,56 @@ private struct RenameBrowserHarness: View {
             contentFocus: $browserFocus,
             dragSession: dragSession
         )
+    }
+}
+
+private actor SuspendedTransferFileOperationService: FileOperationServing {
+    private let service = FileOperationService()
+    private var didStartTransfer = false
+    private var transferContinuation: CheckedContinuation<Void, Never>?
+
+    func createFolder(in directory: URL, locale: Locale?) async throws -> URL {
+        try await service.createFolder(in: directory, locale: locale)
+    }
+
+    func rename(_ sourceURL: URL, to newName: String) async throws -> URL {
+        try await service.rename(sourceURL, to: newName)
+    }
+
+    func createAliases(for sourceURLs: [URL], in directory: URL) async throws -> [URL] {
+        try await service.createAliases(for: sourceURLs, in: directory)
+    }
+
+    func transfer(
+        _ sourceURLs: [URL],
+        to directory: URL,
+        operation: BrowserFileTransferOperation
+    ) async throws -> [URL] {
+        await withCheckedContinuation { continuation in
+            didStartTransfer = true
+            transferContinuation = continuation
+        }
+        return []
+    }
+
+    func aliasTarget(for url: URL) async throws -> URL? {
+        try await service.aliasTarget(for: url)
+    }
+
+    func removeItems(at urls: [URL]) async throws {
+        try await service.removeItems(at: urls)
+    }
+
+    func moveItems(_ moves: [BrowserExactFileMove]) async throws {
+        try await service.moveItems(moves)
+    }
+
+    func transferStarted() -> Bool {
+        didStartTransfer
+    }
+
+    func finishTransfer() {
+        transferContinuation?.resume()
+        transferContinuation = nil
     }
 }

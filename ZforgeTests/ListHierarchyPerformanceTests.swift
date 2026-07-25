@@ -222,6 +222,163 @@ struct ListHierarchyPerformanceTests {
         )
     }
 
+    @Test("Deleting an expanded column folder returns to its parent and refreshes it")
+    @MainActor
+    func deletingExpandedColumnFolderRefreshesParent() async throws {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ZforgeColumnDeletion-" + UUID().uuidString, isDirectory: true)
+        let archiveFolder = root.appendingPathComponent("Archive", isDirectory: true)
+        try FileManager.default.createDirectory(
+            at: archiveFolder.appendingPathComponent("work", isDirectory: true),
+            withIntermediateDirectories: true
+        )
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        let suiteName = "ZforgeColumnDeletion-" + UUID().uuidString
+        let defaults = try #require(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let preferences = FileBrowserPreferences(defaults: defaults)
+        preferences.viewMode = .columns
+        preferences.language = .english
+        let state = FileBrowserState(
+            preferences: preferences,
+            fileSystem: FileSystemService(),
+            fileOperations: FileOperationService(),
+            grants: UIFixtureAccessGrantStore(),
+            archives: UIFixtureArchiveEngine()
+        )
+        defer { state.close() }
+
+        await state.navigateToSidebar(root, name: root.lastPathComponent)
+        let archiveItem = try #require(state.items.first(where: { $0.name == "Archive" }))
+        let openingTask = state.activateColumnItem(archiveItem, in: state.location)
+        await openingTask.value
+
+        #expect(state.columnItems[.fileSystem(archiveFolder)]?.contains(where: { $0.name == "work" }) == true)
+        try FileManager.default.removeItem(at: archiveFolder)
+        await state.refreshColumnsAfterRemovingLocalItems([archiveFolder])
+
+        #expect(state.error == nil)
+        #expect(state.location == .fileSystem(root))
+        #expect(state.activeColumnLocation == .fileSystem(root))
+        #expect(state.pathComponents.map(\.location) == [.fileSystem(root)])
+        #expect(state.columnItems[.fileSystem(archiveFolder)] == nil)
+        #expect(state.columnItems[.fileSystem(root)]?.contains(where: { $0.name == "Archive" }) != true)
+        #expect(state.items.contains(where: { $0.name == "Archive" }) == false)
+    }
+
+    @Test("Deleting a file in a parent column refreshes it while keeping the child open")
+    @MainActor
+    func deletingParentColumnFileRefreshesParentWhileChildRemainsOpen() async throws {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ZforgeColumnFileDeletion-" + UUID().uuidString, isDirectory: true)
+        let archiveFolder = root.appendingPathComponent("Archive", isDirectory: true)
+        let file = root.appendingPathComponent("old.txt")
+        try FileManager.default.createDirectory(
+            at: archiveFolder.appendingPathComponent("work", isDirectory: true),
+            withIntermediateDirectories: true
+        )
+        try Data("old".utf8).write(to: file)
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        let suiteName = "ZforgeColumnFileDeletion-" + UUID().uuidString
+        let defaults = try #require(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let preferences = FileBrowserPreferences(defaults: defaults)
+        preferences.viewMode = .columns
+        preferences.language = .english
+        let state = FileBrowserState(
+            preferences: preferences,
+            fileSystem: FileSystemService(),
+            fileOperations: FileOperationService(),
+            grants: UIFixtureAccessGrantStore(),
+            archives: UIFixtureArchiveEngine()
+        )
+        defer { state.close() }
+
+        await state.navigateToSidebar(root, name: root.lastPathComponent)
+        let archiveItem = try #require(state.items.first(where: { $0.name == "Archive" }))
+        let openingTask = state.activateColumnItem(archiveItem, in: state.location)
+        await openingTask.value
+
+        #expect(state.columnItems[.fileSystem(root)]?.contains(where: { $0.name == "old.txt" }) == true)
+        #expect(state.columnItems[.fileSystem(archiveFolder)]?.contains(where: { $0.name == "work" }) == true)
+
+        try FileManager.default.removeItem(at: file)
+        await state.refreshColumnsAfterRemovingLocalItems([file])
+
+        #expect(state.error == nil)
+        #expect(state.location == .fileSystem(archiveFolder))
+        #expect(state.activeColumnLocation == .fileSystem(archiveFolder))
+        #expect(state.columnItems[.fileSystem(root)]?.contains(where: { $0.name == "old.txt" }) != true)
+        #expect(state.columnItems[.fileSystem(archiveFolder)]?.contains(where: { $0.name == "work" }) == true)
+    }
+
+    @Test("Renaming an open column folder reloads its contents at the new URL")
+    @MainActor
+    func renamingOpenColumnFolderReloadsRenamedBranch() async throws {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ZforgeColumnRename-" + UUID().uuidString, isDirectory: true)
+        let original = root.appendingPathComponent("Original", isDirectory: true)
+        let renamed = root.appendingPathComponent("Renamed", isDirectory: true)
+        try FileManager.default.createDirectory(at: original, withIntermediateDirectories: true)
+        try Data("content".utf8).write(to: original.appendingPathComponent("child.txt"))
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        let suiteName = "ZforgeColumnRename-" + UUID().uuidString
+        let defaults = try #require(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let preferences = FileBrowserPreferences(defaults: defaults)
+        preferences.viewMode = .columns
+        preferences.language = .english
+        let state = FileBrowserState(
+            preferences: preferences,
+            fileSystem: FileSystemService(),
+            fileOperations: FileOperationService(),
+            grants: UIFixtureAccessGrantStore(),
+            archives: UIFixtureArchiveEngine()
+        )
+        defer { state.close() }
+
+        await state.navigateToSidebar(root, name: root.lastPathComponent)
+        let originalItem = try #require(state.items.first(where: { $0.name == "Original" }))
+        await state.activateColumnItem(originalItem, in: state.location).value
+        #expect(state.columnItems[.fileSystem(original)]?.contains(where: {
+            $0.name == "child.txt"
+        }) == true)
+
+        state.beginRenaming(originalItem)
+        state.renameDraft = "Renamed"
+        state.commitRename()
+
+        for _ in 0..<100 {
+            if state.location == .fileSystem(renamed),
+               state.columnItems[.fileSystem(renamed)]?.contains(where: {
+                   $0.name == "child.txt"
+               }) == true {
+                break
+            }
+            try await Task.sleep(for: .milliseconds(10))
+        }
+
+        #expect(state.error == nil)
+        #expect(FileManager.default.fileExists(atPath: renamed.path))
+        #expect(!FileManager.default.fileExists(atPath: original.path))
+        #expect(state.pathComponents.map(\.location) == [
+            .fileSystem(root),
+            .fileSystem(renamed)
+        ])
+        #expect(state.location == .fileSystem(renamed))
+        #expect(state.activeColumnLocation == .fileSystem(root))
+        #expect(state.columnItems[.fileSystem(original)] == nil)
+        #expect(state.columnItems[.fileSystem(renamed)]?.contains(where: {
+            $0.name == "child.txt"
+        }) == true)
+        #expect(state.columnSelections[.fileSystem(root)] == BrowserItemID(
+            rawValue: "file:\(renamed.standardizedFileURL.path)"
+        ))
+    }
+
     private func item(_ name: String, isFolder: Bool) -> BrowserItem {
         BrowserItem(
             id: BrowserItemID(rawValue: name),

@@ -223,15 +223,18 @@ struct ZforgeTests {
         #expect(preferences.archiveNestingLimit == 5)
         #expect(preferences.archiveRootSizeLimitGB == 1)
         #expect(preferences.archiveBrowsingPolicy == .standard)
+        #expect(preferences.defaultCompressionFormat == .zip)
 
         preferences.archiveNestingLimit = 30
         preferences.archiveRootSizeLimitGB = 12
+        preferences.defaultCompressionFormat = .gzip
         #expect(preferences.archiveNestingLimit == 10)
         #expect(preferences.archiveRootSizeLimitGB == 5)
 
         let reloaded = FileBrowserPreferences(defaults: defaults)
         #expect(reloaded.archiveNestingLimit == 10)
         #expect(reloaded.archiveRootSizeLimitGB == 5)
+        #expect(reloaded.defaultCompressionFormat == .gzip)
     }
 
     @Test("Folders remain first while size order changes")
@@ -386,6 +389,7 @@ struct ZforgeTests {
 
         #expect(state.archiveToolbarAction == .unavailableOutsideArchive)
 
+        state.location = .fileSystem(URL(fileURLWithPath: "/tmp/ArchiveToolbar"))
         state.selection = [archiveOne.id, archiveTwo.id]
         #expect(state.archiveToolbarAction == .extractAll)
 
@@ -399,7 +403,157 @@ struct ZforgeTests {
         #expect(state.archiveToolbarAction == .unavailableInsideArchive)
 
         state.selection = [document.id]
+        #expect(state.archiveToolbarAction == .compress)
+
+        state.selection = [archiveOne.id]
+        #expect(state.archiveToolbarAction == .extractAll)
+    }
+
+    @Test("Column compression creates the archive beside the selected folder")
+    @MainActor
+    func columnCompressionUsesSelectedItemParent() async throws {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ZforgeColumnCompression-\(UUID().uuidString)", isDirectory: true)
+        let sourceDirectory = root.appendingPathComponent("7z2602-mac", isDirectory: true)
+        try FileManager.default.createDirectory(at: sourceDirectory, withIntermediateDirectories: true)
+        try Data("Zforge".utf8).write(to: sourceDirectory.appendingPathComponent("readme.txt"))
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        let suiteName = "ZforgeColumnCompression-\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let preferences = FileBrowserPreferences(defaults: defaults)
+        preferences.viewMode = .columns
+        preferences.language = .english
+        let state = FileBrowserState(
+            preferences: preferences,
+            fileSystem: FileSystemService(),
+            fileOperations: FileOperationService(),
+            grants: UIFixtureAccessGrantStore(),
+            archives: SevenZipArchiveEngine(helperURL: helperURL)
+        )
+        defer { state.close() }
+
+        await state.navigateToSidebar(root, name: root.lastPathComponent)
+        let sourceItem = try #require(state.items.first(where: { $0.name == sourceDirectory.lastPathComponent }))
+        let openingTask = state.activateColumnItem(sourceItem, in: state.location)
+        await openingTask.value
+
+        #expect(state.archiveToolbarAction == .compress)
+        #expect(await state.performArchiveToolbarAction() != nil)
+        #expect(FileManager.default.fileExists(atPath: root.appendingPathComponent("7z2602-mac.zip").path))
+        #expect(!FileManager.default.fileExists(atPath: sourceDirectory.appendingPathComponent("7z2602-mac.zip").path))
+        #expect(
+            state.columnItems[.fileSystem(root)]?.contains(where: {
+                $0.name == "7z2602-mac.zip"
+            }) == true
+        )
+    }
+
+    @Test("Extracting an internal folder refreshes its destination column")
+    @MainActor
+    func columnInternalExtractionRefreshesDestination() async throws {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ZforgeColumnExtraction-\(UUID().uuidString)", isDirectory: true)
+        let archiveURL = root.appendingPathComponent("work_zipped.zip")
+        let destination = root.appendingPathComponent("work_zipped", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        try FileManager.default.copyItem(
+            at: fixturesURL.appendingPathComponent("sample-root.zip"),
+            to: archiveURL
+        )
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        let suiteName = "ZforgeColumnExtraction-\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let preferences = FileBrowserPreferences(defaults: defaults)
+        preferences.viewMode = .columns
+        preferences.language = .english
+        let state = FileBrowserState(
+            preferences: preferences,
+            fileSystem: FileSystemService(),
+            fileOperations: FileOperationService(),
+            grants: UIFixtureAccessGrantStore(),
+            archives: SevenZipArchiveEngine(helperURL: helperURL)
+        )
+        defer { state.close() }
+
+        await state.navigateToSidebar(root, name: root.lastPathComponent)
+        let archiveItem = try #require(state.items.first(where: { $0.name == archiveURL.lastPathComponent }))
+        await state.activateColumnItem(archiveItem, in: state.location).value
+        let folder = try #require(state.items.first(where: { $0.name == "Folder" }))
+        state.select(folder)
+
         #expect(state.archiveToolbarAction == .extractSelected)
+        #expect(await state.performArchiveToolbarAction() != nil)
+        #expect(FileManager.default.fileExists(atPath: destination.appendingPathComponent("Folder").path))
+        #expect(
+            state.columnItems[.fileSystem(root)]?.contains(where: {
+                $0.name == destination.lastPathComponent
+            }) == true
+        )
+    }
+
+    @Test("Column action extracts an external archive selected in the base column")
+    @MainActor
+    func columnExternalArchiveExtractionFromBaseColumn() async throws {
+        try await assertColumnExternalArchiveExtraction(nestedInDirectory: false)
+    }
+
+    @Test("Column action extracts an external archive selected in a right column")
+    @MainActor
+    func columnExternalArchiveExtractionFromRightColumn() async throws {
+        try await assertColumnExternalArchiveExtraction(nestedInDirectory: true)
+    }
+
+    @Test("Deleting an open archive removes its virtual column and refreshes its parent")
+    @MainActor
+    func deletingOpenColumnArchiveRefreshesParent() async throws {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ZforgeColumnArchiveDeletion-\(UUID().uuidString)", isDirectory: true)
+        let archiveURL = root.appendingPathComponent("Codex.zip")
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        try FileManager.default.copyItem(
+            at: fixturesURL.appendingPathComponent("sample-root.zip"),
+            to: archiveURL
+        )
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        let suiteName = "ZforgeColumnArchiveDeletion-\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let preferences = FileBrowserPreferences(defaults: defaults)
+        preferences.viewMode = .columns
+        preferences.language = .english
+        let state = FileBrowserState(
+            preferences: preferences,
+            fileSystem: FileSystemService(),
+            fileOperations: FileOperationService(),
+            grants: UIFixtureAccessGrantStore(),
+            archives: SevenZipArchiveEngine(helperURL: helperURL)
+        )
+        defer { state.close() }
+
+        await state.navigateToSidebar(root, name: root.lastPathComponent)
+        let parentLocation = state.location
+        let archiveItem = try #require(state.items.first(where: { $0.name == "Codex.zip" }))
+        await state.activateColumnItem(archiveItem, in: parentLocation).value
+        let archiveLocation = state.location
+
+        #expect(archiveLocation != parentLocation)
+        #expect(state.columnItems[archiveLocation]?.isEmpty == false)
+
+        try FileManager.default.removeItem(at: archiveURL)
+        await state.refreshColumnsAfterRemovingLocalItems([archiveURL])
+
+        #expect(state.error == nil)
+        #expect(state.location == parentLocation)
+        #expect(state.activeColumnLocation == parentLocation)
+        #expect(state.pathComponents.map(\.location) == [parentLocation])
+        #expect(state.columnItems[archiveLocation] == nil)
+        #expect(state.columnItems[parentLocation]?.contains(where: { $0.name == "Codex.zip" }) != true)
+        #expect(state.items.contains(where: { $0.name == "Codex.zip" }) == false)
     }
 
     @Test("A regular window starts in Recents and loads Spotlight results")
@@ -568,6 +722,127 @@ struct ZforgeTests {
         #expect(state.selection == [document.id])
     }
 
+    @Test("Entering a right column activates and opens its first item")
+    @MainActor
+    func enteringRightColumnActivatesFirstItem() async throws {
+        let rootURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        let containerURL = rootURL.appendingPathComponent("Archive 3", isDirectory: true)
+        let firstItemURL = containerURL.appendingPathComponent("dev", isDirectory: true)
+        let nestedURL = firstItemURL.appendingPathComponent("Zforge", isDirectory: true)
+        let fileContainerURL = rootURL.appendingPathComponent("Files", isDirectory: true)
+        let documentURL = fileContainerURL.appendingPathComponent("Document.txt")
+        try FileManager.default.createDirectory(at: nestedURL, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(
+            at: fileContainerURL,
+            withIntermediateDirectories: true
+        )
+        try Data("Preview".utf8).write(to: documentURL)
+        defer { try? FileManager.default.removeItem(at: rootURL) }
+
+        let suiteName = "ZforgeEnterRightColumn-\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let preferences = FileBrowserPreferences(defaults: defaults)
+        preferences.viewMode = .columns
+        let state = FileBrowserState(
+            preferences: preferences,
+            fileSystem: FileSystemService(),
+            grants: UIFixtureAccessGrantStore(),
+            archives: UIFixtureArchiveEngine()
+        )
+        defer { state.close() }
+
+        await state.navigateToSidebar(rootURL, name: rootURL.lastPathComponent)
+        let rootLocation = state.location
+        let container = try #require(state.items.first(where: { $0.name == "Archive 3" }))
+        await state.activateColumnItem(container, in: rootLocation).value
+
+        let containerLocation = BrowserLocation.fileSystem(containerURL)
+        let firstItem = try #require(state.sortedColumnItems(at: containerLocation).first)
+        #expect(firstItem.name == "dev")
+
+        await state.activateFirstItemInColumn(at: containerLocation).value
+
+        let firstItemLocation = BrowserLocation.fileSystem(firstItemURL)
+        #expect(state.activeColumnLocation == containerLocation)
+        #expect(state.columnSelections[containerLocation] == firstItem.id)
+        #expect(state.location == firstItemLocation)
+        #expect(state.pathComponents.last?.location == firstItemLocation)
+        #expect(
+            state.columnItems[firstItemLocation]?.contains(where: { $0.name == "Zforge" }) == true
+        )
+
+        await state.navigateToSidebar(rootURL, name: rootURL.lastPathComponent)
+        let fileContainer = try #require(state.items.first(where: { $0.name == "Files" }))
+        await state.activateColumnItem(fileContainer, in: state.location).value
+
+        let fileContainerLocation = BrowserLocation.fileSystem(fileContainerURL)
+        let document = try #require(state.sortedColumnItems(at: fileContainerLocation).first)
+        #expect(document.name == "Document.txt")
+        await state.activateFirstItemInColumn(at: fileContainerLocation).value
+        for _ in 0..<100 where state.previewURL != documentURL {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+
+        #expect(state.activeColumnLocation == fileContainerLocation)
+        #expect(state.columnSelections[fileContainerLocation] == document.id)
+        #expect(state.location == fileContainerLocation)
+        #expect(state.previewURL == documentURL)
+    }
+
+    @Test("Rapid column archive selection cancels the previous load before opening the next")
+    @MainActor
+    func rapidColumnArchiveSelectionPublishesOnlyCurrentArchive() async throws {
+        let suiteName = "ZforgeColumnArchiveRace-\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let preferences = FileBrowserPreferences(defaults: defaults)
+        preferences.viewMode = .columns
+        preferences.language = .english
+        let engine = ColumnArchiveRaceEngine()
+        let state = FileBrowserState(
+            preferences: preferences,
+            fileSystem: UIFixtureFileSystemService(),
+            grants: UIFixtureAccessGrantStore(),
+            archives: engine
+        )
+        defer { state.close() }
+
+        let rootLocation = BrowserLocation.fileSystem(
+            URL(fileURLWithPath: "/tmp/ZforgeColumnArchiveRace", isDirectory: true)
+        )
+        let firstArchive = item("First.zip", archive: true)
+        let secondArchive = item("Second.zip", archive: true)
+        state.location = rootLocation
+        state.pathComponents = [
+            BrowserPathComponent(location: rootLocation, name: "Race", isArchive: false)
+        ]
+        state.items = [firstArchive, secondArchive]
+        state.columnItems[rootLocation] = [firstArchive, secondArchive]
+        state.archiveOperationDescription = "Compressing selected items…"
+
+        let firstActivation = state.activateColumnItem(firstArchive, in: rootLocation)
+        let firstStarted = await engine.waitUntilStarted("First.zip")
+        #expect(firstStarted)
+        #expect(state.archiveOperationInProgress)
+        #expect(state.archiveOperationDescription == "Loading…")
+        let secondActivation = state.activateColumnItem(secondArchive, in: rootLocation)
+
+        await secondActivation.value
+        await firstActivation.value
+
+        let events = await engine.eventsSnapshot()
+        let firstCancellation = try #require(events.firstIndex(of: "cancelled:First.zip"))
+        let secondStart = try #require(events.firstIndex(of: "started:Second.zip"))
+        #expect(firstCancellation < secondStart)
+        #expect(!events.contains("completed:First.zip"))
+        #expect(events.contains("completed:Second.zip"))
+        #expect(state.pathComponents.last?.name == "Second.zip")
+        #expect(state.pathComponents.contains(where: { $0.name == "First.zip" }) == false)
+        #expect(state.items.map(\.name) == ["Second.zip content"])
+    }
+
     @Test("Entering column view opens the selected folder without changing history")
     @MainActor
     func enteringColumnViewOpensSelectedFolder() async throws {
@@ -642,6 +917,102 @@ struct ZforgeTests {
         await engine.closeSession(opened.address.sessionID)
     }
 
+    @Test("Archive engine creates every supported output format")
+    func createsSupportedArchiveFormats() async throws {
+        #expect(ArchiveCompressionFormat.allCases == [.sevenZip, .zip, .tar, .xz, .bzip2, .gzip, .wim])
+        #expect(ArchiveCompressionFormat.bzip2.fileExtension == "bz2")
+        #expect(ArchiveCompressionFormat.gzip.fileExtension == "gz")
+
+        let engine = SevenZipArchiveEngine(helperURL: helperURL)
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ZforgeArchiveFormats-\(UUID().uuidString)", isDirectory: true)
+        let folder = root.appendingPathComponent("Folder", isDirectory: true)
+        let file = root.appendingPathComponent("hello.txt")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        try Data("Hello from formats.\n".utf8).write(to: file)
+        try Data("Nested format file.\n".utf8).write(to: folder.appendingPathComponent("nested.txt"))
+        defer {
+            Task { await engine.closeAllSessions() }
+            try? FileManager.default.removeItem(at: root)
+        }
+
+        for format in ArchiveCompressionFormat.allCases {
+            let extensionName = format.isStream ? "tar.\(format.fileExtension)" : format.fileExtension
+            let output = root.appendingPathComponent("Output-\(format.rawValue).\(extensionName)")
+            try await engine.createArchive(
+                from: [file, folder],
+                outputURL: output,
+                format: format,
+                progress: { _ in }
+            )
+            #expect(FileManager.default.fileExists(atPath: output.path))
+            let opened = try await engine.openArchive(at: output, password: nil)
+            #expect(try await !engine.items(at: opened.address).isEmpty)
+            await engine.closeSession(opened.address.sessionID)
+        }
+
+        for format in [ArchiveCompressionFormat.xz, .bzip2, .gzip] {
+            let output = root.appendingPathComponent("Single-\(format.rawValue).\(format.fileExtension)")
+            try await engine.createArchive(
+                from: [file],
+                outputURL: output,
+                format: format,
+                progress: { _ in }
+            )
+            #expect(FileManager.default.fileExists(atPath: output.path))
+            let opened = try await engine.openArchive(at: output, password: nil)
+            let items = try await engine.items(at: opened.address)
+            #expect(items.count == 1)
+            let extracted = try await engine.materialize(
+                item: try #require(items.first),
+                purpose: .preview,
+                automaticLimit: 10 * 1_024 * 1_024
+            )
+            #expect(try Data(contentsOf: extracted) == Data("Hello from formats.\n".utf8))
+            await engine.closeSession(opened.address.sessionID)
+        }
+    }
+
+    @Test("Archive engine extracts external archives and selected virtual items")
+    func extractsArchivesAndSelectedItems() async throws {
+        let engine = SevenZipArchiveEngine(helperURL: helperURL)
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ZforgeArchiveExtraction-\(UUID().uuidString)", isDirectory: true)
+        let externalDestination = root.appendingPathComponent("External", isDirectory: true)
+        let selectedDestination = root.appendingPathComponent("Selected", isDirectory: true)
+        let resolver: ArchiveConflictResolver = { _ in .replace(applyToAll: true) }
+        defer {
+            Task { await engine.closeAllSessions() }
+            try? FileManager.default.removeItem(at: root)
+        }
+
+        try await engine.extractArchive(
+            at: fixturesURL.appendingPathComponent("sample-root.zip"),
+            to: externalDestination,
+            password: nil,
+            resolveConflict: resolver,
+            progress: { _ in }
+        )
+        #expect(FileManager.default.fileExists(atPath: externalDestination.appendingPathComponent("hello.txt").path))
+        #expect(FileManager.default.fileExists(atPath: externalDestination.appendingPathComponent("Folder/nested.txt").path))
+
+        let opened = try await engine.openArchive(
+            at: fixturesURL.appendingPathComponent("sample-root.zip"),
+            password: nil
+        )
+        let items = try await engine.items(at: opened.address)
+        let hello = try #require(items.first(where: { $0.name == "hello.txt" }))
+        try await engine.extractItems(
+            [hello],
+            to: selectedDestination,
+            password: nil,
+            resolveConflict: resolver,
+            progress: { _ in }
+        )
+        #expect(FileManager.default.fileExists(atPath: selectedDestination.appendingPathComponent("hello.txt").path))
+        await engine.closeSession(opened.address.sessionID)
+    }
+
     @Test("List recursively expands fast nested archives when the outer archive is small")
     @MainActor
     func listInlineArchiveExpansion() async throws {
@@ -653,6 +1024,7 @@ struct ZforgeTests {
             grants: UIFixtureAccessGrantStore(),
             archives: engine
         )
+        state.location = .fileSystem(fixturesURL)
         defer { Task { await engine.closeAllSessions() } }
 
         let zip = try await fileSystem.item(at: fixturesURL.appendingPathComponent("sample-root.zip"))
@@ -665,6 +1037,11 @@ struct ZforgeTests {
 
         await state.toggleExpansion(folder)
         #expect(state.flattenedList().contains(where: { $0.depth == 2 && $0.item.name == "nested.txt" }))
+        let nestedItem = try #require(
+            state.expandedChildren[folder.id]?.first(where: { $0.name == "nested.txt" })
+        )
+        state.selection = [nestedItem.id]
+        #expect(state.archiveToolbarAction == .extractSelected)
 
         let nested = try await fileSystem.item(at: fixturesURL.appendingPathComponent("nested.7z"))
         state.items = [nested]
@@ -683,6 +1060,12 @@ struct ZforgeTests {
     @Test("Encrypted archive requires and accepts an in-memory password")
     func encryptedArchive() async throws {
         let engine = SevenZipArchiveEngine(helperURL: helperURL)
+        let destination = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ZforgeEncryptedExtraction-\(UUID().uuidString)", isDirectory: true)
+        defer {
+            Task { await engine.closeAllSessions() }
+            try? FileManager.default.removeItem(at: destination)
+        }
         do {
             _ = try await engine.openArchive(at: fixturesURL.appendingPathComponent("encrypted.7z"), password: nil)
             Issue.record("The encrypted fixture opened without a password")
@@ -695,6 +1078,27 @@ struct ZforgeTests {
             password: "zforge-test"
         )
         #expect(try await !engine.items(at: opened.address).isEmpty)
+        let resolver: ArchiveConflictResolver = { _ in .replace(applyToAll: true) }
+        do {
+            try await engine.extractArchive(
+                at: fixturesURL.appendingPathComponent("encrypted.7z"),
+                to: destination,
+                password: nil,
+                resolveConflict: resolver,
+                progress: { _ in }
+            )
+            Issue.record("The encrypted fixture was extracted without a password")
+        } catch let error as ArchiveEngineError {
+            #expect(error == .passwordRequired)
+        }
+        try await engine.extractArchive(
+            at: fixturesURL.appendingPathComponent("encrypted.7z"),
+            to: destination,
+            password: "zforge-test",
+            resolveConflict: resolver,
+            progress: { _ in }
+        )
+        #expect(try !FileManager.default.contentsOfDirectory(at: destination, includingPropertiesForKeys: nil).isEmpty)
         await engine.closeSession(opened.address.sessionID)
     }
 
@@ -757,6 +1161,72 @@ struct ZforgeTests {
     }
     private var fixturesURL: URL { projectRoot.appendingPathComponent("ZforgeTests/Fixtures") }
 
+    @MainActor
+    private func assertColumnExternalArchiveExtraction(
+        nestedInDirectory: Bool
+    ) async throws {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ZforgeColumnExternalExtraction-\(UUID().uuidString)", isDirectory: true)
+        let archiveDirectory = nestedInDirectory
+            ? root.appendingPathComponent("Nested", isDirectory: true)
+            : root
+        let archiveName = nestedInDirectory ? "Right.zip" : "Base.zip"
+        let archiveURL = archiveDirectory.appendingPathComponent(archiveName)
+        let destination = archiveDirectory.appendingPathComponent(
+            archiveURL.deletingPathExtension().lastPathComponent,
+            isDirectory: true
+        )
+        try FileManager.default.createDirectory(
+            at: archiveDirectory,
+            withIntermediateDirectories: true
+        )
+        try FileManager.default.copyItem(
+            at: fixturesURL.appendingPathComponent("sample-root.zip"),
+            to: archiveURL
+        )
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        let suiteName = "ZforgeColumnExternalExtraction-\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let preferences = FileBrowserPreferences(defaults: defaults)
+        preferences.viewMode = .columns
+        preferences.language = .english
+        let state = FileBrowserState(
+            preferences: preferences,
+            fileSystem: FileSystemService(),
+            fileOperations: FileOperationService(),
+            grants: UIFixtureAccessGrantStore(),
+            archives: SevenZipArchiveEngine(helperURL: helperURL)
+        )
+        defer { state.close() }
+
+        await state.navigateToSidebar(root, name: root.lastPathComponent)
+        if nestedInDirectory {
+            let directoryItem = try #require(state.items.first(where: { $0.name == "Nested" }))
+            await state.activateColumnItem(directoryItem, in: state.location).value
+        }
+
+        let archiveParentLocation = state.location
+        let archiveItem = try #require(state.items.first(where: {
+            $0.localURL?.standardizedFileURL.path == archiveURL.standardizedFileURL.path
+        }))
+        await state.activateColumnItem(archiveItem, in: archiveParentLocation).value
+
+        #expect(state.location != archiveParentLocation)
+        #expect(archiveItem.localURL != nil)
+        #expect(state.archiveToolbarAction == .extractAll)
+        #expect(await state.performArchiveToolbarAction() != nil)
+        #expect(FileManager.default.fileExists(
+            atPath: destination.appendingPathComponent("hello.txt").path
+        ))
+        #expect(
+            state.columnItems[archiveParentLocation]?.contains(where: {
+                $0.localURL?.standardizedFileURL.path == destination.standardizedFileURL.path
+            }) == true
+        )
+    }
+
     private func item(
         _ name: String,
         directory: Bool = false,
@@ -785,4 +1255,123 @@ private final class RecentItemsStub: RecentItemsServing {
 
     func recentItemURLs() async -> [URL] { urls }
     func stop() {}
+}
+
+private actor ColumnArchiveRaceEngine: ArchiveServing {
+    private var events: [String] = []
+    private var namesByArchiveID: [UUID: String] = [:]
+
+    func openArchive(
+        at url: URL,
+        password: String?,
+        policy: ArchiveBrowsingPolicy
+    ) async throws -> ArchiveOpenResult {
+        let name = url.lastPathComponent
+        events.append("started:\(name)")
+        do {
+            try await Task.sleep(
+                nanoseconds: name == "First.zip" ? 2_000_000_000 : 10_000_000
+            )
+            try Task.checkCancellation()
+        } catch {
+            events.append("cancelled:\(name)")
+            throw error
+        }
+
+        let archiveID = UUID()
+        namesByArchiveID[archiveID] = name
+        events.append("completed:\(name)")
+        return ArchiveOpenResult(
+            address: ArchiveAddress(
+                sessionID: UUID(),
+                archiveID: archiveID,
+                internalPath: "",
+                maximumNestedArchiveDepth: policy.maximumNestedArchiveDepth
+            ),
+            displayName: name
+        )
+    }
+
+    func items(at address: ArchiveAddress) async throws -> [BrowserItem] {
+        let archiveName = namesByArchiveID[address.archiveID] ?? "Unknown.zip"
+        let childName = "\(archiveName) content"
+        return [
+            BrowserItem(
+                id: BrowserItemID(rawValue: "race:\(address.archiveID):\(childName)"),
+                name: childName,
+                location: .archive(address.appending(childName)),
+                isContainer: false,
+                isDirectory: false,
+                isPackage: false,
+                isSymbolicLink: false,
+                isHidden: false,
+                isArchive: false,
+                size: 1,
+                packedSize: 1,
+                creationDate: nil,
+                modificationDate: nil,
+                accessDate: nil,
+                tags: [],
+                contentTypeIdentifier: "public.data",
+                encrypted: false,
+                checksum: nil,
+                compressionMethod: nil
+            )
+        ]
+    }
+
+    func waitUntilStarted(_ name: String) async -> Bool {
+        for _ in 0..<1_000 {
+            if events.contains("started:\(name)") { return true }
+            try? await Task.sleep(nanoseconds: 1_000_000)
+        }
+        return false
+    }
+
+    func eventsSnapshot() -> [String] { events }
+
+    func openNestedArchive(item: BrowserItem, password: String?) async throws -> ArchiveOpenResult {
+        throw ArchiveEngineError.itemNotFound
+    }
+
+    func materialize(
+        item: BrowserItem,
+        purpose: ArchiveMaterializationPurpose,
+        automaticLimit: Int64?
+    ) async throws -> URL {
+        throw ArchiveEngineError.itemNotFound
+    }
+
+    func createArchive(
+        from sourceURLs: [URL],
+        outputURL: URL,
+        format: ArchiveCompressionFormat,
+        progress: @escaping ArchiveProgressHandler
+    ) async throws {}
+
+    func extractArchive(
+        at url: URL,
+        to destinationURL: URL,
+        password: String?,
+        resolveConflict: @escaping ArchiveConflictResolver,
+        progress: @escaping ArchiveProgressHandler
+    ) async throws {}
+
+    func extractItems(
+        _ items: [BrowserItem],
+        to destinationURL: URL,
+        password: String?,
+        resolveConflict: @escaping ArchiveConflictResolver,
+        progress: @escaping ArchiveProgressHandler
+    ) async throws {}
+
+    func archiveRootURL(for address: ArchiveAddress) async throws -> URL {
+        URL(fileURLWithPath: "/tmp/\(namesByArchiveID[address.archiveID] ?? "Unknown.zip")")
+    }
+
+    func setPassword(_ password: String?, for sessionID: UUID) async {}
+    func closeSession(_ sessionID: UUID) async {}
+    func closeAllSessions() async {}
+    func cancelAllOperations() async {}
+    func cleanupStaleSessions() async {}
 }
