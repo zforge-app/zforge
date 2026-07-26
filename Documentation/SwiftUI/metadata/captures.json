@@ -3,8 +3,8 @@
   "captured_at": "2026-07-16T23:52:09+00:00",
   "seed_url": "https://developer.apple.com/documentation/SwiftUI",
   "scope": "home plus unique first-level links exposed by Overview, Featured samples, and Topics, with audited on-demand expansions",
-  "expected_contexts": 75,
-  "captured_contexts": 75,
+  "expected_contexts": 76,
+  "captured_contexts": 76,
   "failures": [],
   "captures": [
     {
@@ -1065,6 +1065,21 @@
       "categories": [
         "On-demand expansion",
         "Drawing and graphics"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/design/human-interface-guidelines/alerts",
+      "fetch_url": "https://developer.apple.com/tutorials/data/design/human-interface-guidelines/alerts.json",
+      "final_url": "https://developer.apple.com/tutorials/data/design/human-interface-guidelines/alerts.json",
+      "local_path": "contexts/hig-alerts.md",
+      "sha256": "5a209e6c67818f2e11c213094852d015adeedf8b1faca4e2072faeabd114d3fb",
+      "etag": "W/\"0cde5823d83af3fd8f1b6e6ca9b97713\"",
+      "last_modified": null,
+      "bytes": 37756,
+      "categories": [
+        "On-demand expansion",
+        "Human Interface Guidelines"
       ],
       "depth": 2
     }

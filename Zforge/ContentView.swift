@@ -17,6 +17,34 @@ enum BrowserToolbarLayout {
     }
 }
 
+nonisolated enum PermanentDeletionConfirmationChoice: Hashable {
+    case cancel
+    case delete
+}
+
+nonisolated enum PermanentDeletionConfirmationDirection {
+    case left
+    case right
+    case up
+    case down
+}
+
+nonisolated enum PermanentDeletionConfirmationNavigation {
+    nonisolated static func nextChoice(
+        after currentChoice: PermanentDeletionConfirmationChoice?,
+        moving direction: PermanentDeletionConfirmationDirection
+    ) -> PermanentDeletionConfirmationChoice {
+        guard currentChoice != nil else { return .cancel }
+
+        switch direction {
+        case .left, .up:
+            return .cancel
+        case .right, .down:
+            return .delete
+        }
+    }
+}
+
 struct ContentView: View {
     @Environment(\.openWindow) private var openWindow
     @Environment(\.undoManager) private var undoManager
@@ -127,6 +155,16 @@ struct ContentView: View {
         }
         .sheet(isPresented: passwordSheetBinding, onDismiss: restoreContentFocus) {
             ArchivePasswordSheet(state: browser)
+        }
+        .sheet(isPresented: permanentDeletionBinding, onDismiss: restoreContentFocus) {
+            if let request = browser.pendingPermanentDeletion {
+                PermanentDeletionConfirmationSheet(
+                    itemCount: request.itemCount,
+                    confirm: browser.confirmPermanentDeletion,
+                    cancel: { browser.pendingPermanentDeletion = nil }
+                )
+                .presentationSizing(.fitted)
+            }
         }
         .alert("Zforge", isPresented: errorBinding, presenting: browser.error) { _ in
             Button("OK") {
@@ -558,6 +596,13 @@ struct ContentView: View {
         )
     }
 
+    private var permanentDeletionBinding: Binding<Bool> {
+        Binding(
+            get: { browser.pendingPermanentDeletion != nil },
+            set: { if !$0 { browser.pendingPermanentDeletion = nil } }
+        )
+    }
+
     private func presentAuthorizationPanel(for intendedURL: URL) {
         guard !authorizationPanelPresented else { return }
         authorizationPanelPresented = true
@@ -777,6 +822,131 @@ private struct ToolbarOverflowIcon: View {
             .foregroundStyle(isActive ? .primary : .secondary)
             .frame(width: 18, height: 18)
             .accessibilityHidden(true)
+    }
+}
+
+struct PermanentDeletionConfirmationSheet: View {
+    let itemCount: Int
+    let confirm: () -> Void
+    let cancel: () -> Void
+
+    @State private var selectedChoice: PermanentDeletionConfirmationChoice?
+    @FocusState private var hasKeyboardFocus: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text("Delete Immediately?")
+                .font(.headline)
+
+            if itemCount == 1 {
+                Text("The selected item will be deleted immediately. This action cannot be undone.")
+            } else {
+                Text("The selected items will be deleted immediately. This action cannot be undone.")
+            }
+
+            HStack(spacing: 8) {
+                Button("Cancel", role: .cancel, action: cancel)
+                    .focusable(false)
+                    .buttonStyle(PermanentDeletionConfirmationButtonStyle())
+                    .permanentDeletionKeyboardSelection(selectedChoice == .cancel)
+                Button("Delete", role: .destructive, action: confirm)
+                    .focusable(false)
+                    .buttonStyle(PermanentDeletionConfirmationButtonStyle(isDestructive: true))
+                    .permanentDeletionKeyboardSelection(selectedChoice == .delete)
+            }
+        }
+        .padding(20)
+        .frame(width: 280)
+        .focusable()
+        .focusEffectDisabled()
+        .focused($hasKeyboardFocus)
+        .onKeyPress(
+            keys: [.leftArrow, .rightArrow, .upArrow, .downArrow, .return, .escape]
+        ) { keyPress in
+            handleKeyPress(keyPress)
+        }
+        .task {
+            await Task.yield()
+            hasKeyboardFocus = true
+        }
+    }
+
+    private func handleKeyPress(_ keyPress: KeyPress) -> KeyPress.Result {
+        if keyPress.key == .escape {
+            cancel()
+            return .handled
+        }
+
+        if keyPress.key == .return {
+            switch selectedChoice {
+            case .cancel:
+                cancel()
+            case .delete:
+                confirm()
+            case nil:
+                break
+            }
+            return .handled
+        }
+
+        guard let direction = direction(for: keyPress.key) else { return .ignored }
+        selectedChoice = PermanentDeletionConfirmationNavigation.nextChoice(
+            after: selectedChoice,
+            moving: direction
+        )
+        return .handled
+    }
+
+    private func direction(
+        for key: KeyEquivalent
+    ) -> PermanentDeletionConfirmationDirection? {
+        switch key {
+        case .leftArrow:
+            .left
+        case .rightArrow:
+            .right
+        case .upArrow:
+            .up
+        case .downArrow:
+            .down
+        default:
+            nil
+        }
+    }
+}
+
+private struct PermanentDeletionConfirmationButtonStyle: ButtonStyle {
+    var isDestructive = false
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.body.weight(.medium))
+            .foregroundStyle(isDestructive ? Color.red : Color.primary)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 7)
+            .background {
+                Capsule()
+                    .fill(
+                        isDestructive
+                            ? Color.red.opacity(configuration.isPressed ? 0.28 : 0.18)
+                            : Color.primary.opacity(configuration.isPressed ? 0.16 : 0.09)
+                    )
+            }
+            .contentShape(Capsule())
+    }
+}
+
+private extension View {
+    @ViewBuilder
+    func permanentDeletionKeyboardSelection(_ isSelected: Bool) -> some View {
+        overlay {
+            if isSelected {
+                Capsule()
+                    .stroke(Color.accentColor, lineWidth: 3)
+                    .padding(-3)
+                    .allowsHitTesting(false)
+            }
+        }
     }
 }
 

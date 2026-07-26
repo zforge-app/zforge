@@ -103,6 +103,9 @@ private struct BrowserCommands: Commands {
             Button("Move to Trash") { browser?.moveSelectionToTrash() }
                 .keyboardShortcut(.delete, modifiers: .command)
                 .disabled(browser?.hasLocalSelection != true)
+            Button("Delete Immediately…") { browser?.requestPermanentDeletion() }
+                .keyboardShortcut(.delete, modifiers: [.option, .command])
+                .disabled(browser?.hasLocalSelection != true)
             Button("Eject") { browser?.ejectSelectedVolume() }
                 .keyboardShortcut("e", modifiers: .command)
                 .disabled(browser?.canEjectSelection != true)

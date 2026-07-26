@@ -493,6 +493,97 @@ struct FileOperationServiceTests {
         #expect(!FileManager.default.fileExists(atPath: copy.path))
     }
 
+    @Test("Permanent deletion waits for confirmation and cannot be undone")
+    @MainActor
+    func permanentDeletionRequiresConfirmation() async throws {
+        let root = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let source = root.appendingPathComponent("Delete.txt")
+        try Data("Zforge".utf8).write(to: source)
+        let suiteName = "ZforgePermanentDeletionTest-\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let preferences = FileBrowserPreferences(defaults: defaults)
+        preferences.language = .english
+        let state = FileBrowserState(
+            preferences: preferences,
+            fileSystem: FileSystemService(),
+            fileOperations: FileOperationService(),
+            grants: UIFixtureAccessGrantStore(),
+            archives: UIFixtureArchiveEngine()
+        )
+        defer { state.close() }
+        let undoManager = UndoManager()
+        state.configureUndoManager(undoManager)
+        await state.navigateToSidebar(root, name: root.lastPathComponent)
+        let item = try #require(state.items.first(where: { $0.name == "Delete.txt" }))
+        state.select(item)
+
+        state.requestPermanentDeletion()
+
+        #expect(
+            state.pendingPermanentDeletion?.urls.map(\.standardizedFileURL)
+                == [source.standardizedFileURL]
+        )
+        #expect(FileManager.default.fileExists(atPath: source.path))
+
+        state.confirmPermanentDeletion()
+        for _ in 0..<100 where FileManager.default.fileExists(atPath: source.path) {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        for _ in 0..<100 where state.fileOperationInProgress {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+
+        #expect(!FileManager.default.fileExists(atPath: source.path))
+        #expect(state.pendingPermanentDeletion == nil)
+        #expect(!undoManager.canUndo)
+        #expect(!state.fileOperationInProgress)
+        #expect(state.fileOperationDescription.isEmpty)
+    }
+
+    @Test("Permanent deletion keyboard selection starts on Cancel")
+    func permanentDeletionKeyboardSelection() {
+        for direction in [
+            PermanentDeletionConfirmationDirection.left,
+            .right,
+            .up,
+            .down
+        ] {
+            #expect(
+                PermanentDeletionConfirmationNavigation.nextChoice(
+                    after: nil,
+                    moving: direction
+                ) == .cancel
+            )
+        }
+
+        #expect(
+            PermanentDeletionConfirmationNavigation.nextChoice(
+                after: .cancel,
+                moving: .right
+            ) == .delete
+        )
+        #expect(
+            PermanentDeletionConfirmationNavigation.nextChoice(
+                after: .cancel,
+                moving: .down
+            ) == .delete
+        )
+        #expect(
+            PermanentDeletionConfirmationNavigation.nextChoice(
+                after: .delete,
+                moving: .left
+            ) == .cancel
+        )
+        #expect(
+            PermanentDeletionConfirmationNavigation.nextChoice(
+                after: .delete,
+                moving: .up
+            ) == .cancel
+        )
+    }
+
     private func makeTemporaryDirectory() throws -> URL {
         let url = FileManager.default.temporaryDirectory
             .appendingPathComponent("ZforgeFileOperations-\(UUID().uuidString)", isDirectory: true)

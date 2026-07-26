@@ -646,6 +646,46 @@
         }
       }
     },
+    "Delete" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apagar"
+          }
+        }
+      }
+    },
+    "Delete Immediately…" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apagar Imediatamente…"
+          }
+        }
+      }
+    },
+    "Delete Immediately?" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apagar imediatamente?"
+          }
+        }
+      }
+    },
+    "Deleting items…" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apagando itens…"
+          }
+        }
+      }
+    },
     "Desktop" : {
       "localizations" : {
         "pt-BR" : {
@@ -1876,6 +1916,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "O caminho não é uma pasta."
+          }
+        }
+      }
+    },
+    "The selected item will be deleted immediately. This action cannot be undone." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O item selecionado será apagado imediatamente. Esta ação não pode ser desfeita."
+          }
+        }
+      }
+    },
+    "The selected items will be deleted immediately. This action cannot be undone." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Os itens selecionados serão apagados imediatamente. Esta ação não pode ser desfeita."
           }
         }
       }

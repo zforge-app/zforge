@@ -198,6 +198,7 @@ private enum KeyboardShortcutCatalog {
             ("Paste", "⌘V"),
             ("Move Items Here", "⌥⌘V"),
             ("Move to Trash", "⌘⌫"),
+            ("Delete Immediately…", "⌥⌘⌫"),
             ("Eject", "⌘E")
         ]),
         section("go", "Go", "arrow.triangle.turn.up.right.diamond", [

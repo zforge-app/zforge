@@ -1192,6 +1192,12 @@ private struct BrowserItemActionsMenu: View {
                 state.select(item)
                 state.moveSelectionToTrash()
             }
+            .modifierKeyAlternate(.option) {
+                Button("Delete Immediately…", systemImage: "trash.slash", role: .destructive) {
+                    state.select(item)
+                    state.requestPermanentDeletion()
+                }
+            }
         }
     }
 }

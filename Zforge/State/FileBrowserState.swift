@@ -65,6 +65,12 @@ final class FileBrowserState {
         }
     }
 
+    struct PermanentDeletionRequest: Equatable {
+        let urls: [URL]
+
+        var itemCount: Int { urls.count }
+    }
+
     @ObservationIgnored private let fileSystem: any FileSystemServing
     @ObservationIgnored private let fileOperations: any FileOperationServing
     @ObservationIgnored private let recentItems: any RecentItemsServing
@@ -155,6 +161,7 @@ final class FileBrowserState {
     var previewURLs: [BrowserItemID: URL] = [:]
     var previewItemsRequiringManualLoad: Set<BrowserItemID> = []
     var pendingLargeOperation: LargeOperation?
+    var pendingPermanentDeletion: PermanentDeletionRequest?
     var fileOperationInProgress = false
     var fileOperationDescription = ""
     var archiveOperationInProgress = false
@@ -1555,6 +1562,45 @@ final class FileBrowserState {
                 } else {
                     await self.reload()
                 }
+            }
+        }
+    }
+
+    func requestPermanentDeletion() {
+        guard hasLocalSelection, !fileOperationInProgress else { return }
+        let urls = selectedLocalURLs
+        guard !urls.isEmpty else { return }
+        pendingPermanentDeletion = PermanentDeletionRequest(urls: urls)
+    }
+
+    func confirmPermanentDeletion() {
+        guard let request = pendingPermanentDeletion,
+              !fileOperationInProgress else { return }
+        pendingPermanentDeletion = nil
+        fileOperationInProgress = true
+        fileOperationDescription = AppLocalization.string(
+            "Deleting items…",
+            locale: preferences.language.locale
+        )
+
+        Task {
+            var operationError: Error?
+            do {
+                try await fileOperations.removeItems(at: request.urls)
+            } catch {
+                operationError = error
+            }
+
+            if preferences.viewMode == .columns {
+                await refreshColumnsAfterRemovingLocalItems(request.urls)
+            } else {
+                await reload()
+            }
+
+            fileOperationInProgress = false
+            fileOperationDescription = ""
+            if let operationError {
+                self.error = mapError(operationError)
             }
         }
     }

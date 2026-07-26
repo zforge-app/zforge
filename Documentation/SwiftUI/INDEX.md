@@ -117,6 +117,7 @@ Para consultar, leia primeiro este índice e use `rg -n -i '<termos|símbolos>' 
 
 ## Expansões sob demanda
 
+- [Alerts — Human Interface Guidelines](contexts/hig-alerts.md)
 - [NSItemProvider](contexts/foundation-nsitemprovider.md)
 - [performDrop(info:)](contexts/swiftui-dropdelegate-performdrop.md)
 - [onModifierKeysChanged(mask:initial:_:)](contexts/swiftui-onmodifierkeyschanged.md)
