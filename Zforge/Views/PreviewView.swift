@@ -1,4 +1,5 @@
 import QuickLookUI
+@preconcurrency import QuickLookThumbnailing
 import SwiftUI
 import UniformTypeIdentifiers
 
@@ -97,6 +98,138 @@ struct QuickLookPreview: NSViewRepresentable {
 
     static func dismantleNSView(_ view: QuickLookPreviewHostView, coordinator: ()) {
         view.reset()
+    }
+}
+
+@MainActor
+final class QuickLookThumbnailHostView: NSImageView {
+    private var request: QLThumbnailGenerator.Request?
+    private var requestedURL: URL?
+    private var requestedSize: CGSize = .zero
+
+    override var intrinsicContentSize: NSSize {
+        NSSize(width: NSView.noIntrinsicMetric, height: NSView.noIntrinsicMetric)
+    }
+
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+        imageAlignment = .alignCenter
+        imageScaling = .scaleProportionallyUpOrDown
+    }
+
+    required init?(coder: NSCoder) {
+        nil
+    }
+
+    func display(_ url: URL, size: CGSize) {
+        guard requestedURL != url || requestedSize != size else { return }
+        reset()
+        requestedURL = url
+        requestedSize = size
+        image = NSWorkspace.shared.icon(forFile: url.path)
+
+        guard FileManager.default.fileExists(atPath: url.path) else { return }
+        let scale = max(window?.backingScaleFactor ?? NSScreen.main?.backingScaleFactor ?? 2, 1)
+        let request = QLThumbnailGenerator.Request(
+            fileAt: url,
+            size: size,
+            scale: scale,
+            representationTypes: .all
+        )
+        self.request = request
+
+        QLThumbnailGenerator.shared.generateBestRepresentation(for: request) { [weak self] representation, _ in
+            DispatchQueue.main.async {
+                guard let self,
+                      self.request === request,
+                      self.requestedURL == url else { return }
+                self.request = nil
+                if let representation {
+                    self.image = representation.nsImage
+                }
+            }
+        }
+    }
+
+    func reset() {
+        if let request {
+            QLThumbnailGenerator.shared.cancel(request)
+        }
+        request = nil
+        requestedURL = nil
+        requestedSize = .zero
+        image = nil
+    }
+}
+
+private struct QuickLookThumbnail: NSViewRepresentable {
+    let url: URL
+    let size: CGSize
+
+    func makeNSView(context: Context) -> QuickLookThumbnailHostView {
+        let view = QuickLookThumbnailHostView()
+        view.display(url, size: size)
+        return view
+    }
+
+    func updateNSView(_ view: QuickLookThumbnailHostView, context: Context) {
+        view.display(url, size: size)
+    }
+
+    static func dismantleNSView(_ view: QuickLookThumbnailHostView, coordinator: ()) {
+        view.reset()
+    }
+}
+
+nonisolated enum TextPreviewBuffer {
+    static let byteLimit = 1_024
+
+    static func load(at url: URL) -> String {
+        guard let handle = try? FileHandle(forReadingFrom: url) else { return "" }
+        defer { try? handle.close() }
+        guard let data = try? handle.read(upToCount: byteLimit) else { return "" }
+        return String(decoding: data, as: UTF8.self)
+    }
+}
+
+private struct TextFileThumbnail: View {
+    let url: URL
+    let width: CGFloat
+    let height: CGFloat
+    let scale: CGFloat
+    @State private var text: String?
+
+    var body: some View {
+        ZStack(alignment: .topLeading) {
+            Color(nsColor: .textBackgroundColor)
+
+            if let text {
+                Text(text)
+                    .font(.system(size: max(7, 8 * scale), design: .monospaced))
+                    .foregroundStyle(Color(nsColor: .textColor))
+                    .frame(maxWidth: .infinity, alignment: .topLeading)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(10 * scale)
+            } else {
+                ProgressView()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+        }
+        .frame(width: width, height: height, alignment: .topLeading)
+        .clipShape(RoundedRectangle(cornerRadius: 8 * scale, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 8 * scale, style: .continuous)
+                .stroke(.separator, lineWidth: 1)
+        }
+        .clipped()
+        .task(id: url) {
+            text = nil
+            let loadedText = await Task.detached(priority: .userInitiated) {
+                TextPreviewBuffer.load(at: url)
+            }.value
+            guard !Task.isCancelled else { return }
+            text = loadedText
+        }
     }
 }
 
@@ -302,12 +435,21 @@ private struct SelectionHero: View {
                 if item.usesStaticIconPreview {
                     FileIconView(item: item, size: 190 * scale)
                 } else if let previewURL = state.previewURL {
-                    QuickLookPreview(url: previewURL)
-                        .clipShape(RoundedRectangle(cornerRadius: 10 * scale, style: .continuous))
-                        .overlay {
-                            RoundedRectangle(cornerRadius: 10 * scale, style: .continuous)
-                                .stroke(.separator, lineWidth: 1)
+                    if item.usesStaticDocumentThumbnailPreview {
+                        GeometryReader { geometry in
+                            QuickLookThumbnail(
+                                url: previewURL,
+                                size: geometry.size
+                            )
                         }
+                    } else {
+                        QuickLookPreview(url: previewURL)
+                            .clipShape(RoundedRectangle(cornerRadius: 10 * scale, style: .continuous))
+                            .overlay {
+                                RoundedRectangle(cornerRadius: 10 * scale, style: .continuous)
+                                    .stroke(.separator, lineWidth: 1)
+                            }
+                    }
                 } else if state.previewRequiresManualLoad {
                     ContentUnavailableView {
                         Label("Preview not loaded", systemImage: "doc.badge.ellipsis")
@@ -352,13 +494,19 @@ private struct SelectionHeroItem: View {
                 FileIconView(item: item, size: width)
                     .frame(width: width, height: height)
             } else if let previewURL = state.previewURL(for: item) {
-                QuickLookPreview(url: previewURL)
-                    .background(.background)
-                    .clipShape(RoundedRectangle(cornerRadius: 8 * scale, style: .continuous))
-                    .overlay {
-                        RoundedRectangle(cornerRadius: 8 * scale, style: .continuous)
-                            .stroke(.separator, lineWidth: 1)
-                    }
+                if item.usesTextThumbnailPreview {
+                    TextFileThumbnail(
+                        url: previewURL,
+                        width: width,
+                        height: height,
+                        scale: scale
+                    )
+                } else {
+                    QuickLookThumbnail(
+                        url: previewURL,
+                        size: CGSize(width: width, height: height)
+                    )
+                }
             } else if state.previewRequiresManualLoad(for: item) {
                 VStack(spacing: 8 * scale) {
                     Image(systemName: "doc.badge.ellipsis")
@@ -376,6 +524,18 @@ private struct SelectionHeroItem: View {
         }
         .browserItemEmphasis(item, isSelected: true)
         .frame(width: width, height: height)
+    }
+}
+
+extension BrowserItem {
+    var usesTextThumbnailPreview: Bool {
+        !usesStaticIconPreview && contentType?.conforms(to: .text) == true
+    }
+
+    var usesStaticDocumentThumbnailPreview: Bool {
+        ["doc", "docx", "pages"].contains(
+            URL(fileURLWithPath: name).pathExtension.lowercased()
+        )
     }
 }
 
