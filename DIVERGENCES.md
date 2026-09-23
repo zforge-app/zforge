@@ -20,11 +20,11 @@ Os identificadores permitem localizar o pedido original no histórico local. O c
 
 ## Divergências de produto ou regressões
 
-### D-01 — Ícone da aplicação ausente na execução pelo Xcode (corrigido no código; Dock pendente)
+### D-01 — Ícone da aplicação ausente na execução pelo Xcode (resolvido; confirmado pelo usuário)
 
 - **Pedido:** criar e usar um novo ícone; o usuário relata que um ícone anterior não aparece (C-07).
 - **Novo relato:** após a primeira correção, o usuário informou que o ícone não aparecia na build executada pelo Xcode. A build existente no DerivedData já continha `AppIcon.icns`, `Assets.car` e chaves de ícone no plist; o Finder mostrou visualmente o ícone nesse bundle. Portanto, a ausência do recurso no bundle não foi reproduzida.
-- **Resolução no código:** além das dez entradas PNG de [AppIcon.appiconset/Contents.json](Zforge/Assets.xcassets/AppIcon.appiconset/Contents.json), [Info.plist](Zforge/Info.plist) declara explicitamente `CFBundleIconFile` e `CFBundleIconName`, e [AppDelegate.swift](Zforge/AppDelegate.swift) atribui `AppIcon.icns` a `NSApplication.applicationIconImage` na inicialização. O Finder mostrou o ícone também na nova build. **Pendente:** observar o Dock em uma nova execução pelo Xcode; a causa exata do relato original não foi comprovada. [Task ZF-02](TASKS.md).
+- **Resolução no código:** além das dez entradas PNG de [AppIcon.appiconset/Contents.json](Zforge/Assets.xcassets/AppIcon.appiconset/Contents.json), [Info.plist](Zforge/Info.plist) declara explicitamente `CFBundleIconFile` e `CFBundleIconName`, e [AppDelegate.swift](Zforge/AppDelegate.swift) atribui `AppIcon.icns` a `NSApplication.applicationIconImage` na inicialização. O Finder mostrou o ícone também na nova build. **Confirmação:** o usuário informou que o ícone está OK. A causa exata do relato original não foi comprovada. [Task ZF-02](TASKS.md).
 
 ### D-02 — Redimensionamento das colunas perdido (corrigido e exercitado no app)
 
@@ -32,25 +32,25 @@ Os identificadores permitem localizar o pedido original no histórico local. O c
 - **Novo relato:** após a primeira correção, o usuário informou que o arraste ainda não funcionava. A alça anterior tinha apenas 10 pt invisíveis e não comunicava a ação com o cursor; o gesto exigia acertar uma faixa estreita.
 - **Resolução no código:** as alças de Lista e Colunas usam uma `NSView` de 20 pt com cursor horizontal de redimensionamento e captura nativa do arraste; as larguras persistem nas preferências, com mínimos e máximos. A área terminal de Colunas usa a largura ajustável do preview, inicialmente 300 pt. Na build anterior, o arraste foi exercitado manualmente em Lista e Colunas e moveu as divisórias. [Task ZF-03](TASKS.md).
 
-### D-03 — Escala implementada, atalhos de zoom ausentes (corrigido no código)
+### D-03 — Escala implementada, atalhos de zoom ausentes (resolvido; confirmado pelo usuário)
 
 - **Pedido:** `⌘+`/`⌘−` como no Finder (C-07). O [UI-UX-GUIDE.md](UI-UX-GUIDE.md) também especifica `⌘=` como equivalente de aumentar, `⌘0` para 100% e passos de 10% entre 70% e 160%.
-- **Resolução no código:** comandos `⌘+`, `⌘=`, `⌘−` e `⌘0` alteram a escala persistida em passos de 10%, dentro de 70–160%, e aparecem na ajuda de atalhos. **Pendente:** confirmar o despacho de teclas no teclado do usuário. [Task ZF-04](TASKS.md).
+- **Resolução no código:** comandos `⌘+`, `⌘=`, `⌘−` e `⌘0` alteram a escala persistida em passos de 10%, dentro de 70–160%, e aparecem na ajuda de atalhos. **Confirmação:** o usuário informou que o zoom está OK. [Task ZF-04](TASKS.md).
 
-### D-04 — Recentes mostra nomes repetidos apesar da deduplicação por caminho (pendente de reprodução)
+### D-04 — Recentes mostra nomes repetidos apesar da deduplicação por caminho (corrigido pela identidade do arquivo)
 
 - **Pedido/observação:** captura de 2026-09-22 mostra `Archive.7z` quatro vezes em Recentes (C-07).
-- **Resolução provisória no código:** [RecentItemsService.swift](Zforge/Services/RecentItemsService.swift) elimina caminhos canônicos e identidades físicas iguais; [FileBrowserState.swift](Zforge/State/FileBrowserState.swift) descarta IDs repetidos e resultados com o mesmo nome normalizado, tamanho e instante exato de modificação. A causa dos quatro `Archive.7z` da captura não foi reproduzida. **Risco conhecido:** cópias realmente distintas com metadados idênticos também são reunidas. Confirmar os caminhos e identificadores reais em execução antes de encerrar esta divergência. [Task ZF-05](TASKS.md).
+- **Correção final no código:** [RecentItemsService.swift](Zforge/Services/RecentItemsService.swift) mantém apenas a primeira ocorrência de cada caminho canônico ou identidade física de arquivo/volume disponível; o limite de 250 é aplicado depois dessa deduplicação. [FileBrowserState.swift](Zforge/State/FileBrowserState.swift) elimina IDs repetidos, sem usar nome, tamanho ou data como substitutos da identidade. Assim, cópias distintas como `Downloads/Archive.7z` e `Documents/Archive.7z` permanecem separadas mesmo que seus metadados coincidam. A build Debug compilou e a tela atual de Recentes mostrou uma única entrada `Archive.7z`. A origem histórica das quatro linhas da captura não foi identificada. [Task ZF-05](TASKS.md).
 
-### D-05 — Menu de clique secundário não segue a matriz solicitada (corrigido no código)
+### D-05 — Menu de clique secundário não segue a matriz solicitada (resolvido; confirmado pelo usuário)
 
 - **Pedido:** para um arquivo comum, Abrir/Comprimir/Comprimir customizado; para um archive, Abrir/Extrair aqui/Extrair para pasta de mesmo nome/Extrair/Validar; para vários archives, somar opções de arquivo e de archive, com nomes das pastas de saída separados por vírgula; para seleção com arquivos comuns, usar opções de arquivo (C-07).
-- **Resolução no código:** [BrowserItemActionsMenu](Zforge/Views/BrowserContentViews.swift) consulta a matriz compartilhada de [FileBrowserState.swift](Zforge/State/FileBrowserState.swift) e preserva seleção múltipla nas novas operações. Um archive oferece três destinos de extração e validação por `7zz t`; vários archives também oferecem compressão. Opções anteriores permanecem. Abrir vários archives cria janelas dedicadas; validação múltipla é sequencial. **Pendente:** exercício manual das combinações e conflitos. [Task ZF-06](TASKS.md).
+- **Resolução no código:** [BrowserItemActionsMenu](Zforge/Views/BrowserContentViews.swift) consulta a matriz compartilhada de [FileBrowserState.swift](Zforge/State/FileBrowserState.swift) e preserva seleção múltipla nas novas operações. Um archive oferece três destinos de extração e validação por `7zz t`; vários archives também oferecem compressão. Opções anteriores permanecem. Abrir vários archives cria janelas dedicadas; validação múltipla é sequencial. **Confirmação:** o usuário informou que D-05 está OK. [Task ZF-06](TASKS.md).
 
-### D-06 — Botão `•••` da toolbar não oferece as mesmas opções contextuais (corrigido no código)
+### D-06 — Botão `•••` da toolbar não oferece as mesmas opções contextuais (resolvido; confirmado pelo usuário)
 
 - **Pedido:** as opções da matriz de D-05 também devem aparecer no botão de reticências mostrado na captura, preservando o comportamento já existente (C-07).
-- **Resolução no código:** [showToolbarActionsMenu](Zforge/ContentView.swift) consome a mesma matriz/handler de D-05, mantendo Quick Look, Informações, Tag desabilitada, Renomear, Duplicar e Compartilhar no overflow aplicável. **Pendente:** conferência visual em todos os breakpoints da toolbar. [Task ZF-06](TASKS.md).
+- **Resolução no código:** [showToolbarActionsMenu](Zforge/ContentView.swift) consome a mesma matriz/handler de D-05, mantendo Quick Look, Informações, Tag desabilitada, Renomear, Duplicar e Compartilhar no overflow aplicável. **Confirmação:** o usuário informou que D-06 está OK. [Task ZF-06](TASKS.md).
 
 ## Divergências entre documentos antigos e comportamento vigente
 

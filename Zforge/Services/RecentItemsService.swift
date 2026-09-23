@@ -52,9 +52,8 @@ final class SpotlightRecentItemsService: NSObject, RecentItemsServing {
         var seenPaths: Set<String> = []
         var seenFileIdentities: Set<String> = []
         var urls: [URL] = []
-        let count = min(query.resultCount, Self.maximumResultCount)
-        urls.reserveCapacity(count)
-        for index in 0..<count {
+        urls.reserveCapacity(min(query.resultCount, Self.maximumResultCount))
+        for index in 0..<query.resultCount {
             let result = query.result(at: index) as AnyObject
             guard let path = result.value(forKey: NSMetadataItemPathKey) as? String else { continue }
             let url = URL(fileURLWithPath: path)
@@ -68,6 +67,7 @@ final class SpotlightRecentItemsService: NSObject, RecentItemsServing {
                 guard seenFileIdentities.insert(identity).inserted else { continue }
             }
             urls.append(url)
+            if urls.count == Self.maximumResultCount { break }
         }
 
         finish(with: urls)

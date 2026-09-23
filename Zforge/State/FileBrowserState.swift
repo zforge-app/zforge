@@ -2799,7 +2799,6 @@ final class FileBrowserState {
     private func loadRecentItems(at urls: [URL]) async -> [BrowserItem] {
         var loaded: [BrowserItem] = []
         var seenIDs: Set<BrowserItemID> = []
-        var seenEquivalentFiles: Set<String> = []
         loaded.reserveCapacity(urls.count)
         for url in urls {
             guard !Task.isCancelled else { break }
@@ -2807,10 +2806,6 @@ final class FileBrowserState {
                !item.isDirectory,
                preferences.showHiddenFiles || !item.isHidden {
                 guard seenIDs.insert(item.id).inserted else { continue }
-                if let size = item.size, let modified = item.modificationDate {
-                    let fingerprint = "\(item.name.precomposedStringWithCanonicalMapping.lowercased())|\(size)|\(modified.timeIntervalSince1970)"
-                    guard seenEquivalentFiles.insert(fingerprint).inserted else { continue }
-                }
                 loaded.append(item)
             }
         }
