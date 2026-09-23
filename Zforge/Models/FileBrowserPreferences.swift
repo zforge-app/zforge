@@ -9,6 +9,9 @@ final class FileBrowserPreferences {
     private enum Key {
         static let viewMode = "browser.viewMode"
         static let scale = "browser.scale"
+        static let listColumnWidths = "browser.listColumnWidths"
+        static let finderColumnWidth = "browser.finderColumnWidth"
+        static let previewWidth = "browser.previewWidth"
         static let sortField = "browser.sortField"
         static let sortAscending = "browser.sortAscending"
         static let showHidden = "browser.showHidden"
@@ -26,6 +29,15 @@ final class FileBrowserPreferences {
 
     var viewMode: BrowserViewMode { didSet { defaults.set(viewMode.rawValue, forKey: Key.viewMode) } }
     var scale: CGFloat { didSet { defaults.set(scale, forKey: Key.scale) } }
+    var listColumnWidths: [String: Double] {
+        didSet { defaults.set(listColumnWidths, forKey: Key.listColumnWidths) }
+    }
+    var finderColumnWidth: CGFloat {
+        didSet { defaults.set(Double(finderColumnWidth), forKey: Key.finderColumnWidth) }
+    }
+    var previewWidth: CGFloat {
+        didSet { defaults.set(Double(previewWidth), forKey: Key.previewWidth) }
+    }
     var sort: BrowserSort {
         didSet {
             defaults.set(sort.field.rawValue, forKey: Key.sortField)
@@ -73,8 +85,40 @@ final class FileBrowserPreferences {
     var archiveBrowsingPolicy: ArchiveBrowsingPolicy {
         ArchiveBrowsingPolicy(
             maximumNestedArchiveDepth: archiveNestingLimit,
-            rootSizeLimit: Int64(archiveRootSizeLimitGB) * 1_073_741_824
+            rootSizeLimit: Int64(archiveRootSizeLimitGB) * 1_000_000_000
         )
+    }
+
+    func zoomIn() { setZoomStep(Int((scale * 10).rounded()) + 1) }
+    func zoomOut() { setZoomStep(Int((scale * 10).rounded()) - 1) }
+    func resetZoom() { scale = 1 }
+
+    func listColumnWidth(_ field: BrowserSortField) -> CGFloat {
+        let fallback: CGFloat
+        switch field {
+        case .name: fallback = 168
+        case .modificationDate: fallback = 180
+        case .size: fallback = 90
+        case .kind: fallback = 150
+        }
+        return CGFloat(listColumnWidths[field.rawValue] ?? Double(fallback))
+    }
+
+    func setListColumnWidth(_ width: CGFloat, for field: BrowserSortField) {
+        let minimum: CGFloat = field == .name ? 168 : 60
+        listColumnWidths[field.rawValue] = Double(min(max(width, minimum), 800))
+    }
+
+    func setFinderColumnWidth(_ width: CGFloat) {
+        finderColumnWidth = min(max(width, 180), 800)
+    }
+
+    func setPreviewWidth(_ width: CGFloat) {
+        previewWidth = min(max(width, 180), 800)
+    }
+
+    private func setZoomStep(_ step: Int) {
+        scale = CGFloat(min(max(step, 7), 16)) / 10
     }
 
     func previewVisible(in viewMode: BrowserViewMode) -> Bool {
@@ -100,6 +144,13 @@ final class FileBrowserPreferences {
         viewMode = BrowserViewMode(rawValue: defaults.string(forKey: Key.viewMode) ?? "") ?? .icons
         let storedScale = defaults.double(forKey: Key.scale)
         scale = storedScale == 0 ? 1 : min(max(storedScale, 0.7), 1.6)
+        listColumnWidths = defaults.dictionary(forKey: Key.listColumnWidths) as? [String: Double] ?? [:]
+        let storedFinderWidth = defaults.double(forKey: Key.finderColumnWidth)
+        finderColumnWidth = storedFinderWidth == 0 ? 260 : min(max(storedFinderWidth, 180), 800)
+        let storedPreviewWidth = defaults.double(forKey: Key.previewWidth)
+        previewWidth = storedPreviewWidth == 0
+            ? BrowserLayoutMetrics.previewWidth
+            : min(max(storedPreviewWidth, 180), 800)
         let field = BrowserSortField(rawValue: defaults.string(forKey: Key.sortField) ?? "") ?? .name
         sort = BrowserSort(
             field: field,

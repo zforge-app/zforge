@@ -125,6 +125,8 @@ actor UIFixtureArchiveEngine: ArchiveServing {
         progress(ArchiveProgress(phase: .compressing, fraction: 1))
     }
 
+    func testArchive(at url: URL, password: String?) async throws {}
+
     func extractArchive(
         at url: URL,
         to destinationURL: URL,

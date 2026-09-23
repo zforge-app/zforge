@@ -23,9 +23,9 @@ struct ZforgeApp: App {
             id: "browser",
             for: BrowserWindowRequest.self
         ) { request in
-            ContentView(initialURL: request.wrappedValue.initialURL)
+            BrowserWindowRoot(request: request, appDelegate: appDelegate)
         } defaultValue: {
-            BrowserWindowRequest()
+            BrowserWindowRequest(initialURL: appDelegate.takeNextArchiveURL())
         }
         .defaultSize(width: defaultWindowWidth, height: 720)
         .environment(\.locale, preferences.language.locale)
@@ -57,6 +57,37 @@ struct ZforgeApp: App {
             return 1100
         }
         return CGFloat(width)
+    }
+}
+
+private struct BrowserWindowRoot: View {
+    @Environment(\.openWindow) private var openWindow
+    @Binding var request: BrowserWindowRequest
+    let appDelegate: AppDelegate
+    @State private var hasAppeared = false
+
+    var body: some View {
+        ContentView(initialURL: request.initialURL)
+            .id(request.id)
+            .onAppear {
+                // A file can arrive after SwiftUI computes the default scene value.
+                // In that case, use the first new window for the archive.
+                if !hasAppeared && request.initialURL == nil,
+                   let url = appDelegate.takeNextArchiveURL() {
+                    request = BrowserWindowRequest(initialURL: url)
+                }
+                hasAppeared = true
+                openPendingArchives()
+            }
+            .onReceive(NotificationCenter.default.publisher(for: AppDelegate.archiveURLsReceived)) { _ in
+                openPendingArchives()
+            }
+    }
+
+    private func openPendingArchives() {
+        for url in appDelegate.takePendingArchiveURLs() {
+            openWindow(id: "browser", value: BrowserWindowRequest(initialURL: url))
+        }
     }
 }
 
@@ -187,6 +218,17 @@ private struct BrowserCommands: Commands {
                 .keyboardShortcut("3", modifiers: .command)
             Button("Gallery") { browser?.preferences.viewMode = .gallery }
                 .keyboardShortcut("4", modifiers: .command)
+            Divider()
+            Button("Zoom In") { browser?.preferences.zoomIn() }
+                .keyboardShortcut("=", modifiers: .command)
+                .modifierKeyAlternate(.shift) {
+                    Button("Zoom In") { browser?.preferences.zoomIn() }
+                        .keyboardShortcut("+", modifiers: .command)
+                }
+            Button("Zoom Out") { browser?.preferences.zoomOut() }
+                .keyboardShortcut("-", modifiers: .command)
+            Button("Actual Size") { browser?.preferences.resetZoom() }
+                .keyboardShortcut("0", modifiers: .command)
             Divider()
             Button("Show or Hide Tab Bar") {
                 NSApp.keyWindow?.toggleTabBar(nil)

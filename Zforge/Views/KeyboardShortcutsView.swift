@@ -223,6 +223,9 @@ private enum KeyboardShortcutCatalog {
             ("List", "⌘2"),
             ("Columns", "⌘3"),
             ("Gallery", "⌘4"),
+            ("Zoom In", "⌘+|⌘="),
+            ("Zoom Out", "⌘−"),
+            ("Actual Size", "⌘0"),
             ("Show or Hide Tab Bar", "⇧⌘T"),
             ("Show Hidden Files", "⇧⌘."),
             ("Show or Hide Preview", "⇧⌘P")

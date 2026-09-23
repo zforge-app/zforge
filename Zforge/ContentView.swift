@@ -137,6 +137,12 @@ struct ContentView: View {
         .onChange(of: browser.isLoading) { _, isLoading in
             if !isLoading { restoreContentFocus() }
         }
+        .onChange(of: browser.contextualFeedbackMessage) { _, message in
+            if let message {
+                showToast(message)
+                browser.contextualFeedbackMessage = nil
+            }
+        }
         .onChange(of: browser.pendingAuthorizationURL) { _, url in
             if let url { presentAuthorizationPanel(for: url) }
         }
@@ -469,7 +475,7 @@ struct ContentView: View {
             menu.addItem(.separator())
         }
 
-        if includesArchiveAction {
+        if includesArchiveAction && browser.selectedItems.isEmpty {
             let archiveAction = browser.archiveToolbarAction
             menu.addItem(
                 ClosureMenuItem(
@@ -485,12 +491,29 @@ struct ContentView: View {
                 browser.shareItems()
             }
         }
-        if includesArchiveAction || includesShareAction {
+        if (includesArchiveAction && browser.selectedItems.isEmpty) || includesShareAction {
             menu.addItem(.separator())
         }
 
-        addItem("Open", systemImage: "arrow.up.forward.app", isEnabled: browser.primarySelection != nil) {
-            Task { if let item = browser.primarySelection { await browser.open(item) } }
+        let selected = browser.selectedItems
+        addItem("Open", systemImage: "arrow.up.forward.app", isEnabled: !selected.isEmpty) {
+            Task { _ = await browser.performContextualAction(.open, items: selected) }
+        }
+        for action in browser.contextualActions(for: selected) where action != .open {
+            menu.addItem(
+                ClosureMenuItem(
+                    title: browser.contextualTitle(action, items: selected),
+                    systemImage: action.systemImage,
+                    isEnabled: !browser.archiveOperationInProgress
+                ) {
+                    Task {
+                        if let message = await browser.performContextualAction(action, items: selected) {
+                            showToast(message)
+                        }
+                        restoreContentFocus()
+                    }
+                }
+            )
         }
         addItem("Quick Look", systemImage: "eye", isEnabled: browser.primarySelection != nil) {
             browser.openQuickLook()

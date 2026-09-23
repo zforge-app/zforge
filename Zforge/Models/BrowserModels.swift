@@ -107,6 +107,25 @@ nonisolated enum ArchiveToolbarAction: Equatable, Sendable {
     }
 }
 
+nonisolated enum BrowserSelectionAction: CaseIterable, Hashable, Sendable {
+    case open
+    case compress
+    case compressCustom
+    case extractHere
+    case extractNamed
+    case extractChoose
+    case validate
+
+    var systemImage: String {
+        switch self {
+        case .open: "arrow.up.forward.app"
+        case .compress, .compressCustom: "archivebox"
+        case .extractHere, .extractNamed, .extractChoose: "arrow.down.to.line.compact"
+        case .validate: "checkmark.shield"
+        }
+    }
+}
+
 nonisolated enum ArchiveCompressionFormat: String, CaseIterable, Codable, Identifiable, Sendable {
     case sevenZip = "7z"
     case zip
@@ -136,6 +155,10 @@ nonisolated enum ArchiveCompressionFormat: String, CaseIterable, Codable, Identi
         case .gzip: "GZIP"
         case .wim: "WIM"
         }
+    }
+
+    func title(locale: Locale) -> String {
+        AppLocalization.string(titleKey, locale: locale)
     }
 
     var isStream: Bool {
@@ -306,14 +329,14 @@ nonisolated enum ArchiveFormatRegistry {
 }
 
 nonisolated struct ArchiveBrowsingPolicy: Equatable, Sendable {
-    static let standard = ArchiveBrowsingPolicy(maximumNestedArchiveDepth: 5, rootSizeLimit: 1_073_741_824)
+    static let standard = ArchiveBrowsingPolicy(maximumNestedArchiveDepth: 5, rootSizeLimit: 1_000_000_000)
 
     let maximumNestedArchiveDepth: Int
     let rootSizeLimit: Int64
 
     init(maximumNestedArchiveDepth: Int, rootSizeLimit: Int64) {
         self.maximumNestedArchiveDepth = min(max(maximumNestedArchiveDepth, 1), 10)
-        self.rootSizeLimit = min(max(rootSizeLimit, 1_073_741_824), 5 * 1_073_741_824)
+        self.rootSizeLimit = min(max(rootSizeLimit, 1_000_000_000), 5 * 1_000_000_000)
     }
 
     func allowsNestedArchives(forOutermostSize size: Int64?) -> Bool {

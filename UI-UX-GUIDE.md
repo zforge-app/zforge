@@ -275,7 +275,7 @@ Os headers são clicáveis:
 - O cabeçalho mantém uma borda inferior visível separando-o dos arquivos e divisores verticais entre suas células. Todos os títulos usam inset interno de `6 pt` em relação aos divisores. Em Data de Modificação, Tamanho e Tipo, os valores usam o mesmo inset e permanecem alinhados aos respectivos títulos; o conteúdo das linhas da primeira coluna mantém seu alinhamento original. Os divisores não alteram as larguras das colunas nem restringem a área clicável usada para ordenação.
 - A tabela nunca deve reduzir a coluna Nome abaixo de `168 pt` para tentar caber na janela. Abaixo da largura mínima de `612 pt` em escala de 100%, ela conserva as larguras das colunas e passa a rolar horizontalmente.
 - Sem preview, a superfície da Lista ocupa toda a área principal e o conteúdo excedente continua à direita, acessível por rolagem horizontal.
-- Com preview, a largura útil da tabela é a largura da área principal menos os `300 pt` do painel fixo à direita. Enquanto essa largura útil for menor que os `612 pt` mínimos, a tabela conserva suas colunas, transborda por trás do painel translúcido e a área rolável inclui uma folga final igual à largura do preview.
+- Com preview, a largura útil da tabela é a largura da área principal menos a largura ajustável do painel à direita (padrão `300 pt`). Enquanto essa largura útil for menor que os `612 pt` mínimos, a tabela conserva suas colunas, transborda por trás do painel translúcido e a área rolável inclui uma folga final igual à largura do preview.
 - Assim que a tabela mínima couber inteira ao lado do preview, nenhuma coluna permanece encoberta. A coluna Nome só começa a crescer além de `168 pt` usando o espaço que sobrar depois de acomodar todas as outras colunas e o painel.
 - Enquanto a tabela exigir rolagem horizontal, os fundos alternados e de seleção das linhas ficam sem margem lateral e sem cantos arredondados, para que a borda visível não pareça diferente da borda encoberta. O conteúdo textual mantém o mesmo alinhamento com o cabeçalho. Quando a tabela voltar a caber inteira, retornam a margem de `8 pt` e o corner radius de `7 pt`.
 - Largura mínima da tabela, larguras das colunas e folga do preview acompanham a escala visual da janela.
@@ -308,7 +308,7 @@ Os headers são clicáveis:
 
 ### Preview em colunas
 
-- Largura base do painel: `420 pt`.
+- Largura inicial do painel: `300 pt`, ajustável pelo divisor com o mouse. A mesma largura é usada pelo preview e pela coluna terminal que o substitui.
 - Exibir preview do arquivo, nome, tipo, tamanho, datas e etiquetas.
 - Para múltiplos itens, exibir resumo agregado.
 - Usar Quick Look para conteúdo real quando disponível.
@@ -322,7 +322,7 @@ Os headers são clicáveis:
 - A miniatura selecionada recebe destaque discreto.
 - Clicar no espaço vazio da área principal ou da faixa inferior desfaz a seleção.
 - Quando não há seleção, deixar a área principal vazia; não mostrar “Pasta vazia”.
-- Metadados ficam em um inspector à direita, com largura base de `300 pt`.
+- Metadados ficam em um inspector à direita, com largura inicial de `300 pt`, ajustável pelo divisor com o mouse e compartilhada com o preview dos outros modos.
 - O inspector deve existir tanto para seleção simples quanto múltipla.
 
 ## 12. Preview e seleção múltipla
@@ -368,7 +368,7 @@ A escala atual varia de 70% a 160%, em passos de 10%.
 
 - Cima/baixo: mover entre linhas visíveis.
 - Direita: expandir a pasta selecionada.
-- Esquerda: recolher pasta expandida; se já estiver recolhida, selecionar o pai; no nível raiz, voltar ao diretório anterior.
+- Esquerda: recolher pasta expandida; se já estiver recolhida, selecionar o pai visível. No nível raiz, não há ação.
 
 ### Colunas
 

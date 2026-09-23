@@ -39,12 +39,13 @@ final class FileBrowserState {
         case openNested(BrowserItem)
         case expandInline(BrowserItem)
         case extractArchive(BrowserItem)
+        case validateArchive(BrowserItem)
         case extractItems([BrowserItem], destinationURL: URL)
 
         var sessionID: UUID? {
             let item: BrowserItem?
             switch self {
-            case let .openNested(value), let .extractArchive(value): item = value
+            case let .openNested(value), let .extractArchive(value), let .validateArchive(value): item = value
             case let .extractItems(values, _): item = values.first
             case .openFile, .expandInline: item = nil
             }
@@ -52,6 +53,12 @@ final class FileBrowserState {
                   case let .archive(address) = item.location else { return nil }
             return address.sessionID
         }
+    }
+
+    private enum ExtractionDestination {
+        case here
+        case named
+        case chosen(URL)
     }
 
     enum LargeOperation {
@@ -89,6 +96,9 @@ final class FileBrowserState {
     @ObservationIgnored private var inlineArchiveResults: [BrowserItemID: ArchiveOpenResult] = [:]
     @ObservationIgnored private var pendingArchiveExtractionItems: [BrowserItem] = []
     @ObservationIgnored private var pendingArchiveExtractionIndex = 0
+    @ObservationIgnored private var pendingExtractionDestination: ExtractionDestination = .named
+    @ObservationIgnored private var pendingValidationItems: [BrowserItem] = []
+    @ObservationIgnored private var pendingValidationIndex = 0
     @ObservationIgnored private let initialURL: URL?
     @ObservationIgnored private let quickLookPanel = QuickLookPanelCoordinator()
     @ObservationIgnored private var pendingAuthorizationPurpose: AuthorizationPurpose?
@@ -165,6 +175,7 @@ final class FileBrowserState {
     var fileOperationInProgress = false
     var fileOperationDescription = ""
     var archiveOperationInProgress = false
+    var contextualFeedbackMessage: String?
     var archiveProgress: ArchiveProgress?
     var archiveOperationDescription = "Working with archive…"
     var showingGoToFolder = false
@@ -257,6 +268,112 @@ final class FileBrowserState {
         }
         if selectedItems.contains(where: { !$0.isArchive }) { return .compress }
         return .extractAll
+    }
+
+    func contextualActions(for selected: [BrowserItem]) -> [BrowserSelectionAction] {
+        guard !selected.isEmpty else { return [] }
+        guard selected.allSatisfy({ $0.localURL != nil }) else { return [.open] }
+        let allArchives = selected.allSatisfy(\.isArchive)
+        if allArchives {
+            var actions: [BrowserSelectionAction] = [.open, .extractHere, .extractNamed, .extractChoose, .validate]
+            if selected.count > 1 { actions += [.compress, .compressCustom] }
+            return actions
+        }
+        return [.open, .compress, .compressCustom]
+    }
+
+    func contextualTitle(_ action: BrowserSelectionAction, items selected: [BrowserItem]) -> String {
+        let locale = preferences.language.locale
+        switch action {
+        case .open: return AppLocalization.string("Open", locale: locale)
+        case .compress: return AppLocalization.string("Compress", locale: locale)
+        case .compressCustom: return AppLocalization.string("Compress Custom…", locale: locale)
+        case .extractHere: return AppLocalization.string("Extract Here", locale: locale)
+        case .extractNamed:
+            let names = selected.map { archiveExtractionDirectoryName(for: $0.name) }.joined(separator: ", ")
+            return String(format: AppLocalization.string("Extract to \"%@\"", locale: locale), names)
+        case .extractChoose: return AppLocalization.string("Extract…", locale: locale)
+        case .validate: return AppLocalization.string("Validate", locale: locale)
+        }
+    }
+
+    func performContextualAction(_ action: BrowserSelectionAction, items selected: [BrowserItem]) async -> String? {
+        guard contextualActions(for: selected).contains(action), !archiveOperationInProgress else { return nil }
+        switch action {
+        case .open:
+            if selected.count > 1, selected.allSatisfy(\.isArchive) {
+                selected.compactMap(\.localURL).forEach { openWindowHandler?($0) }
+            } else {
+                for item in selected { await open(item) }
+            }
+            return nil
+        case .compress, .compressCustom:
+            let sources = selected.compactMap(\.localURL)
+            guard sources.count == selected.count,
+                  let directory = archiveCreationDirectory(for: sources) else { return nil }
+            let format: ArchiveCompressionFormat
+            let outputURL: URL
+            if action == .compressCustom {
+                let panel = NSSavePanel()
+                panel.title = AppLocalization.string("Compress Custom…", locale: preferences.language.locale)
+                panel.directoryURL = directory
+                let selector = NSPopUpButton(frame: NSRect(x: 0, y: 0, width: 220, height: 28))
+                let formats = ArchiveCompressionFormat.allCases
+                selector.addItems(withTitles: formats.map { $0.title(locale: preferences.language.locale) })
+                selector.selectItem(at: formats.firstIndex(of: preferences.defaultCompressionFormat) ?? 0)
+                selector.setAccessibilityLabel(AppLocalization.string("Archive Format", locale: preferences.language.locale))
+                panel.accessoryView = selector
+                panel.nameFieldStringValue = uniqueArchiveOutputURL(
+                    for: sources, in: directory, format: preferences.defaultCompressionFormat
+                ).lastPathComponent
+                guard panel.runModal() == .OK, let chosenURL = panel.url else { return nil }
+                format = formats[selector.indexOfSelectedItem]
+                let containsDirectory = sources.contains { isDirectory(at: $0) }
+                let outputExtension = format.isStream && (sources.count != 1 || containsDirectory)
+                    ? "tar.\(format.fileExtension)" : format.fileExtension
+                let basename = archiveBaseName(chosenURL.lastPathComponent)
+                outputURL = chosenURL.deletingLastPathComponent()
+                    .appendingPathComponent("\(basename).\(outputExtension)")
+                if outputURL != chosenURL && FileManager.default.fileExists(atPath: outputURL.path) {
+                    self.error = .unavailable(AppLocalization.string(
+                        "An archive with that name already exists.", locale: preferences.language.locale
+                    ))
+                    return nil
+                }
+            } else {
+                format = preferences.defaultCompressionFormat
+                outputURL = uniqueArchiveOutputURL(for: sources, in: directory, format: format)
+            }
+            return await runArchiveOperation(
+                description: AppLocalization.string("Compressing selected items…", locale: preferences.language.locale)
+            ) {
+                try await self.archives.createArchive(
+                    from: sources, outputURL: outputURL, format: format,
+                    progress: self.archiveProgressHandler()
+                )
+                await self.reload()
+                return AppLocalization.string("Archive created successfully.", locale: self.preferences.language.locale)
+            }
+        case .extractHere, .extractNamed, .extractChoose:
+            if action == .extractChoose {
+                let panel = NSOpenPanel()
+                panel.canChooseFiles = false
+                panel.canChooseDirectories = true
+                panel.canCreateDirectories = true
+                panel.prompt = AppLocalization.string("Extract", locale: preferences.language.locale)
+                guard panel.runModal() == .OK, let destination = panel.url else { return nil }
+                pendingExtractionDestination = .chosen(destination)
+            } else {
+                pendingExtractionDestination = action == .extractHere ? .here : .named
+            }
+            pendingArchiveExtractionItems = selected
+            pendingArchiveExtractionIndex = 0
+            return await processNextArchiveExtraction(password: nil)
+        case .validate:
+            pendingValidationItems = selected
+            pendingValidationIndex = 0
+            return await processNextArchiveValidation(password: nil)
+        }
     }
 
     func performArchiveToolbarAction() async -> String? {
@@ -831,7 +948,10 @@ final class FileBrowserState {
             await toggleExpansion(item, password: password)
         case .extractArchive:
             passwordOperation = nil
-            _ = await processNextArchiveExtraction(password: password)
+            contextualFeedbackMessage = await processNextArchiveExtraction(password: password)
+        case .validateArchive:
+            passwordOperation = nil
+            contextualFeedbackMessage = await processNextArchiveValidation(password: password)
         case let .extractItems(items, destinationURL):
             passwordOperation = nil
             _ = await executeInternalExtraction(
@@ -891,12 +1011,7 @@ final class FileBrowserState {
                 pendingArchiveExtractionIndex += 1
                 continue
             }
-            let destination = sourceURL
-                .deletingLastPathComponent()
-                .appendingPathComponent(
-                    archiveBaseName(sourceURL.lastPathComponent),
-                    isDirectory: true
-                )
+            let destination = extractionDestination(for: sourceURL)
             do {
                 try await archives.extractArchive(
                     at: sourceURL,
@@ -931,12 +1046,7 @@ final class FileBrowserState {
 
         let extractionDestinations = pendingArchiveExtractionItems.compactMap { item -> URL? in
             guard let sourceURL = item.localURL else { return nil }
-            return sourceURL
-                .deletingLastPathComponent()
-                .appendingPathComponent(
-                    archiveBaseName(sourceURL.lastPathComponent),
-                    isDirectory: true
-                )
+            return extractionDestination(for: sourceURL)
         }
         pendingArchiveExtractionItems.removeAll()
         pendingArchiveExtractionIndex = 0
@@ -947,6 +1057,52 @@ final class FileBrowserState {
             "Archives extracted successfully.",
             locale: preferences.language.locale
         )
+    }
+
+    private func extractionDestination(for sourceURL: URL) -> URL {
+        switch pendingExtractionDestination {
+        case .here: sourceURL.deletingLastPathComponent()
+        case .named:
+            sourceURL.deletingLastPathComponent().appendingPathComponent(
+                archiveExtractionDirectoryName(for: sourceURL.lastPathComponent),
+                isDirectory: true
+            )
+        case let .chosen(url): url
+        }
+    }
+
+    private func processNextArchiveValidation(password: String?) async -> String? {
+        guard !pendingValidationItems.isEmpty else { return nil }
+        archiveOperationDescription = AppLocalization.string("Validating archives…", locale: preferences.language.locale)
+        archiveOperationInProgress = true
+        defer { archiveOperationInProgress = false }
+        while pendingValidationIndex < pendingValidationItems.count {
+            let item = pendingValidationItems[pendingValidationIndex]
+            guard let url = item.localURL else {
+                pendingValidationIndex += 1
+                continue
+            }
+            do {
+                try await archives.testArchive(at: url, password: password)
+                pendingValidationIndex += 1
+            } catch ArchiveEngineError.passwordRequired {
+                passwordOperation = .validateArchive(item)
+                passwordError = nil
+                return nil
+            } catch ArchiveEngineError.invalidPassword {
+                passwordOperation = .validateArchive(item)
+                passwordError = AppLocalization.string("Incorrect password. Try again.", locale: preferences.language.locale)
+                return nil
+            } catch {
+                self.error = mapError(error)
+                pendingValidationItems.removeAll()
+                pendingValidationIndex = 0
+                return nil
+            }
+        }
+        pendingValidationItems.removeAll()
+        pendingValidationIndex = 0
+        return AppLocalization.string("Archives validated successfully.", locale: preferences.language.locale)
     }
 
     private func executeInternalExtraction(
@@ -2642,12 +2798,19 @@ final class FileBrowserState {
 
     private func loadRecentItems(at urls: [URL]) async -> [BrowserItem] {
         var loaded: [BrowserItem] = []
+        var seenIDs: Set<BrowserItemID> = []
+        var seenEquivalentFiles: Set<String> = []
         loaded.reserveCapacity(urls.count)
         for url in urls {
             guard !Task.isCancelled else { break }
             if let item = try? await fileSystem.item(at: url),
                !item.isDirectory,
                preferences.showHiddenFiles || !item.isHidden {
+                guard seenIDs.insert(item.id).inserted else { continue }
+                if let size = item.size, let modified = item.modificationDate {
+                    let fingerprint = "\(item.name.precomposedStringWithCanonicalMapping.lowercased())|\(size)|\(modified.timeIntervalSince1970)"
+                    guard seenEquivalentFiles.insert(fingerprint).inserted else { continue }
+                }
                 loaded.append(item)
             }
         }

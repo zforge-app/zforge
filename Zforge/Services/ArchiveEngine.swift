@@ -100,6 +100,7 @@ nonisolated protocol ArchiveServing: Sendable {
         resolveConflict: @escaping ArchiveConflictResolver,
         progress: @escaping ArchiveProgressHandler
     ) async throws
+    func testArchive(at url: URL, password: String?) async throws
     func extractItems(
         _ items: [BrowserItem],
         to destinationURL: URL,
@@ -118,6 +119,10 @@ nonisolated protocol ArchiveServing: Sendable {
 }
 
 extension ArchiveServing {
+    func testArchive(at url: URL, password: String?) async throws {
+        throw ArchiveEngineError.helperUnavailable
+    }
+
     func openArchive(at url: URL, password: String?) async throws -> ArchiveOpenResult {
         try await openArchive(at: url, password: password, policy: .standard)
     }
@@ -436,6 +441,29 @@ actor SevenZipArchiveEngine: ArchiveServing {
             withIntermediateDirectories: true
         )
         try fileManager.copyItem(at: stagedOutput, to: outputURL)
+    }
+
+    func testArchive(at url: URL, password: String?) async throws {
+        let operationDirectory = sessionsRoot
+            .appendingPathComponent("Operations", isDirectory: true)
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        try fileManager.createDirectory(at: operationDirectory, withIntermediateDirectories: true)
+        defer { try? fileManager.removeItem(at: operationDirectory) }
+        let stagedURL = try stageArchiveAndVolumes(at: url, in: operationDirectory)
+        let result = try await processRunner.run(
+            arguments: ["t", "-sccUTF-8", "-bso1", "-bse2", "-bsp0", "-spd", "-y", stagedURL.path],
+            password: password,
+            standardOutputURL: nil,
+            workingDirectory: operationDirectory
+        )
+        try validate(result, passwordWasProvided: password != nil)
+        if result.code != 0 {
+            let output = String(decoding: result.stdout + result.stderr, as: UTF8.self)
+            throw ArchiveEngineError.commandFailed(
+                code: result.code,
+                message: output.trimmingCharacters(in: .whitespacesAndNewlines)
+            )
+        }
     }
 
     func extractArchive(

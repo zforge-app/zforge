@@ -1,30 +1,32 @@
 import AppKit
-import SwiftUI
 
 @MainActor
-final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
-    private var externalWindows: [NSWindowController] = []
+final class AppDelegate: NSObject, NSApplicationDelegate {
+    static let archiveURLsReceived = Notification.Name("ZforgeArchiveURLsReceived")
 
-    func application(_ application: NSApplication, open urls: [URL]) {
-        for url in urls where ArchiveFormatRegistry.recognizes(url.lastPathComponent) {
-            let content = NSHostingController(rootView: ContentView(initialURL: url))
-            let window = NSWindow(contentViewController: content)
-            let controller = NSWindowController(window: window)
-            window.title = url.lastPathComponent
-            window.setContentSize(NSSize(width: 1100, height: 720))
-            window.minSize = NSSize(width: 678, height: 460)
-            window.tabbingIdentifier = "io.libor.Zforge.browser"
-            window.tabbingMode = .automatic
-            window.representedURL = url
-            window.center()
-            window.delegate = self
-            externalWindows.append(controller)
-            controller.showWindow(nil)
-        }
+    private var pendingArchiveURLs: [URL] = []
+
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        guard let iconURL = Bundle.main.url(forResource: "AppIcon", withExtension: "icns"),
+              let icon = NSImage(contentsOf: iconURL) else { return }
+        NSApplication.shared.applicationIconImage = icon
     }
 
-    func windowWillClose(_ notification: Notification) {
-        guard let window = notification.object as? NSWindow else { return }
-        externalWindows.removeAll { $0.window === window }
+    func application(_ application: NSApplication, open urls: [URL]) {
+        let archives = urls.filter { ArchiveFormatRegistry.recognizes($0.lastPathComponent) }
+        guard !archives.isEmpty else { return }
+
+        pendingArchiveURLs.append(contentsOf: archives)
+        NotificationCenter.default.post(name: Self.archiveURLsReceived, object: self)
+    }
+
+    func takeNextArchiveURL() -> URL? {
+        guard !pendingArchiveURLs.isEmpty else { return nil }
+        return pendingArchiveURLs.removeFirst()
+    }
+
+    func takePendingArchiveURLs() -> [URL] {
+        defer { pendingArchiveURLs.removeAll() }
+        return pendingArchiveURLs
     }
 }

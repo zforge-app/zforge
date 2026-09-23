@@ -17,51 +17,109 @@ private enum BrowserMetrics {
     static let rowCornerRadius: CGFloat = 7
 }
 
+struct BrowserColumnResizeHandle: NSViewRepresentable {
+    let currentWidth: CGFloat
+    let scale: CGFloat
+    var direction: CGFloat = 1
+    var isPreview = false
+    let onResize: (CGFloat) -> Void
+
+    func makeNSView(context: Context) -> ResizeView {
+        ResizeView()
+    }
+
+    func updateNSView(_ view: ResizeView, context: Context) {
+        view.currentWidth = currentWidth
+        view.scale = scale
+        view.direction = direction
+        view.onResize = onResize
+        view.setAccessibilityLabel(AppLocalization.string(
+            isPreview ? "Drag to resize preview" : "Drag to resize column"
+        ))
+    }
+
+    final class ResizeView: NSView {
+        var currentWidth: CGFloat = 0
+        var scale: CGFloat = 1
+        var direction: CGFloat = 1
+        var onResize: ((CGFloat) -> Void)?
+        private var dragStartX: CGFloat?
+        private var dragStartWidth: CGFloat = 0
+
+        override var acceptsFirstResponder: Bool { false }
+
+        override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+
+        override func resetCursorRects() {
+            addCursorRect(bounds, cursor: .resizeLeftRight)
+        }
+
+        override func mouseDown(with event: NSEvent) {
+            dragStartX = event.locationInWindow.x
+            dragStartWidth = currentWidth
+        }
+
+        override func mouseDragged(with event: NSEvent) {
+            guard let dragStartX else { return }
+            onResize?(dragStartWidth + direction * (event.locationInWindow.x - dragStartX) / max(scale, 0.01))
+        }
+
+        override func mouseUp(with event: NSEvent) {
+            dragStartX = nil
+        }
+    }
+}
+
 enum BrowserListLayout {
     static let minimumNameColumnWidth: CGFloat = 168
     static let modificationDateColumnWidth: CGFloat = 180
     static let sizeColumnWidth: CGFloat = 90
     static let kindColumnWidth: CGFloat = 150
 
-    static func minimumTableWidth(scale: CGFloat) -> CGFloat {
-        let columnWidth = minimumNameColumnWidth
-            + modificationDateColumnWidth
-            + sizeColumnWidth
-            + kindColumnWidth
+    static func minimumTableWidth(scale: CGFloat, columnWidths: [CGFloat]? = nil) -> CGFloat {
+        let columnWidth = (columnWidths ?? [minimumNameColumnWidth,
+            modificationDateColumnWidth, sizeColumnWidth, kindColumnWidth]).reduce(0, +)
         let horizontalChrome = 2 * (BrowserMetrics.horizontalInset + BrowserMetrics.rowContentInset)
-        return (columnWidth + horizontalChrome) * scale
+        let baseline = minimumNameColumnWidth + modificationDateColumnWidth
+            + sizeColumnWidth + kindColumnWidth + horizontalChrome
+        return max(columnWidth + horizontalChrome, baseline) * scale
     }
 
     static func tableWidth(
         availableWidth: CGFloat,
         obscuredTrailingWidth: CGFloat = 0,
-        scale: CGFloat
+        scale: CGFloat,
+        columnWidths: [CGFloat]? = nil
     ) -> CGFloat {
         let visibleWidth = max(availableWidth - max(obscuredTrailingWidth, 0), 0)
-        return max(visibleWidth, minimumTableWidth(scale: scale))
+        return max(visibleWidth, minimumTableWidth(scale: scale, columnWidths: columnWidths))
     }
 
     static func scrollContentWidth(
         availableWidth: CGFloat,
         obscuredTrailingWidth: CGFloat,
-        scale: CGFloat
+        scale: CGFloat,
+        columnWidths: [CGFloat]? = nil
     ) -> CGFloat {
         tableWidth(
             availableWidth: availableWidth,
             obscuredTrailingWidth: obscuredTrailingWidth,
-            scale: scale
+            scale: scale,
+            columnWidths: columnWidths
         ) + max(obscuredTrailingWidth, 0)
     }
 
     static func requiresHorizontalScrolling(
         availableWidth: CGFloat,
         obscuredTrailingWidth: CGFloat,
-        scale: CGFloat
+        scale: CGFloat,
+        columnWidths: [CGFloat]? = nil
     ) -> Bool {
         scrollContentWidth(
             availableWidth: availableWidth,
             obscuredTrailingWidth: obscuredTrailingWidth,
-            scale: scale
+            scale: scale,
+            columnWidths: columnWidths
         ) > availableWidth
     }
 }
@@ -110,6 +168,7 @@ struct BrowserContent: View {
             .onChange(of: state.previewVisible) { _, _ in updateContentWidth(geometry.size.width) }
             .onChange(of: state.preferences.viewMode) { _, _ in updateContentWidth(geometry.size.width) }
             .onChange(of: state.preferences.scale) { _, _ in updateContentWidth(geometry.size.width) }
+            .onChange(of: state.preferences.previewWidth) { _, _ in updateContentWidth(geometry.size.width) }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(nsColor: .underPageBackgroundColor))
@@ -170,7 +229,7 @@ struct BrowserContent: View {
 
     private var listWithOptionalPreview: some View {
         let previewWidth = state.previewVisible
-            ? BrowserLayoutMetrics.previewWidth * state.preferences.scale
+            ? state.preferences.previewWidth * state.preferences.scale
             : 0
 
         return ZStack(alignment: .trailing) {
@@ -193,7 +252,7 @@ struct BrowserContent: View {
         let hasSidePreview = state.previewVisible
             && state.preferences.viewMode == .icons
         contentWidth = max(
-            totalWidth - (hasSidePreview ? BrowserLayoutMetrics.previewWidth * state.preferences.scale : 0),
+            totalWidth - (hasSidePreview ? state.preferences.previewWidth * state.preferences.scale : 0),
             1
         )
     }
@@ -314,22 +373,35 @@ private struct BrowserPreviewPane: View {
     @Bindable var state: FileBrowserState
 
     private var scale: CGFloat { state.preferences.scale }
+    private var width: CGFloat { state.preferences.previewWidth * scale }
 
     var body: some View {
-        if state.previewItems.isEmpty {
-            Color.clear
-                .frame(width: BrowserLayoutMetrics.previewWidth * scale)
-                .frame(maxHeight: .infinity)
-                .overlay(alignment: .leading) {
-                    Rectangle().fill(.separator).frame(width: 1)
-                }
-        } else {
-            SelectionOverview(
-                state: state,
-                items: state.previewItems,
-                presentation: .column,
-                scale: scale
-            )
+        Group {
+            if state.previewItems.isEmpty {
+                Color.clear
+            } else {
+                SelectionOverview(
+                    state: state,
+                    items: state.previewItems,
+                    presentation: .column,
+                    scale: scale
+                )
+            }
+        }
+        .frame(width: width)
+        .frame(maxHeight: .infinity)
+        .overlay(alignment: .leading) {
+            Rectangle().fill(.separator).frame(width: 1)
+        }
+        .overlay(alignment: .leading) {
+            BrowserColumnResizeHandle(
+                currentWidth: state.preferences.previewWidth,
+                scale: scale,
+                direction: -1,
+                isPreview: true
+            ) { state.preferences.setPreviewWidth($0) }
+            .frame(width: 20 * scale)
+            .help("Drag to resize preview")
         }
     }
 }
@@ -464,23 +536,29 @@ struct ListBrowserView: View {
     @State private var focusedScrollTask: Task<Void, Never>?
 
     private var scale: CGFloat { state.preferences.scale }
+    private var columnWidths: [CGFloat] {
+        BrowserSortField.allCases.map { state.preferences.listColumnWidth($0) }
+    }
 
     var body: some View {
         GeometryReader { geometry in
             let tableWidth = BrowserListLayout.tableWidth(
                 availableWidth: geometry.size.width,
                 obscuredTrailingWidth: obscuredTrailingWidth,
-                scale: scale
+                scale: scale,
+                columnWidths: columnWidths
             )
             let scrollContentWidth = BrowserListLayout.scrollContentWidth(
                 availableWidth: geometry.size.width,
                 obscuredTrailingWidth: obscuredTrailingWidth,
-                scale: scale
+                scale: scale,
+                columnWidths: columnWidths
             )
             let usesEdgeToEdgeRows = BrowserListLayout.requiresHorizontalScrolling(
                 availableWidth: geometry.size.width,
                 obscuredTrailingWidth: obscuredTrailingWidth,
-                scale: scale
+                scale: scale,
+                columnWidths: columnWidths
             )
 
             ScrollView(.horizontal) {
@@ -512,14 +590,25 @@ struct ListBrowserView: View {
         height: CGFloat,
         usesEdgeToEdgeRows: Bool
     ) -> some View {
-        VStack(spacing: 0) {
-            ListHeader(state: state, scale: scale)
+        let fixedWidths = BrowserSortField.allCases.dropFirst().reduce(CGFloat.zero) {
+            $0 + state.preferences.listColumnWidth($1) * scale
+        }
+        let automaticNameWidth = max(
+            width - fixedWidths - 2 * (BrowserMetrics.horizontalInset + BrowserMetrics.rowContentInset) * scale,
+            BrowserListLayout.minimumNameColumnWidth * scale
+        )
+        let nameWidth = state.preferences.listColumnWidths[BrowserSortField.name.rawValue] == nil
+            ? automaticNameWidth
+            : state.preferences.listColumnWidth(.name) * scale
+        return VStack(spacing: 0) {
+            ListHeader(state: state, scale: scale, nameWidth: nameWidth)
 
             ScrollViewReader { scrollProxy in
                 ScrollView(.vertical) {
                     BrowserListRows(
                         state: state,
                         scale: scale,
+                        nameWidth: nameWidth,
                         width: width,
                         minimumHeight: max(height - (28 * scale), 1),
                         usesEdgeToEdgeRows: usesEdgeToEdgeRows,
@@ -552,6 +641,7 @@ struct ListBrowserView: View {
 private struct BrowserListRows: View {
     @Bindable var state: FileBrowserState
     let scale: CGFloat
+    let nameWidth: CGFloat
     let width: CGFloat
     let minimumHeight: CGFloat
     let usesEdgeToEdgeRows: Bool
@@ -579,6 +669,7 @@ private struct BrowserListRows: View {
                         entry: entry,
                         index: entry.rowIndex,
                         scale: scale,
+                        nameWidth: nameWidth,
                         usesEdgeToEdgeBackground: usesEdgeToEdgeRows,
                         contentFocus: contentFocus,
                         dragSession: dragSession
@@ -597,17 +688,19 @@ private struct BrowserListRows: View {
 private struct ListHeader: View {
     @Bindable var state: FileBrowserState
     let scale: CGFloat
+    let nameWidth: CGFloat
 
     var body: some View {
         HStack(spacing: 0) {
             headerButton("Name", field: .name, showsTrailingSeparator: true)
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .frame(width: nameWidth, alignment: .leading)
             headerButton("Date Modified", field: .modificationDate, showsTrailingSeparator: true)
-                .frame(width: BrowserListLayout.modificationDateColumnWidth * scale, alignment: .leading)
+                .frame(width: state.preferences.listColumnWidth(.modificationDate) * scale, alignment: .leading)
             headerButton("Size", field: .size, showsTrailingSeparator: true)
-                .frame(width: BrowserListLayout.sizeColumnWidth * scale, alignment: .leading)
+                .frame(width: state.preferences.listColumnWidth(.size) * scale, alignment: .leading)
             headerButton("Kind", field: .kind)
-                .frame(width: BrowserListLayout.kindColumnWidth * scale, alignment: .leading)
+                .frame(width: state.preferences.listColumnWidth(.kind) * scale, alignment: .leading)
+            Spacer(minLength: 0)
         }
         .font(.system(size: 11 * scale, weight: .semibold))
         .foregroundStyle(.secondary)
@@ -653,6 +746,20 @@ private struct ListHeader: View {
                     .frame(width: 1)
             }
         }
+        .overlay(alignment: .trailing) {
+            if showsTrailingSeparator {
+                BrowserColumnResizeHandle(
+                    currentWidth: field == .name
+                        ? nameWidth / scale
+                        : state.preferences.listColumnWidth(field),
+                    scale: scale
+                ) { width in
+                    state.preferences.setListColumnWidth(width, for: field)
+                }
+                .frame(width: 20 * scale)
+                .help("Drag to resize column")
+            }
+        }
     }
 }
 
@@ -661,6 +768,7 @@ private struct BrowserListRow: View {
     let entry: VisibleBrowserItem
     let index: Int
     let scale: CGFloat
+    let nameWidth: CGFloat
     let usesEdgeToEdgeBackground: Bool
     let contentFocus: FocusState<BrowserFocusTarget?>.Binding
     let dragSession: BrowserFileDragSession
@@ -720,7 +828,13 @@ private struct BrowserListRow: View {
                     FileIconView(item: entry.item, size: BrowserMetrics.iconSize * scale)
                 }
                 .tint(isSelected ? .white : .primary)
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .frame(
+                    width: max(
+                        nameWidth - (CGFloat(entry.depth * 20) + BrowserMetrics.disclosureWidth) * scale,
+                        1
+                    ),
+                    alignment: .leading
+                )
 
                 Text(
                     entry.item.formattedDate(
@@ -731,19 +845,20 @@ private struct BrowserListRow: View {
                     .foregroundStyle(isSelected ? Color.white.opacity(0.8) : .secondary)
                     .padding(.leading, BrowserMetrics.columnContentInset * scale)
                     .frame(
-                        width: BrowserListLayout.modificationDateColumnWidth * scale,
+                        width: state.preferences.listColumnWidth(.modificationDate) * scale,
                         alignment: .leading
                     )
 
                 Text(entry.item.formattedSize)
                     .foregroundStyle(isSelected ? Color.white.opacity(0.8) : .secondary)
                     .padding(.leading, BrowserMetrics.columnContentInset * scale)
-                    .frame(width: BrowserListLayout.sizeColumnWidth * scale, alignment: .leading)
+                    .frame(width: state.preferences.listColumnWidth(.size) * scale, alignment: .leading)
 
                 Text(entry.item.displayKind)
                     .foregroundStyle(isSelected ? Color.white.opacity(0.8) : .secondary)
                     .padding(.leading, BrowserMetrics.columnContentInset * scale)
-                    .frame(width: BrowserListLayout.kindColumnWidth * scale, alignment: .leading)
+                    .frame(width: state.preferences.listColumnWidth(.kind) * scale, alignment: .leading)
+                Spacer(minLength: 0)
             }
             .contentShape(Rectangle())
             .finderClickGesture(
@@ -799,7 +914,7 @@ struct ColumnBrowserView: View {
     @State private var terminalScrollTask: Task<Void, Never>?
 
     private var scale: CGFloat { state.preferences.scale }
-    private var previewWidth: CGFloat { BrowserLayoutMetrics.previewWidth * scale }
+    private var previewWidth: CGFloat { state.preferences.previewWidth * scale }
 
     private var previewItems: [BrowserItem] {
         let selectedItems = state.previewItems
@@ -842,7 +957,8 @@ struct ColumnBrowserView: View {
                                 scale: scale,
                                 width: state.previewVisible && index == activeColumnIndex + 1
                                     ? previewWidth
-                                    : BrowserMetrics.finderColumnWidth * scale,
+                                    : state.preferences.finderColumnWidth * scale,
+                                hasFixedTerminalWidth: state.previewVisible && index == activeColumnIndex + 1,
                                 contentFocus: contentFocus,
                                 dragSession: dragSession
                             )
@@ -864,6 +980,19 @@ struct ColumnBrowserView: View {
                             }
                             .frame(width: previewWidth)
                             .frame(maxHeight: .infinity)
+                            .overlay(alignment: .leading) {
+                                Rectangle().fill(.separator).frame(width: 1)
+                            }
+                            .overlay(alignment: .leading) {
+                                BrowserColumnResizeHandle(
+                                    currentWidth: state.preferences.previewWidth,
+                                    scale: scale,
+                                    direction: -1,
+                                    isPreview: true
+                                ) { state.preferences.setPreviewWidth($0) }
+                                .frame(width: 20 * scale)
+                                .help("Drag to resize preview")
+                            }
                             .id("column-terminal-slot")
                         }
 
@@ -892,6 +1021,9 @@ struct ColumnBrowserView: View {
                 }
                 .onChange(of: state.previewVisible) { _, _ in
                     scheduleTerminalScroll(scrollProxy, animationDuration: 0.2)
+                }
+                .onChange(of: state.preferences.previewWidth) { _, _ in
+                    scheduleTerminalScroll(scrollProxy)
                 }
                 .onDisappear {
                     terminalScrollTask?.cancel()
@@ -929,6 +1061,7 @@ private struct FinderColumn: View {
     let selectedID: BrowserItemID?
     let scale: CGFloat
     let width: CGFloat
+    let hasFixedTerminalWidth: Bool
     let contentFocus: FocusState<BrowserFocusTarget?>.Binding
     let dragSession: BrowserFileDragSession
     @State private var isRootDropTargeted = false
@@ -1026,6 +1159,30 @@ private struct FinderColumn: View {
             }
         }
         .overlay(alignment: .trailing) { Divider() }
+        .overlay(alignment: .trailing) {
+            if !hasFixedTerminalWidth {
+                BrowserColumnResizeHandle(
+                    currentWidth: state.preferences.finderColumnWidth,
+                    scale: scale
+                ) { width in
+                    state.preferences.setFinderColumnWidth(width)
+                }
+                    .frame(width: 20 * scale)
+                    .help("Drag to resize column")
+            }
+        }
+        .overlay(alignment: .leading) {
+            if hasFixedTerminalWidth {
+                BrowserColumnResizeHandle(
+                    currentWidth: state.preferences.previewWidth,
+                    scale: scale,
+                    direction: -1,
+                    isPreview: true
+                ) { state.preferences.setPreviewWidth($0) }
+                .frame(width: 20 * scale)
+                .help("Drag to resize preview")
+            }
+        }
         .animation(.easeOut(duration: 0.12), value: isRootDropTargeted)
         .onDisappear { isRootDropTargeted = false }
     }
@@ -1167,13 +1324,28 @@ private struct BrowserItemActionsMenu: View {
     @Bindable var state: FileBrowserState
     let item: BrowserItem
 
+    private var menuItems: [BrowserItem] {
+        state.selection.contains(item.id) ? state.selectedItems : [item]
+    }
+
     var body: some View {
-        Button("Open", systemImage: "arrow.up.forward.app") { Task { await state.open(item) } }
+        ForEach(state.contextualActions(for: menuItems), id: \.self) { action in
+            Button(state.contextualTitle(action, items: menuItems), systemImage: action.systemImage) {
+                let selected = menuItems
+                Task {
+                    state.contextualFeedbackMessage = await state.performContextualAction(action, items: selected)
+                }
+            }
+        }
+        Divider()
         Button("Get Info", systemImage: "info.circle") {
-            state.select(item)
+            if !state.selection.contains(item.id) { state.select(item) }
             state.showGetInfo()
         }
-        Button("Quick Look", systemImage: "eye") { state.select(item); state.openQuickLook() }
+        Button("Quick Look", systemImage: "eye") {
+            if !state.selection.contains(item.id) { state.select(item) }
+            state.openQuickLook()
+        }
         if item.localURL != nil {
             Divider()
             Button("Rename", systemImage: "pencil") {
@@ -1181,7 +1353,7 @@ private struct BrowserItemActionsMenu: View {
                 state.beginRenaming(item)
             }
             Button("Duplicate", systemImage: "plus.square.on.square") {
-                state.select(item)
+                if !state.selection.contains(item.id) { state.select(item) }
                 state.duplicateSelectedFiles()
             }
             Button("Make Alias", systemImage: "link") {

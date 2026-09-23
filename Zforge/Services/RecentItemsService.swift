@@ -50,6 +50,7 @@ final class SpotlightRecentItemsService: NSObject, RecentItemsServing {
         query.disableUpdates()
 
         var seenPaths: Set<String> = []
+        var seenFileIdentities: Set<String> = []
         var urls: [URL] = []
         let count = min(query.resultCount, Self.maximumResultCount)
         urls.reserveCapacity(count)
@@ -57,8 +58,15 @@ final class SpotlightRecentItemsService: NSObject, RecentItemsServing {
             let result = query.result(at: index) as AnyObject
             guard let path = result.value(forKey: NSMetadataItemPathKey) as? String else { continue }
             let url = URL(fileURLWithPath: path)
-            let standardizedPath = url.standardizedFileURL.path
+            let standardizedPath = url.resolvingSymlinksInPath().standardizedFileURL.path
             guard seenPaths.insert(standardizedPath).inserted else { continue }
+            if let values = try? url.resourceValues(forKeys: [
+                .fileResourceIdentifierKey, .volumeIdentifierKey
+            ]), let fileID = values.fileResourceIdentifier,
+               let volumeID = values.volumeIdentifier {
+                let identity = "\(volumeID):\(fileID)"
+                guard seenFileIdentities.insert(identity).inserted else { continue }
+            }
             urls.append(url)
         }
 

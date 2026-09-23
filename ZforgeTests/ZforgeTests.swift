@@ -219,7 +219,7 @@ struct ZforgeTests {
 
     @Test("Nested archive policy uses configurable size and depth limits")
     func nestedArchivePolicy() {
-        let limit: Int64 = 3 * 1_073_741_824
+        let limit: Int64 = 3 * 1_000_000_000
         let policy = ArchiveBrowsingPolicy(maximumNestedArchiveDepth: 7, rootSizeLimit: limit)
         #expect(policy.maximumNestedArchiveDepth == 7)
         #expect(policy.rootSizeLimit == limit)
@@ -230,10 +230,10 @@ struct ZforgeTests {
 
         let clamped = ArchiveBrowsingPolicy(
             maximumNestedArchiveDepth: 50,
-            rootSizeLimit: 12 * 1_073_741_824
+            rootSizeLimit: 12 * 1_000_000_000
         )
         #expect(clamped.maximumNestedArchiveDepth == 10)
-        #expect(clamped.rootSizeLimit == 5 * 1_073_741_824)
+        #expect(clamped.rootSizeLimit == 5 * 1_000_000_000)
 
         let address = ArchiveAddress(
             sessionID: UUID(), archiveID: UUID(), internalPath: "Folder",
@@ -1270,7 +1270,7 @@ struct ZforgeTests {
     @Test("Nested archives open recursively in the same session")
     func nestedArchive() async throws {
         let engine = SevenZipArchiveEngine(helperURL: helperURL)
-        let policy = ArchiveBrowsingPolicy(maximumNestedArchiveDepth: 1, rootSizeLimit: 1_073_741_824)
+        let policy = ArchiveBrowsingPolicy(maximumNestedArchiveDepth: 1, rootSizeLimit: 1_000_000_000)
         let outer = try await engine.openArchive(
             at: fixturesURL.appendingPathComponent("nested.7z"),
             password: nil,

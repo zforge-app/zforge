@@ -285,10 +285,7 @@ struct SelectionOverview: View {
                 galleryOverview
             } else {
                 columnOverview
-                    .frame(width: BrowserLayoutMetrics.previewWidth * scale)
-                    .overlay(alignment: .leading) {
-                        Rectangle().fill(.separator).frame(width: 1)
-                    }
+                    .frame(width: state.preferences.previewWidth * scale)
             }
         }
         .task(id: items.map(\.id)) {
@@ -312,10 +309,20 @@ struct SelectionOverview: View {
                     summary: summary,
                     scale: scale
                 )
-                    .frame(width: BrowserLayoutMetrics.previewWidth * scale)
+                    .frame(width: state.preferences.previewWidth * scale)
                     .frame(maxHeight: .infinity, alignment: .top)
                     .overlay(alignment: .leading) {
                         Rectangle().fill(.separator).frame(width: 1)
+                    }
+                    .overlay(alignment: .leading) {
+                        BrowserColumnResizeHandle(
+                            currentWidth: state.preferences.previewWidth,
+                            scale: scale,
+                            direction: -1,
+                            isPreview: true
+                        ) { state.preferences.setPreviewWidth($0) }
+                        .frame(width: 20 * scale)
+                        .help("Drag to resize preview")
                     }
             }
         }
