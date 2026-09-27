@@ -306,14 +306,15 @@ Os headers são clicáveis:
 - Seleções preservadas em colunas inativas recebem destaque cinza.
 - Ao sair de Colunas para Ícones, Lista ou Galeria, se o item ativo tiver aberto uma coluna filha, a nova visualização retorna para a localização da coluna ativa e mantém esse item selecionado. A troca não entra no item nem cria uma entrada no histórico.
 - Ao adicionar uma coluna ou preview além da largura visível, rolar horizontalmente até o fim.
-- Antes de expandir uma pasta/archive naquele ramo, cada preview carregado usa a largura livre à direita das colunas visíveis, respeitando o mínimo de 320 pt. Uma alteração manual do divisor vale apenas para o preview atual.
-- Ao expandir uma pasta/archive, exibir por inteiro a nova coluna à direita. Ela preenche o espaço restante, respeitando ao menos a largura base e 320 pt quando o preview está visível. Ao selecionar depois um arquivo na coluna anterior, o preview substitui essa coluna na mesma posição e largura; a transição não desloca a divisória de volta nem durante um carregamento assíncrono.
+- Antes de expandir uma pasta/archive naquele ramo, cada preview carregado usa a largura livre à direita das colunas visíveis, respeitando o mínimo de 240 pt. Uma alteração manual do divisor vale apenas para o preview atual.
+- Ao expandir uma pasta/archive, exibir por inteiro a nova coluna à direita. Ela preenche o espaço restante, respeitando ao menos a largura base e 240 pt quando o preview está visível. Enquanto a visão segue alinhada à direita, o preview de arquivo na coluna anterior substitui essa coluna na mesma posição e largura.
+- Se o usuário rolar horizontalmente à esquerda, conservar a largura do preview atual mesmo quando parte dele ficar fora da janela. Ao selecionar outro arquivo, recalcular a largura do novo preview pela sobra à direita da coluna visível e preservar a posição de rolagem à esquerda; ao abrir uma pasta/archive, voltar a exibir a coluna terminal por inteiro e alinhar à direita.
 - Ao voltar para uma coluna anterior com o teclado, a pasta que originou a próxima coluna deve estar selecionada.
 - Selecionar um arquivo cria um painel de preview, não uma coluna de diretório vazia.
 
 ### Preview em colunas
 
-- Largura inicial antes da expansão do ramo: espaço disponível à direita das colunas abertas no momento do carregamento, com mínimo de `320 pt` e sem máximo. Após a expansão, o preview seguinte naquele nível ocupa a faixa da coluna terminal recém-aberta, mantendo sua divisória alinhada. O divisor permite ajuste manual apenas do preview atual.
+- Largura inicial antes da expansão do ramo, ou após rolagem manual à esquerda: espaço disponível à direita das colunas abertas no momento do carregamento, com mínimo de `240 pt` e sem máximo. Após a expansão, previews seguintes naquele nível ocupam a faixa da coluna terminal enquanto a navegação permanecer alinhada à direita. O divisor permite ajuste manual apenas do preview atual.
 - Exibir preview do arquivo, nome, tipo, tamanho, datas e etiquetas.
 - Para múltiplos itens, exibir resumo agregado.
 - Usar Quick Look para conteúdo real quando disponível.

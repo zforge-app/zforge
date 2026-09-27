@@ -3,7 +3,7 @@ import Foundation
 @MainActor
 final class UIFixtureRecentItemsService: RecentItemsServing {
     func recentItemURLs() async -> [URL] {
-        let originals = ["Fixture Folder", "Welcome.txt", "Sample.zip"].map {
+        let originals = ["Fixture Folder", "Welcome.txt", "Sample.zip", "Another.txt"].map {
             URL(fileURLWithPath: "/ZforgeFixtures/\($0)")
         }
         guard ProcessInfo.processInfo.arguments.contains("--ui-recents-duplicates") else {
@@ -12,7 +12,7 @@ final class UIFixtureRecentItemsService: RecentItemsServing {
         let sessionsRoot = ZforgeTemporaryStorage.archiveSessionsRoot()
         return [
             sessionsRoot.appendingPathComponent("First/Sample.zip"),
-            originals[0], originals[1], originals[2],
+            originals[0], originals[1], originals[2], originals[3],
             sessionsRoot.appendingPathComponent("Second/Sample.zip")
         ]
     }
@@ -25,6 +25,7 @@ actor UIFixtureFileSystemService: FileSystemServing {
         let items = [
             makeItem(name: "Fixture Folder", directory: true),
             makeItem(name: "Welcome.txt", size: 1_024),
+            makeItem(name: "Another.txt", size: 2_048),
             makeItem(name: "Sample.zip", archive: true, size: 4_096),
             makeItem(name: ".Hidden Fixture", size: 32, hidden: true)
         ]

@@ -103,13 +103,16 @@ struct RefactoringCharacterizationTests {
         ) == 360)
         #expect(BrowserColumnsLayout.initialPreviewWidth(
             availableWidth: 900, columnCount: 4, columnWidth: 260
-        ) == 320)
+        ) == 240)
         #expect(BrowserColumnsLayout.initialPreviewWidth(
             availableWidth: 1_400, columnCount: 1, columnWidth: 390
         ) == 1_010)
         #expect(BrowserColumnsLayout.initialPreviewWidth(
             availableWidth: 500, columnCount: 1, columnWidth: 182
-        ) == 320)
+        ) == 318)
+        #expect(BrowserColumnsLayout.initialPreviewWidth(
+            availableWidth: 400, columnCount: 1, columnWidth: 182
+        ) == 240)
         #expect(BrowserColumnsLayout.initialPreviewWidth(
             availableWidth: 5_000, columnCount: 1, columnWidth: 260
         ) == 4_740)
@@ -122,18 +125,18 @@ struct RefactoringCharacterizationTests {
         )
         let terminalColumn = BrowserColumnsLayout.terminalColumnWidth(
             availableWidth: 1_000, precedingColumnCount: 1,
-            columnWidth: 600, minimumWidth: 320
+            columnWidth: 600, minimumWidth: 240
         )
         #expect(initialPreview == 400)
         #expect(terminalColumn == 600)
         #expect(BrowserColumnsLayout.terminalColumnWidth(
             availableWidth: 1_000, precedingColumnCount: 1,
-            columnWidth: 260, minimumWidth: 320
+            columnWidth: 260, minimumWidth: 240
         ) == 740)
         #expect(BrowserColumnsLayout.terminalColumnWidth(
             availableWidth: 600, precedingColumnCount: 2,
-            columnWidth: 180, minimumWidth: 320
-        ) == 320)
+            columnWidth: 180, minimumWidth: 240
+        ) == 240)
     }
 
     @Test("Compiled app declares and bundles its macOS icon")

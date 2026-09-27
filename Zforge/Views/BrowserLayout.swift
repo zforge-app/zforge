@@ -11,7 +11,7 @@ enum BrowserResizeGeometry {
 }
 
 enum BrowserColumnsLayout {
-    static let minimumPreviewWidth: CGFloat = 320
+    static let minimumPreviewWidth: CGFloat = 240
 
     static func terminalColumnWidth(
         availableWidth: CGFloat,

@@ -55,7 +55,7 @@ final class ZforgeUITests: XCTestCase {
         let nestedWidth = preview.frame.width
 
         XCTAssertGreaterThan(rootWidth, nestedWidth)
-        XCTAssertGreaterThanOrEqual(nestedWidth, 320)
+        XCTAssertGreaterThanOrEqual(nestedWidth, 240)
     }
 
     @MainActor
@@ -98,6 +98,57 @@ final class ZforgeUITests: XCTestCase {
         XCTAssertTrue(childColumn.waitForExistence(timeout: 5))
         XCTAssertEqual(childColumn.frame.minX, expandedFrame.minX, accuracy: 1)
         XCTAssertEqual(childColumn.frame.width, expandedFrame.width, accuracy: 1)
+    }
+
+    @MainActor
+    func testColumnPreviewRefitsAfterUserScrollsLeft() throws {
+        let app = XCUIApplication()
+        app.launchArguments = [
+            "--ui-fixtures", "--ui-window-width", "1200", "--ui-view-mode", "columns",
+            "-browser.finderColumnWidth", "600", "-browser.scale", "1",
+            "-browser.previewVisible.columns", "YES", "-appLanguagePreference", "english"
+        ]
+        app.launch()
+
+        let rootColumn = app.descendants(matching: .any)["browser-column-0"]
+        let window = app.windows.firstMatch
+        XCTAssertTrue(rootColumn.waitForExistence(timeout: 5))
+        XCTAssertTrue(window.exists)
+        let initialTitle = window.title
+        rootColumn.staticTexts["Welcome.txt"].click()
+
+        let preview = app.descendants(matching: .any)["column-preview"]
+        XCTAssertTrue(preview.waitForExistence(timeout: 5))
+        let firstWidth = preview.frame.width
+
+        rootColumn.staticTexts["Sample.zip"].click()
+        let childColumn = app.descendants(matching: .any)["browser-column-1"]
+        XCTAssertTrue(childColumn.waitForExistence(timeout: 5))
+        rootColumn.staticTexts["Welcome.txt"].click()
+        XCTAssertTrue(preview.waitForExistence(timeout: 5))
+        let expandedWidth = preview.frame.width
+        XCTAssertGreaterThan(expandedWidth, firstWidth)
+
+        let scrolledRootX = rootColumn.frame.minX
+        rootColumn.scroll(byDeltaX: 400, deltaY: 0)
+        if rootColumn.frame.minX <= scrolledRootX + 10 {
+            rootColumn.scroll(byDeltaX: -800, deltaY: 0)
+        }
+        XCTAssertEqual(window.title, initialTitle)
+        XCTAssertGreaterThan(rootColumn.frame.minX, scrolledRootX + 10)
+        XCTAssertGreaterThan(preview.frame.maxX, window.frame.maxX + 10)
+        XCTAssertEqual(preview.frame.width, expandedWidth, accuracy: 1)
+
+        rootColumn.staticTexts["Another.txt"].click()
+        XCTAssertTrue(preview.waitForExistence(timeout: 5))
+        XCTAssertLessThan(preview.frame.width, expandedWidth)
+        XCTAssertGreaterThanOrEqual(preview.frame.width, 240)
+        XCTAssertLessThanOrEqual(preview.frame.maxX, window.frame.maxX)
+
+        rootColumn.staticTexts["Sample.zip"].click()
+        XCTAssertTrue(childColumn.waitForExistence(timeout: 5))
+        XCTAssertEqual(childColumn.frame.width, expandedWidth, accuracy: 1)
+        XCTAssertLessThanOrEqual(childColumn.frame.maxX, window.frame.maxX)
     }
 
     @MainActor

@@ -18,6 +18,7 @@ Atualizado em **2026-09-27**. Esta lista preserva os pedidos levantados nesta co
 | ZF-12 | Corrigir preview de arquivos `.html`/`.htm` que ficava carregando | Implementada com WebKit, JavaScript do documento desativado e entitlement de rede; testes de HTML/CSS local aprovados, cópia do arquivo do relato renderizada em build de teste assinada, inclusive após a desativação de scripts; build de distribuição ainda não conferida | D-14 |
 | ZF-13 | Calcular a largura inicial de cada preview em Colunas pela sobra disponível | Implementada e confirmada pelo usuário; build, testes unitários e UI aprovados | D-15 |
 | ZF-14 | Manter o alinhamento da coluna terminal ao alternar entre pasta e arquivo | Implementada; testes unitários e UI aprovados para o cenário das capturas; fluidez visual manual ainda em OR-04 | D-16 |
+| ZF-15 | Reduzir o mínimo do preview em Colunas e recalcular após rolagem manual à esquerda | Implementada; 85 testes unitários e quatro testes de UI afetados aprovados; conferência visual real em OR-04 | D-17 |
 
 ## ZF-01 — Documentação de referência e prevenção de regressões
 
@@ -152,3 +153,11 @@ O inventário de `Documentation/Requirements/CURRENT-STATE.md` é a lista de con
 **Implementado:** a coluna terminal preenche a largura livre, com mínimo da largura base e de 320 pt quando o preview está visível. O ramo registra que já abriu uma coluna filha; previews posteriores no mesmo nível usam a faixa terminal correspondente. Um slot vazio mantém a geometria durante abertura assíncrona da coluna ou carregamento de preview. Sem preview visível, as colunas continuam com a largura base.
 
 **Validação:** `ZforgeTests` passou com 85 testes; `RefactoringCharacterizationTests.columnTerminalWidth` verifica a geometria. Os dois testes de UI assinados passaram em `/private/tmp/ZforgeTerminalAlignmentFinal`: `testColumnPreviewKeepsExpandedTerminalAlignment` confirmou as mesmas bordas e largura para coluna expandida e preview substituto em `Welcome.txt → Sample.zip → Welcome.txt`, além da reabertura da coluna na mesma posição; `testColumnPreviewRecalculatesWidthForNewDepth` preservou o cálculo dinâmico anterior. Navegação visual rápida com os arquivos das capturas e arraste manual continuam em OR-04.
+
+## ZF-15 — Mínimo de 240 pt e recálculo após rolagem manual
+
+**Pedido:** commitar a correção anterior antes destes ajustes; reduzir a largura mínima do preview em Colunas de 320 para 240 pt. Após navegar alinhado à direita e rolar manualmente à esquerda, manter o preview atual cortado; na próxima seleção de arquivo, recalcular sua largura pela sobra disponível e manter a coluna inteira visível. Ao abrir outra pasta/archive, expandir a coluna terminal e alinhar à direita novamente.
+
+**Implementado:** a correção ZF-14 foi commitada em `28af38e` antes das mudanças desta task. O mínimo de Colunas passa a 240 pt. A view observa a fase e a geometria da rolagem horizontal, preserva a largura do preview atual durante a rolagem manual e usa a largura disponível no preview seguinte quando o usuário se afastou da borda direita. A abertura de um diretório restaura o alinhamento terminal. Nenhuma preferência global de Ícones, Lista ou Galeria é alterada.
+
+**Validação:** a rodada final passou com 85 testes unitários e quatro testes de UI assinados em `/private/tmp/ZforgeColumnScrollFinal`: os dois casos anteriores de Colunas, o novo ciclo completo com `XCUIElement.scroll(byDeltaX:deltaY:)` e o caso de Recentes afetado pela fixture. O novo teste confirmou a permanência do preview cortado, o recálculo após selecionar outro arquivo e a expansão da coluna após selecionar um archive. A conferência visual com os arquivos das capturas continua em OR-04.

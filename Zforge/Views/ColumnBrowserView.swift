@@ -10,6 +10,9 @@ struct ColumnBrowserView: View {
     @State private var previewSize: ColumnPreviewSize?
     @State private var expandedPreviewParents: Set<BrowserLocation> = []
     @State private var columnRootLocation: BrowserLocation?
+    @State private var horizontalScrollPhase: ScrollPhase = .idle
+    @State private var distanceFromTrailingEdge: CGFloat = 0
+    @State private var userScrolledAwayFromTrailingEdge = false
 
     private var scale: CGFloat { state.preferences.scale }
     private var regularColumnWidth: CGFloat { state.preferences.finderColumnWidth * scale }
@@ -66,6 +69,18 @@ struct ColumnBrowserView: View {
         return state.columnSelections[activeLocation] == item.id
     }
 
+    private var shouldKeepUserScrollPosition: Bool {
+        userScrolledAwayFromTrailingEdge
+            && state.pendingColumnExpansionItemID == nil
+            && state.primarySelection?.isNavigableContainer != true
+    }
+
+    private var isUserScrollPhase: Bool {
+        horizontalScrollPhase == .tracking
+            || horizontalScrollPhase == .interacting
+            || horizontalScrollPhase == .decelerating
+    }
+
     private func terminalColumnWidth(availableWidth: CGFloat, precedingCount: Int) -> CGFloat {
         BrowserColumnsLayout.terminalColumnWidth(
             availableWidth: availableWidth,
@@ -76,7 +91,8 @@ struct ColumnBrowserView: View {
     }
 
     private func initialPreviewWidth(availableWidth: CGFloat) -> CGFloat {
-        if let parentLocation = visibleComponents.last?.element.location,
+        if !userScrolledAwayFromTrailingEdge,
+           let parentLocation = visibleComponents.last?.element.location,
            expandedPreviewParents.contains(parentLocation) {
             return terminalColumnWidth(
                 availableWidth: availableWidth,
@@ -140,10 +156,7 @@ struct ColumnBrowserView: View {
 
                         if isAwaitingAnchoredPreview {
                             Color.clear
-                                .frame(width: terminalColumnWidth(
-                                    availableWidth: geometry.size.width,
-                                    precedingCount: visibleComponents.count
-                                ))
+                                .frame(width: initialPreviewWidth(availableWidth: geometry.size.width))
                                 .id("preview-pending-slot")
                         }
 
@@ -193,21 +206,47 @@ struct ColumnBrowserView: View {
                         Color.clear.contentShape(Rectangle()).onTapGesture { state.clearSelection() }
                     }
                 }
+                .onScrollGeometryChange(for: CGFloat.self) { scrollGeometry in
+                    max(
+                        0,
+                        scrollGeometry.contentSize.width
+                            - scrollGeometry.containerSize.width
+                            - scrollGeometry.contentOffset.x
+                    )
+                } action: { _, distance in
+                    distanceFromTrailingEdge = distance
+                    if isUserScrollPhase {
+                        userScrolledAwayFromTrailingEdge = distance > 2
+                    }
+                }
+                .onScrollPhaseChange { oldPhase, newPhase in
+                    horizontalScrollPhase = newPhase
+                    if newPhase == .idle,
+                       oldPhase == .tracking || oldPhase == .interacting || oldPhase == .decelerating {
+                        userScrolledAwayFromTrailingEdge = distanceFromTrailingEdge > 2
+                    }
+                }
                 .onAppear {
                     rememberExpandedColumns()
                     scheduleTerminalScroll(scrollProxy)
                 }
                 .onChange(of: state.pathComponents) { _, _ in
                     rememberExpandedColumns()
-                    scheduleTerminalScroll(scrollProxy, animationDuration: 0.25)
+                    if !shouldKeepUserScrollPosition {
+                        scheduleTerminalScroll(scrollProxy, animationDuration: 0.25)
+                    }
                 }
                 .onChange(of: state.selection) { _, selection in
                     guard !selection.isEmpty else { return }
-                    scheduleTerminalScroll(scrollProxy, animationDuration: 0.2)
+                    if !shouldKeepUserScrollPosition {
+                        scheduleTerminalScroll(scrollProxy, animationDuration: 0.2)
+                    }
                 }
                 .onChange(of: state.activeColumnLocation) { _, location in
                     guard location != nil else { return }
-                    scheduleTerminalScroll(scrollProxy, animationDuration: 0.15)
+                    if !shouldKeepUserScrollPosition {
+                        scheduleTerminalScroll(scrollProxy, animationDuration: 0.15)
+                    }
                 }
                 .onChange(of: state.previewVisible) { _, _ in
                     scheduleTerminalScroll(scrollProxy, animationDuration: 0.2)
@@ -220,7 +259,9 @@ struct ColumnBrowserView: View {
                             itemIDs: itemIDs,
                             width: initialPreviewWidth(availableWidth: geometry.size.width) / scale
                         )
-                        scheduleTerminalScroll(scrollProxy)
+                        if !shouldKeepUserScrollPosition {
+                            scheduleTerminalScroll(scrollProxy)
+                        }
                     }
                 }
                 .onDisappear {
@@ -236,6 +277,7 @@ struct ColumnBrowserView: View {
         if columnRootLocation != rootLocation {
             expandedPreviewParents.removeAll()
             columnRootLocation = rootLocation
+            userScrolledAwayFromTrailingEdge = false
         }
         expandedPreviewParents.formUnion(state.pathComponents.dropLast().map(\.location))
     }
@@ -245,6 +287,7 @@ struct ColumnBrowserView: View {
         animationDuration: Double? = nil
     ) {
         terminalScrollTask?.cancel()
+        userScrolledAwayFromTrailingEdge = false
         terminalScrollTask = Task { @MainActor in
             await Task.yield()
             guard !Task.isCancelled else { return }
