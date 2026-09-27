@@ -128,3 +128,5 @@ Para consultar, leia primeiro este índice e use `rg -n -i '<termos|símbolos>' 
 - [NSWindow](contexts/appkit-nswindow.md)
 - [NSWorkspace.icon(forFile:)](contexts/appkit-nsworkspace-icon-for-file.md)
 - [NSImage.init(size:flipped:drawingHandler:)](contexts/appkit-nsimage-dynamic-drawing.md)
+- [WKWebView.loadFileURL(_:allowingReadAccessTo:)](contexts/webkit-wkwebview-load-file-url.md)
+- [WKWebpagePreferences.allowsContentJavaScript](contexts/webkit-wkwebpagepreferences-allows-content-javascript.md)

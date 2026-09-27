@@ -2,6 +2,7 @@ import QuickLookUI
 @preconcurrency import QuickLookThumbnailing
 import SwiftUI
 import UniformTypeIdentifiers
+import WebKit
 
 enum BrowserLayoutMetrics {
     static let previewWidth: CGFloat = 300
@@ -97,6 +98,67 @@ struct QuickLookPreview: NSViewRepresentable {
     }
 
     static func dismantleNSView(_ view: QuickLookPreviewHostView, coordinator: ()) {
+        view.reset()
+    }
+}
+
+@MainActor
+final class HTMLPreviewHostView: NSView {
+    private var webView: WKWebView?
+    private var requestedURL: URL?
+
+    func display(_ url: URL?) {
+        guard requestedURL != url else { return }
+        requestedURL = url
+        resetWebView()
+        guard let url else { return }
+
+        let configuration = WKWebViewConfiguration()
+        configuration.websiteDataStore = .nonPersistent()
+        configuration.defaultWebpagePreferences.allowsContentJavaScript = false
+        let view = WKWebView(frame: .zero, configuration: configuration)
+        view.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(view)
+        NSLayoutConstraint.activate([
+            view.leadingAnchor.constraint(equalTo: leadingAnchor),
+            view.trailingAnchor.constraint(equalTo: trailingAnchor),
+            view.topAnchor.constraint(equalTo: topAnchor),
+            view.bottomAnchor.constraint(equalTo: bottomAnchor)
+        ])
+        webView = view
+        let resolvedURL = url.resolvingSymlinksInPath()
+        view.loadFileURL(
+            resolvedURL,
+            allowingReadAccessTo: resolvedURL.deletingLastPathComponent()
+        )
+    }
+
+    func reset() {
+        requestedURL = nil
+        resetWebView()
+    }
+
+    private func resetWebView() {
+        webView?.stopLoading()
+        webView?.removeFromSuperview()
+        webView = nil
+    }
+}
+
+private struct HTMLPreview: NSViewRepresentable {
+    let url: URL
+
+    func makeNSView(context: Context) -> HTMLPreviewHostView {
+        let view = HTMLPreviewHostView()
+        view.display(url)
+        return view
+    }
+
+    func updateNSView(_ view: HTMLPreviewHostView, context: Context) {
+        view.display(url)
+    }
+
+    static func dismantleNSView(_ view: HTMLPreviewHostView, coordinator: ()) {
         view.reset()
     }
 }
@@ -441,7 +503,14 @@ private struct SelectionHero: View {
                 if item.usesStaticIconPreview {
                     FileIconView(item: item, size: 190 * scale)
                 } else if let previewURL = state.previewURL {
-                    if item.usesStaticDocumentThumbnailPreview {
+                    if item.usesHTMLDocumentPreview {
+                        HTMLPreview(url: previewURL)
+                            .clipShape(RoundedRectangle(cornerRadius: 10 * scale, style: .continuous))
+                            .overlay {
+                                RoundedRectangle(cornerRadius: 10 * scale, style: .continuous)
+                                    .stroke(.separator, lineWidth: 1)
+                            }
+                    } else if item.usesStaticDocumentThumbnailPreview {
                         GeometryReader { geometry in
                             QuickLookThumbnail(
                                 url: previewURL,
@@ -534,8 +603,15 @@ private struct SelectionHeroItem: View {
 }
 
 extension BrowserItem {
+    var usesHTMLDocumentPreview: Bool {
+        !usesStaticIconPreview && (
+            contentType?.conforms(to: .html) == true
+                || ["html", "htm"].contains(URL(fileURLWithPath: name).pathExtension.lowercased())
+        )
+    }
+
     var usesTextThumbnailPreview: Bool {
-        !usesStaticIconPreview && contentType?.conforms(to: .text) == true
+        !usesHTMLDocumentPreview && !usesStaticIconPreview && contentType?.conforms(to: .text) == true
     }
 
     var usesStaticDocumentThumbnailPreview: Bool {

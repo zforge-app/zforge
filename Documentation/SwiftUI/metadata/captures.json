@@ -3,8 +3,8 @@
   "captured_at": "2026-07-16T23:52:09+00:00",
   "seed_url": "https://developer.apple.com/documentation/SwiftUI",
   "scope": "home plus unique first-level links exposed by Overview, Featured samples, and Topics, with audited on-demand expansions",
-  "expected_contexts": 76,
-  "captured_contexts": 76,
+  "expected_contexts": 77,
+  "captured_contexts": 77,
   "failures": [],
   "captures": [
     {
@@ -1080,6 +1080,36 @@
       "categories": [
         "On-demand expansion",
         "Human Interface Guidelines"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/webkit/wkwebview/loadfileurl(_:allowingreadaccessto:)",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/webkit/wkwebview/loadfileurl(_:allowingreadaccessto:).json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/webkit/wkwebview/loadfileurl(_:allowingreadaccessto:).json",
+      "local_path": "contexts/webkit-wkwebview-load-file-url.md",
+      "sha256": "c99ebd3eafb987060d1ee96ffefd20ab4130c0ee0899cfd6c401353bbaeca8fd",
+      "etag": "\"76f4-65b3b266b901c\"",
+      "last_modified": "Fri, 11 Sep 2026 20:44:26 GMT",
+      "bytes": 30452,
+      "categories": [
+        "On-demand expansion",
+        "Framework integration"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/webkit/wkwebpagepreferences/allowscontentjavascript",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/webkit/wkwebpagepreferences/allowscontentjavascript.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/webkit/wkwebpagepreferences/allowscontentjavascript.json",
+      "local_path": "contexts/webkit-wkwebpagepreferences-allows-content-javascript.md",
+      "sha256": "6e84b1627ba82794f9dbc6964881f976a4f537712ecbfe12a605d5ce5289ce30",
+      "etag": "\"2755-659024a232c5a\"",
+      "last_modified": "Fri, 14 Aug 2026 14:03:48 GMT",
+      "bytes": 10069,
+      "categories": [
+        "On-demand expansion",
+        "Framework integration"
       ],
       "depth": 2
     }
