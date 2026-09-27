@@ -577,22 +577,12 @@
         }
       }
     },
-    "Connect to Server" : {
+    "Remote" : {
       "localizations" : {
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Conectar ao Servidor"
-          }
-        }
-      }
-    },
-    "Connect to Server…" : {
-      "localizations" : {
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Conectar ao Servidor…"
+            "value" : "Remoto"
           }
         }
       }

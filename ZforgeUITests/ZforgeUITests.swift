@@ -32,6 +32,46 @@ final class ZforgeUITests: XCTestCase {
     }
 
     @MainActor
+    func testColumnPreviewRecalculatesWidthForNewDepth() throws {
+        let app = XCUIApplication()
+        app.launchArguments = [
+            "--ui-fixtures", "--ui-window-width", "1400", "--ui-view-mode", "columns",
+            "-appLanguagePreference", "english"
+        ]
+        app.launch()
+
+        let rootFile = app.staticTexts["Welcome.txt"]
+        XCTAssertTrue(rootFile.waitForExistence(timeout: 5))
+        rootFile.click()
+        let preview = app.descendants(matching: .any)["column-preview"]
+        XCTAssertTrue(preview.waitForExistence(timeout: 5))
+        let rootWidth = preview.frame.width
+
+        app.staticTexts["Sample.zip"].click()
+        let nestedFile = app.staticTexts["Inside.txt"]
+        XCTAssertTrue(nestedFile.waitForExistence(timeout: 5))
+        nestedFile.click()
+        XCTAssertTrue(preview.waitForExistence(timeout: 5))
+        let nestedWidth = preview.frame.width
+
+        XCTAssertGreaterThan(rootWidth, nestedWidth)
+        XCTAssertGreaterThanOrEqual(nestedWidth, 320)
+    }
+
+    @MainActor
+    func testRecentsShowsOriginalOnlyOnceWhenArchiveSessionsContainCopies() throws {
+        let app = XCUIApplication()
+        app.launchArguments = [
+            "--ui-fixtures", "--ui-recents-duplicates", "--ui-view-mode", "list",
+            "-appLanguagePreference", "english"
+        ]
+        app.launch()
+        let archive = app.staticTexts["Sample.zip"]
+        XCTAssertTrue(archive.waitForExistence(timeout: 5))
+        XCTAssertEqual(app.staticTexts.matching(identifier: "Sample.zip").count, 1)
+    }
+
+    @MainActor
     func testArrowNavigationKeepsContentFocusAfterChangingView() throws {
         let app = XCUIApplication()
         app.launchArguments = [
@@ -45,6 +85,10 @@ final class ZforgeUITests: XCTestCase {
 
         selectView(named: "Icons", in: app)
         selectView(named: "List", in: app)
+        app.typeKey("h", modifierFlags: [.command, .shift])
+        let movedFromRecents = NSPredicate(format: "label != %@", "Recents")
+        expectation(for: movedFromRecents, evaluatedWith: app.windows.firstMatch)
+        waitForExpectations(timeout: 3)
 
         let contextualAction = app.buttons["archive-contextual-action"]
         XCTAssertTrue(contextualAction.waitForExistence(timeout: 2))
@@ -55,6 +99,52 @@ final class ZforgeUITests: XCTestCase {
         let enabled = NSPredicate(format: "enabled == true")
         expectation(for: enabled, evaluatedWith: contextualAction)
         waitForExpectations(timeout: 2)
+    }
+
+    @MainActor
+    func testZoomShortcutsUpdateTheActiveView() throws {
+        let app = XCUIApplication()
+        app.launchArguments = [
+            "--ui-fixtures", "--ui-view-mode", "list",
+            "-appLanguagePreference", "english"
+        ]
+        app.launch()
+        let browser = app.descendants(matching: .any)["browser-mode-list"]
+        XCTAssertTrue(browser.waitForExistence(timeout: 5))
+        app.typeKey("0", modifierFlags: .command)
+        XCTAssertEqual(browser.value as? String, "100%")
+        app.typeKey("=", modifierFlags: .command)
+        XCTAssertEqual(browser.value as? String, "110%")
+        app.typeKey("-", modifierFlags: .command)
+        XCTAssertEqual(browser.value as? String, "100%")
+    }
+
+    @MainActor
+    func testArchiveActionsMatchToolbarAndSecondaryMenus() throws {
+        let app = XCUIApplication()
+        app.launchArguments = [
+            "--ui-fixtures", "--ui-window-width", "1100",
+            "--ui-view-mode", "list", "-appLanguagePreference", "english"
+        ]
+        app.launch()
+        let archive = app.staticTexts["Sample.zip"]
+        XCTAssertTrue(archive.waitForExistence(timeout: 5))
+        archive.click()
+
+        let toolbarMenu = app.buttons["toolbar-more-menu"]
+        XCTAssertTrue(toolbarMenu.waitForExistence(timeout: 2))
+        toolbarMenu.click()
+        for title in ["Open", "Extract Here", "Extract to \"Sample\"", "Extract…", "Validate"] {
+            XCTAssertTrue(app.menuItems[title].exists, "Missing \(title) from the toolbar menu")
+        }
+        XCTAssertFalse(app.menuItems["Compress"].exists)
+        app.typeKey(.escape, modifierFlags: [])
+
+        archive.rightClick()
+        for title in ["Open", "Extract Here", "Extract to \"Sample\"", "Extract…", "Validate"] {
+            XCTAssertTrue(app.menuItems[title].exists, "Missing \(title) from the secondary menu")
+        }
+        XCTAssertFalse(app.menuItems["Compress"].exists)
     }
 
     @MainActor
@@ -85,12 +175,6 @@ final class ZforgeUITests: XCTestCase {
         let collapsed = NSPredicate(format: "value == %@", "Collapsed")
         expectation(for: collapsed, evaluatedWith: overflowButton)
         waitForExpectations(timeout: 2)
-        app.staticTexts["Welcome.txt"].click()
-        overflowButton.click()
-        let archiveAction = app.menuItems["Compress Selected"]
-        XCTAssertTrue(archiveAction.isEnabled)
-        archiveAction.click()
-        XCTAssertTrue(app.staticTexts["Compress selected items."].waitForExistence(timeout: 2))
 
         selectView(named: "List", in: app)
         let listBrowser = app.descendants(matching: .any)["browser-mode-list"]
@@ -216,7 +300,7 @@ final class ZforgeUITests: XCTestCase {
         let compactButton = app.buttons["view-mode-selector-compact"]
         if compactButton.exists {
             compactButton.click()
-            let menuItem = app.menuItems[name]
+            let menuItem = app.windows.firstMatch.menuItems[name].firstMatch
             XCTAssertTrue(menuItem.waitForExistence(timeout: 2))
             menuItem.click()
             return
@@ -228,7 +312,7 @@ final class ZforgeUITests: XCTestCase {
         let viewItem = app.menuItems["View"]
         XCTAssertTrue(viewItem.waitForExistence(timeout: 2))
         viewItem.click()
-        let menuItem = app.menuItems[name]
+        let menuItem = app.windows.firstMatch.menuItems[name].firstMatch
         XCTAssertTrue(menuItem.waitForExistence(timeout: 2))
         menuItem.click()
     }

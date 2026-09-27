@@ -21,6 +21,10 @@ nonisolated enum AppLocalization {
             locale: resolvedLocale
         )
     }
+
+    static func byteCount(_ count: Int64, locale: Locale? = nil) -> String {
+        count.formatted(ByteCountFormatStyle(style: .file, locale: locale ?? currentLocale))
+    }
 }
 
 private extension Bundle {

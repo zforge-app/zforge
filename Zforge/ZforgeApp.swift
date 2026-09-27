@@ -184,7 +184,7 @@ private struct BrowserCommands: Commands {
             Button("Documents") { Task { await browser?.navigateToDocuments() } }
                 .keyboardShortcut("o", modifiers: [.command, .shift])
             Divider()
-            Button("Connect to Server…") { browser?.showingServerConnection = true }
+            Button("Remote") { browser?.showingServerConnection = true }
                 .keyboardShortcut("k", modifiers: .command)
             Button("Open Enclosing Folder in New Window") {
                 if let parent = browser?.parentDirectoryURL {

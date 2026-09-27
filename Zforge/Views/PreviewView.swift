@@ -285,7 +285,6 @@ struct SelectionOverview: View {
                 galleryOverview
             } else {
                 columnOverview
-                    .frame(width: state.preferences.previewWidth * scale)
             }
         }
         .task(id: items.map(\.id)) {
@@ -653,7 +652,7 @@ struct BrowserSelectionSummary {
             let sizes = items.compactMap(effectiveSize)
             let totalSize = sizes.reduce(0, +)
             if !sizes.isEmpty {
-                parts.append(ByteCountFormatter.string(fromByteCount: totalSize, countStyle: .file))
+                parts.append(AppLocalization.byteCount(totalSize, locale: locale))
             }
         }
         return parts.joined(separator: " · ")
@@ -681,7 +680,7 @@ struct BrowserSelectionSummary {
             return AppLocalization.string("Calculating…", locale: locale)
         }
         guard let size = effectiveSize(item) else { return "—" }
-        return ByteCountFormatter.string(fromByteCount: size, countStyle: .file)
+        return AppLocalization.byteCount(size, locale: locale)
     }
 
     private func effectiveSize(_ item: BrowserItem) -> Int64? {

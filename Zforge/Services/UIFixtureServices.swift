@@ -3,9 +3,18 @@ import Foundation
 @MainActor
 final class UIFixtureRecentItemsService: RecentItemsServing {
     func recentItemURLs() async -> [URL] {
-        ["Fixture Folder", "Welcome.txt", "Sample.zip"].map {
+        let originals = ["Fixture Folder", "Welcome.txt", "Sample.zip"].map {
             URL(fileURLWithPath: "/ZforgeFixtures/\($0)")
         }
+        guard ProcessInfo.processInfo.arguments.contains("--ui-recents-duplicates") else {
+            return originals
+        }
+        let sessionsRoot = ZforgeTemporaryStorage.archiveSessionsRoot()
+        return [
+            sessionsRoot.appendingPathComponent("First/Sample.zip"),
+            originals[0], originals[1], originals[2],
+            sessionsRoot.appendingPathComponent("Second/Sample.zip")
+        ]
     }
 
     func stop() {}
@@ -23,7 +32,11 @@ actor UIFixtureFileSystemService: FileSystemServing {
     }
 
     func item(at url: URL) async throws -> BrowserItem {
-        makeItem(name: url.lastPathComponent, archive: ArchiveFormatRegistry.recognizes(url.lastPathComponent))
+        makeItem(
+            name: url.lastPathComponent,
+            archive: ArchiveFormatRegistry.recognizes(url.lastPathComponent),
+            url: url
+        )
     }
 
     func recursiveSize(at url: URL) async throws -> Int64 { 0 }
@@ -32,11 +45,12 @@ actor UIFixtureFileSystemService: FileSystemServing {
 
     private func makeItem(
         name: String, directory: Bool = false, archive: Bool = false,
-        size: Int64? = nil, hidden: Bool = false
+        size: Int64? = nil, hidden: Bool = false, url: URL? = nil
     ) -> BrowserItem {
-        let url = URL(fileURLWithPath: "/ZforgeFixtures/\(name)")
+        let url = url ?? URL(fileURLWithPath: "/ZforgeFixtures/\(name)")
         return BrowserItem(
-            id: BrowserItemID(rawValue: "fixture:\(name)"), name: name, location: .fileSystem(url),
+            id: BrowserItemID(rawValue: "fixture:\(url.standardizedFileURL.path)"),
+            name: name, location: .fileSystem(url),
             isContainer: directory, isDirectory: directory, isPackage: false,
             isSymbolicLink: false, isHidden: hidden, isArchive: archive, size: size,
             packedSize: nil, creationDate: nil, modificationDate: Date(timeIntervalSince1970: 1_700_000_000),

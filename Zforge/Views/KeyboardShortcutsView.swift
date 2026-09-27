@@ -209,7 +209,7 @@ private enum KeyboardShortcutCatalog {
             ("Home", "⇧⌘H"),
             ("Downloads", "⌥⌘L"),
             ("Documents", "⇧⌘O"),
-            ("Connect to Server…", "⌘K"),
+            ("Remote", "⌘K"),
             ("Open Enclosing Folder in New Window", "⌃⌘↑")
         ]),
         section("navigation", "Navigation", "arrow.left.arrow.right", [

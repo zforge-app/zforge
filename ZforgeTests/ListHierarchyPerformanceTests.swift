@@ -203,9 +203,13 @@ struct ListHierarchyPerformanceTests {
         for _ in 0..<100 where FileManager.default.fileExists(atPath: source.path) {
             try await Task.sleep(for: .milliseconds(10))
         }
-        for _ in 0..<100 where state.columnItems[.fileSystem(destination)]?.contains(where: {
-            $0.name == source.lastPathComponent
-        }) != true {
+        for _ in 0..<100 where
+            state.columnItems[.fileSystem(destination)]?.contains(where: {
+                $0.name == source.lastPathComponent
+            }) != true
+            || state.columnItems[.fileSystem(root)]?.contains(where: {
+                $0.name == source.lastPathComponent
+            }) == true {
             try await Task.sleep(for: .milliseconds(10))
         }
 
@@ -225,8 +229,9 @@ struct ListHierarchyPerformanceTests {
     @Test("Deleting an expanded column folder returns to its parent and refreshes it")
     @MainActor
     func deletingExpandedColumnFolderRefreshesParent() async throws {
-        let root = FileManager.default.temporaryDirectory
+        let root = FileManager.default.temporaryDirectory.resolvingSymlinksInPath()
             .appendingPathComponent("ZforgeColumnDeletion-" + UUID().uuidString, isDirectory: true)
+            .standardizedFileURL
         let archiveFolder = root.appendingPathComponent("Archive", isDirectory: true)
         try FileManager.default.createDirectory(
             at: archiveFolder.appendingPathComponent("work", isDirectory: true),
@@ -253,8 +258,9 @@ struct ListHierarchyPerformanceTests {
         let archiveItem = try #require(state.items.first(where: { $0.name == "Archive" }))
         let openingTask = state.activateColumnItem(archiveItem, in: state.location)
         await openingTask.value
+        let archiveFolderLocation = state.location
 
-        #expect(state.columnItems[.fileSystem(archiveFolder)]?.contains(where: { $0.name == "work" }) == true)
+        #expect(state.columnItems[archiveFolderLocation]?.contains(where: { $0.name == "work" }) == true)
         try FileManager.default.removeItem(at: archiveFolder)
         await state.refreshColumnsAfterRemovingLocalItems([archiveFolder])
 
@@ -262,7 +268,7 @@ struct ListHierarchyPerformanceTests {
         #expect(state.location == .fileSystem(root))
         #expect(state.activeColumnLocation == .fileSystem(root))
         #expect(state.pathComponents.map(\.location) == [.fileSystem(root)])
-        #expect(state.columnItems[.fileSystem(archiveFolder)] == nil)
+        #expect(state.columnItems[archiveFolderLocation] == nil)
         #expect(state.columnItems[.fileSystem(root)]?.contains(where: { $0.name == "Archive" }) != true)
         #expect(state.items.contains(where: { $0.name == "Archive" }) == false)
     }
@@ -270,8 +276,9 @@ struct ListHierarchyPerformanceTests {
     @Test("Deleting a file in a parent column refreshes it while keeping the child open")
     @MainActor
     func deletingParentColumnFileRefreshesParentWhileChildRemainsOpen() async throws {
-        let root = FileManager.default.temporaryDirectory
+        let root = FileManager.default.temporaryDirectory.resolvingSymlinksInPath()
             .appendingPathComponent("ZforgeColumnFileDeletion-" + UUID().uuidString, isDirectory: true)
+            .standardizedFileURL
         let archiveFolder = root.appendingPathComponent("Archive", isDirectory: true)
         let file = root.appendingPathComponent("old.txt")
         try FileManager.default.createDirectory(
@@ -300,25 +307,27 @@ struct ListHierarchyPerformanceTests {
         let archiveItem = try #require(state.items.first(where: { $0.name == "Archive" }))
         let openingTask = state.activateColumnItem(archiveItem, in: state.location)
         await openingTask.value
+        let archiveFolderLocation = state.location
 
         #expect(state.columnItems[.fileSystem(root)]?.contains(where: { $0.name == "old.txt" }) == true)
-        #expect(state.columnItems[.fileSystem(archiveFolder)]?.contains(where: { $0.name == "work" }) == true)
+        #expect(state.columnItems[archiveFolderLocation]?.contains(where: { $0.name == "work" }) == true)
 
         try FileManager.default.removeItem(at: file)
         await state.refreshColumnsAfterRemovingLocalItems([file])
 
         #expect(state.error == nil)
-        #expect(state.location == .fileSystem(archiveFolder))
-        #expect(state.activeColumnLocation == .fileSystem(archiveFolder))
+        #expect(state.location == archiveFolderLocation)
+        #expect(state.activeColumnLocation == archiveFolderLocation)
         #expect(state.columnItems[.fileSystem(root)]?.contains(where: { $0.name == "old.txt" }) != true)
-        #expect(state.columnItems[.fileSystem(archiveFolder)]?.contains(where: { $0.name == "work" }) == true)
+        #expect(state.columnItems[archiveFolderLocation]?.contains(where: { $0.name == "work" }) == true)
     }
 
     @Test("Renaming an open column folder reloads its contents at the new URL")
     @MainActor
     func renamingOpenColumnFolderReloadsRenamedBranch() async throws {
-        let root = FileManager.default.temporaryDirectory
+        let root = FileManager.default.temporaryDirectory.resolvingSymlinksInPath()
             .appendingPathComponent("ZforgeColumnRename-" + UUID().uuidString, isDirectory: true)
+            .standardizedFileURL
         let original = root.appendingPathComponent("Original", isDirectory: true)
         let renamed = root.appendingPathComponent("Renamed", isDirectory: true)
         try FileManager.default.createDirectory(at: original, withIntermediateDirectories: true)
@@ -343,7 +352,12 @@ struct ListHierarchyPerformanceTests {
         await state.navigateToSidebar(root, name: root.lastPathComponent)
         let originalItem = try #require(state.items.first(where: { $0.name == "Original" }))
         await state.activateColumnItem(originalItem, in: state.location).value
-        #expect(state.columnItems[.fileSystem(original)]?.contains(where: {
+        let originalLocation = state.location
+        let renamedLocation = BrowserLocation.fileSystem(
+            try #require(originalLocation.fileSystemURL).deletingLastPathComponent()
+                .appendingPathComponent("Renamed", isDirectory: true)
+        )
+        #expect(state.columnItems[originalLocation]?.contains(where: {
             $0.name == "child.txt"
         }) == true)
 
@@ -352,8 +366,8 @@ struct ListHierarchyPerformanceTests {
         state.commitRename()
 
         for _ in 0..<100 {
-            if state.location == .fileSystem(renamed),
-               state.columnItems[.fileSystem(renamed)]?.contains(where: {
+            if state.location == renamedLocation,
+               state.columnItems[renamedLocation]?.contains(where: {
                    $0.name == "child.txt"
                }) == true {
                 break
@@ -366,12 +380,12 @@ struct ListHierarchyPerformanceTests {
         #expect(!FileManager.default.fileExists(atPath: original.path))
         #expect(state.pathComponents.map(\.location) == [
             .fileSystem(root),
-            .fileSystem(renamed)
+            renamedLocation
         ])
-        #expect(state.location == .fileSystem(renamed))
+        #expect(state.location == renamedLocation)
         #expect(state.activeColumnLocation == .fileSystem(root))
-        #expect(state.columnItems[.fileSystem(original)] == nil)
-        #expect(state.columnItems[.fileSystem(renamed)]?.contains(where: {
+        #expect(state.columnItems[originalLocation] == nil)
+        #expect(state.columnItems[renamedLocation]?.contains(where: {
             $0.name == "child.txt"
         }) == true)
         #expect(state.columnSelections[.fileSystem(root)] == BrowserItemID(

@@ -133,19 +133,7 @@ extension ArchiveServing {
 }
 
 actor SevenZipArchiveEngine: ArchiveServing {
-    private struct Entry: Sendable {
-        let path: String
-        let isDirectory: Bool
-        let size: Int64?
-        let packedSize: Int64?
-        let modified: Date?
-        let created: Date?
-        let accessed: Date?
-        let encrypted: Bool
-        let checksum: String?
-        let method: String?
-        let attributes: String?
-    }
+    private typealias Entry = SevenZipListingParser.Entry
 
     private struct ArchiveRecord: Sendable {
         let id: UUID
@@ -173,9 +161,7 @@ actor SevenZipArchiveEngine: ArchiveServing {
     init(fileManager: FileManager = .default, helperURL: URL? = nil) {
         self.fileManager = fileManager
         self.processRunner = SevenZipProcessRunner(helperURL: helperURL ?? Self.locateHelper())
-        sessionsRoot = fileManager.temporaryDirectory
-            .appendingPathComponent("Zforge", isDirectory: true)
-            .appendingPathComponent("ArchiveSessions", isDirectory: true)
+        sessionsRoot = ZforgeTemporaryStorage.archiveSessionsRoot(fileManager: fileManager)
     }
 
     func openArchive(
@@ -646,7 +632,7 @@ actor SevenZipArchiveEngine: ArchiveServing {
         )
         try validate(result, passwordWasProvided: password != nil)
         let output = String(decoding: result.stdout, as: UTF8.self)
-        var entries = try parseListing(output)
+        var entries = try SevenZipListingParser.parse(output)
         let isRawStream = entries.isEmpty && isStreamURL(url)
         if isRawStream {
             let path = rawStreamOutputName(for: displayName)
@@ -686,65 +672,6 @@ actor SevenZipArchiveEngine: ArchiveServing {
         }
         if result.code == 255 { throw ArchiveEngineError.cancelled }
         throw ArchiveEngineError.commandFailed(code: result.code, message: combined.trimmingCharacters(in: .whitespacesAndNewlines))
-    }
-
-    private func parseListing(_ output: String) throws -> [String: Entry] {
-        var records: [[String: String]] = []
-        var current: [String: String] = [:]
-        for line in output.components(separatedBy: .newlines) {
-            if line.isEmpty {
-                if !current.isEmpty { records.append(current); current = [:] }
-                continue
-            }
-            guard let range = line.range(of: " = ") else { continue }
-            current[String(line[..<range.lowerBound])] = String(line[range.upperBound...])
-        }
-        if !current.isEmpty { records.append(current) }
-
-        var entries: [String: Entry] = [:]
-        for record in records {
-            guard let rawPath = record["Path"], record["Type"] == nil else { continue }
-            let path = try safeArchivePath(rawPath)
-            guard !path.isEmpty else { continue }
-            let isDirectory = record["Folder"] == "+" || record["Attributes"]?.first == "D" || rawPath.hasSuffix("/")
-            entries[path] = Entry(
-                path: path,
-                isDirectory: isDirectory,
-                size: Int64(record["Size"] ?? ""),
-                packedSize: Int64(record["Packed Size"] ?? ""),
-                modified: parseDate(record["Modified"]),
-                created: parseDate(record["Created"]),
-                accessed: parseDate(record["Accessed"]),
-                encrypted: record["Encrypted"] == "+",
-                checksum: record["CRC"],
-                method: record["Method"],
-                attributes: record["Attributes"]
-            )
-        }
-
-        for path in Array(entries.keys) {
-            let components = path.split(separator: "/").map(String.init)
-            guard components.count > 1 else { continue }
-            for count in 1..<components.count {
-                let parent = components.prefix(count).joined(separator: "/")
-                if entries[parent] == nil {
-                    entries[parent] = Entry(
-                        path: parent,
-                        isDirectory: true,
-                        size: nil,
-                        packedSize: nil,
-                        modified: nil,
-                        created: nil,
-                        accessed: nil,
-                        encrypted: false,
-                        checksum: nil,
-                        method: nil,
-                        attributes: nil
-                    )
-                }
-            }
-        }
-        return entries
     }
 
     private func stageArchiveAndVolumes(at url: URL, in directory: URL) throws -> URL {
@@ -966,23 +893,11 @@ actor SevenZipArchiveEngine: ArchiveServing {
     }
 
     private func safeArchivePath(_ raw: String) throws -> String {
-        let value = normalized(raw.replacingOccurrences(of: "\\", with: "/"))
-        guard !value.hasPrefix("/"), !value.split(separator: "/").contains("..") else {
-            throw ArchiveEngineError.unsafePath
-        }
-        return value
+        try SevenZipListingParser.safePath(raw)
     }
 
     private func normalized(_ path: String) -> String {
-        path.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
-    }
-
-    private func parseDate(_ value: String?) -> Date? {
-        guard let value, !value.isEmpty else { return nil }
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-        return formatter.date(from: String(value.prefix(19)))
+        SevenZipListingParser.normalized(path)
     }
 
     private func sanitizedFileName(_ name: String) -> String {

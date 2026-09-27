@@ -6,6 +6,37 @@ protocol RecentItemsServing: AnyObject {
     func stop()
 }
 
+/// Preserves Spotlight order while accepting each physical file only once.
+/// The query itself stays in the adapter below; this rule can be exercised
+/// with ordinary temporary files, including symlinks and hard links.
+nonisolated struct RecentFileIdentityFilter {
+    private(set) var urls: [URL] = []
+    private var seenPaths: Set<String> = []
+    private var seenFileIdentities: Set<String> = []
+    let maximumCount: Int
+
+    var isFull: Bool { urls.count >= maximumCount }
+
+    init(maximumCount: Int) {
+        self.maximumCount = max(0, maximumCount)
+    }
+
+    mutating func appendIfNew(_ url: URL) {
+        guard !isFull else { return }
+        guard !ZforgeTemporaryStorage.contains(url) else { return }
+        let standardizedPath = url.resolvingSymlinksInPath().standardizedFileURL.path
+        guard seenPaths.insert(standardizedPath).inserted else { return }
+        if let values = try? url.resourceValues(forKeys: [
+            .fileResourceIdentifierKey, .volumeIdentifierKey
+        ]), let fileID = values.fileResourceIdentifier,
+           let volumeID = values.volumeIdentifier {
+            let identity = "\(volumeID):\(fileID)"
+            guard seenFileIdentities.insert(identity).inserted else { return }
+        }
+        urls.append(url)
+    }
+}
+
 @MainActor
 final class SpotlightRecentItemsService: NSObject, RecentItemsServing {
     private static let maximumResultCount = 250
@@ -49,28 +80,15 @@ final class SpotlightRecentItemsService: NSObject, RecentItemsServing {
         guard let query = notification.object as? NSMetadataQuery, query === self.query else { return }
         query.disableUpdates()
 
-        var seenPaths: Set<String> = []
-        var seenFileIdentities: Set<String> = []
-        var urls: [URL] = []
-        urls.reserveCapacity(min(query.resultCount, Self.maximumResultCount))
+        var results = RecentFileIdentityFilter(maximumCount: Self.maximumResultCount)
         for index in 0..<query.resultCount {
             let result = query.result(at: index) as AnyObject
             guard let path = result.value(forKey: NSMetadataItemPathKey) as? String else { continue }
-            let url = URL(fileURLWithPath: path)
-            let standardizedPath = url.resolvingSymlinksInPath().standardizedFileURL.path
-            guard seenPaths.insert(standardizedPath).inserted else { continue }
-            if let values = try? url.resourceValues(forKeys: [
-                .fileResourceIdentifierKey, .volumeIdentifierKey
-            ]), let fileID = values.fileResourceIdentifier,
-               let volumeID = values.volumeIdentifier {
-                let identity = "\(volumeID):\(fileID)"
-                guard seenFileIdentities.insert(identity).inserted else { continue }
-            }
-            urls.append(url)
-            if urls.count == Self.maximumResultCount { break }
+            results.appendIfNew(URL(fileURLWithPath: path))
+            if results.isFull { break }
         }
 
-        finish(with: urls)
+        finish(with: results.urls)
     }
 
     private func finish(with urls: [URL]) {

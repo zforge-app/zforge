@@ -275,7 +275,7 @@ struct FileOperationServiceTests {
         let sourceItem = try #require(state.items.first(where: { $0.name == "Codex" }))
         await state.activateColumnItem(sourceItem, in: rootLocation).value
 
-        #expect(state.location == .fileSystem(source))
+        #expect(state.location == .fileSystem(try #require(sourceItem.localURL)))
         #expect(state.activeColumnLocation == rootLocation)
         #expect(state.fileOperationDestinationURL == root.standardizedFileURL)
 
@@ -292,6 +292,11 @@ struct FileOperationServiceTests {
         #expect(!FileManager.default.fileExists(
             atPath: source.appendingPathComponent("Codex").path
         ))
+        for _ in 0..<100 where state.columnItems[rootLocation]?.contains(where: {
+            $0.name == "Codex copy"
+        }) != true {
+            try await Task.sleep(for: .milliseconds(10))
+        }
         #expect(state.columnItems[rootLocation]?.contains(where: { $0.name == "Codex copy" }) == true)
     }
 
@@ -437,9 +442,10 @@ struct FileOperationServiceTests {
 
         state.createNewFolder()
         let folder = root.appendingPathComponent("untitled folder", isDirectory: true)
-        for _ in 0..<100 where !FileManager.default.fileExists(atPath: folder.path) {
+        for _ in 0..<100 where !undoManager.canUndo {
             try await Task.sleep(for: .milliseconds(10))
         }
+        #expect(FileManager.default.fileExists(atPath: folder.path))
         #expect(undoManager.canUndo)
         state.cancelRenaming()
         undoManager.undo()
@@ -451,6 +457,11 @@ struct FileOperationServiceTests {
         let source = root.appendingPathComponent("Original.txt")
         try Data("Zforge".utf8).write(to: source)
         await state.reload()
+        for _ in 0..<100 where !state.items.contains(where: {
+            $0.localURL?.standardizedFileURL == source.standardizedFileURL
+        }) {
+            try await Task.sleep(for: .milliseconds(10))
+        }
         let sourceItem = try #require(state.items.first(where: {
             $0.localURL?.standardizedFileURL == source.standardizedFileURL
         }))
@@ -461,6 +472,10 @@ struct FileOperationServiceTests {
         for _ in 0..<100 where !FileManager.default.fileExists(atPath: renamed.path) {
             try await Task.sleep(for: .milliseconds(10))
         }
+        for _ in 0..<100 where state.renameInProgress {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        #expect(undoManager.canUndo)
         undoManager.undo()
         for _ in 0..<100 where !FileManager.default.fileExists(atPath: source.path) {
             try await Task.sleep(for: .milliseconds(10))
@@ -471,6 +486,11 @@ struct FileOperationServiceTests {
         let destination = root.appendingPathComponent("Destination", isDirectory: true)
         try FileManager.default.createDirectory(at: destination, withIntermediateDirectories: false)
         await state.reload()
+        for _ in 0..<100 where !state.items.contains(where: {
+            $0.localURL?.standardizedFileURL == source.standardizedFileURL
+        }) {
+            try await Task.sleep(for: .milliseconds(10))
+        }
         let draggedItem = try #require(state.items.first(where: {
             $0.localURL?.standardizedFileURL == source.standardizedFileURL
         }))
@@ -483,6 +503,9 @@ struct FileOperationServiceTests {
         )
         let copy = destination.appendingPathComponent("Original.txt")
         for _ in 0..<100 where !FileManager.default.fileExists(atPath: copy.path) {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        for _ in 0..<100 where !undoManager.canUndo {
             try await Task.sleep(for: .milliseconds(10))
         }
         undoManager.undo()

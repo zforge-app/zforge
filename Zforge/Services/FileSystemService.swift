@@ -113,7 +113,7 @@ actor FileSystemService: FileSystemServing {
             isDirectory: isDirectory,
             isPackage: isPackage,
             isSymbolicLink: values.isSymbolicLink ?? false,
-            isHidden: values.isHidden ?? name.hasPrefix("."),
+            isHidden: values.isHidden == true || name.hasPrefix("."),
             isArchive: !isDirectory && ArchiveFormatRegistry.recognizes(name),
             size: values.fileSize.map(Int64.init),
             packedSize: nil,

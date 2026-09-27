@@ -142,7 +142,7 @@ struct BrowserSidebar: View {
                     showingServerSheet = true
                     restoreContentFocus()
                 } label: {
-                    Label("Connect to Server…", systemImage: "plus.circle")
+                    Label("Remote", systemImage: "plus.circle")
                 }
                 .buttonStyle(.plain)
             }
@@ -229,7 +229,7 @@ struct ServerConnectionSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Label("Connect to Server", systemImage: "network")
+            Label("Remote", systemImage: "network")
                 .font(.title2.weight(.semibold))
             Text("Enter an SMB, AFP, or NFS address.")
                 .foregroundStyle(.secondary)

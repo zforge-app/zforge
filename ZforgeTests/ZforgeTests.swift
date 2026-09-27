@@ -805,8 +805,17 @@ struct ZforgeTests {
 
     @Test("Multiple selection previews every eligible file alongside static items")
     @MainActor
-    func multipleSelectionPreviewsEligibleFiles() {
-        let state = FileBrowserState()
+    func multipleSelectionPreviewsEligibleFiles() throws {
+        let suiteName = "ZforgeMultiplePreview-\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let state = FileBrowserState(
+            preferences: FileBrowserPreferences(defaults: defaults),
+            fileSystem: UIFixtureFileSystemService(),
+            grants: UIFixtureAccessGrantStore(),
+            archives: UIFixtureArchiveEngine()
+        )
+        defer { state.close() }
         let firstDocument = item("First.pdf")
         let secondDocument = item("Second.png")
         let folder = item("Folder", directory: true)
@@ -911,13 +920,13 @@ struct ZforgeTests {
         let container = try #require(state.items.first(where: { $0.name == "Archive 3" }))
         await state.activateColumnItem(container, in: rootLocation).value
 
-        let containerLocation = BrowserLocation.fileSystem(containerURL)
+        let containerLocation = state.location
         let firstItem = try #require(state.sortedColumnItems(at: containerLocation).first)
         #expect(firstItem.name == "dev")
 
         await state.activateFirstItemInColumn(at: containerLocation).value
 
-        let firstItemLocation = BrowserLocation.fileSystem(firstItemURL)
+        let firstItemLocation = BrowserLocation.fileSystem(try #require(firstItem.localURL))
         #expect(state.activeColumnLocation == containerLocation)
         #expect(state.columnSelections[containerLocation] == firstItem.id)
         #expect(state.location == firstItemLocation)
@@ -930,18 +939,18 @@ struct ZforgeTests {
         let fileContainer = try #require(state.items.first(where: { $0.name == "Files" }))
         await state.activateColumnItem(fileContainer, in: state.location).value
 
-        let fileContainerLocation = BrowserLocation.fileSystem(fileContainerURL)
+        let fileContainerLocation = state.location
         let document = try #require(state.sortedColumnItems(at: fileContainerLocation).first)
         #expect(document.name == "Document.txt")
         await state.activateFirstItemInColumn(at: fileContainerLocation).value
-        for _ in 0..<100 where state.previewURL != documentURL {
+        for _ in 0..<100 where state.previewURL != document.localURL {
             try await Task.sleep(for: .milliseconds(10))
         }
 
         #expect(state.activeColumnLocation == fileContainerLocation)
         #expect(state.columnSelections[fileContainerLocation] == document.id)
         #expect(state.location == fileContainerLocation)
-        #expect(state.previewURL == documentURL)
+        #expect(state.previewURL == document.localURL)
     }
 
     @Test("Rapid column archive selection cancels the previous load before opening the next")

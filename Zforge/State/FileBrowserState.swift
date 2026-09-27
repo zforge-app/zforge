@@ -85,7 +85,7 @@ final class FileBrowserState {
     @ObservationIgnored private let archives: any ArchiveServing
     @ObservationIgnored private let monitor = DirectoryMonitor()
     @ObservationIgnored private var expandedDirectoryMonitors: [BrowserItemID: DirectoryMonitor] = [:]
-    @ObservationIgnored private var refreshTask: Task<Void, Never>?
+    @ObservationIgnored private var reloadGeneration: UInt64 = 0
     @ObservationIgnored private var previewTask: Task<Void, Never>?
     @ObservationIgnored private var previewGeneration: UInt64 = 0
     @ObservationIgnored private var columnActivationTask: Task<Void, Never>?
@@ -104,61 +104,28 @@ final class FileBrowserState {
     @ObservationIgnored private var pendingAuthorizationPurpose: AuthorizationPurpose?
     @ObservationIgnored private var openWindowHandler: ((URL?) -> Void)?
     @ObservationIgnored private weak var undoManager: UndoManager?
-    @ObservationIgnored private var rootItemsRevision: UInt64 = 0
-    @ObservationIgnored private var hierarchyRevision: UInt64 = 0
-    @ObservationIgnored private var knownItemsRevision: UInt64 = 0
-    @ObservationIgnored private var columnItemsRevision: UInt64 = 0
+    @ObservationIgnored private let itemProjection = BrowserItemProjection()
     @ObservationIgnored private var recursiveExpansionGeneration: UInt64 = 0
     @ObservationIgnored private var activeFileTransferCount = 0
-    @ObservationIgnored private var sortedItemsCache: (
-        revision: UInt64,
-        sort: BrowserSort,
-        showsHidden: Bool,
-        items: [BrowserItem]
-    )?
-    @ObservationIgnored private var knownItemsCache: (
-        revision: UInt64,
-        itemsByID: [BrowserItemID: BrowserItem]
-    )?
-    @ObservationIgnored private var flattenedListCache: (
-        revision: UInt64,
-        sort: BrowserSort,
-        showsHidden: Bool,
-        entries: [VisibleBrowserItem],
-        orderedItems: [BrowserItem]
-    )?
-    @ObservationIgnored private var sortedColumnItemsCache: [
-        BrowserLocation: (revision: UInt64, sort: BrowserSort, items: [BrowserItem])
-    ] = [:]
 
     var preferences: FileBrowserPreferences
     var location: BrowserLocation
     var pathComponents: [BrowserPathComponent] = []
     var items: [BrowserItem] = [] {
-        didSet {
-            rootItemsRevision &+= 1
-            hierarchyRevision &+= 1
-            knownItemsRevision &+= 1
-        }
+        didSet { itemProjection.invalidateRoot() }
     }
     var selection: Set<BrowserItemID> = []
     private(set) var selectionOrder: [BrowserItemID] = []
     var selectionAnchor: BrowserItemID?
     var expandedItems: Set<BrowserItemID> = [] {
-        didSet { hierarchyRevision &+= 1 }
+        didSet { itemProjection.invalidateExpansion() }
     }
     var expandedChildren: [BrowserItemID: [BrowserItem]] = [:] {
-        didSet {
-            hierarchyRevision &+= 1
-            knownItemsRevision &+= 1
-        }
+        didSet { itemProjection.invalidateExpandedChildren() }
     }
     var expandingItems: Set<BrowserItemID> = []
     var columnItems: [BrowserLocation: [BrowserItem]] = [:] {
-        didSet {
-            columnItemsRevision &+= 1
-            knownItemsRevision &+= 1
-        }
+        didSet { itemProjection.invalidateColumns() }
     }
     var columnSelections: [BrowserLocation: BrowserItemID] = [:]
     var isLoading = false
@@ -191,18 +158,9 @@ final class FileBrowserState {
     var activeColumnLocation: BrowserLocation?
 
     var sortedItems: [BrowserItem] {
-        let sourceItems = items
-        let sort = preferences.sort
-        let showsHidden = preferences.showHiddenFiles
-        if let cache = sortedItemsCache,
-           cache.revision == rootItemsRevision,
-           cache.sort == sort,
-           cache.showsHidden == showsHidden {
-            return cache.items
-        }
-        let result = sort.sorted(sourceItems.filter { showsHidden || !$0.isHidden })
-        sortedItemsCache = (rootItemsRevision, sort, showsHidden, result)
-        return result
+        itemProjection.sortedRootItems(
+            items, sort: preferences.sort, showsHidden: preferences.showHiddenFiles
+        )
     }
 
     var selectedItems: [BrowserItem] {
@@ -244,9 +202,6 @@ final class FileBrowserState {
 
     var archiveToolbarAction: ArchiveToolbarAction {
         let selectedItems = selectedItems
-        if case .recents = location {
-            return .unavailableOutsideArchive
-        }
         guard !selectedItems.isEmpty else {
             if case .archive = location { return .unavailableInsideArchive }
             return .unavailableOutsideArchive
@@ -271,15 +226,7 @@ final class FileBrowserState {
     }
 
     func contextualActions(for selected: [BrowserItem]) -> [BrowserSelectionAction] {
-        guard !selected.isEmpty else { return [] }
-        guard selected.allSatisfy({ $0.localURL != nil }) else { return [.open] }
-        let allArchives = selected.allSatisfy(\.isArchive)
-        if allArchives {
-            var actions: [BrowserSelectionAction] = [.open, .extractHere, .extractNamed, .extractChoose, .validate]
-            if selected.count > 1 { actions += [.compress, .compressCustom] }
-            return actions
-        }
-        return [.open, .compress, .compressCustom]
+        BrowserSelectionActionPolicy.actions(for: selected)
     }
 
     func contextualTitle(_ action: BrowserSelectionAction, items selected: [BrowserItem]) -> String {
@@ -344,22 +291,21 @@ final class FileBrowserState {
                 format = preferences.defaultCompressionFormat
                 outputURL = uniqueArchiveOutputURL(for: sources, in: directory, format: format)
             }
-            return await runArchiveOperation(
-                description: AppLocalization.string("Compressing selected items…", locale: preferences.language.locale)
-            ) {
-                try await self.archives.createArchive(
-                    from: sources, outputURL: outputURL, format: format,
-                    progress: self.archiveProgressHandler()
-                )
-                await self.reload()
-                return AppLocalization.string("Archive created successfully.", locale: self.preferences.language.locale)
-            }
+            return await createArchive(
+                from: sources, outputURL: outputURL, format: format,
+                preservingColumnSelection: false
+            )
         case .extractHere, .extractNamed, .extractChoose:
             if action == .extractChoose {
                 let panel = NSOpenPanel()
                 panel.canChooseFiles = false
                 panel.canChooseDirectories = true
                 panel.canCreateDirectories = true
+                if case .recents = location {
+                    panel.directoryURL = preferredOperationSource(
+                        among: selected.compactMap(\.localURL)
+                    )?.deletingLastPathComponent()
+                }
                 panel.prompt = AppLocalization.string("Extract", locale: preferences.language.locale)
                 guard panel.runModal() == .OK, let destination = panel.url else { return nil }
                 pendingExtractionDestination = .chosen(destination)
@@ -389,39 +335,17 @@ final class FileBrowserState {
                 in: destinationDirectory,
                 format: format
             )
-            return await runArchiveOperation(
-                description: AppLocalization.string(
-                    "Compressing selected items…",
-                    locale: preferences.language.locale
-                )
-            ) {
-                try await self.archives.createArchive(
-                    from: sources,
-                    outputURL: outputURL,
-                    format: format,
-                    progress: self.archiveProgressHandler()
-                )
-                if self.preferences.viewMode == .columns {
-                    await self.reload(
-                        preservingColumnSelection: true,
-                        refreshingColumnLocations: [
-                            .fileSystem(destinationDirectory.standardizedFileURL)
-                        ]
-                    )
-                } else {
-                    await self.reload()
-                }
-                return AppLocalization.string(
-                    "Archive created successfully.",
-                    locale: self.preferences.language.locale
-                )
-            }
+            return await createArchive(
+                from: sources, outputURL: outputURL, format: format,
+                preservingColumnSelection: true
+            )
         case .extractAll:
             let externalArchives = selectedItems
             guard !externalArchives.isEmpty,
                   externalArchives.allSatisfy({
                       $0.isArchive && $0.localURL != nil
                   }) else { return nil }
+            pendingExtractionDestination = .named
             pendingArchiveExtractionItems = externalArchives
             pendingArchiveExtractionIndex = 0
             return await processNextArchiveExtraction(password: nil)
@@ -474,35 +398,15 @@ final class FileBrowserState {
     }
 
     func sortedColumnItems(at location: BrowserLocation) -> [BrowserItem] {
-        let sourceItems = columnItems[location] ?? []
-        let sort = preferences.sort
-        if let cached = sortedColumnItemsCache[location],
-           cached.revision == columnItemsRevision,
-           cached.sort == sort {
-            return cached.items
-        }
-        let result = sort.sorted(sourceItems)
-        sortedColumnItemsCache[location] = (columnItemsRevision, sort, result)
-        return result
+        itemProjection.sortedColumnItems(
+            at: location, sourceItems: columnItems[location] ?? [], sort: preferences.sort
+        )
     }
 
     private var knownItemsByID: [BrowserItemID: BrowserItem] {
-        let rootItems = items
-        let expandedChildren = expandedChildren
-        let columnItems = columnItems
-        if let cache = knownItemsCache, cache.revision == knownItemsRevision {
-            return cache.itemsByID
-        }
-        var values: [BrowserItemID: BrowserItem] = [:]
-        for item in rootItems { values[item.id] = item }
-        for children in expandedChildren.values {
-            for item in children { values[item.id] = item }
-        }
-        for children in columnItems.values {
-            for item in children { values[item.id] = item }
-        }
-        knownItemsCache = (knownItemsRevision, values)
-        return values
+        itemProjection.knownItems(
+            roots: items, expandedChildren: expandedChildren, columns: columnItems
+        )
     }
 
     var canGoBack: Bool { !backStack.isEmpty }
@@ -996,6 +900,37 @@ final class FileBrowserState {
         }
     }
 
+    private func createArchive(
+        from sources: [URL],
+        outputURL: URL,
+        format: ArchiveCompressionFormat,
+        preservingColumnSelection: Bool
+    ) async -> String? {
+        await runArchiveOperation(
+            description: AppLocalization.string(
+                "Compressing selected items…", locale: preferences.language.locale
+            )
+        ) {
+            try await self.archives.createArchive(
+                from: sources, outputURL: outputURL, format: format,
+                progress: self.archiveProgressHandler()
+            )
+            if preservingColumnSelection && self.preferences.viewMode == .columns {
+                await self.reload(
+                    preservingColumnSelection: true,
+                    refreshingColumnLocations: [
+                        .fileSystem(outputURL.deletingLastPathComponent().standardizedFileURL)
+                    ]
+                )
+            } else {
+                await self.reload()
+            }
+            return AppLocalization.string(
+                "Archive created successfully.", locale: self.preferences.language.locale
+            )
+        }
+    }
+
     private func processNextArchiveExtraction(password: String?) async -> String? {
         guard !pendingArchiveExtractionItems.isEmpty else { return nil }
         archiveOperationDescription = AppLocalization.string(
@@ -1163,10 +1098,10 @@ final class FileBrowserState {
         let loadedFileSystemLocations = Set(
             pathComponents.compactMap { component -> URL? in
                 guard case let .fileSystem(url) = component.location else { return nil }
-                return url.standardizedFileURL
+                return url
             } + columnItems.keys.compactMap { location -> URL? in
                 guard case let .fileSystem(url) = location else { return nil }
-                return url.standardizedFileURL
+                return url
             }
         )
         var affectedColumnLocations = Set<BrowserLocation>()
@@ -1177,7 +1112,7 @@ final class FileBrowserState {
                 .fileSystem(destination.deletingLastPathComponent().standardizedFileURL)
             )
             for loadedLocation in loadedFileSystemLocations
-            where destination.pathComponents.starts(with: loadedLocation.pathComponents) {
+            where isSameOrDescendant(destination, of: loadedLocation) {
                 affectedColumnLocations.insert(.fileSystem(loadedLocation))
             }
         }
@@ -1280,9 +1215,23 @@ final class FileBrowserState {
             $0.deletingLastPathComponent().standardizedFileURL.path == firstParent.path
         }
         guard allSourcesShareParent else {
+            if case .recents = location {
+                return preferredOperationSource(among: sourceURLs)?
+                    .deletingLastPathComponent().standardizedFileURL
+            }
             return fileOperationDestinationURL ?? location.fileSystemURL
         }
         return firstParent
+    }
+
+    private func preferredOperationSource(among sourceURLs: [URL]) -> URL? {
+        guard !sourceURLs.isEmpty else { return nil }
+        if let focusedItemID,
+           let focusedURL = knownItemsByID[focusedItemID]?.localURL,
+           sourceURLs.contains(where: { $0.standardizedFileURL == focusedURL.standardizedFileURL }) {
+            return focusedURL
+        }
+        return sourceURLs.min { $0.standardizedFileURL.path < $1.standardizedFileURL.path }
     }
 
     func goBack() async {
@@ -1345,13 +1294,17 @@ final class FileBrowserState {
         preservingColumnSelection: Bool = false,
         refreshingColumnLocations: Set<BrowserLocation> = []
     ) async {
-        refreshTask?.cancel()
+        reloadGeneration &+= 1
+        let generation = reloadGeneration
         let currentLocation = location
         let validSelection = selection
         let cursorSnapshot = hierarchyCursorSnapshot()
         let previousRootItems = items
         isLoading = true
         error = nil
+        defer {
+            if generation == reloadGeneration { isLoading = false }
+        }
         do {
             let loaded: [BrowserItem]
             switch currentLocation {
@@ -1363,14 +1316,16 @@ final class FileBrowserState {
             case let .archive(address):
                 loaded = try await archives.items(at: address)
             }
-            guard currentLocation == location else { return }
+            guard generation == reloadGeneration, currentLocation == location else { return }
             items = loaded
             purgeRemovedHierarchies(previous: previousRootItems, current: loaded)
             columnItems[currentLocation] = preferences.sort.sorted(loaded)
             for columnLocation in refreshingColumnLocations where columnLocation != currentLocation {
                 await reloadColumnItems(at: columnLocation)
+                guard generation == reloadGeneration else { return }
             }
-            await refreshExpandedFileSystemHierarchy()
+            await refreshExpandedFileSystemHierarchy(expectedReloadGeneration: generation)
+            guard generation == reloadGeneration else { return }
             let validSelectionIDs = preservingColumnSelection
                 ? Set(knownItems.map(\.id))
                 : Set(flattenedItems().map(\.id))
@@ -1385,23 +1340,24 @@ final class FileBrowserState {
             updatePreview()
             synchronizeRenamingSelection()
         } catch {
+            guard generation == reloadGeneration else { return }
             if preferences.viewMode == .columns,
                case let .fileSystem(currentURL) = currentLocation,
                !FileManager.default.fileExists(atPath: currentURL.path) {
                 await refreshColumnsAfterRemovingLocalItems([currentURL])
-                isLoading = false
                 return
             }
             self.error = mapError(error)
             items = []
             stopExpandedDirectoryMonitors()
         }
-        isLoading = false
     }
 
     func refreshExpandedHierarchy() async {
+        let generation = reloadGeneration
         let cursorSnapshot = hierarchyCursorSnapshot()
-        await refreshExpandedFileSystemHierarchy()
+        await refreshExpandedFileSystemHierarchy(expectedReloadGeneration: generation)
+        guard generation == reloadGeneration else { return }
         let validSelectionIDs = Set(flattenedItems().map(\.id))
         selection.formIntersection(validSelectionIDs)
         selectionOrder.removeAll { !selection.contains($0) }
@@ -1519,6 +1475,10 @@ final class FileBrowserState {
         }
 
         let requestedName = renameDraft
+        let openedSourceURL = pathComponents.first(where: {
+            $0.location.fileSystemURL?.standardizedFileURL.path
+                == sourceURL.standardizedFileURL.path
+        })?.location.fileSystemURL ?? sourceURL
         let openedColumnParentLocation: BrowserLocation? = {
             guard preferences.viewMode == .columns,
                   let sourceIndex = pathComponents.firstIndex(where: {
@@ -1547,7 +1507,7 @@ final class FileBrowserState {
                 renamingItemURL = nil
                 renameDraft = ""
                 await refreshAfterRename(
-                    from: sourceURL,
+                    from: openedSourceURL,
                     to: renamedURL,
                     openedColumnParentLocation: openedColumnParentLocation
                 )
@@ -2331,44 +2291,19 @@ final class FileBrowserState {
     }
 
     func flattenedList() -> [VisibleBrowserItem] {
-        let rootItems = sortedItems
-        let expandedItems = expandedItems
-        let expandedChildren = expandedChildren
-        let sort = preferences.sort
-        let showsHidden = preferences.showHiddenFiles
-        if let cache = flattenedListCache,
-           cache.revision == hierarchyRevision,
-           cache.sort == sort,
-           cache.showsHidden == showsHidden {
-            return cache.entries
-        }
-
-        var result: [VisibleBrowserItem] = []
-        func append(_ children: [BrowserItem], depth: Int, alreadySorted: Bool = false) {
-            let visibleChildren = children.filter { showsHidden || !$0.isHidden }
-            let orderedChildren = alreadySorted ? visibleChildren : sort.sorted(visibleChildren)
-            for child in orderedChildren {
-                result.append(
-                    VisibleBrowserItem(
-                        item: child,
-                        depth: depth,
-                        isExpanded: expandedItems.contains(child.id),
-                        rowIndex: result.count
-                    )
-                )
-                if expandedItems.contains(child.id), let nested = expandedChildren[child.id] {
-                    append(nested, depth: depth + 1)
-                }
-            }
-        }
-        append(rootItems, depth: 0, alreadySorted: true)
-        flattenedListCache = (hierarchyRevision, sort, showsHidden, result, result.map(\.item))
-        return result
+        itemProjection.flattenedList(
+            sortedRoots: sortedItems, expandedIDs: expandedItems,
+            expandedChildren: expandedChildren, sort: preferences.sort,
+            showsHidden: preferences.showHiddenFiles
+        )
     }
 
     func flattenedItems() -> [BrowserItem] {
-        _ = flattenedList()
-        return flattenedListCache?.orderedItems ?? []
+        itemProjection.flattenedItems(
+            sortedRoots: sortedItems, expandedIDs: expandedItems,
+            expandedChildren: expandedChildren, sort: preferences.sort,
+            showsHidden: preferences.showHiddenFiles
+        )
     }
 
     func updatePreview(manual: Bool = false) {
@@ -2495,7 +2430,7 @@ final class FileBrowserState {
         recentItems.stop()
         previewTask?.cancel()
         previewTask = nil
-        refreshTask?.cancel()
+        reloadGeneration &+= 1
         columnActivationTask?.cancel()
         columnActivationTask = nil
         Task {
@@ -2615,11 +2550,13 @@ final class FileBrowserState {
         focusedItemID = replacement.id
     }
 
-    private func refreshExpandedFileSystemHierarchy() async {
+    private func refreshExpandedFileSystemHierarchy(expectedReloadGeneration: UInt64) async {
+        guard expectedReloadGeneration == reloadGeneration else { return }
         var reachableExpandedItems: Set<BrowserItemID> = []
 
         func refresh(_ candidates: [BrowserItem]) async {
             for item in candidates where expandedItems.contains(item.id) {
+                guard expectedReloadGeneration == reloadGeneration else { return }
                 reachableExpandedItems.insert(item.id)
                 var children = expandedChildren[item.id] ?? []
 
@@ -2631,12 +2568,14 @@ final class FileBrowserState {
                             in: url,
                             showHidden: preferences.showHiddenFiles
                         )
+                        guard expectedReloadGeneration == reloadGeneration else { return }
                         guard expandedItems.contains(item.id) else { continue }
                         let previousChildren = children
                         children = preferences.sort.sorted(loaded)
                         expandedChildren[item.id] = children
                         purgeRemovedHierarchies(previous: previousChildren, current: children)
                     } catch {
+                        guard expectedReloadGeneration == reloadGeneration else { return }
                         self.error = mapError(error)
                         continue
                     }
@@ -2647,6 +2586,7 @@ final class FileBrowserState {
         }
 
         await refresh(items)
+        guard expectedReloadGeneration == reloadGeneration else { return }
 
         let unreachableItems = expandedItems.subtracting(reachableExpandedItems)
         guard !unreachableItems.isEmpty else { return }
@@ -2802,6 +2742,7 @@ final class FileBrowserState {
         loaded.reserveCapacity(urls.count)
         for url in urls {
             guard !Task.isCancelled else { break }
+            guard !ZforgeTemporaryStorage.contains(url) else { continue }
             if let item = try? await fileSystem.item(at: url),
                !item.isDirectory,
                preferences.showHiddenFiles || !item.isHidden {
@@ -2976,11 +2917,28 @@ final class FileBrowserState {
     }
 
     private func isSameOrDescendant(_ candidate: URL, of ancestor: URL) -> Bool {
-        let candidatePath = candidate.standardizedFileURL.path
-        let ancestorPath = ancestor.standardizedFileURL.path
+        let candidatePath = stableFilePath(candidate)
+        let ancestorPath = stableFilePath(ancestor)
         guard candidatePath != ancestorPath else { return true }
         let prefix = ancestorPath.hasSuffix("/") ? ancestorPath : ancestorPath + "/"
         return candidatePath.hasPrefix(prefix)
+    }
+
+    /// Resolve symlinks through the nearest existing parent, since removal
+    /// callbacks also compare paths whose final item no longer exists.
+    private func stableFilePath(_ url: URL) -> String {
+        var existingURL = url.standardizedFileURL
+        var missingComponents: [String] = []
+        while !FileManager.default.fileExists(atPath: existingURL.path),
+              existingURL.path != "/" {
+            missingComponents.append(existingURL.lastPathComponent)
+            existingURL.deleteLastPathComponent()
+        }
+        var resolved = existingURL.resolvingSymlinksInPath().standardizedFileURL
+        for component in missingComponents.reversed() {
+            resolved.appendPathComponent(component)
+        }
+        return resolved.standardizedFileURL.path
     }
 
     func configureUndoManager(_ undoManager: UndoManager?) {

@@ -126,6 +126,20 @@ nonisolated enum BrowserSelectionAction: CaseIterable, Hashable, Sendable {
     }
 }
 
+nonisolated enum BrowserSelectionActionPolicy {
+    static func actions(for selected: [BrowserItem]) -> [BrowserSelectionAction] {
+        guard !selected.isEmpty else { return [] }
+        guard selected.allSatisfy({ $0.localURL != nil }) else { return [.open] }
+        guard selected.allSatisfy(\.isArchive) else {
+            return [.open, .compress, .compressCustom]
+        }
+        let extraction: [BrowserSelectionAction] = [
+            .open, .extractHere, .extractNamed, .extractChoose, .validate
+        ]
+        return selected.count > 1 ? extraction + [.compress, .compressCustom] : extraction
+    }
+}
+
 nonisolated enum ArchiveCompressionFormat: String, CaseIterable, Codable, Identifiable, Sendable {
     case sevenZip = "7z"
     case zip
@@ -262,9 +276,9 @@ nonisolated struct BrowserItem: Identifiable, Hashable, Sendable {
         return contentType?.identifier ?? URL(fileURLWithPath: name).pathExtension.lowercased()
     }
 
-    var formattedSize: String {
+    func formattedSize(locale: Locale) -> String {
         guard !isDirectory, let size else { return "—" }
-        return ByteCountFormatter.string(fromByteCount: size, countStyle: .file)
+        return AppLocalization.byteCount(size, locale: locale)
     }
 
     func formattedDate(_ date: Date?, locale: Locale) -> String {
@@ -301,7 +315,7 @@ nonisolated enum BrowserError: LocalizedError, Equatable {
         case .invalidServerURL:
             AppLocalization.string("error.invalid_server")
         case let .previewTooLarge(size):
-            AppLocalization.string("error.preview_too_large \(ByteCountFormatter.string(fromByteCount: size, countStyle: .file))")
+            AppLocalization.string("error.preview_too_large \(AppLocalization.byteCount(size))")
         }
     }
 }

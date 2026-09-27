@@ -397,6 +397,7 @@ struct ContentView: View {
                 .help("More")
                 .focusable(false)
                 .accessibilityLabel("More")
+                .accessibilityIdentifier("toolbar-more-menu")
             }
         }
     }
