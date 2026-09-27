@@ -59,6 +59,48 @@ final class ZforgeUITests: XCTestCase {
     }
 
     @MainActor
+    func testColumnPreviewKeepsExpandedTerminalAlignment() throws {
+        let app = XCUIApplication()
+        app.launchArguments = [
+            "--ui-fixtures", "--ui-window-width", "1200", "--ui-view-mode", "columns",
+            "-browser.finderColumnWidth", "600", "-browser.scale", "1",
+            "-browser.previewVisible.columns", "YES", "-appLanguagePreference", "english"
+        ]
+        app.launch()
+
+        let rootColumn = app.descendants(matching: .any)["browser-column-0"]
+        XCTAssertTrue(rootColumn.waitForExistence(timeout: 5))
+        let rootFile = rootColumn.staticTexts["Welcome.txt"]
+        XCTAssertTrue(rootFile.waitForExistence(timeout: 5))
+        rootFile.click()
+
+        let preview = app.descendants(matching: .any)["column-preview"]
+        XCTAssertTrue(preview.waitForExistence(timeout: 5))
+        let initialPreviewWidth = preview.frame.width
+
+        rootColumn.staticTexts["Sample.zip"].click()
+        let childColumn = app.descendants(matching: .any)["browser-column-1"]
+        XCTAssertTrue(childColumn.waitForExistence(timeout: 5))
+        let expandedFrame = childColumn.frame
+        XCTAssertGreaterThan(expandedFrame.width, initialPreviewWidth)
+
+        rootFile.click()
+        XCTAssertTrue(preview.waitForExistence(timeout: 5))
+        let replacementFrame = preview.frame
+        XCTAssertEqual(replacementFrame.width, expandedFrame.width, accuracy: 1)
+        XCTAssertEqual(replacementFrame.minX, expandedFrame.minX, accuracy: 1)
+        XCTAssertEqual(replacementFrame.maxX, expandedFrame.maxX, accuracy: 1)
+
+        let clippedSampleLabel = rootColumn.staticTexts["Sample.zip"]
+        clippedSampleLabel.coordinate(
+            withNormalizedOffset: CGVector(dx: 2, dy: 0.5)
+        ).click()
+        XCTAssertTrue(childColumn.waitForExistence(timeout: 5))
+        XCTAssertEqual(childColumn.frame.minX, expandedFrame.minX, accuracy: 1)
+        XCTAssertEqual(childColumn.frame.width, expandedFrame.width, accuracy: 1)
+    }
+
+    @MainActor
     func testRecentsShowsOriginalOnlyOnceWhenArchiveSessionsContainCopies() throws {
         let app = XCUIApplication()
         app.launchArguments = [

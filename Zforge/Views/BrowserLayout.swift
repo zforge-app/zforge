@@ -13,6 +13,19 @@ enum BrowserResizeGeometry {
 enum BrowserColumnsLayout {
     static let minimumPreviewWidth: CGFloat = 320
 
+    static func terminalColumnWidth(
+        availableWidth: CGFloat,
+        precedingColumnCount: Int,
+        columnWidth: CGFloat,
+        minimumWidth: CGFloat = 0
+    ) -> CGFloat {
+        max(
+            columnWidth,
+            minimumWidth,
+            availableWidth - CGFloat(precedingColumnCount) * columnWidth
+        )
+    }
+
     static func initialPreviewWidth(
         availableWidth: CGFloat,
         columnCount: Int,

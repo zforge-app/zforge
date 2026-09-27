@@ -16,7 +16,8 @@ Atualizado em **2026-09-27**. Esta lista preserva os pedidos levantados nesta co
 | ZF-10 | Resolver OR-01 a OR-05: guia, idioma dos tamanhos, operações em Recentes, alinhamento de Colunas e integração Finder | Código e documentação atualizados; OR-02 e OR-03 ainda requerem verificação visual/operacional, e OR-04 foi parcialmente conferida na ZF-11. OR-05 já estava no commit `d23e1f7` | D-10 a D-13, C-06 |
 | ZF-11 | Renomear a ação de conexão para Remote e corrigir o recuo inicial de Colunas | Implementada; build assinada, janela larga com fixtures e arraste do divisor de preview conferidos. Divisor de coluna e overflow permanecem em OR-04 | D-13 |
 | ZF-12 | Corrigir preview de arquivos `.html`/`.htm` que ficava carregando | Implementada com WebKit, JavaScript do documento desativado e entitlement de rede; testes de HTML/CSS local aprovados, cópia do arquivo do relato renderizada em build de teste assinada, inclusive após a desativação de scripts; build de distribuição ainda não conferida | D-14 |
-| ZF-13 | Calcular a largura inicial de cada preview em Colunas conforme o espaço disponível | Implementada; build, unidade e teste de UI aprovados; conferência visual dos arquivos do relato pendente | D-15 |
+| ZF-13 | Calcular a largura inicial de cada preview em Colunas pela sobra disponível | Implementada e confirmada pelo usuário; build, testes unitários e UI aprovados | D-15 |
+| ZF-14 | Manter o alinhamento da coluna terminal ao alternar entre pasta e arquivo | Implementada; testes unitários e UI aprovados para o cenário das capturas; fluidez visual manual ainda em OR-04 | D-16 |
 
 ## ZF-01 — Documentação de referência e prevenção de regressões
 
@@ -138,6 +139,16 @@ O inventário de `Documentation/Requirements/CURRENT-STATE.md` é a lista de con
 
 **Pedido:** cada preview inicia com toda a largura disponível à direita das colunas abertas no momento do carregamento, com mínimo de 320 pt e sem máximo. Uma mudança de espaço antes da próxima seleção deve ser refletida no novo preview.
 
-**Implementado:** Colunas mantém as colunas de navegação na largura base, sem reservar slot fixo para preview. Ao carregar um item elegível, calcula a largura com a geometria atual; o divisor altera apenas essa seleção. A próxima seleção recalcula a largura, sem consultar ou alterar a preferência global dos outros modos. O conteúdo de `SelectionOverview` recebe a largura proposta pelo pai.
+**Implementado:** antes de expandir um ramo, Colunas mantém as colunas de navegação na largura base, sem reservar slot fixo para preview. Ao carregar um item elegível, calcula a largura com a geometria atual; o divisor altera apenas essa seleção. A próxima seleção recalcula a largura, sem consultar ou alterar a preferência global dos outros modos. O conteúdo de `SelectionOverview` recebe a largura proposta pelo pai. A regra após expansão foi refinada na ZF-14.
 
 **Validação:** build Debug macOS aprovada; suíte `ZforgeTests` aprovada; teste de UI assinado com fixtures passou em arquivo da primeira coluna e arquivo de uma coluna interna, confirmando largura diferente e mínimo de 320 pt. A conferência visual com os arquivos das capturas e o arraste em janela estreita permanecem em OR-04.
+
+**Confirmação do usuário:** o problema da largura inicial foi resolvido. A ZF-14 refinou o comportamento após abrir uma coluna filha.
+
+## ZF-14 — Alinhamento estável da faixa terminal em Colunas
+
+**Pedido:** depois de abrir uma pasta/archive à direita, manter a nova coluna inteiramente visível. Ao selecionar um arquivo na coluna anterior, o preview deve ocupar a mesma faixa e largura, sem a divisória oscilar; preservar a largura dinâmica do preview antes dessa expansão.
+
+**Implementado:** a coluna terminal preenche a largura livre, com mínimo da largura base e de 320 pt quando o preview está visível. O ramo registra que já abriu uma coluna filha; previews posteriores no mesmo nível usam a faixa terminal correspondente. Um slot vazio mantém a geometria durante abertura assíncrona da coluna ou carregamento de preview. Sem preview visível, as colunas continuam com a largura base.
+
+**Validação:** `ZforgeTests` passou com 85 testes; `RefactoringCharacterizationTests.columnTerminalWidth` verifica a geometria. Os dois testes de UI assinados passaram em `/private/tmp/ZforgeTerminalAlignmentFinal`: `testColumnPreviewKeepsExpandedTerminalAlignment` confirmou as mesmas bordas e largura para coluna expandida e preview substituto em `Welcome.txt → Sample.zip → Welcome.txt`, além da reabertura da coluna na mesma posição; `testColumnPreviewRecalculatesWidthForNewDepth` preservou o cálculo dinâmico anterior. Navegação visual rápida com os arquivos das capturas e arraste manual continuam em OR-04.

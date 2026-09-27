@@ -115,6 +115,27 @@ struct RefactoringCharacterizationTests {
         ) == 4_740)
     }
 
+    @Test("Expanded terminal columns retain their slot when replaced by a preview")
+    func columnTerminalWidth() {
+        let initialPreview = BrowserColumnsLayout.initialPreviewWidth(
+            availableWidth: 1_000, columnCount: 1, columnWidth: 600
+        )
+        let terminalColumn = BrowserColumnsLayout.terminalColumnWidth(
+            availableWidth: 1_000, precedingColumnCount: 1,
+            columnWidth: 600, minimumWidth: 320
+        )
+        #expect(initialPreview == 400)
+        #expect(terminalColumn == 600)
+        #expect(BrowserColumnsLayout.terminalColumnWidth(
+            availableWidth: 1_000, precedingColumnCount: 1,
+            columnWidth: 260, minimumWidth: 320
+        ) == 740)
+        #expect(BrowserColumnsLayout.terminalColumnWidth(
+            availableWidth: 600, precedingColumnCount: 2,
+            columnWidth: 180, minimumWidth: 320
+        ) == 320)
+    }
+
     @Test("Compiled app declares and bundles its macOS icon")
     func appIconBundle() throws {
         let bundle = Bundle(for: AppDelegate.self)

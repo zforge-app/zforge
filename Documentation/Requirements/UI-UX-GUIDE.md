@@ -306,13 +306,14 @@ Os headers são clicáveis:
 - Seleções preservadas em colunas inativas recebem destaque cinza.
 - Ao sair de Colunas para Ícones, Lista ou Galeria, se o item ativo tiver aberto uma coluna filha, a nova visualização retorna para a localização da coluna ativa e mantém esse item selecionado. A troca não entra no item nem cria uma entrada no histórico.
 - Ao adicionar uma coluna ou preview além da largura visível, rolar horizontalmente até o fim.
-- Quando um preview for carregado, usar a largura livre à direita das colunas visíveis para sua largura inicial, respeitando o mínimo de 320 pt. Um novo preview recalcula esse valor; uma alteração manual do divisor vale apenas para o preview atual.
+- Antes de expandir uma pasta/archive naquele ramo, cada preview carregado usa a largura livre à direita das colunas visíveis, respeitando o mínimo de 320 pt. Uma alteração manual do divisor vale apenas para o preview atual.
+- Ao expandir uma pasta/archive, exibir por inteiro a nova coluna à direita. Ela preenche o espaço restante, respeitando ao menos a largura base e 320 pt quando o preview está visível. Ao selecionar depois um arquivo na coluna anterior, o preview substitui essa coluna na mesma posição e largura; a transição não desloca a divisória de volta nem durante um carregamento assíncrono.
 - Ao voltar para uma coluna anterior com o teclado, a pasta que originou a próxima coluna deve estar selecionada.
 - Selecionar um arquivo cria um painel de preview, não uma coluna de diretório vazia.
 
 ### Preview em colunas
 
-- Largura inicial do painel: espaço disponível à direita das colunas abertas no momento do carregamento, com mínimo de `320 pt` e sem máximo. O divisor permite ajuste manual do preview atual. A próxima coluna de diretório conserva a largura base das demais colunas.
+- Largura inicial antes da expansão do ramo: espaço disponível à direita das colunas abertas no momento do carregamento, com mínimo de `320 pt` e sem máximo. Após a expansão, o preview seguinte naquele nível ocupa a faixa da coluna terminal recém-aberta, mantendo sua divisória alinhada. O divisor permite ajuste manual apenas do preview atual.
 - Exibir preview do arquivo, nome, tipo, tamanho, datas e etiquetas.
 - Para múltiplos itens, exibir resumo agregado.
 - Usar Quick Look para conteúdo real quando disponível.

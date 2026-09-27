@@ -6,7 +6,7 @@ Este documento mantém requisitos que ainda dependem de decisão, implementaçã
 | --- | --- | --- |
 | OR-02 | Conferir visualmente em inglês e português do Brasil os tamanhos formatados em Lista, preview/resumo e aviso de preview grande com idioma do app diferente do macOS. | A formatação explícita por locale está implementada; D-11. |
 | OR-03 | Conferir a ação principal da toolbar e os destinos padrão de compressão/extração em Recentes, incluindo seleção de arquivos em pastas diferentes. | Regra decidida pelo usuário e implementada; execução real ainda pendente; D-12. |
-| OR-04 | Conferir visualmente a primeira coluna à esquerda, o preview de largura dinâmica e o overflow depois de arrastar os divisores de coluna e preview. | O teste de UI da ZF-13 confirmou larguras iniciais diferentes em caminhos raso/profundo e mínimo de 320 pt. Faltam o divisor de coluna, o arraste do preview atual em janela estreita e os arquivos das capturas; D-13 e D-15. |
+| OR-04 | Conferir visualmente a primeira coluna à esquerda, a largura dinâmica do primeiro preview, a estabilidade da faixa terminal ao alternar pasta/arquivo e o overflow depois de arrastar os divisores de coluna e preview. | Os testes de UI da ZF-13 e ZF-14 confirmaram larguras iniciais diferentes, mínimo de 320 pt e largura/bordas iguais entre coluna expandida e preview substituto. Faltam navegação rápida com os arquivos das capturas, divisor de coluna e arraste do preview em janela estreita; D-13, D-15 e D-16. |
 
 OR-01 foi reconciliado em [`UI-UX-GUIDE.md`](UI-UX-GUIDE.md). OR-05 já constava no commit `d23e1f7` da branch `main`; a entrega distribuída não foi verificada nesta interação.
 

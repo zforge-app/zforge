@@ -8,6 +8,8 @@ struct ColumnBrowserView: View {
     let dragSession: BrowserFileDragSession
     @State private var terminalScrollTask: Task<Void, Never>?
     @State private var previewSize: ColumnPreviewSize?
+    @State private var expandedPreviewParents: Set<BrowserLocation> = []
+    @State private var columnRootLocation: BrowserLocation?
 
     private var scale: CGFloat { state.preferences.scale }
     private var regularColumnWidth: CGFloat { state.preferences.finderColumnWidth * scale }
@@ -46,15 +48,53 @@ struct ColumnBrowserView: View {
         return previewItems.map(\.id)
     }
 
-    private func previewWidth(availableWidth: CGFloat) -> CGFloat {
-        if let previewSize, previewSize.itemIDs == previewItemIDs {
-            return max(BrowserColumnsLayout.minimumPreviewWidth, previewSize.width * scale)
+    private var isAwaitingTerminalColumn: Bool {
+        guard state.previewVisible && !hasNextColumn,
+              let pendingID = state.pendingColumnExpansionItemID,
+              let activeLocation = state.activeColumnLocation ?? state.pathComponents.last?.location
+        else { return false }
+        return state.columnSelections[activeLocation] == pendingID
+    }
+
+    private var isAwaitingAnchoredPreview: Bool {
+        guard state.previewVisible && !hasNextColumn && previewItemIDs.isEmpty,
+              let activeLocation = state.activeColumnLocation ?? state.pathComponents.last?.location,
+              expandedPreviewParents.contains(activeLocation),
+              let item = state.primarySelection,
+              !item.isNavigableContainer
+        else { return false }
+        return state.columnSelections[activeLocation] == item.id
+    }
+
+    private func terminalColumnWidth(availableWidth: CGFloat, precedingCount: Int) -> CGFloat {
+        BrowserColumnsLayout.terminalColumnWidth(
+            availableWidth: availableWidth,
+            precedingColumnCount: precedingCount,
+            columnWidth: regularColumnWidth,
+            minimumWidth: state.previewVisible ? BrowserColumnsLayout.minimumPreviewWidth : 0
+        )
+    }
+
+    private func initialPreviewWidth(availableWidth: CGFloat) -> CGFloat {
+        if let parentLocation = visibleComponents.last?.element.location,
+           expandedPreviewParents.contains(parentLocation) {
+            return terminalColumnWidth(
+                availableWidth: availableWidth,
+                precedingCount: visibleComponents.count
+            )
         }
         return BrowserColumnsLayout.initialPreviewWidth(
             availableWidth: availableWidth,
             columnCount: visibleComponents.count,
             columnWidth: regularColumnWidth
         )
+    }
+
+    private func previewWidth(availableWidth: CGFloat) -> CGFloat {
+        if let previewSize, previewSize.itemIDs == previewItemIDs {
+            return max(BrowserColumnsLayout.minimumPreviewWidth, previewSize.width * scale)
+        }
+        return initialPreviewWidth(availableWidth: availableWidth)
     }
 
     var body: some View {
@@ -73,11 +113,38 @@ struct ColumnBrowserView: View {
                                 isActive: component.location == (state.activeColumnLocation ?? state.location),
                                 selectedID: state.columnSelections[component.location],
                                 scale: scale,
-                                width: regularColumnWidth,
+                                width: state.previewVisible && previewItemIDs.isEmpty
+                                    && index == visibleComponents.count - 1
+                                    && index > 0
+                                    ? terminalColumnWidth(
+                                        availableWidth: geometry.size.width,
+                                        precedingCount: index
+                                    )
+                                    : regularColumnWidth,
                                 contentFocus: contentFocus,
                                 dragSession: dragSession
                             )
+                            .accessibilityElement(children: .contain)
+                            .accessibilityIdentifier("browser-column-\(index)")
                             .id("column-\(index)")
+                        }
+
+                        if isAwaitingTerminalColumn {
+                            Color.clear
+                                .frame(width: terminalColumnWidth(
+                                    availableWidth: geometry.size.width,
+                                    precedingCount: visibleComponents.count
+                                ))
+                                .id("column-pending-slot")
+                        }
+
+                        if isAwaitingAnchoredPreview {
+                            Color.clear
+                                .frame(width: terminalColumnWidth(
+                                    availableWidth: geometry.size.width,
+                                    precedingCount: visibleComponents.count
+                                ))
+                                .id("preview-pending-slot")
                         }
 
                         if !previewItemIDs.isEmpty {
@@ -126,8 +193,12 @@ struct ColumnBrowserView: View {
                         Color.clear.contentShape(Rectangle()).onTapGesture { state.clearSelection() }
                     }
                 }
-                .onAppear { scheduleTerminalScroll(scrollProxy) }
+                .onAppear {
+                    rememberExpandedColumns()
+                    scheduleTerminalScroll(scrollProxy)
+                }
                 .onChange(of: state.pathComponents) { _, _ in
+                    rememberExpandedColumns()
                     scheduleTerminalScroll(scrollProxy, animationDuration: 0.25)
                 }
                 .onChange(of: state.selection) { _, selection in
@@ -147,11 +218,7 @@ struct ColumnBrowserView: View {
                     } else {
                         previewSize = ColumnPreviewSize(
                             itemIDs: itemIDs,
-                            width: BrowserColumnsLayout.initialPreviewWidth(
-                                availableWidth: geometry.size.width,
-                                columnCount: visibleComponents.count,
-                                columnWidth: regularColumnWidth
-                            ) / scale
+                            width: initialPreviewWidth(availableWidth: geometry.size.width) / scale
                         )
                         scheduleTerminalScroll(scrollProxy)
                     }
@@ -162,6 +229,15 @@ struct ColumnBrowserView: View {
                 }
             }
         }
+    }
+
+    private func rememberExpandedColumns() {
+        guard let rootLocation = state.pathComponents.first?.location else { return }
+        if columnRootLocation != rootLocation {
+            expandedPreviewParents.removeAll()
+            columnRootLocation = rootLocation
+        }
+        expandedPreviewParents.formUnion(state.pathComponents.dropLast().map(\.location))
     }
 
     private func scheduleTerminalScroll(

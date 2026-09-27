@@ -156,6 +156,7 @@ final class FileBrowserState {
     }
     var focusedItemID: BrowserItemID?
     var activeColumnLocation: BrowserLocation?
+    var pendingColumnExpansionItemID: BrowserItemID?
 
     var sortedItems: [BrowserItem] {
         itemProjection.sortedRootItems(
@@ -2076,6 +2077,7 @@ final class FileBrowserState {
         let opensBranch = !modifiers.contains(.command)
             && !modifiers.contains(.shift)
             && item.isNavigableContainer
+        pendingColumnExpansionItemID = opensBranch ? item.id : nil
         if recordsHistory && (retainedComponents != pathComponents || opensBranch) {
             pushHistory()
         }
@@ -2104,6 +2106,7 @@ final class FileBrowserState {
             defer {
                 if activationGeneration == self.columnActivationGeneration {
                     self.columnActivationTask = nil
+                    self.pendingColumnExpansionItemID = nil
                 }
             }
             guard opensBranch else { return }
@@ -2433,6 +2436,7 @@ final class FileBrowserState {
         reloadGeneration &+= 1
         columnActivationTask?.cancel()
         columnActivationTask = nil
+        pendingColumnExpansionItemID = nil
         Task {
             await archives.cancelAllOperations()
             await archives.closeAllSessions()
@@ -2485,6 +2489,7 @@ final class FileBrowserState {
         if recordsHistory { pushHistory() }
         self.location = location
         if resetPath {
+            pendingColumnExpansionItemID = nil
             pathComponents = [BrowserPathComponent(location: location, name: name, isArchive: isArchive)]
             columnItems.removeAll()
             columnSelections.removeAll()
