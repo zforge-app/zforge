@@ -2,6 +2,7 @@ import AppKit
 import Foundation
 import Observation
 import QuickLookUI
+import SwiftUI
 import UniformTypeIdentifiers
 
 @MainActor
@@ -78,6 +79,12 @@ final class FileBrowserState {
         var itemCount: Int { urls.count }
     }
 
+    struct ArchiveAdditionRequest: Equatable {
+        let sourceURLs: [URL]
+        let archiveURL: URL
+        let internalPath: String
+    }
+
     @ObservationIgnored private let fileSystem: any FileSystemServing
     @ObservationIgnored private let fileOperations: any FileOperationServing
     @ObservationIgnored private let recentItems: any RecentItemsServing
@@ -139,6 +146,7 @@ final class FileBrowserState {
     var previewItemsRequiringManualLoad: Set<BrowserItemID> = []
     var pendingLargeOperation: LargeOperation?
     var pendingPermanentDeletion: PermanentDeletionRequest?
+    var pendingArchiveAddition: ArchiveAdditionRequest?
     var fileOperationInProgress = false
     var fileOperationDescription = ""
     var archiveOperationInProgress = false
@@ -236,6 +244,7 @@ final class FileBrowserState {
         case .open: return AppLocalization.string("Open", locale: locale)
         case .compress: return AppLocalization.string("Compress", locale: locale)
         case .compressCustom: return AppLocalization.string("Compress Custom…", locale: locale)
+        case .addToArchive: return AppLocalization.string("Add to Archive…", locale: locale)
         case .extractHere: return AppLocalization.string("Extract Here", locale: locale)
         case .extractNamed:
             let names = selected.map { archiveExtractionDirectoryName(for: $0.name) }.joined(separator: ", ")
@@ -255,47 +264,93 @@ final class FileBrowserState {
                 for item in selected { await open(item) }
             }
             return nil
+        case .addToArchive:
+            let sources = selected.compactMap(\.localURL)
+            guard sources.count == selected.count else { return nil }
+            let panel = NSOpenPanel()
+            panel.title = AppLocalization.string("Choose an Archive", locale: preferences.language.locale)
+            panel.prompt = AppLocalization.string("Choose", locale: preferences.language.locale)
+            panel.canChooseFiles = true
+            panel.canChooseDirectories = false
+            panel.allowsMultipleSelection = false
+            panel.directoryURL = archiveCreationDirectory(for: sources)
+            guard panel.runModal() == .OK, let destination = panel.url else { return nil }
+            requestArchiveAddition(sources, to: destination)
+            return nil
         case .compress, .compressCustom:
             let sources = selected.compactMap(\.localURL)
             guard sources.count == selected.count,
                   let directory = archiveCreationDirectory(for: sources) else { return nil }
-            let format: ArchiveCompressionFormat
-            let outputURL: URL
+            let options: CompressionOptions
+            let password: String?
+            var outputURL: URL
+            var tags: [String] = []
+            var scopedDirectory: URL?
             if action == .compressCustom {
-                let panel = NSSavePanel()
-                panel.title = AppLocalization.string("Compress Custom…", locale: preferences.language.locale)
-                panel.directoryURL = directory
-                let selector = NSPopUpButton(frame: NSRect(x: 0, y: 0, width: 220, height: 28))
-                let formats = ArchiveCompressionFormat.allCases
-                selector.addItems(withTitles: formats.map { $0.title(locale: preferences.language.locale) })
-                selector.selectItem(at: formats.firstIndex(of: preferences.defaultCompressionFormat) ?? 0)
-                selector.setAccessibilityLabel(AppLocalization.string("Archive Format", locale: preferences.language.locale))
-                panel.accessoryView = selector
-                panel.nameFieldStringValue = uniqueArchiveOutputURL(
-                    for: sources, in: directory, format: preferences.defaultCompressionFormat
+                let draft = CompressionDraft(preferences: preferences)
+                let suggestedName = uniqueArchiveOutputURL(
+                    for: sources, in: directory, format: draft.options.format
                 ).lastPathComponent
-                guard panel.runModal() == .OK, let chosenURL = panel.url else { return nil }
-                format = formats[selector.indexOfSelectedItem]
+                guard let selection = await CompressionSaveDialogSession.present(
+                    draft: draft,
+                    preferences: preferences,
+                    name: suggestedName,
+                    directory: directory
+                ) else { return nil }
+                options = draft.options.normalized()
+                if options.requiresPassword {
+                    password = draft.passwordIsValid ? draft.password : promptForCompressionPassword()
+                    guard password?.isEmpty == false else { return nil }
+                } else {
+                    password = nil
+                }
+                let format = options.format
                 let containsDirectory = sources.contains { isDirectory(at: $0) }
                 let outputExtension = format.isStream && (sources.count != 1 || containsDirectory)
                     ? "tar.\(format.fileExtension)" : format.fileExtension
-                let basename = archiveBaseName(chosenURL.lastPathComponent)
-                outputURL = chosenURL.deletingLastPathComponent()
+                let basename = archiveBaseName(selection.name)
+                outputURL = selection.directory
                     .appendingPathComponent("\(basename).\(outputExtension)")
-                if outputURL != chosenURL && FileManager.default.fileExists(atPath: outputURL.path) {
+                if FileManager.default.fileExists(atPath: outputURL.path) {
                     self.error = .unavailable(AppLocalization.string(
                         "An archive with that name already exists.", locale: preferences.language.locale
                     ))
                     return nil
                 }
+                tags = selection.tags
+                scopedDirectory = selection.directory
             } else {
-                format = preferences.defaultCompressionFormat
-                outputURL = uniqueArchiveOutputURL(for: sources, in: directory, format: format)
+                let profile = preferences.defaultCompressionProfile
+                options = profile.options
+                if options.requiresPassword {
+                    let cached = preferences.sessionPassword(for: profile.id)
+                    password = cached.isEmpty ? promptForCompressionPassword() : cached
+                    guard let password, !password.isEmpty else { return nil }
+                    preferences.setSessionPassword(password, for: profile.id)
+                } else {
+                    password = nil
+                }
+                outputURL = uniqueArchiveOutputURL(for: sources, in: directory, format: options.format)
             }
-            return await createArchive(
-                from: sources, outputURL: outputURL, format: format,
+            let scopedAccess = scopedDirectory?.startAccessingSecurityScopedResource() ?? false
+            defer { if scopedAccess { scopedDirectory?.stopAccessingSecurityScopedResource() } }
+            let result = await createArchive(
+                from: sources, outputURL: outputURL, options: options, password: password,
                 preservingColumnSelection: false
             )
+            if result != nil && !tags.isEmpty {
+                var values = URLResourceValues()
+                values.tagNames = tags
+                do {
+                    try outputURL.setResourceValues(values)
+                } catch {
+                    return AppLocalization.string(
+                        "Archive created, but tags could not be applied.",
+                        locale: preferences.language.locale
+                    )
+                }
+            }
+            return result
         case .extractHere, .extractNamed, .extractChoose:
             if action == .extractChoose {
                 let panel = NSOpenPanel()
@@ -330,14 +385,24 @@ final class FileBrowserState {
             let sources = selectedItems.compactMap(\.localURL)
             guard sources.count == selectedItems.count, !sources.isEmpty else { return nil }
             guard let destinationDirectory = archiveCreationDirectory(for: sources) else { return nil }
-            let format = preferences.defaultCompressionFormat
+            let profile = preferences.defaultCompressionProfile
+            let options = profile.options
+            let password: String?
+            if options.requiresPassword {
+                let cached = preferences.sessionPassword(for: profile.id)
+                password = cached.isEmpty ? promptForCompressionPassword() : cached
+                guard let password, !password.isEmpty else { return nil }
+                preferences.setSessionPassword(password, for: profile.id)
+            } else {
+                password = nil
+            }
             let outputURL = uniqueArchiveOutputURL(
                 for: sources,
                 in: destinationDirectory,
-                format: format
+                format: options.format
             )
             return await createArchive(
-                from: sources, outputURL: outputURL, format: format,
+                from: sources, outputURL: outputURL, options: options, password: password,
                 preservingColumnSelection: true
             )
         case .extractAll:
@@ -416,6 +481,7 @@ final class FileBrowserState {
     /// Drops on the unoccupied list/content area always target the directory
     /// being browsed, independently of the focused row's contextual target.
     var fileDropDestinationURL: URL? { currentDirectoryURL }
+    var archiveDropAddress: ArchiveAddress? { location.archiveDropAddress }
     var fileOperationDestinationURL: URL? {
         if preferences.viewMode == .columns,
            let activeColumnLocation {
@@ -882,6 +948,157 @@ final class FileBrowserState {
         Task { await archives.cancelAllOperations() }
     }
 
+    func requestArchiveAddition(
+        _ sourceURLs: [URL],
+        to archiveURL: URL,
+        internalPath: String = ""
+    ) {
+        guard !sourceURLs.isEmpty else { return }
+        guard ArchiveFormatRegistry.supportsUpdating(archiveURL.lastPathComponent) else {
+            error = .unavailable(AppLocalization.string(
+                "Only ZIP and 7z archives can be updated.", locale: preferences.language.locale
+            ))
+            return
+        }
+        pendingArchiveAddition = ArchiveAdditionRequest(
+            sourceURLs: sourceURLs, archiveURL: archiveURL,
+            internalPath: internalPath
+        )
+    }
+
+    func requestArchiveAddition(_ sourceURLs: [URL], to address: ArchiveAddress) async {
+        guard address.nestedArchiveDepth == 0 else {
+            error = .unavailable(AppLocalization.string(
+                "Adding to nested archives is not supported.", locale: preferences.language.locale
+            ))
+            return
+        }
+        do {
+            let url = try await archives.archiveRootURL(for: address)
+            requestArchiveAddition(
+                sourceURLs, to: url, internalPath: address.internalPath
+            )
+        } catch {
+            self.error = mapError(error)
+        }
+    }
+
+    func confirmArchiveAddition() async {
+        guard let request = pendingArchiveAddition, !archiveOperationInProgress else { return }
+        pendingArchiveAddition = nil
+        let result = await runArchiveOperation(
+            description: AppLocalization.string("Adding to archive…", locale: preferences.language.locale)
+        ) {
+            let scopedURLs = request.sourceURLs + [request.archiveURL]
+            let activeScopes = scopedURLs.filter { $0.startAccessingSecurityScopedResource() }
+            defer { activeScopes.forEach { $0.stopAccessingSecurityScopedResource() } }
+            var password: String?
+            while true {
+                do {
+                    try await self.archives.addItems(
+                        from: request.sourceURLs, to: request.archiveURL,
+                        internalPath: request.internalPath, password: password,
+                        progress: self.archiveProgressHandler()
+                    )
+                    break
+                } catch ArchiveEngineError.passwordRequired {
+                    guard let supplied = self.promptForArchiveUpdatePassword() else {
+                        throw ArchiveEngineError.cancelled
+                    }
+                    password = supplied
+                } catch ArchiveEngineError.invalidPassword {
+                    guard let supplied = self.promptForArchiveUpdatePassword() else {
+                        throw ArchiveEngineError.cancelled
+                    }
+                    password = supplied
+                }
+            }
+            let currentArchiveURL: URL?
+            if case let .archive(address) = self.location {
+                currentArchiveURL = try? await self.archives.archiveRootURL(for: address)
+            } else {
+                currentArchiveURL = nil
+            }
+            let inlineResults = self.inlineArchiveResults
+            self.inlineArchiveResults.removeAll()
+            self.expandedItems.subtract(inlineResults.keys)
+            for itemID in inlineResults.keys { self.expandedChildren.removeValue(forKey: itemID) }
+            for result in inlineResults.values {
+                if case let .archive(currentAddress) = self.location,
+                   currentAddress.sessionID == result.address.sessionID { continue }
+                await self.archives.closeSession(result.address.sessionID)
+            }
+            let refreshedSessionID: UUID?
+            if case let .archive(address) = self.location,
+               currentArchiveURL?.standardizedFileURL == request.archiveURL.standardizedFileURL {
+                refreshedSessionID = address.sessionID
+            } else {
+                refreshedSessionID = nil
+            }
+            if let sessionID = refreshedSessionID,
+               case let .archive(currentAddress) = self.location,
+               currentAddress.sessionID == sessionID {
+                await self.archives.closeSession(sessionID)
+                let opened = try await self.archives.openArchive(
+                    at: request.archiveURL, password: password,
+                    policy: self.preferences.archiveBrowsingPolicy
+                )
+                let rootIndex = self.pathComponents.firstIndex { component in
+                    guard case let .archive(address) = component.location else { return false }
+                    return address.sessionID == sessionID && address.nestedArchiveDepth == 0
+                        && address.internalPath.isEmpty
+                }
+                let parentComponents = rootIndex.map { Array(self.pathComponents.prefix($0)) } ?? []
+                self.backStack.removeAll { entry in
+                    entry.components.contains { component in
+                        guard case let .archive(address) = component.location else { return false }
+                        return address.sessionID == sessionID
+                    }
+                }
+                self.forwardStack.removeAll { entry in
+                    entry.components.contains { component in
+                        guard case let .archive(address) = component.location else { return false }
+                        return address.sessionID == sessionID
+                    }
+                }
+                self.location = .archive(opened.address)
+                self.pathComponents = parentComponents + [BrowserPathComponent(
+                    location: .archive(opened.address), name: opened.displayName, isArchive: true
+                )]
+                self.activeColumnLocation = self.location
+                self.columnItems.removeAll()
+                self.columnSelections.removeAll()
+                self.clearSelection()
+                self.expandedItems.removeAll()
+                self.expandedChildren.removeAll()
+                await self.reload()
+            } else {
+                await self.reload()
+            }
+            return AppLocalization.string(
+                "Items added to archive successfully.", locale: self.preferences.language.locale
+            )
+        }
+        contextualFeedbackMessage = result
+    }
+
+    private func promptForArchiveUpdatePassword() -> String? {
+        let locale = preferences.language.locale
+        let alert = NSAlert()
+        alert.messageText = AppLocalization.string("Archive Password", locale: locale)
+        alert.informativeText = AppLocalization.string(
+            "Enter the password to update this archive.", locale: locale
+        )
+        alert.addButton(withTitle: AppLocalization.string("Continue", locale: locale))
+        alert.addButton(withTitle: AppLocalization.string("Cancel", locale: locale))
+        let field = NSSecureTextField(frame: NSRect(x: 0, y: 0, width: 300, height: 24))
+        alert.accessoryView = field
+        guard alert.runModal() == .alertFirstButtonReturn, !field.stringValue.isEmpty else {
+            return nil
+        }
+        return field.stringValue
+    }
+
     private func runArchiveOperation(
         description: String,
         operation: @escaping () async throws -> String
@@ -895,6 +1112,10 @@ final class FileBrowserState {
         }
         do {
             return try await operation()
+        } catch ArchiveEngineError.cancelled {
+            return nil
+        } catch is CancellationError {
+            return nil
         } catch {
             self.error = mapError(error)
             return nil
@@ -904,7 +1125,8 @@ final class FileBrowserState {
     private func createArchive(
         from sources: [URL],
         outputURL: URL,
-        format: ArchiveCompressionFormat,
+        options: CompressionOptions,
+        password: String?,
         preservingColumnSelection: Bool
     ) async -> String? {
         await runArchiveOperation(
@@ -913,7 +1135,7 @@ final class FileBrowserState {
             )
         ) {
             try await self.archives.createArchive(
-                from: sources, outputURL: outputURL, format: format,
+                from: sources, outputURL: outputURL, options: options, password: password,
                 progress: self.archiveProgressHandler()
             )
             if preservingColumnSelection && self.preferences.viewMode == .columns {
@@ -930,6 +1152,31 @@ final class FileBrowserState {
                 "Archive created successfully.", locale: self.preferences.language.locale
             )
         }
+    }
+
+    private func promptForCompressionPassword() -> String? {
+        let locale = preferences.language.locale
+        let alert = NSAlert()
+        alert.messageText = AppLocalization.string("Password for Compression", locale: locale)
+        alert.informativeText = AppLocalization.string(
+            "Enter and confirm a password. It remains in memory for this session.", locale: locale
+        )
+        alert.addButton(withTitle: AppLocalization.string("Continue", locale: locale))
+        alert.addButton(withTitle: AppLocalization.string("Cancel", locale: locale))
+        let passwordField = NSSecureTextField(frame: NSRect(x: 0, y: 32, width: 300, height: 24))
+        passwordField.placeholderString = AppLocalization.string("Password", locale: locale)
+        let confirmationField = NSSecureTextField(frame: NSRect(x: 0, y: 0, width: 300, height: 24))
+        confirmationField.placeholderString = AppLocalization.string("Confirm password", locale: locale)
+        let fields = NSView(frame: NSRect(x: 0, y: 0, width: 300, height: 56))
+        fields.addSubview(passwordField)
+        fields.addSubview(confirmationField)
+        alert.accessoryView = fields
+        while alert.runModal() == .alertFirstButtonReturn {
+            let value = passwordField.stringValue
+            if !value.isEmpty && value == confirmationField.stringValue { return value }
+            NSSound.beep()
+        }
+        return nil
     }
 
     private func processNextArchiveExtraction(password: String?) async -> String? {
@@ -1758,6 +2005,16 @@ final class FileBrowserState {
         return pasteboard.writeObjects(selectedLocalURLs.map { $0 as NSURL })
     }
 
+    @discardableResult
+    func copySelectionPathnamesToPasteboard(_ pasteboard: NSPasteboard = .general) -> Bool {
+        guard hasLocalSelection else { return false }
+        pasteboard.clearContents()
+        return pasteboard.setString(
+            selectedLocalURLs.map(\.path).joined(separator: "\n"),
+            forType: .string
+        )
+    }
+
     func pasteItemProviders(_ providers: [NSItemProvider]) {
         guard let destination = fileOperationDestinationURL else { return }
         transferItemProviders(providers, to: destination, operation: .copy)
@@ -1794,6 +2051,36 @@ final class FileBrowserState {
                 Task { @MainActor in
                     collector.receive(url, error: error, at: index)
                 }
+            }
+        }
+        return true
+    }
+
+    @discardableResult
+    func performArchiveDrop(
+        providers: [NSItemProvider],
+        to archiveURL: URL?,
+        address: ArchiveAddress?
+    ) -> Bool {
+        guard !providers.isEmpty, archiveURL != nil || address != nil else { return false }
+        let collector = BrowserDroppedFileURLCollector(count: providers.count) { [weak self] urls, failures in
+            guard let self else { return }
+            guard failures == 0, !urls.isEmpty else {
+                self.error = .unavailable(AppLocalization.string(
+                    "The dropped file URLs could not be loaded.", locale: self.preferences.language.locale
+                ))
+                return
+            }
+            if let address {
+                Task { await self.requestArchiveAddition(urls, to: address) }
+            } else if let archiveURL {
+                self.requestArchiveAddition(urls, to: archiveURL)
+            }
+        }
+        for (index, provider) in providers.enumerated() {
+            provider.loadObject(ofClass: NSURL.self) { object, error in
+                let url = (object as? NSURL).map { $0 as URL }
+                Task { @MainActor in collector.receive(url, error: error, at: index) }
             }
         }
         return true
@@ -2422,6 +2709,88 @@ final class FileBrowserState {
                 )
             } catch {
                 self.error = mapError(error)
+            }
+        }
+    }
+
+    func applicationsForOpening(_ items: [BrowserItem]) -> [URL] {
+        guard !items.isEmpty, items.allSatisfy({ !$0.isContainer }) else { return [] }
+        let workspace = NSWorkspace.shared
+        let candidates = items.map { item -> [URL] in
+            if let url = item.localURL {
+                return workspace.urlsForApplications(toOpen: url)
+            }
+            guard let type = item.contentType else { return [] }
+            return workspace.urlsForApplications(toOpen: type)
+        }
+        guard let first = candidates.first else { return [] }
+        let common = candidates.dropFirst().map { Set($0.map(\.standardizedFileURL)) }
+        return first.filter { application in
+            common.allSatisfy { $0.contains(application.standardizedFileURL) }
+        }
+    }
+
+    func openWith(_ items: [BrowserItem], application: URL, always: Bool = false) {
+        guard !items.isEmpty, items.allSatisfy({ !$0.isContainer }) else { return }
+        Task {
+            do {
+                if always {
+                    guard items.allSatisfy({ $0.localURL != nil }) else { return }
+                    for url in items.compactMap(\.localURL) {
+                        try await setDefaultApplication(application, for: url)
+                    }
+                }
+
+                var urls: [URL] = []
+                for item in items {
+                    if let url = item.localURL {
+                        urls.append(url)
+                    } else {
+                        urls.append(try await archives.materialize(
+                            item: item,
+                            purpose: .openExternally,
+                            automaticLimit: nil
+                        ))
+                    }
+                }
+                NSWorkspace.shared.open(
+                    urls,
+                    withApplicationAt: application,
+                    configuration: NSWorkspace.OpenConfiguration()
+                ) { _, openError in
+                    if let openError {
+                        Task { @MainActor in self.error = self.mapError(openError) }
+                    }
+                }
+            } catch {
+                self.error = mapError(error)
+            }
+        }
+    }
+
+    func chooseApplicationForOpening(_ items: [BrowserItem], always: Bool = false) {
+        guard !items.isEmpty, items.allSatisfy({ !$0.isContainer }),
+              !always || items.allSatisfy({ $0.localURL != nil }) else { return }
+        let panel = NSOpenPanel()
+        panel.allowedContentTypes = [.application]
+        panel.canChooseDirectories = false
+        panel.allowsMultipleSelection = false
+        panel.begin { [weak self] response in
+            guard response == .OK, let application = panel.url else { return }
+            Task { @MainActor in
+                self?.openWith(items, application: application, always: always)
+            }
+        }
+    }
+
+    private func setDefaultApplication(_ application: URL, for file: URL) async throws {
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            NSWorkspace.shared.setDefaultApplication(at: application, toOpenFileAt: file) { error in
+                if let error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume(returning: ())
+                }
             }
         }
     }
@@ -3089,6 +3458,7 @@ final class FileBrowserState {
         pendingAuthorizationURL = url
     }
 }
+
 
 @MainActor
 private final class BrowserDroppedFileURLCollector {

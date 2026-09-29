@@ -12,6 +12,9 @@ nonisolated enum ArchiveEngineError: LocalizedError, Equatable {
     case sizeLimitExceeded
     case nestedArchiveNotAllowed
     case cancelled
+    case updateUnsupported
+    case multiVolumeUpdateUnsupported
+    case archiveIncludedInSources
 
     var errorDescription: String? {
         switch self {
@@ -27,6 +30,9 @@ nonisolated enum ArchiveEngineError: LocalizedError, Equatable {
         case .nestedArchiveNotAllowed:
             AppLocalization.string("The nested archive navigation limit has been reached.")
         case .cancelled: AppLocalization.string("error.cancelled")
+        case .updateUnsupported: AppLocalization.string("Only ZIP and 7z archives can be updated.")
+        case .multiVolumeUpdateUnsupported: AppLocalization.string("Multi-volume archives cannot be updated.")
+        case .archiveIncludedInSources: AppLocalization.string("The archive cannot be added to itself.")
         }
     }
 }
@@ -90,7 +96,15 @@ nonisolated protocol ArchiveServing: Sendable {
     func createArchive(
         from sourceURLs: [URL],
         outputURL: URL,
-        format: ArchiveCompressionFormat,
+        options: CompressionOptions,
+        password: String?,
+        progress: @escaping ArchiveProgressHandler
+    ) async throws
+    func addItems(
+        from sourceURLs: [URL],
+        to archiveURL: URL,
+        internalPath: String,
+        password: String?,
         progress: @escaping ArchiveProgressHandler
     ) async throws
     func extractArchive(
@@ -119,6 +133,28 @@ nonisolated protocol ArchiveServing: Sendable {
 }
 
 extension ArchiveServing {
+    func addItems(
+        from sourceURLs: [URL],
+        to archiveURL: URL,
+        internalPath: String,
+        password: String?,
+        progress: @escaping ArchiveProgressHandler
+    ) async throws {
+        throw ArchiveEngineError.updateUnsupported
+    }
+
+    func createArchive(
+        from sourceURLs: [URL],
+        outputURL: URL,
+        format: ArchiveCompressionFormat,
+        progress: @escaping ArchiveProgressHandler
+    ) async throws {
+        try await createArchive(
+            from: sourceURLs, outputURL: outputURL,
+            options: CompressionOptions(format: format), password: nil, progress: progress
+        )
+    }
+
     func testArchive(at url: URL, password: String?) async throws {
         throw ArchiveEngineError.helperUnavailable
     }
@@ -368,10 +404,14 @@ actor SevenZipArchiveEngine: ArchiveServing {
     func createArchive(
         from sourceURLs: [URL],
         outputURL: URL,
-        format: ArchiveCompressionFormat,
+        options: CompressionOptions,
+        password: String?,
         progress: @escaping ArchiveProgressHandler
     ) async throws {
         guard !sourceURLs.isEmpty else { throw ArchiveEngineError.itemNotFound }
+        let options = options.normalized()
+        let format = options.format
+        _ = try options.commandArguments(password: password)
 
         let operationDirectory = sessionsRoot
             .appendingPathComponent("Operations", isDirectory: true)
@@ -401,21 +441,24 @@ actor SevenZipArchiveEngine: ArchiveServing {
             let tarURL = operationDirectory.appendingPathComponent("Payload.tar")
             try await runCreate(
                 outputURL: tarURL,
-                format: .tar,
+                options: CompressionOptions(format: .tar),
+                password: nil,
                 sourceNames: stagedNames,
                 workingDirectory: inputDirectory
             )
             progress(ArchiveProgress(phase: .compressing, fraction: 0.5))
             try await runCreate(
                 outputURL: stagedOutput,
-                format: format,
+                options: options,
+                password: password,
                 sourceNames: [tarURL.lastPathComponent],
                 workingDirectory: operationDirectory
             )
         } else {
             try await runCreate(
                 outputURL: stagedOutput,
-                format: format,
+                options: options,
+                password: password,
                 sourceNames: stagedNames,
                 workingDirectory: inputDirectory
             )
@@ -427,6 +470,83 @@ actor SevenZipArchiveEngine: ArchiveServing {
             withIntermediateDirectories: true
         )
         try fileManager.copyItem(at: stagedOutput, to: outputURL)
+    }
+
+    func addItems(
+        from sourceURLs: [URL],
+        to archiveURL: URL,
+        internalPath: String,
+        password: String?,
+        progress: @escaping ArchiveProgressHandler
+    ) async throws {
+        guard !sourceURLs.isEmpty else { throw ArchiveEngineError.itemNotFound }
+        guard ArchiveFormatRegistry.supportsUpdating(archiveURL.lastPathComponent) else {
+            throw ArchiveEngineError.updateUnsupported
+        }
+        let archive = archiveURL.standardizedFileURL.resolvingSymlinksInPath()
+        guard ArchiveFormatRegistry.supportsUpdating(archive.lastPathComponent) else {
+            throw ArchiveEngineError.updateUnsupported
+        }
+        if archive.pathExtension.lowercased() == "zip" {
+            let firstVolumeName = archive.deletingPathExtension().lastPathComponent.lowercased() + ".z01"
+            let siblingNames = try fileManager.contentsOfDirectory(
+                atPath: archive.deletingLastPathComponent().path
+            )
+            guard !siblingNames.contains(where: { $0.lowercased() == firstVolumeName }) else {
+                throw ArchiveEngineError.multiVolumeUpdateUnsupported
+            }
+        }
+        guard fileManager.fileExists(atPath: archive.path) else { throw ArchiveEngineError.itemNotFound }
+        guard !sourceURLs.contains(where: {
+            $0.standardizedFileURL.resolvingSymlinksInPath() == archive
+                || (isDirectory(at: $0) && archive.path.hasPrefix(
+                    $0.standardizedFileURL.resolvingSymlinksInPath().path + "/"
+                ))
+        }) else { throw ArchiveEngineError.archiveIncludedInSources }
+
+        let pathComponents = internalPath.split(separator: "/").map(String.init)
+        guard pathComponents.allSatisfy({ !$0.isEmpty && $0 != "." && $0 != ".." && !$0.contains("\\") }) else {
+            throw ArchiveEngineError.unsafePath
+        }
+        let operationDirectory = sessionsRoot
+            .appendingPathComponent("Operations", isDirectory: true)
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        let inputDirectory = operationDirectory.appendingPathComponent("Input", isDirectory: true)
+        try fileManager.createDirectory(at: inputDirectory, withIntermediateDirectories: true)
+        defer { try? fileManager.removeItem(at: operationDirectory) }
+
+        let targetDirectory = pathComponents.reduce(inputDirectory) {
+            $0.appendingPathComponent($1, isDirectory: true)
+        }
+        try fileManager.createDirectory(at: targetDirectory, withIntermediateDirectories: true)
+        progress(ArchiveProgress(phase: .staging, fraction: 0))
+        var stagedNames: [String] = []
+        for (index, sourceURL) in sourceURLs.enumerated() {
+            let name = uniqueStagedName(sourceURL.lastPathComponent, in: stagedNames)
+            try fileManager.copyItem(at: sourceURL, to: targetDirectory.appendingPathComponent(name))
+            stagedNames.append(name)
+            progress(ArchiveProgress(phase: .staging, fraction: Double(index + 1) / Double(sourceURLs.count)))
+        }
+
+        let workingArchive = operationDirectory.appendingPathComponent(archive.lastPathComponent)
+        try fileManager.copyItem(at: archive, to: workingArchive)
+        let sourceNames = stagedNames.map { (pathComponents + [$0]).joined(separator: "/") }
+        let result = try await processRunner.run(
+            arguments: ["a", "-sccUTF-8", "-bso1", "-bse2", "-bsp0", "-spd", "-y", workingArchive.path, "--"] + sourceNames,
+            password: password,
+            standardOutputURL: nil,
+            workingDirectory: inputDirectory
+        )
+        try validate(result, passwordWasProvided: password != nil)
+        try await testArchive(at: workingArchive, password: password)
+        try Task.checkCancellation()
+
+        let replacement = archive.deletingLastPathComponent()
+            .appendingPathComponent(".zforge-update-\(UUID().uuidString)-\(archive.lastPathComponent)")
+        try fileManager.copyItem(at: workingArchive, to: replacement)
+        defer { try? fileManager.removeItem(at: replacement) }
+        _ = try fileManager.replaceItemAt(archive, withItemAt: replacement)
+        progress(ArchiveProgress(phase: .compressing, fraction: 1))
     }
 
     func testArchive(at url: URL, password: String?) async throws {
@@ -725,14 +845,16 @@ actor SevenZipArchiveEngine: ArchiveServing {
 
     private func runCreate(
         outputURL: URL,
-        format: ArchiveCompressionFormat,
+        options: CompressionOptions,
+        password: String?,
         sourceNames: [String],
         workingDirectory: URL
     ) async throws {
+        let switches = try options.commandArguments(password: password)
         let result = try await processRunner.run(
             arguments: [
                 "a",
-                format.sevenZipTypeSwitch,
+            ] + switches + [
                 "-sccUTF-8",
                 "-bso1",
                 "-bse2",
@@ -741,11 +863,11 @@ actor SevenZipArchiveEngine: ArchiveServing {
                 outputURL.path,
                 "--"
             ] + sourceNames,
-            password: nil,
+            password: password,
             standardOutputURL: nil,
             workingDirectory: workingDirectory
         )
-        try validate(result, passwordWasProvided: false)
+        try validate(result, passwordWasProvided: password != nil)
     }
 
     private func extractionArguments(

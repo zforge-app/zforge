@@ -188,6 +188,7 @@ private enum KeyboardShortcutCatalog {
         section("files", "Files and Items", "doc.on.doc", [
             ("Undo", "⌘Z"),
             ("New Zforge Window", "⌘N"),
+            ("New tab", "⌘T"),
             ("New Folder", "⇧⌘N"),
             ("Duplicate", "⌘D"),
             ("Get Info", "⌘I"),
@@ -232,7 +233,7 @@ private enum KeyboardShortcutCatalog {
         ]),
         section("preview", "Preview", "eye", [
             ("Quick Look", "Space|⌘Y"),
-            ("Quick Look Slideshow", "⌥⌘Y")
+            ("Slideshow", "⌥⌘Y")
         ]),
         section("help", "Help", "questionmark.circle", [
             ("Keyboard Shortcuts…", "⌘/")

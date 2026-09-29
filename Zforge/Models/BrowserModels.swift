@@ -83,6 +83,12 @@ nonisolated enum BrowserLocation: Hashable, Sendable {
         guard case let .fileSystem(url) = self else { return nil }
         return url
     }
+
+    var archiveDropAddress: ArchiveAddress? {
+        guard case let .archive(address) = self,
+              address.nestedArchiveDepth == 0 else { return nil }
+        return address
+    }
 }
 
 nonisolated enum ArchiveToolbarAction: Equatable, Sendable {
@@ -111,6 +117,7 @@ nonisolated enum BrowserSelectionAction: CaseIterable, Hashable, Sendable {
     case open
     case compress
     case compressCustom
+    case addToArchive
     case extractHere
     case extractNamed
     case extractChoose
@@ -120,6 +127,7 @@ nonisolated enum BrowserSelectionAction: CaseIterable, Hashable, Sendable {
         switch self {
         case .open: "arrow.up.forward.app"
         case .compress, .compressCustom: "archivebox"
+        case .addToArchive: "archivebox.badge.plus"
         case .extractHere, .extractNamed, .extractChoose: "arrow.down.to.line.compact"
         case .validate: "checkmark.shield"
         }
@@ -131,12 +139,12 @@ nonisolated enum BrowserSelectionActionPolicy {
         guard !selected.isEmpty else { return [] }
         guard selected.allSatisfy({ $0.localURL != nil }) else { return [.open] }
         guard selected.allSatisfy(\.isArchive) else {
-            return [.open, .compress, .compressCustom]
+            return [.open, .compress, .compressCustom, .addToArchive]
         }
         let extraction: [BrowserSelectionAction] = [
             .open, .extractHere, .extractNamed, .extractChoose, .validate
         ]
-        return selected.count > 1 ? extraction + [.compress, .compressCustom] : extraction
+        return selected.count > 1 ? extraction + [.compress, .compressCustom, .addToArchive] : extraction + [.addToArchive]
     }
 }
 
@@ -331,6 +339,11 @@ nonisolated enum ArchiveFormatRegistry {
         let lowercased = name.lowercased()
         if lowercased.hasSuffix(".7z.001") || lowercased.hasSuffix(".zip.001") { return true }
         return commonExtensions.contains(URL(fileURLWithPath: lowercased).pathExtension)
+    }
+
+    static func supportsUpdating(_ name: String) -> Bool {
+        let lowercased = name.lowercased()
+        return lowercased.hasSuffix(".zip") || lowercased.hasSuffix(".7z")
     }
 
     /// Formats whose directory metadata can be read without walking a

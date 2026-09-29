@@ -67,7 +67,10 @@ private struct BrowserWindowRoot: View {
     @State private var hasAppeared = false
 
     var body: some View {
-        ContentView(initialURL: request.initialURL)
+        ContentView(
+            initialURL: request.initialURL,
+            tabSourceWindowNumber: request.tabSourceWindowNumber
+        )
             .id(request.id)
             .onAppear {
                 // A file can arrive after SwiftUI computes the default scene value.
@@ -102,12 +105,56 @@ private struct BrowserCommands: Commands {
             }
             .keyboardShortcut("n", modifiers: .command)
 
+            Button("New tab") {
+                openWindow(
+                    id: "browser",
+                    value: BrowserWindowRequest(
+                        tabSourceWindowNumber: NSApp.keyWindow?.windowNumber
+                    )
+                )
+            }
+            .keyboardShortcut("t", modifiers: .command)
+            .disabled(browser == nil)
+
             Button("New Folder") { browser?.createNewFolder() }
                 .keyboardShortcut("n", modifiers: [.command, .shift])
                 .disabled(browser?.canModifyCurrentDirectory != true)
         }
 
         CommandGroup(after: .newItem) {
+            Menu("Open with") {
+                if let browser {
+                    ForEach(browser.applicationsForOpening(browser.selectedItems), id: \.self) { application in
+                        Button(FileManager.default.displayName(atPath: application.path)) {
+                            browser.openWith(browser.selectedItems, application: application)
+                        }
+                    }
+                    Divider()
+                    Button("Other…") {
+                        browser.chooseApplicationForOpening(browser.selectedItems)
+                    }
+                }
+            }
+            .disabled(browser?.selectedItems.isEmpty != false
+                || browser?.selectedItems.contains(where: \.isContainer) != false)
+            .modifierKeyAlternate(.option) {
+                Menu("Always open with") {
+                    if let browser {
+                        ForEach(browser.applicationsForOpening(browser.selectedItems), id: \.self) { application in
+                            Button(FileManager.default.displayName(atPath: application.path)) {
+                                browser.openWith(browser.selectedItems, application: application, always: true)
+                            }
+                        }
+                        Divider()
+                        Button("Other…") {
+                            browser.chooseApplicationForOpening(browser.selectedItems, always: true)
+                        }
+                    }
+                }
+                .disabled(browser?.hasLocalSelection != true
+                    || browser?.selectedItems.contains(where: \.isContainer) != false)
+            }
+            Divider()
             Button("Duplicate") { browser?.duplicateSelectedFiles() }
                 .keyboardShortcut("d", modifiers: .command)
                 .disabled(browser?.hasLocalSelection != true)
@@ -127,9 +174,10 @@ private struct BrowserCommands: Commands {
             Button("Quick Look") { browser?.openQuickLook() }
                 .keyboardShortcut("y", modifiers: .command)
                 .disabled(browser?.selectedItems.contains(where: { !$0.isContainer }) != true)
-            Button("Quick Look Slideshow") { browser?.openQuickLook(slideshow: true) }
-                .keyboardShortcut("y", modifiers: [.option, .command])
-                .disabled(browser?.selectedItems.contains(where: { !$0.isContainer }) != true)
+                .modifierKeyAlternate(.option) {
+                    Button("Slideshow") { browser?.openQuickLook(slideshow: true) }
+                        .disabled(browser?.selectedItems.contains(where: { !$0.isContainer }) != true)
+                }
             Divider()
             Button("Move to Trash") { browser?.moveSelectionToTrash() }
                 .keyboardShortcut(.delete, modifiers: .command)
@@ -230,11 +278,6 @@ private struct BrowserCommands: Commands {
             Button("Actual Size") { browser?.preferences.resetZoom() }
                 .keyboardShortcut("0", modifiers: .command)
             Divider()
-            Button("Show or Hide Tab Bar") {
-                NSApp.keyWindow?.toggleTabBar(nil)
-            }
-            .keyboardShortcut("t", modifiers: [.command, .shift])
-            Divider()
             Button("Show Hidden Files") { browser?.toggleHiddenFiles() }
                 .keyboardShortcut(".", modifiers: [.command, .shift])
             Button(browser?.previewVisible == true ? "Hide Preview" : "Show Preview") {
@@ -263,6 +306,7 @@ private struct KeyboardShortcutHelpCommands: Commands {
 
 private struct ZforgeSettingsView: View {
     @State private var preferences = FileBrowserPreferences.shared
+    @State private var compressionDraft = CompressionDraft(preferences: .shared)
 
     var body: some View {
         Form {
@@ -281,14 +325,21 @@ private struct ZforgeSettingsView: View {
             }
             Toggle("Show hidden files", isOn: $preferences.showHiddenFiles)
 
-            Section("Archive Navigation") {
-                Picker("Default compression format", selection: $preferences.defaultCompressionFormat) {
-                    ForEach(ArchiveCompressionFormat.allCases) { format in
-                        Text(AppLocalization.string(format.titleKey, locale: preferences.language.locale))
-                            .tag(format)
+            Section("Compression") {
+                Picker("Default compression profile", selection: $preferences.defaultCompressionProfileID) {
+                    ForEach(preferences.compressionProfiles) { profile in
+                        Text(profile.name).tag(profile.id)
                     }
                 }
+                CompressionProfileEditor(draft: compressionDraft, preferences: preferences)
+                    .onChange(of: preferences.defaultCompressionProfileID) { _, id in
+                        if let profile = preferences.compressionProfiles.first(where: { $0.id == id }) {
+                            compressionDraft.load(profile, preferences: preferences)
+                        }
+                    }
+            }
 
+            Section("Archive Navigation") {
                 VStack(alignment: .leading, spacing: 5) {
                     LabeledContent("Maximum nesting depth") {
                         Stepper(value: $preferences.archiveNestingLimit, in: 1...10) {
@@ -322,7 +373,7 @@ private struct ZforgeSettingsView: View {
         }
         .formStyle(.grouped)
         .padding()
-        .frame(width: 520, height: 430)
+        .frame(width: 600, height: 680)
         .environment(\.locale, preferences.language.locale)
     }
 }

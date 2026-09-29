@@ -273,6 +273,74 @@ struct ZforgeTests {
         #expect(reloaded.defaultCompressionFormat == .gzip)
     }
 
+    @Test("Compression profiles persist settings but never persist passwords")
+    @MainActor
+    func compressionProfiles() throws {
+        let suiteName = "ZforgeTests.compressionProfiles.\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        let preferences = FileBrowserPreferences(defaults: defaults)
+        #expect(preferences.defaultCompressionProfile.name == "Auto")
+        let options = CompressionOptions(
+            format: .sevenZip, level: 9, method: .lzma2, dictionaryMB: 64,
+            fastBytes: 128, solid: false, threads: 4,
+            requiresPassword: true, encryptFileNames: true
+        )
+        let id = preferences.createCompressionProfile(name: "Private", options: options)
+        preferences.defaultCompressionProfileID = id
+        preferences.setSessionPassword("only-in-memory", for: id)
+
+        let reloaded = FileBrowserPreferences(defaults: defaults)
+        #expect(reloaded.defaultCompressionProfileID == id)
+        #expect(reloaded.defaultCompressionProfile.options == options)
+        #expect(reloaded.sessionPassword(for: id).isEmpty)
+
+        reloaded.deleteCompressionProfile(id)
+        #expect(reloaded.defaultCompressionProfileID != id)
+        #expect(reloaded.compressionProfiles.count == 1)
+    }
+
+    @Test("The former built-in profile name migrates to Auto")
+    @MainActor
+    func defaultCompressionProfileNameMigration() throws {
+        let suiteName = "ZforgeTests.defaultCompressionProfileNameMigration.\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let oldProfile = CompressionProfile(name: "Default", options: CompressionOptions(format: .sevenZip))
+        defaults.set(try JSONEncoder().encode([oldProfile]), forKey: "archive.compressionProfiles")
+        defaults.set(oldProfile.id.uuidString, forKey: "archive.defaultCompressionProfileID")
+
+        let migrated = FileBrowserPreferences(defaults: defaults)
+        #expect(migrated.defaultCompressionProfile.name == "Auto")
+        #expect(migrated.defaultCompressionProfile.options.format == .sevenZip)
+        #expect(FileBrowserPreferences(defaults: defaults).defaultCompressionProfile.name == "Auto")
+    }
+
+    @Test("Compression switches are format-aware and never include the password")
+    func compressionOptionSwitches() throws {
+        let options = CompressionOptions(
+            format: .sevenZip, level: 9, method: .lzma2, dictionaryMB: 64,
+            fastBytes: 128, solid: false, threads: 4,
+            requiresPassword: true, encryptFileNames: true
+        )
+        let args = try options.commandArguments(password: "secret-sample")
+        #expect(args.contains("-md=64m"))
+        #expect(args.contains("-mfb=128"))
+        #expect(args.contains("-ms=off"))
+        #expect(args.contains("-mhe=on"))
+        #expect(args.contains("-p"))
+        #expect(!args.joined().contains("secret-sample"))
+        #expect(throws: ArchiveEngineError.passwordRequired) {
+            _ = try options.commandArguments(password: nil)
+        }
+
+        var tar = options
+        tar.format = .tar
+        let tarArgs = try tar.commandArguments(password: nil)
+        #expect(tarArgs == ["-ttar"])
+    }
+
     @Test("Folders remain first while size order changes")
     func sorting() {
         let folder = item("Folder", directory: true, size: nil)
@@ -505,6 +573,41 @@ struct ZforgeTests {
                 $0.name == "7z2602-mac.zip"
             }) == true
         )
+    }
+
+    @Test("Quick compression uses the selected default profile")
+    @MainActor
+    func quickCompressionUsesProfile() async throws {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ZforgeCompressionProfile-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let source = root.appendingPathComponent("readme.txt")
+        try Data("Profile settings".utf8).write(to: source)
+
+        let suiteName = "ZforgeCompressionProfile-\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let preferences = FileBrowserPreferences(defaults: defaults)
+        let id = preferences.createCompressionProfile(
+            name: "High compression",
+            options: CompressionOptions(format: .sevenZip, level: 9, method: .lzma2, dictionaryMB: 16)
+        )
+        preferences.defaultCompressionProfileID = id
+        let state = FileBrowserState(
+            preferences: preferences, fileSystem: FileSystemService(),
+            fileOperations: FileOperationService(), grants: UIFixtureAccessGrantStore(),
+            archives: SevenZipArchiveEngine(helperURL: helperURL)
+        )
+        defer { state.close() }
+        await state.navigateToSidebar(root, name: root.lastPathComponent)
+        let item = try #require(state.items.first(where: { $0.name == source.lastPathComponent }))
+        state.select(item)
+        #expect(await state.performArchiveToolbarAction() != nil)
+        let output = root.appendingPathComponent("readme.7z")
+        #expect(FileManager.default.fileExists(atPath: output.path))
+        let engine = SevenZipArchiveEngine(helperURL: helperURL)
+        try await engine.testArchive(at: output, password: nil)
     }
 
     @Test("Extracting an internal folder refreshes its destination column")
@@ -1091,6 +1194,108 @@ struct ZforgeTests {
         await engine.closeSession(opened.address.sessionID)
     }
 
+    @Test("Archive engine adds files to existing ZIP and 7z, including an internal folder")
+    func addsToExistingArchives() async throws {
+        let engine = SevenZipArchiveEngine(helperURL: helperURL)
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ZforgeArchiveUpdate-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let original = root.appendingPathComponent("Original.txt")
+        let addition = root.appendingPathComponent("Added.txt")
+        try Data("original".utf8).write(to: original)
+        try Data("added".utf8).write(to: addition)
+
+        for format in [ArchiveCompressionFormat.zip, .sevenZip] {
+            let archive = root.appendingPathComponent("Target.\(format.fileExtension)")
+            try await engine.createArchive(
+                from: [original], outputURL: archive, format: format, progress: { _ in }
+            )
+            try await engine.addItems(
+                from: [addition], to: archive, internalPath: "Inside",
+                password: nil, progress: { _ in }
+            )
+            let opened = try await engine.openArchive(at: archive, password: nil)
+            let rootItems = try await engine.items(at: opened.address)
+            #expect(rootItems.contains(where: { $0.name == "Original.txt" }))
+            let folder = try #require(rootItems.first(where: { $0.name == "Inside" }))
+            guard case let .archive(folderAddress) = folder.location else {
+                Issue.record("Added folder has no archive address")
+                continue
+            }
+            #expect(try await engine.items(at: folderAddress).contains(where: { $0.name == "Added.txt" }))
+            await engine.closeSession(opened.address.sessionID)
+            await #expect(throws: ArchiveEngineError.archiveIncludedInSources) {
+                try await engine.addItems(
+                    from: [archive], to: archive, internalPath: "",
+                    password: nil, progress: { _ in }
+                )
+            }
+            if format == .zip {
+                let volume = root.appendingPathComponent("Target.z01")
+                try Data().write(to: volume)
+                await #expect(throws: ArchiveEngineError.multiVolumeUpdateUnsupported) {
+                    try await engine.addItems(
+                        from: [addition], to: archive, internalPath: "",
+                        password: nil, progress: { _ in }
+                    )
+                }
+                try FileManager.default.removeItem(at: volume)
+                let alias = root.appendingPathComponent("Link.zip")
+                try FileManager.default.createSymbolicLink(at: alias, withDestinationURL: archive)
+                try await engine.addItems(
+                    from: [addition], to: alias, internalPath: "ViaLink",
+                    password: nil, progress: { _ in }
+                )
+                #expect(try alias.resourceValues(forKeys: [.isSymbolicLinkKey]).isSymbolicLink == true)
+                let reopened = try await engine.openArchive(at: archive, password: nil)
+                #expect(try await engine.items(at: reopened.address).contains(where: { $0.name == "ViaLink" }))
+                await engine.closeSession(reopened.address.sessionID)
+            }
+        }
+    }
+
+    @Test("Updating encrypted archives needs the password and preserves the original on failure")
+    func addsToEncryptedArchives() async throws {
+        let engine = SevenZipArchiveEngine(helperURL: helperURL)
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ZforgeEncryptedUpdate-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let original = root.appendingPathComponent("Original.txt")
+        let addition = root.appendingPathComponent("Added.txt")
+        try Data("secret".utf8).write(to: original)
+        try Data("new".utf8).write(to: addition)
+
+        for format in [ArchiveCompressionFormat.zip, .sevenZip] {
+            let archive = root.appendingPathComponent("Encrypted.\(format.fileExtension)")
+            var options = CompressionOptions(format: format)
+            options.requiresPassword = true
+            try await engine.createArchive(
+                from: [original], outputURL: archive, options: options,
+                password: "passphrase", progress: { _ in }
+            )
+            let before = try Data(contentsOf: archive)
+            await #expect(throws: ArchiveEngineError.invalidPassword) {
+                try await engine.addItems(
+                    from: [addition], to: archive, internalPath: "",
+                    password: "wrong", progress: { _ in }
+                )
+            }
+            #expect(try Data(contentsOf: archive) == before)
+            try await engine.addItems(
+                from: [addition], to: archive, internalPath: "",
+                password: "passphrase", progress: { _ in }
+            )
+            try await engine.testArchive(at: archive, password: "passphrase")
+            let opened = try await engine.openArchive(at: archive, password: "passphrase")
+            let entries = try await engine.items(at: opened.address)
+            #expect(entries.contains(where: { $0.name == "Original.txt" }))
+            #expect(entries.contains(where: { $0.name == "Added.txt" }))
+            await engine.closeSession(opened.address.sessionID)
+        }
+    }
+
     @Test("Archive engine creates every supported output format")
     func createsSupportedArchiveFormats() async throws {
         #expect(ArchiveCompressionFormat.allCases == [.sevenZip, .zip, .tar, .xz, .bzip2, .gzip, .wim])
@@ -1144,6 +1349,43 @@ struct ZforgeTests {
             )
             #expect(try Data(contentsOf: extracted) == Data("Hello from formats.\n".utf8))
             await engine.closeSession(opened.address.sessionID)
+        }
+    }
+
+    @Test("Archive engine creates encrypted 7z and ZIP with advanced options")
+    func createsEncryptedArchives() async throws {
+        let engine = SevenZipArchiveEngine(helperURL: helperURL)
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ZforgeEncryptedCreation-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let source = root.appendingPathComponent("secret.txt")
+        try Data("Private contents".utf8).write(to: source)
+
+        for format in [ArchiveCompressionFormat.sevenZip, .zip] {
+            var options = CompressionOptions(format: format)
+            options.requiresPassword = true
+            if format == .sevenZip {
+                options.dictionaryMB = 16
+                options.fastBytes = 64
+                options.threads = 2
+                options.encryptFileNames = true
+            } else {
+                options.method = .deflate
+                options.fastBytes = 64
+                options.zipEncryption = .aes256
+            }
+            let output = root.appendingPathComponent("Encrypted.\(format.fileExtension)")
+            try await engine.createArchive(
+                from: [source], outputURL: output, options: options,
+                password: "sample-password", progress: { _ in }
+            )
+            #expect(FileManager.default.fileExists(atPath: output.path))
+            try await engine.testArchive(at: output, password: "sample-password")
+            do {
+                try await engine.testArchive(at: output, password: "wrong-password")
+                Issue.record("Archive accepted an incorrect password")
+            } catch {}
         }
     }
 
@@ -1524,7 +1766,8 @@ private actor ColumnArchiveRaceEngine: ArchiveServing {
     func createArchive(
         from sourceURLs: [URL],
         outputURL: URL,
-        format: ArchiveCompressionFormat,
+        options: CompressionOptions,
+        password: String?,
         progress: @escaping ArchiveProgressHandler
     ) async throws {}
 

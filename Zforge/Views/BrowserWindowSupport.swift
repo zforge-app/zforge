@@ -4,15 +4,18 @@ import SwiftUI
 nonisolated struct BrowserWindowRequest: Codable, Hashable {
     let id: UUID
     let initialURL: URL?
+    let tabSourceWindowNumber: Int?
 
-    init(id: UUID = UUID(), initialURL: URL? = nil) {
+    init(id: UUID = UUID(), initialURL: URL? = nil, tabSourceWindowNumber: Int? = nil) {
         self.id = id
         self.initialURL = initialURL
+        self.tabSourceWindowNumber = tabSourceWindowNumber
     }
 }
 
 struct BrowserWindowConfigurationView: NSViewRepresentable {
     let representedURL: URL?
+    let tabSourceWindowNumber: Int?
 
     func makeNSView(context: Context) -> NSView {
         let view = NSView(frame: .zero)
@@ -30,6 +33,13 @@ struct BrowserWindowConfigurationView: NSViewRepresentable {
             window.tabbingIdentifier = "io.libor.Zforge.browser"
             window.tabbingMode = .automatic
             window.representedURL = representedURL
+            if let tabSourceWindowNumber,
+               let source = NSApp.windows.first(where: { $0.windowNumber == tabSourceWindowNumber }),
+               source !== window,
+               source.tabbedWindows?.contains(window) != true {
+                source.addTabbedWindow(window, ordered: .above)
+                window.makeKeyAndOrderFront(nil)
+            }
         }
     }
 }

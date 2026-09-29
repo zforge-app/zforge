@@ -32,6 +32,131 @@ final class ZforgeUITests: XCTestCase {
     }
 
     @MainActor
+    func testCompressionProfilesAreAvailableInSettings() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-fixtures", "-appLanguagePreference", "english"]
+        app.launch()
+        app.typeKey(",", modifierFlags: .command)
+        XCTAssertTrue(app.staticTexts["Compression"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.descendants(matching: .any)["Default compression profile"].waitForExistence(timeout: 5), app.debugDescription)
+        XCTAssertTrue(app.descendants(matching: .any)["Archive format"].waitForExistence(timeout: 5), app.debugDescription)
+        XCTAssertTrue(app.buttons["Save as New Profile"].waitForExistence(timeout: 5))
+    }
+
+    @MainActor
+    func testCustomCompressionShowsProfileOptions() throws {
+        let app = XCUIApplication()
+        app.launchArguments = [
+            "--ui-fixtures", "--ui-view-mode", "list",
+            "-appLanguagePreference", "english"
+        ]
+        app.launch()
+        app.activate()
+        let file = app.staticTexts["Welcome.txt"]
+        if !file.waitForExistence(timeout: 5) {
+            app.typeKey("n", modifierFlags: .command)
+        }
+        XCTAssertTrue(file.waitForExistence(timeout: 5))
+        file.rightClick()
+        let custom = app.menuItems["Compress Custom…"]
+        XCTAssertTrue(custom.waitForExistence(timeout: 3))
+        custom.click()
+        XCTAssertTrue(app.descendants(matching: .any)["Compression profile"].waitForExistence(timeout: 5), app.debugDescription)
+        XCTAssertTrue(app.descendants(matching: .any)["Archive format"].waitForExistence(timeout: 5), app.debugDescription)
+        XCTAssertFalse(app.textFields["Profile name"].exists)
+        XCTAssertFalse(app.buttons["Save Profile"].exists)
+        XCTAssertFalse(app.buttons["Save as New Profile"].exists)
+        let autoProfile = app.popUpButtons.matching(
+            NSPredicate(format: "value == %@", "Auto")
+        ).firstMatch
+        XCTAssertTrue(autoProfile.exists)
+        let panel = app.sheets.firstMatch
+        XCTAssertTrue(panel.waitForExistence(timeout: 5), app.debugDescription)
+        XCTAssertLessThan(panel.frame.width, 700)
+        XCTAssertLessThan(panel.frame.height, 700)
+        let nameField = app.textFields["compression-save-name"]
+        let tagsField = app.textFields["compression-save-tags"]
+        let whereButton = app.buttons["compression-save-where"]
+        XCTAssertTrue(nameField.exists)
+        XCTAssertTrue(tagsField.exists)
+        XCTAssertTrue(whereButton.exists)
+        XCTAssertGreaterThan(nameField.frame.width, 380)
+        XCTAssertLessThan(abs(nameField.frame.width - tagsField.frame.width), 5)
+        XCTAssertLessThan(abs(nameField.frame.maxX - whereButton.frame.maxX), 5)
+        XCTAssertGreaterThan(tagsField.frame.minY, nameField.frame.maxY)
+        XCTAssertGreaterThan(whereButton.frame.minY, tagsField.frame.maxY)
+        let format = app.popUpButtons["Archive format"]
+        XCTAssertTrue(format.exists, panel.debugDescription)
+        let dictionary = app.popUpButtons["Dictionary size"]
+        XCTAssertTrue(dictionary.exists)
+        XCTAssertGreaterThan(format.frame.midY, app.staticTexts["Archive format"].frame.midY)
+        XCTAssertGreaterThan(dictionary.frame.midY, app.staticTexts["Dictionary size"].frame.midY)
+        XCTAssertLessThan(abs(format.frame.width - dictionary.frame.width), 5)
+        let profile = app.popUpButtons["Compression profile"]
+        XCTAssertTrue(profile.exists)
+        let title = panel.staticTexts["Compress Custom…"]
+        let profileLabel = panel.staticTexts["Compression profile"]
+        let formatLabel = panel.staticTexts["Archive format"]
+        let saveButton = panel.buttons["Save"]
+        XCTAssertLessThan(abs(title.frame.minX - profileLabel.frame.minX), 3)
+        XCTAssertLessThan(abs(title.frame.minX - formatLabel.frame.minX), 3)
+        XCTAssertLessThan(abs(title.frame.minX - format.frame.minX), 3)
+        XCTAssertLessThan(abs(profile.frame.maxX - dictionary.frame.maxX), 3)
+        XCTAssertLessThan(abs(nameField.frame.maxX - dictionary.frame.maxX), 5)
+        XCTAssertLessThan(abs(whereButton.frame.maxX - dictionary.frame.maxX), 5)
+        XCTAssertLessThan(abs(saveButton.frame.maxX - dictionary.frame.maxX), 5)
+        let compactScreenshot = XCTAttachment(screenshot: panel.screenshot())
+        compactScreenshot.name = "Compress Custom compact"
+        compactScreenshot.lifetime = .keepAlways
+        add(compactScreenshot)
+        whereButton.click()
+        let folderChooser = app.dialogs["Choose Folder…"]
+        XCTAssertTrue(folderChooser.waitForExistence(timeout: 5), app.debugDescription)
+        folderChooser.buttons["Cancel"].click()
+        format.click()
+        app.menuItems["7z"].click()
+        XCTAssertTrue(
+            (nameField.value as? String)?.hasPrefix("Welcome") == true,
+            "Changing an archive option must preserve the proposed file name."
+        )
+        let solid = app.checkBoxes["Solid archive"]
+        let password = app.checkBoxes["Protect with password"]
+        XCTAssertTrue(solid.waitForExistence(timeout: 3))
+        XCTAssertTrue(password.waitForExistence(timeout: 3))
+        XCTAssertGreaterThan(password.frame.minY, solid.frame.minY)
+        XCTAssertLessThan(abs(password.frame.minX - solid.frame.minX), 12)
+        let compactHeight = panel.frame.height
+        password.click()
+        XCTAssertTrue(
+            (nameField.value as? String)?.hasPrefix("Welcome") == true,
+            "Expanding password options must preserve the proposed file name."
+        )
+        let passwordField = app.secureTextFields["Password"]
+        XCTAssertTrue(passwordField.waitForExistence(timeout: 3))
+        XCTAssertGreaterThan(passwordField.frame.minY, password.frame.maxY)
+        XCTAssertLessThan(abs(passwordField.frame.minX - password.frame.minX), 30)
+        XCTAssertGreaterThan(app.checkBoxes["Encrypt file names"].frame.minX, password.frame.maxX)
+        XCTAssertGreaterThan(panel.frame.height, compactHeight + 40)
+        XCTAssertTrue(
+            (nameField.value as? String)?.hasPrefix("Welcome") == true,
+            "Resizing the panel must preserve the proposed file name."
+        )
+        let passwordScreenshot = XCTAttachment(screenshot: panel.screenshot())
+        passwordScreenshot.name = "Compress Custom with password"
+        passwordScreenshot.lifetime = .keepAlways
+        add(passwordScreenshot)
+        passwordField.click()
+        XCTAssertTrue(
+            (nameField.value as? String)?.hasPrefix("Welcome") == true,
+            "Leaving the name field must preserve the proposed file name."
+        )
+        password.click()
+        XCTAssertFalse(passwordField.exists)
+        XCTAssertLessThan(abs(panel.frame.height - compactHeight), 5)
+        app.typeKey(.escape, modifierFlags: [])
+    }
+
+    @MainActor
     func testColumnPreviewRecalculatesWidthForNewDepth() throws {
         let app = XCUIApplication()
         app.launchArguments = [
@@ -220,21 +345,21 @@ final class ZforgeUITests: XCTestCase {
             "--ui-view-mode", "list", "-appLanguagePreference", "english"
         ]
         app.launch()
-        let archive = app.staticTexts["Sample.zip"]
+        let archive = app.staticTexts["Sample.zip"].firstMatch
         XCTAssertTrue(archive.waitForExistence(timeout: 5))
         archive.click()
 
         let toolbarMenu = app.buttons["toolbar-more-menu"]
         XCTAssertTrue(toolbarMenu.waitForExistence(timeout: 2))
         toolbarMenu.click()
-        for title in ["Open", "Extract Here", "Extract to \"Sample\"", "Extract…", "Validate"] {
+        for title in ["Open", "Extract Here", "Extract to \"Sample\"", "Extract…", "Validate", "Add to Archive…"] {
             XCTAssertTrue(app.menuItems[title].exists, "Missing \(title) from the toolbar menu")
         }
         XCTAssertFalse(app.menuItems["Compress"].exists)
         app.typeKey(.escape, modifierFlags: [])
 
         archive.rightClick()
-        for title in ["Open", "Extract Here", "Extract to \"Sample\"", "Extract…", "Validate"] {
+        for title in ["Open", "Extract Here", "Extract to \"Sample\"", "Extract…", "Validate", "Add to Archive…"] {
             XCTAssertTrue(app.menuItems[title].exists, "Missing \(title) from the secondary menu")
         }
         XCTAssertFalse(app.menuItems["Compress"].exists)

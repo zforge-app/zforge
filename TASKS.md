@@ -19,6 +19,10 @@ Atualizado em **2026-09-27**. Esta lista preserva os pedidos levantados nesta co
 | ZF-13 | Calcular a largura inicial de cada preview em Colunas pela sobra disponível | Implementada e confirmada pelo usuário; build, testes unitários e UI aprovados | D-15 |
 | ZF-14 | Manter o alinhamento da coluna terminal ao alternar entre pasta e arquivo | Implementada; testes unitários e UI aprovados para o cenário das capturas; fluidez visual manual ainda em OR-04 | D-16 |
 | ZF-15 | Reduzir o mínimo do preview em Colunas e recalcular após rolagem manual à esquerda | Implementada; 85 testes unitários e quatro testes de UI afetados aprovados; conferência visual real em OR-04 | D-17 |
+| ZF-16 | Acrescentar Open with, Share, Copy e alternâncias com Option ao clique secundário; New tab e alternâncias ao menu File | Implementada no código e nos contratos; build de cópia temporária e menus em fixture conferidos, incluindo criação real de segunda aba. Build do diretório compartilhado e operações reais pendentes por alterações simultâneas em perfis de compressão | Sem divergência registrada |
+| ZF-17 | Adicionar opções avançadas e perfis de compactação | Implementada com build, testes unitários e UI; validação manual de todas as combinações condicionais ainda pendente | D-19 registra ajuste adjacente de extensão |
+| ZF-18 | Adicionar itens a archive existente pelo menu e por drop na navegação | Implementada para ZIP/7z de volume único com confirmação, staging e substituição após validação; suíte unitária passou, inspeção visual do diálogo/drop ainda pendente | Sem divergência registrada |
+| ZF-19 | Explorar ícone com Z, archive e metalurgia para macOS 27 | Direção do candidato 18 confirmada; candidato 19 estilizado gerado individualmente para avaliação; escolha e integração pendentes | D-18 |
 
 ## ZF-01 — Documentação de referência e prevenção de regressões
 
@@ -31,6 +35,8 @@ Atualizado em **2026-09-27**. Esta lista preserva os pedidos levantados nesta co
 **Pedido:** criar um novo ícone e usá-lo na aplicação, pois o atual não aparece.
 
 **Implementado e confirmado pelo usuário:** ícone novo com variantes PNG de 16 a 1024 px referenciadas pelo asset catalog; `Info.plist` declara explicitamente o nome do ícone e `AppDelegate` o atribui à aplicação na inicialização. O Finder mostrou o ícone no bundle anterior do DerivedData do Xcode e na nova build isolada.
+
+**Direção posterior:** a ZF-19 trata do redesenho visual; não altera a resolução técnica do problema de exibição registrado aqui.
 
 ## ZF-03 — Larguras ajustáveis por mouse
 
@@ -161,3 +167,21 @@ O inventário de `Documentation/Requirements/CURRENT-STATE.md` é a lista de con
 **Implementado:** a correção ZF-14 foi commitada em `28af38e` antes das mudanças desta task. O mínimo de Colunas passa a 240 pt. A view observa a fase e a geometria da rolagem horizontal, preserva a largura do preview atual durante a rolagem manual e usa a largura disponível no preview seguinte quando o usuário se afastou da borda direita. A abertura de um diretório restaura o alinhamento terminal. Nenhuma preferência global de Ícones, Lista ou Galeria é alterada.
 
 **Validação:** a rodada final passou com 85 testes unitários e quatro testes de UI assinados em `/private/tmp/ZforgeColumnScrollFinal`: os dois casos anteriores de Colunas, o novo ciclo completo com `XCUIElement.scroll(byDeltaX:deltaY:)` e o caso de Recentes afetado pela fixture. O novo teste confirmou a permanência do preview cortado, o recálculo após selecionar outro arquivo e a expansão da coluna após selecionar um archive. A conferência visual com os arquivos das capturas continua em OR-04.
+
+## ZF-17 — Opções avançadas e perfis de compactação
+
+**Pedido:** disponibilizar senha, dicionário e demais parâmetros avançados em `Compress Custom…` e nas preferências de compactação padrão, com criação de múltiplos perfis.
+
+**Implementado:** perfis persistem formato, nível, método, dicionário, bytes rápidos, modo sólido, threads e opções de criptografia aplicáveis. Settings permite escolher o perfil padrão e criar, atualizar ou excluir perfis; o painel customizado reutiliza o editor e permite alterações só para a operação atual. Toolbar e menu Comprimir usam o perfil padrão. Senhas nunca entram no perfil nem em `UserDefaults`: ficam em memória na sessão ou são solicitadas durante a operação; o `7zz` as lê pelo stdin.
+
+**Validação:** build Debug macOS e suíte `ZforgeTests` aprovadas, incluindo criação real e validação de archives 7z e ZIP criptografados, persistência de perfis sem senha, opções por formato, migração do nome inicial para Auto e uso do perfil padrão pela ação rápida. Testes de UI assinados passaram para a abertura do editor em Settings e no painel `Compress Custom…`. Conferência visual detalhada dos controles condicionais, criação/exclusão de perfis pela UI e fluxo de senha da toolbar/menu ainda constam na matriz de cobertura.
+
+**Ajuste de interface implementado:** a [alternativa A](Documentation/Design/CompressionModal/ALTERNATIVES.md) foi escolhida e aplicada ao painel `Compress Custom…`. O acessório agora usa duas colunas e ajusta sua altura aos controles visíveis; não exibe nome nem ações de salvar perfil. O perfil inicial chama-se Auto, inclusive após migrar o antigo Default/Padrão. `Protect with password` fica à esquerda abaixo de `Solid archive`; ao marcar, senha e confirmação aparecem abaixo do check na coluna esquerda e o painel cresce; ao desmarcar, somem e o painel encolhe. `Encrypt file names` permanece à direita. Gerenciamento de perfis permanece apenas em Settings. Build Debug, suíte `ZforgeTests` e `ZforgeUITests.testCustomCompressionShowsProfileOptions` passaram; o teste de UI confere o crescimento e retorno da altura, a posição dos campos sob o check e `Encrypt file names` à direita. A alternância em 7z e ZIP também foi conferida visualmente na build assinada. Ainda falta conferir manualmente todas as combinações condicionais de formato/método e o fluxo de senha até a criação do archive.
+
+**Observação adjacente:** ao trocar 7z por ZIP no painel, o nome sugerido em `Save As` continua com `.7z`; corrigir e validar separadamente a atualização da extensão exibida, conforme [D-19](DIVERGENCES.md).
+
+**Refinamento visual:** após a captura de desalinhamento, foram gerados [três estudos de composição](Documentation/Design/CompressionModal/ALTERNATIVES.md#refinamento-em-avaliação) para `Compress Custom…`, com `Save As` amplo, alternativas para `Tags`/`Where` e seletores uniformes; há também um estado com senha ativada. O usuário pediu depois um item por linha no topo, com controles mais largos, e o seletor de perfil até a borda direita.
+
+**Investigação do refinamento:** o usuário combinou `Tags`/`Where` iguais do estudo A com rótulos acima dos seletores do estudo B. A orientação oficial Apple sobre layout, pop-up buttons e campos de texto aceita essa posição dos rótulos; o `Form` macOS nativo usa comumente rótulos laterais. A API documentada do `NSSavePanel` não oferece reposicionar seus campos nativos. Por isso, a composição final usa uma folha SwiftUI própria com seletor nativo de pasta (`NSOpenPanel`).
+
+**Refinamento implementado:** os rótulos de formato, nível, método, dicionário, bytes rápidos e threads ficam acima dos respectivos seletores, com largura uniforme de 260 pt em uma folha de 580 pt. `Save As`, `Tags` e `Where` ocupam três linhas com controles largos; o seletor de perfil chega à direita da grade de opções. A altura acompanha senha e confirmação abaixo de `Protect with password`; `Encrypt file names` continua à direita. Build Debug aprovada; o teste de UI mediu a geometria, a expansão da senha e a abertura do seletor nativo de pasta. No refinamento seguinte, as quatro áreas da folha passaram a usar margem lateral de 20 pt, com colunas derivadas da largura útil; a build e um teste de UI assinado passaram, conferindo as bordas esquerda e direita nos estados compacto e com senha. O fluxo de criação real com pasta/tags e a revisão visual final ainda estão em OR-08.

@@ -23,6 +23,8 @@ final class FileBrowserPreferences {
         static let archiveNestingLimit = "archive.nestingLimit"
         static let archiveRootSizeLimitGB = "archive.rootSizeLimitGB"
         static let defaultCompressionFormat = "archive.defaultCompressionFormat"
+        static let compressionProfiles = "archive.compressionProfiles"
+        static let defaultCompressionProfileID = "archive.defaultCompressionProfileID"
     }
 
     private let defaults: UserDefaults
@@ -78,8 +80,77 @@ final class FileBrowserPreferences {
             }
         }
     }
+    var compressionProfiles: [CompressionProfile] {
+        didSet {
+            if let data = try? JSONEncoder().encode(compressionProfiles) {
+                defaults.set(data, forKey: Key.compressionProfiles)
+            }
+        }
+    }
+    var defaultCompressionProfileID: UUID {
+        didSet { defaults.set(defaultCompressionProfileID.uuidString, forKey: Key.defaultCompressionProfileID) }
+    }
+    @ObservationIgnored private var sessionPasswords: [UUID: String] = [:]
+
+    var defaultCompressionProfile: CompressionProfile {
+        compressionProfiles.first(where: { $0.id == defaultCompressionProfileID })
+            ?? compressionProfiles[0]
+    }
+
+    // Preserve the old preference interface for existing callers and migration.
     var defaultCompressionFormat: ArchiveCompressionFormat {
-        didSet { defaults.set(defaultCompressionFormat.rawValue, forKey: Key.defaultCompressionFormat) }
+        get { defaultCompressionProfile.options.format }
+        set {
+            var options = defaultCompressionProfile.options
+            options.format = newValue
+            updateCompressionProfile(defaultCompressionProfileID, options: options)
+        }
+    }
+
+    func createCompressionProfile(name: String, options: CompressionOptions) -> UUID {
+        let base = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        let candidate = base.isEmpty ? AppLocalization.string("New Profile", locale: language.locale) : base
+        var unique = candidate
+        var suffix = 2
+        while compressionProfiles.contains(where: { $0.name.localizedCaseInsensitiveCompare(unique) == .orderedSame }) {
+            unique = "\(candidate) \(suffix)"
+            suffix += 1
+        }
+        let profile = CompressionProfile(name: unique, options: options)
+        compressionProfiles.append(profile)
+        return profile.id
+    }
+
+    func updateCompressionProfile(_ id: UUID, name: String? = nil, options: CompressionOptions? = nil) {
+        guard let index = compressionProfiles.firstIndex(where: { $0.id == id }) else { return }
+        var profile = compressionProfiles[index]
+        if let name {
+            let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !trimmed.isEmpty { profile.name = trimmed }
+        }
+        if let options { profile.options = options.normalized() }
+        compressionProfiles[index] = profile
+        if id == defaultCompressionProfileID {
+            defaults.set(profile.options.format.rawValue, forKey: Key.defaultCompressionFormat)
+        }
+    }
+
+    func deleteCompressionProfile(_ id: UUID) {
+        guard compressionProfiles.count > 1 else { return }
+        compressionProfiles.removeAll(where: { $0.id == id })
+        sessionPasswords.removeValue(forKey: id)
+        if defaultCompressionProfileID == id {
+            defaultCompressionProfileID = compressionProfiles[0].id
+        }
+    }
+
+    func sessionPassword(for id: UUID) -> String {
+        sessionPasswords[id] ?? ""
+    }
+
+    func setSessionPassword(_ password: String, for id: UUID) {
+        if password.isEmpty { sessionPasswords.removeValue(forKey: id) }
+        else { sessionPasswords[id] = password }
     }
 
     var archiveBrowsingPolicy: ArchiveBrowsingPolicy {
@@ -182,9 +253,29 @@ final class FileBrowserPreferences {
         archiveRootSizeLimitGB = defaults.object(forKey: Key.archiveRootSizeLimitGB) == nil
             ? 1
             : min(max(defaults.integer(forKey: Key.archiveRootSizeLimitGB), 1), 5)
-        defaultCompressionFormat = ArchiveCompressionFormat(
+        let legacyFormat = ArchiveCompressionFormat(
             rawValue: defaults.string(forKey: Key.defaultCompressionFormat) ?? ""
         ) ?? .zip
+        let storedProfiles = defaults.data(forKey: Key.compressionProfiles)
+            .flatMap { try? JSONDecoder().decode([CompressionProfile].self, from: $0) } ?? []
+        let profileLocale = (AppLanguagePreference(
+            rawValue: defaults.string(forKey: Key.language) ?? ""
+        ) ?? .system).locale
+        let defaultProfileName = AppLocalization.string("Auto", locale: profileLocale)
+        var initialProfiles = storedProfiles.isEmpty
+            ? [CompressionProfile(name: defaultProfileName, options: CompressionOptions(format: legacyFormat))]
+            : storedProfiles.map { CompressionProfile(id: $0.id, name: $0.name, options: $0.options) }
+        let oldDefaultNames = ["Default", AppLocalization.string("Default", locale: Locale(identifier: "pt-BR"))]
+        if !storedProfiles.isEmpty, oldDefaultNames.contains(initialProfiles[0].name) {
+            initialProfiles[0].name = defaultProfileName
+            if let data = try? JSONEncoder().encode(initialProfiles) {
+                defaults.set(data, forKey: Key.compressionProfiles)
+            }
+        }
+        let storedID = UUID(uuidString: defaults.string(forKey: Key.defaultCompressionProfileID) ?? "")
+        compressionProfiles = initialProfiles
+        defaultCompressionProfileID = initialProfiles.contains(where: { $0.id == storedID })
+            ? storedID! : initialProfiles[0].id
 
         if let argumentIndex = ProcessInfo.processInfo.arguments.firstIndex(of: "--ui-view-mode"),
            ProcessInfo.processInfo.arguments.indices.contains(argumentIndex + 1),

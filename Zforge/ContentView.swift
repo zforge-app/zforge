@@ -57,9 +57,11 @@ struct ContentView: View {
     @State private var focusRestoreTask: Task<Void, Never>?
     @State private var toolbarOverflowMenuPresented = false
     @FocusState private var browserFocus: BrowserFocusTarget?
+    let tabSourceWindowNumber: Int?
 
-    init(initialURL: URL? = nil) {
+    init(initialURL: URL? = nil, tabSourceWindowNumber: Int? = nil) {
         _browser = State(initialValue: FileBrowserState(initialURL: initialURL))
+        self.tabSourceWindowNumber = tabSourceWindowNumber
     }
 
     var body: some View {
@@ -104,7 +106,10 @@ struct ContentView: View {
         .environment(\.locale, browser.preferences.language.locale)
         .focusedSceneValue(\.fileBrowserState, browser)
         .background {
-            BrowserWindowConfigurationView(representedURL: browser.currentDirectoryURL)
+            BrowserWindowConfigurationView(
+                representedURL: browser.currentDirectoryURL,
+                tabSourceWindowNumber: tabSourceWindowNumber
+            )
                 .frame(width: 0, height: 0)
         }
         .task {
@@ -196,6 +201,30 @@ struct ContentView: View {
             }
         } message: { operation in
             Text("Extracting \(operation.item.name) may require more than 1 GB of temporary disk space.")
+        }
+        .confirmationDialog(
+            "Modify Archive?",
+            isPresented: archiveAdditionBinding,
+            titleVisibility: .visible,
+            presenting: browser.pendingArchiveAddition
+        ) { _ in
+            Button("Add to Archive") {
+                Task { await browser.confirmArchiveAddition() }
+                restoreContentFocus()
+            }
+            Button("Cancel", role: .cancel) {
+                browser.pendingArchiveAddition = nil
+                restoreContentFocus()
+            }
+        } message: { request in
+            let count = request.sourceURLs.count
+            let template: String.LocalizationValue = count == 1
+                ? "Add %lld item to %@? The archive will be modified."
+                : "Add %lld items to %@? The archive will be modified."
+            Text(String(format: AppLocalization.string(
+                template,
+                locale: browser.preferences.language.locale
+            ), Int64(count), request.archiveURL.lastPathComponent))
         }
         .overlay {
             if browser.fileOperationInProgress {
@@ -624,6 +653,13 @@ struct ContentView: View {
         Binding(
             get: { browser.pendingPermanentDeletion != nil },
             set: { if !$0 { browser.pendingPermanentDeletion = nil } }
+        )
+    }
+
+    private var archiveAdditionBinding: Binding<Bool> {
+        Binding(
+            get: { browser.pendingArchiveAddition != nil },
+            set: { if !$0 { browser.pendingArchiveAddition = nil } }
         )
     }
 

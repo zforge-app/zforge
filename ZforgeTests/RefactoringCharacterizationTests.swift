@@ -29,15 +29,15 @@ struct RefactoringCharacterizationTests {
         )
 
         #expect(state.contextualActions(for: []) == [])
-        #expect(state.contextualActions(for: [file]) == [.open, .compress, .compressCustom])
+        #expect(state.contextualActions(for: [file]) == [.open, .compress, .compressCustom, .addToArchive])
         #expect(state.contextualActions(for: [archive]) == [
-            .open, .extractHere, .extractNamed, .extractChoose, .validate
+            .open, .extractHere, .extractNamed, .extractChoose, .validate, .addToArchive
         ])
         #expect(state.contextualActions(for: [archive, secondArchive]) == [
             .open, .extractHere, .extractNamed, .extractChoose, .validate,
-            .compress, .compressCustom
+            .compress, .compressCustom, .addToArchive
         ])
-        #expect(state.contextualActions(for: [archive, file]) == [.open, .compress, .compressCustom])
+        #expect(state.contextualActions(for: [archive, file]) == [.open, .compress, .compressCustom, .addToArchive])
         #expect(state.contextualActions(for: [virtual]) == [.open])
         state.preferences.language = .english
         #expect(state.contextualTitle(.extractNamed, items: [archive, secondArchive]).contains("First, Second"))

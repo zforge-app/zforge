@@ -134,7 +134,8 @@ actor UIFixtureArchiveEngine: ArchiveServing {
     func createArchive(
         from sourceURLs: [URL],
         outputURL: URL,
-        format: ArchiveCompressionFormat,
+        options: CompressionOptions,
+        password: String?,
         progress: @escaping ArchiveProgressHandler
     ) async throws {
         progress(ArchiveProgress(phase: .compressing, fraction: 1))
