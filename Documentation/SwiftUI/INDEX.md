@@ -130,3 +130,8 @@ Para consultar, leia primeiro este índice e use `rg -n -i '<termos|símbolos>' 
 - [NSImage.init(size:flipped:drawingHandler:)](contexts/appkit-nsimage-dynamic-drawing.md)
 - [WKWebView.loadFileURL(_:allowingReadAccessTo:)](contexts/webkit-wkwebview-load-file-url.md)
 - [WKWebpagePreferences.allowsContentJavaScript](contexts/webkit-wkwebpagepreferences-allows-content-javascript.md)
+- [Layout — Human Interface Guidelines](contexts/hig-layout.md)
+- [Text fields — Human Interface Guidelines](contexts/hig-text-fields.md)
+- [Pop-up buttons — Human Interface Guidelines](contexts/hig-pop-up-buttons.md)
+- [Form](contexts/swiftui-form.md)
+- [NSSavePanel.accessoryView](contexts/appkit-nssavepanel-accessoryview.md)

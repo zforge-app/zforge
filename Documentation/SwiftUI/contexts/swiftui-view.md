@@ -150,7 +150,7 @@ You create custom views by declaring types that conform to the protocol. Impleme
 - [EquatableView](https://developer.apple.com/documentation/swiftui/equatableview) — A view type that compares itself against its previous value and prevents its child updating if its new value is the same as its… _(Apple Developer; expandir sob demanda)_
 - [FillShapeView](https://developer.apple.com/documentation/swiftui/fillshapeview) — A shape provider that fills its shape. _(Apple Developer; expandir sob demanda)_
 - [ForEach](https://developer.apple.com/documentation/swiftui/foreach) — A structure that computes views on demand from an underlying collection of identified data. _(Apple Developer; expandir sob demanda)_
-- [Form](https://developer.apple.com/documentation/swiftui/form) — A container for grouping controls used for data entry, such as in settings or inspectors. _(Apple Developer; expandir sob demanda)_
+- [Form](swiftui-form.md) — A container for grouping controls used for data entry, such as in settings or inspectors. _(Apple Developer; expandir sob demanda)_
 - [FormStyleConfiguration.Content](https://developer.apple.com/documentation/swiftui/formstyleconfiguration/content-swift.struct) — A type-erased content of a form. _(Apple Developer; expandir sob demanda)_
 - [Gauge](https://developer.apple.com/documentation/swiftui/gauge) — A view that shows a value within a range. _(Apple Developer; expandir sob demanda)_
 - [GaugeStyleConfiguration.CurrentValueLabel](https://developer.apple.com/documentation/swiftui/gaugestyleconfiguration/currentvaluelabel-swift.struct) — A type-erased value label of a gauge that contains the current value. _(Apple Developer; expandir sob demanda)_

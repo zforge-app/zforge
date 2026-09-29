@@ -39,7 +39,7 @@ Layout containers like stacks and grids provide a great starting point for arran
 ### Overview and featured references
 
 - [Layout fundamentals](swiftui-layout-fundamentals.md) — Arrange views inside built-in layout containers like stacks and grids. _(contexto local)_
-- [Layout](https://developer.apple.com/design/Human-Interface-Guidelines/layout) — A consistent layout that adapts to various contexts makes your experience more approachable and helps people enjoy their favorite apps and games on all… _(Apple Developer; expandir sob demanda)_
+- [Layout](hig-layout.md) — A consistent layout that adapts to various contexts makes your experience more approachable and helps people enjoy their favorite apps and games on all… _(Apple Developer; expandir sob demanda)_
 
 ### Fine-tuning a layout
 

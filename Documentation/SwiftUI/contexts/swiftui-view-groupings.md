@@ -39,8 +39,8 @@ You can create groups of views that serve different purposes. For example, a Gro
 ### Overview and featured references
 
 - [Group](https://developer.apple.com/documentation/swiftui/group) — A type that collects multiple instances of a content type — like views, scenes, or commands — into a single unit. _(Apple Developer; expandir sob demanda)_
-- [Form](https://developer.apple.com/documentation/swiftui/form) — A container for grouping controls used for data entry, such as in settings or inspectors. _(Apple Developer; expandir sob demanda)_
-- [Layout](https://developer.apple.com/design/Human-Interface-Guidelines/layout) — A consistent layout that adapts to various contexts makes your experience more approachable and helps people enjoy their favorite apps and games on all… _(Apple Developer; expandir sob demanda)_
+- [Form](swiftui-form.md) — A container for grouping controls used for data entry, such as in settings or inspectors. _(Apple Developer; expandir sob demanda)_
+- [Layout](hig-layout.md) — A consistent layout that adapts to various contexts makes your experience more approachable and helps people enjoy their favorite apps and games on all… _(Apple Developer; expandir sob demanda)_
 
 ### Grouping views into a container
 

@@ -292,5 +292,19 @@
     "sha256": "86f5322145cb9c9ed4b08527ebf7abb83497f32b40eeb1aaf120be94ef19b8cb",
     "line_count": 4,
     "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/swiftui/form",
+    "ordinal": 1,
+    "sha256": "4618b5e54f857c4ccae573241ac26d7017f4dd92c8a501a0e19dd38ab61467de",
+    "line_count": 23,
+    "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/swiftui/form",
+    "ordinal": 2,
+    "sha256": "0ef6c5f1e74f2a76dab8e2f3023c5a0f11814644bcab24116f1dc85fabeb6274",
+    "line_count": 26,
+    "syntax": "swift"
   }
 ]

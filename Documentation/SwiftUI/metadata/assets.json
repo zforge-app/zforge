@@ -6329,5 +6329,1444 @@
         ]
       }
     ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/layout",
+    "identifier": "1AAA030E-2ECA-47D8-AE09-6D7B72A840F6",
+    "alt": null,
+    "variants": [
+      {
+        "traits": [
+          "1x"
+        ],
+        "url": "https://devimages-cdn.apple.com/wwdc-services/images/3055294D-836B-4513-B7B0-0BC5666246B0/1AAA030E-2ECA-47D8-AE09-6D7B72A840F6/10044_wide_250x141_1x.jpg"
+      },
+      {
+        "traits": [
+          "2x"
+        ],
+        "url": "https://devimages-cdn.apple.com/wwdc-services/images/3055294D-836B-4513-B7B0-0BC5666246B0/1AAA030E-2ECA-47D8-AE09-6D7B72A840F6/10044_wide_250x141_2x.jpg"
+      },
+      {
+        "traits": [
+          "3x"
+        ],
+        "url": "https://devimages-cdn.apple.com/wwdc-services/images/3055294D-836B-4513-B7B0-0BC5666246B0/1AAA030E-2ECA-47D8-AE09-6D7B72A840F6/10044_wide_250x141_3x.jpg"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/layout",
+    "identifier": "1E740BE0-AF55-430B-B8C2-346CA2982476",
+    "alt": null,
+    "variants": [
+      {
+        "traits": [
+          "1x"
+        ],
+        "url": "https://devimages-cdn.apple.com/wwdc-services/images/124/1E740BE0-AF55-430B-B8C2-346CA2982476/6549_wide_250x141_1x.jpg"
+      },
+      {
+        "traits": [
+          "2x"
+        ],
+        "url": "https://devimages-cdn.apple.com/wwdc-services/images/124/1E740BE0-AF55-430B-B8C2-346CA2982476/6549_wide_250x141_2x.jpg"
+      },
+      {
+        "traits": [
+          "3x"
+        ],
+        "url": "https://devimages-cdn.apple.com/wwdc-services/images/124/1E740BE0-AF55-430B-B8C2-346CA2982476/6549_wide_250x141_3x.jpg"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/layout",
+    "identifier": "2546ECBD-6443-41EC-921D-6429026F8B67",
+    "alt": null,
+    "variants": [
+      {
+        "traits": [
+          "1x"
+        ],
+        "url": "https://devimages-cdn.apple.com/wwdc-services/images/7/2546ECBD-6443-41EC-921D-6429026F8B67/1700_wide_250x141_1x.jpg"
+      },
+      {
+        "traits": [
+          "2x"
+        ],
+        "url": "https://devimages-cdn.apple.com/wwdc-services/images/7/2546ECBD-6443-41EC-921D-6429026F8B67/1700_wide_250x141_2x.jpg"
+      },
+      {
+        "traits": [
+          "3x"
+        ],
+        "url": "https://devimages-cdn.apple.com/wwdc-services/images/7/2546ECBD-6443-41EC-921D-6429026F8B67/1700_wide_250x141_3x.jpg"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/layout",
+    "identifier": "app-layout-full.png",
+    "alt": "An illustration of an iPad in landscape orientation with an empty app window in the center of the screen. The window is wide and tall, and occupies most of the screen.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/app-layout-full@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.HIG/app-layout-full~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/layout",
+    "identifier": "app-layout-horizontal.png",
+    "alt": "An illustration of an iPad in landscape orientation with an empty app window in the center of the screen. The window is wide and short, and occupies roughly half of the screen.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/app-layout-horizontal@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.HIG/app-layout-horizontal~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/layout",
+    "identifier": "app-layout-square.png",
+    "alt": "An illustration of an iPad in landscape orientation with an empty app window in the center of the screen. The window is narrow and short, and occupies roughly a quarter of the screen.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/app-layout-square@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.HIG/app-layout-square~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/layout",
+    "identifier": "app-layout-vertical.png",
+    "alt": "An illustration of an iPad in landscape orientation with an empty app window in the center of the screen. The window is narrow and tall, and occupies roughly half of the screen.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/app-layout-vertical@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.HIG/app-layout-vertical~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/layout",
+    "identifier": "components-layout-and-organization-thumbnail.png",
+    "alt": "A stylized representation of a window that's divided into three areas: a toolbar above two side-by-side views, suggesting layout and organization. The image is tinted red to subtly reflect the red in the original six-color Apple logo.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/components-layout-and-organization-thumbnail@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.HIG/components-layout-and-organization-thumbnail~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/layout",
+    "identifier": "components-ornaments-thumbnail.png",
+    "alt": "A stylized representation of an ornament at the bottom of a window. The image is tinted red to subtly reflect the red in the original six-color Apple logo.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/components-ornaments-thumbnail@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.HIG/components-ornaments-thumbnail~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/layout",
+    "identifier": "components-scroll-views-thumbnail.png",
+    "alt": "A stylized representation of a scrollable image view. The image is tinted red to subtly reflect the red in the original six-color Apple logo.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/components-scroll-views-thumbnail@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.HIG/components-scroll-views-thumbnail~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/layout",
+    "identifier": "components-sidebars-thumbnail.png",
+    "alt": "A stylized representation of a portion of a window's sidebar displaying a section and some folders. The image is tinted red to subtly reflect the red in the original six-color Apple logo.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/components-sidebars-thumbnail@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.HIG/components-sidebars-thumbnail~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/layout",
+    "identifier": "components-tab-bars-thumbnail.png",
+    "alt": "A stylized representation of a tab bar containing three placeholder icons with names. The image is tinted red to subtly reflect the red in the original six-color Apple logo.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/components-tab-bars-thumbnail@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.HIG/components-tab-bars-thumbnail~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/layout",
+    "identifier": "components-windows-thumbnail.png",
+    "alt": "A stylized representation of a window with close, minimize, and full-screen buttons. The image is tinted red to subtly reflect the red in the original six-color Apple logo.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/components-windows-thumbnail@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.HIG/components-windows-thumbnail~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/layout",
+    "identifier": "eyes.svg",
+    "alt": "An icon of a human eye.",
+    "variants": [
+      {
+        "svgID": "Design-Spec",
+        "traits": [
+          "1x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/eyes.svg"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/layout",
+    "identifier": "foundations-layout-intro.png",
+    "alt": "A sketch of a small rectangle in the upper-left quadrant of a larger rectangle, suggesting the position of a user interface element within a window. The image is overlaid with rectangular and circular grid lines and is tinted yellow to subtly reflect the yellow in the original six-color Apple logo.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/foundations-layout-intro@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.HIG/foundations-layout-intro~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/layout",
+    "identifier": "foundations-layout-thumbnail.png",
+    "alt": "A sketch of a small rectangle in the upper-left quadrant of a larger rectangle, suggesting the position of a user interface element within a window. The image is overlaid with rectangular and circular grid lines and is tinted yellow to subtly reflect the yellow in the original six-color Apple logo.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/foundations-layout-thumbnail@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.HIG/foundations-layout-thumbnail~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/layout",
+    "identifier": "foundations-right-to-left-thumbnail.png",
+    "alt": "A sketch of a right-aligned bulleted list within a window, suggesting an interface displayed in a right-to-left language. The image is tinted yellow to subtly reflect the yellow in the original six-color Apple logo.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/foundations-right-to-left-thumbnail@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.HIG/foundations-right-to-left-thumbnail~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/layout",
+    "identifier": "foundations-spatial-layout-thumbnail.png",
+    "alt": "A sketch of axes in the X, Y, and Z dimensions, suggesting three-dimensional layout. The image is tinted yellow to subtly reflect the yellow in the original six-color Apple logo.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/foundations-spatial-layout-thumbnail@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.HIG/foundations-spatial-layout-thumbnail~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/layout",
+    "identifier": "foundations-typography-thumbnail.png",
+    "alt": "A sketch of a small letter A to the left of a large letter A, suggesting the use of typography to convey hierarchical information. The image is tinted yellow to subtly reflect the yellow in the original six-color Apple logo.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/foundations-typography-thumbnail@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.HIG/foundations-typography-thumbnail~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/layout",
+    "identifier": "foundations.png",
+    "alt": "",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/foundations@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.HIG/foundations~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/layout",
+    "identifier": "human-interface-guidelines-page-image-card.png",
+    "alt": "An illustration of several Liquid Glass components such as toggles, sliders, and buttons, atop a neutral background. The transparent components cast shadows on the background and allow their colored elements, like a blue slider track and a green toggle backing, to show through, highlighting the Liquid Glass material's lensing effect.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/human-interface-guidelines-page-image-card@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/layout",
+    "identifier": "inputs-eyes-thumbnail.png",
+    "alt": "A sketch of a human eye. The image is tinted purple to subtly reflect the purple in the original six-color Apple logo.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/inputs-eyes-thumbnail@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.HIG/inputs-eyes-thumbnail~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/layout",
+    "identifier": "layout-and-organization.svg",
+    "alt": "An icon of a window that's divided into three areas: a toolbar above two side-by-side views, suggesting layout and organization.",
+    "variants": [
+      {
+        "svgID": "layout-and-organization",
+        "traits": [
+          "1x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/layout-and-organization.svg"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/layout",
+    "identifier": "layout-background-extention-view.png",
+    "alt": "A screenshot of a full-screen iPad app with a sidebar on the leading edge. A photo of Mount Fuji fills the top half of the content area. The photo subtly blurs as it reaches the top of the screen, where toolbar items float above it grouped on the trailing edge. Where the photo meets the sidebar, the image flips, blurs, and extends fully beneath the sidebar to the edge of the screen.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/layout-background-extention-view@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.HIG/layout-background-extention-view~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/layout",
+    "identifier": "layout-controls.png",
+    "alt": "A diagram of an Apple Watch screen showing two side-by-side buttons beneath three lines of text.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/layout-controls@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/layout",
+    "identifier": "layout.svg",
+    "alt": "An icon of a small rectangle in the upper-left quadrant of a larger rectangle that suggests the position of a user interface element within a window.",
+    "variants": [
+      {
+        "svgID": "layout",
+        "traits": [
+          "1x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/layout.svg"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/layout",
+    "identifier": "multitasking.svg",
+    "alt": "An icon of two side-by-side windows in a split view arrangement that suggests multitasking.",
+    "variants": [
+      {
+        "svgID": "multitasking",
+        "traits": [
+          "1x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/multitasking.svg"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/layout",
+    "identifier": "overview.svg",
+    "alt": "An icon of a grid comprised of four squares.",
+    "variants": [
+      {
+        "svgID": "overview",
+        "traits": [
+          "1x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/overview.svg"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/layout",
+    "identifier": "patterns-multitasking-thumbnail.png",
+    "alt": "A sketch of two side-by-side windows in a split view arrangement, suggesting multitasking. The image is tinted orange to subtly reflect the orange in the original six-color Apple logo.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/patterns-multitasking-thumbnail@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.HIG/patterns-multitasking-thumbnail~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/layout",
+    "identifier": "right-to-left.svg",
+    "alt": "An icon of a right-aligned bulleted list within a window that suggests an interface displayed in a right-to-left language.",
+    "variants": [
+      {
+        "svgID": "right-to-left",
+        "traits": [
+          "1x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/right-to-left.svg"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/layout",
+    "identifier": "spatial-layout.svg",
+    "alt": "An icon of three axes in the X, Y, and Z dimensions, suggesting three-dimensional layout.",
+    "variants": [
+      {
+        "svgID": "Design-Spec",
+        "traits": [
+          "1x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/spatial-layout.svg"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/layout",
+    "identifier": "typography.svg",
+    "alt": "An icon of a small letter A to the left of a large letter A that suggests the use of typography to convey hierarchical information.",
+    "variants": [
+      {
+        "svgID": "typography",
+        "traits": [
+          "1x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/typography.svg"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/layout",
+    "identifier": "visual-design-grid-2-column.png",
+    "alt": "An illustration of Apple TV, displaying a two-column grid of media items. Additional media items are partially visible on the right side and bottom edge of the screen.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/visual-design-grid-2-column@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.HIG/visual-design-grid-2-column~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/layout",
+    "identifier": "visual-design-grid-3-column.png",
+    "alt": "An illustration of Apple TV, displaying a three-column grid of media items. Additional media items are partially visible on the right side and bottom edge of the screen.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/visual-design-grid-3-column@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.HIG/visual-design-grid-3-column~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/layout",
+    "identifier": "visual-design-grid-4-column.png",
+    "alt": "An illustration of Apple TV, displaying a four-column grid of media items. Additional media items are partially visible on the right side of the screen.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/visual-design-grid-4-column@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.HIG/visual-design-grid-4-column~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/layout",
+    "identifier": "visual-design-grid-5-column.png",
+    "alt": "An illustration of Apple TV, displaying a five-column grid of media items. Additional media items are partially visible on the right side and bottom edge of the screen.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/visual-design-grid-5-column@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.HIG/visual-design-grid-5-column~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/layout",
+    "identifier": "visual-design-grid-6-column.png",
+    "alt": "An illustration of Apple TV, displaying a six-column grid of media items. Additional media items are partially visible on the right side and bottom edge of the screen.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/visual-design-grid-6-column@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.HIG/visual-design-grid-6-column~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/layout",
+    "identifier": "visual-design-grid-7-column.png",
+    "alt": "An illustration of Apple TV, displaying a seven-column grid of media items. Additional media items are partially visible on the right side of the screen.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/visual-design-grid-7-column@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.HIG/visual-design-grid-7-column~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/layout",
+    "identifier": "visual-design-grid-8-column.png",
+    "alt": "An illustration of Apple TV, displaying an eight-column grid of media items. Additional media items are partially visible on the right side and bottom edge of the screen.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/visual-design-grid-8-column@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.HIG/visual-design-grid-8-column~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/layout",
+    "identifier": "visual-design-grid-9-column.png",
+    "alt": "An illustration of Apple TV, displaying a nine-column grid of media items.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/visual-design-grid-9-column@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.HIG/visual-design-grid-9-column~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/layout",
+    "identifier": "visual-design-padding.png",
+    "alt": "An illustration that uses vertical shaded rectangles to show padding between focusable items.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/visual-design-padding@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.HIG/visual-design-padding~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/layout",
+    "identifier": "visual-design-safe-zone.png",
+    "alt": "An illustration of a TV with a safe zone border on all sides. In width, the top and bottom borders measure 60 points, and the side borders both measure 80 points.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/visual-design-safe-zone@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.HIG/visual-design-safe-zone~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/text-fields",
+    "identifier": "components-combo-boxes-thumbnail.png",
+    "alt": "A stylized representation of a combo box control displaying a list of cities. The image is tinted red to subtly reflect the red in the original six-color Apple logo.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/components-combo-boxes-thumbnail@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.HIG/components-combo-boxes-thumbnail~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/text-fields",
+    "identifier": "components-selection-and-input-thumbnail.png",
+    "alt": "A stylized representation of a calendar in month view, suggesting selection and input. The image is tinted red to subtly reflect the red in the original six-color Apple logo.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/components-selection-and-input-thumbnail@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.HIG/components-selection-and-input-thumbnail~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/text-fields",
+    "identifier": "components-text-field-intro.png",
+    "alt": "A stylized representation of a text field containing a value. The image is tinted red to subtly reflect the red in the original six-color Apple logo.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/components-text-field-intro@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.HIG/components-text-field-intro~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/text-fields",
+    "identifier": "components-text-fields-thumbnail.png",
+    "alt": "A stylized representation of a text field containing a value. The image is tinted red to subtly reflect the red in the original six-color Apple logo.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/components-text-fields-thumbnail@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.HIG/components-text-fields-thumbnail~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/text-fields",
+    "identifier": "components-text-views-thumbnail.png",
+    "alt": "A stylized representation of a field containing text. The image is tinted red to subtly reflect the red in the original six-color Apple logo.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/components-text-views-thumbnail@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.HIG/components-text-views-thumbnail~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/text-fields",
+    "identifier": "components-virtual-keyboards-thumbnail.png",
+    "alt": "A stylized representation of a numeric keypad. The image is tinted red to subtly reflect the red in the original six-color Apple logo.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/components-virtual-keyboards-thumbnail@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.HIG/components-virtual-keyboards-thumbnail~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/text-fields",
+    "identifier": "components.png",
+    "alt": "",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/components@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.HIG/components~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/text-fields",
+    "identifier": "data-entry.svg",
+    "alt": "An icon of a pencil writing within a field that suggests data entry.",
+    "variants": [
+      {
+        "svgID": "data-entry",
+        "traits": [
+          "1x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/data-entry.svg"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/text-fields",
+    "identifier": "human-interface-guidelines-page-image-card.png",
+    "alt": "An illustration of several Liquid Glass components such as toggles, sliders, and buttons, atop a neutral background. The transparent components cast shadows on the background and allow their colored elements, like a blue slider track and a green toggle backing, to show through, highlighting the Liquid Glass material's lensing effect.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/human-interface-guidelines-page-image-card@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/text-fields",
+    "identifier": "overview.svg",
+    "alt": "An icon of a grid comprised of four squares.",
+    "variants": [
+      {
+        "svgID": "overview",
+        "traits": [
+          "1x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/overview.svg"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/text-fields",
+    "identifier": "patterns-entering-data-thumbnail.png",
+    "alt": "A sketch of a pencil writing within a field, suggesting data entry. The image is tinted orange to subtly reflect the orange in the original six-color Apple logo.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/patterns-entering-data-thumbnail@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.HIG/patterns-entering-data-thumbnail~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/text-fields",
+    "identifier": "selection-and-input.svg",
+    "alt": "An icon of a calendar in month view, suggesting selection and input.",
+    "variants": [
+      {
+        "svgID": "selection-and-input",
+        "traits": [
+          "1x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/selection-and-input.svg"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/text-fields",
+    "identifier": "text-fields-clipped-text.png",
+    "alt": "A partial screenshot of a text field that contains a sentence that is cut off before its end.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/text-fields-clipped-text@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.HIG/text-fields-clipped-text~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/text-fields",
+    "identifier": "text-fields-formatted-text.png",
+    "alt": "A partial screenshot of two stacked text fields. The top field contains a number with four decimal places. The bottom field contains a currency value.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/text-fields-formatted-text@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.HIG/text-fields-formatted-text~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/text-fields",
+    "identifier": "text-fields-truncated-text.png",
+    "alt": "A partial screenshot of a text field that contains a sentence that includes an ellipsis in place of the last few words.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/text-fields-truncated-text@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.HIG/text-fields-truncated-text~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/text-fields",
+    "identifier": "text-fields-wrapped-text.png",
+    "alt": "A partial screenshot of a text field that contains a sentence that wraps to two lines.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/text-fields-wrapped-text@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.HIG/text-fields-wrapped-text~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/pop-up-buttons",
+    "identifier": "components-buttons-thumbnail.png",
+    "alt": "A stylized representation of a button. The image is tinted red to subtly reflect the red in the original six-color Apple logo.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/components-buttons-thumbnail@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.HIG/components-buttons-thumbnail~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/pop-up-buttons",
+    "identifier": "components-menus-and-actions-thumbnail.png",
+    "alt": "A stylized representation of a selected menu item, suggesting menus and actions. The image is tinted red to subtly reflect the red in the original six-color Apple logo.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/components-menus-and-actions-thumbnail@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.HIG/components-menus-and-actions-thumbnail~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/pop-up-buttons",
+    "identifier": "components-menus-thumbnail.png",
+    "alt": "A stylized representation of a menu containing a selected item and displaying a submenu. The image is tinted red to subtly reflect the red in the original six-color Apple logo.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/components-menus-thumbnail@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.HIG/components-menus-thumbnail~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/pop-up-buttons",
+    "identifier": "components-pop-up-button-intro.png",
+    "alt": "A stylized representation of a pop-up button displaying a set of options. The image is tinted red to subtly reflect the red in the original six-color Apple logo.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/components-pop-up-button-intro@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.HIG/components-pop-up-button-intro~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/pop-up-buttons",
+    "identifier": "components-pop-up-buttons-thumbnail.png",
+    "alt": "A stylized representation of a pop-up button containing a selected option. The image is tinted red to subtly reflect the red in the original six-color Apple logo.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/components-pop-up-buttons-thumbnail@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.HIG/components-pop-up-buttons-thumbnail~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/pop-up-buttons",
+    "identifier": "components-pull-down-buttons-thumbnail.png",
+    "alt": "A stylized representation of a pull-down menu containing a selected item. The image is tinted red to subtly reflect the red in the original six-color Apple logo.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/components-pull-down-buttons-thumbnail@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.HIG/components-pull-down-buttons-thumbnail~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/pop-up-buttons",
+    "identifier": "components.png",
+    "alt": "",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/components@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.HIG/components~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/pop-up-buttons",
+    "identifier": "human-interface-guidelines-page-image-card.png",
+    "alt": "An illustration of several Liquid Glass components such as toggles, sliders, and buttons, atop a neutral background. The transparent components cast shadows on the background and allow their colored elements, like a blue slider track and a green toggle backing, to show through, highlighting the Liquid Glass material's lensing effect.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/human-interface-guidelines-page-image-card@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/pop-up-buttons",
+    "identifier": "menus-and-actions.svg",
+    "alt": "An icon of a menu with a selected menu item, suggesting menus and actions.",
+    "variants": [
+      {
+        "svgID": "menus-and-actions",
+        "traits": [
+          "1x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/menus-and-actions.svg"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/pop-up-buttons",
+    "identifier": "overview.svg",
+    "alt": "An icon of a grid comprised of four squares.",
+    "variants": [
+      {
+        "svgID": "overview",
+        "traits": [
+          "1x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/overview.svg"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/pop-up-buttons",
+    "identifier": "pop-up-button-closed.png",
+    "alt": "A screenshot of Calendar on iPhone, with a new calendar event open for editing. The editing screen contains controls for setting the details of the event, including its start and end dates, travel time, repeat interval, calendar, invitees, alert options, and attachments.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/pop-up-button-closed@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.HIG/pop-up-button-closed~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/design/human-interface-guidelines/pop-up-buttons",
+    "identifier": "pop-up-button-open.png",
+    "alt": "A screenshot of Calendar on iPhone, with a new calendar event open for editing. A pop-up button menu emerges from the Repeat button, with options for choosing a repeat interval from a list of preset options, or creating a custom one.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.HIG/pop-up-button-open@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.HIG/pop-up-button-open~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/swiftui/form",
+    "identifier": "SwiftUI-Form-iOS.png",
+    "alt": "A form on iOS, presented as a grouped list with two sections. The",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.SwiftUI/SwiftUI-Form-iOS@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.SwiftUI/SwiftUI-Form-iOS~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/swiftui/form",
+    "identifier": "SwiftUI-Form-macOS.png",
+    "alt": "A form on iOS, presented as a vertical stack of views. At top, it shows",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.SwiftUI/SwiftUI-Form-macOS@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.SwiftUI/SwiftUI-Form-macOS~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/swiftui/form",
+    "identifier": "SwiftUI-PageImage-card.png",
+    "alt": "A stylized Swift logo using dashes on a white or blue background.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.SwiftUI/SwiftUI-PageImage-card@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.SwiftUI/SwiftUI-PageImage-card~dark@2x.png"
+      }
+    ]
   }
 ]

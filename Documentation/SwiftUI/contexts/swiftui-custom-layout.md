@@ -39,7 +39,7 @@ You can create complex view layouts using the built-in layout containers and lay
 ### Overview and featured references
 
 - [Layout](https://developer.apple.com/documentation/swiftui/layout) — A type that defines the geometry of a collection of views. _(Apple Developer; expandir sob demanda)_
-- [Layout](https://developer.apple.com/design/Human-Interface-Guidelines/layout) — A consistent layout that adapts to various contexts makes your experience more approachable and helps people enjoy their favorite apps and games on all… _(Apple Developer; expandir sob demanda)_
+- [Layout](hig-layout.md) — A consistent layout that adapts to various contexts makes your experience more approachable and helps people enjoy their favorite apps and games on all… _(Apple Developer; expandir sob demanda)_
 
 ### Creating a custom layout container
 

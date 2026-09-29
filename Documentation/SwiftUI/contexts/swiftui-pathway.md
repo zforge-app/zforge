@@ -60,7 +60,7 @@ Get started with this easy-to-navigate collection of videos, documentation, and 
 - [Tutorial: Design an Interface](https://developer.apple.com/tutorials/develop-in-swift/design-an-interface) — _Apple Developer; expandir sob demanda_
 - [Tutorial: Laying out views](https://developer.apple.com/tutorials/sample-apps/layingoutviews) — _Apple Developer; expandir sob demanda_
 - [Article: Building layouts with stack views](https://developer.apple.com/documentation/swiftui/building-layouts-with-stack-views) — _Apple Developer; expandir sob demanda_
-- [HIG: Layout design best practices](https://developer.apple.com/design/human-interface-guidelines/layout) — _Apple Developer; expandir sob demanda_
+- [HIG: Layout design best practices](hig-layout.md) — _Apple Developer; expandir sob demanda_
 - [The SwiftUI cookbook for navigation](https://developer.apple.com/videos/play/wwdc2022/10054/) — _Apple Developer; expandir sob demanda_
 - [Tutorial: Update the UI with state](https://developer.apple.com/tutorials/develop-in-swift/update-the-ui-with-state) — _Apple Developer; expandir sob demanda_
 - [Tutorial: Create dynamic content](https://developer.apple.com/tutorials/develop-in-swift/create-dynamic-content) — _Apple Developer; expandir sob demanda_

@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "captured_at": "2026-07-16T23:52:09+00:00",
+  "captured_at": "2026-09-28T23:25:02+00:00",
   "seed_url": "https://developer.apple.com/documentation/SwiftUI",
   "scope": "home plus unique first-level links exposed by Overview, Featured samples, and Topics, with audited on-demand expansions",
-  "expected_contexts": 77,
-  "captured_contexts": 77,
+  "expected_contexts": 83,
+  "captured_contexts": 83,
   "failures": [],
   "captures": [
     {
@@ -1110,6 +1110,81 @@
       "categories": [
         "On-demand expansion",
         "Framework integration"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/design/human-interface-guidelines/layout",
+      "fetch_url": "https://developer.apple.com/tutorials/data/design/human-interface-guidelines/layout.json",
+      "final_url": "https://developer.apple.com/tutorials/data/design/human-interface-guidelines/layout.json",
+      "local_path": "contexts/hig-layout.md",
+      "sha256": "d41f32ddf76c597f0edd54eac361fa294a8736cfc4ccc627d1709fe092ed7267",
+      "etag": "\"14bcb-65b1173956df8\"",
+      "last_modified": "Wed, 09 Sep 2026 18:59:32 GMT",
+      "bytes": 84939,
+      "categories": [
+        "On-demand expansion",
+        "Human Interface Guidelines"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/design/human-interface-guidelines/text-fields",
+      "fetch_url": "https://developer.apple.com/tutorials/data/design/human-interface-guidelines/text-fields.json",
+      "final_url": "https://developer.apple.com/tutorials/data/design/human-interface-guidelines/text-fields.json",
+      "local_path": "contexts/hig-text-fields.md",
+      "sha256": "18324cc7181a498b9324a1980231260785ee427eb9ae48f775bfa06a96153d40",
+      "etag": "\"6425-658580f133047\"",
+      "last_modified": "Thu, 06 Aug 2026 02:58:13 GMT",
+      "bytes": 25637,
+      "categories": [
+        "On-demand expansion",
+        "Human Interface Guidelines"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/design/human-interface-guidelines/pop-up-buttons",
+      "fetch_url": "https://developer.apple.com/tutorials/data/design/human-interface-guidelines/pop-up-buttons.json",
+      "final_url": "https://developer.apple.com/tutorials/data/design/human-interface-guidelines/pop-up-buttons.json",
+      "local_path": "contexts/hig-pop-up-buttons.md",
+      "sha256": "64ef3e8079e3a1dd2742d377fbf98f7d141cca8798d2dd1985f71b5c24043a4d",
+      "etag": "\"4a55-658580f133047\"",
+      "last_modified": "Thu, 06 Aug 2026 02:58:13 GMT",
+      "bytes": 19029,
+      "categories": [
+        "On-demand expansion",
+        "Human Interface Guidelines"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/form",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/form.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/form.json",
+      "local_path": "contexts/swiftui-form.md",
+      "sha256": "3776ceb73e7400e3f65833673a3aea06e47de6e192e86fb0f706e910f6864f98",
+      "etag": "\"41aa-659025e844438\"",
+      "last_modified": "Fri, 14 Aug 2026 14:09:30 GMT",
+      "bytes": 16810,
+      "categories": [
+        "On-demand expansion",
+        "Views"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/appkit/nssavepanel/accessoryview",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/appkit/nssavepanel/accessoryview.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/appkit/nssavepanel/accessoryview.json",
+      "local_path": "contexts/appkit-nssavepanel-accessoryview.md",
+      "sha256": "06b8eeadd21e07b6a3ea21e01b29d3da2c5a895e01f32448e3fd53777275dd87",
+      "etag": "\"45f5-659026d729d20\"",
+      "last_modified": "Fri, 14 Aug 2026 14:13:41 GMT",
+      "bytes": 17909,
+      "categories": [
+        "On-demand expansion",
+        "AppKit integration"
       ],
       "depth": 2
     }
