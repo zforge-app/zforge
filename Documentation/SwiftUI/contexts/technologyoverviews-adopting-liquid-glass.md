@@ -65,7 +65,7 @@ If you have an existing app, adopting Liquid Glass doesn’t mean reinventing yo
 - [NSGlassEffectView](https://developer.apple.com/documentation/AppKit/NSGlassEffectView) — A view that embeds its content view in a dynamic glass effect. _(Apple Developer; expandir sob demanda)_
 - [App icons](https://developer.apple.com/design/Human-Interface-Guidelines/app-icons) — A unique, memorable icon expresses your app’s or game’s purpose and personality and helps people recognize it at a glance. _(Apple Developer; expandir sob demanda)_
 - [Apple Design Resources](https://developer.apple.com/design/resources/) — _Apple Developer; expandir sob demanda_
-- [Creating your app icon using Icon Composer](https://developer.apple.com/documentation/Xcode/creating-your-app-icon-using-icon-composer) — Use Icon Composer to stylize your app icon for different platforms and appearances. _(Apple Developer; expandir sob demanda)_
+- [Creating your app icon using Icon Composer](xcode-creating-your-app-icon-using-icon-composer.md) — Use Icon Composer to stylize your app icon for different platforms and appearances.
 - [Buttons](https://developer.apple.com/design/Human-Interface-Guidelines/buttons) — A button initiates an instantaneous action. _(Apple Developer; expandir sob demanda)_
 - [Button](https://developer.apple.com/documentation/SwiftUI/Button) — A control that initiates an action. _(Apple Developer; expandir sob demanda)_
 - [Toggle](https://developer.apple.com/documentation/SwiftUI/Toggle) — A control that toggles between on and off states. _(Apple Developer; expandir sob demanda)_

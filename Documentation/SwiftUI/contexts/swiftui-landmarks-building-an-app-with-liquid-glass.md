@@ -55,7 +55,7 @@ Landmarks is a SwiftUI app that demonstrates how to use the new dynamic and expr
 - [glassEffectID(_:in:)](https://developer.apple.com/documentation/swiftui/view/glasseffectid(_:in:)) — Associates an identity value to Liquid Glass effects defined within this view. _(Apple Developer; expandir sob demanda)_
 - [Landmarks: Displaying custom activity badges](https://developer.apple.com/documentation/swiftui/landmarks-displaying-custom-activity-badges) — Provide people with a way to mark their adventures by displaying animated custom activity badges. _(Apple Developer; expandir sob demanda)_
 - [Applying Liquid Glass to custom views](https://developer.apple.com/documentation/swiftui/applying-liquid-glass-to-custom-views) — Configure, combine, and morph views using Liquid Glass effects. _(Apple Developer; expandir sob demanda)_
-- [Creating your app icon using Icon Composer](https://developer.apple.com/documentation/Xcode/creating-your-app-icon-using-icon-composer) — Use Icon Composer to stylize your app icon for different platforms and appearances. _(Apple Developer; expandir sob demanda)_
+- [Creating your app icon using Icon Composer](xcode-creating-your-app-icon-using-icon-composer.md) — Use Icon Composer to stylize your app icon for different platforms and appearances.
 - [App icons](https://developer.apple.com/design/Human-Interface-Guidelines/app-icons) — A unique, memorable icon expresses your app’s or game’s purpose and personality and helps people recognize it at a glance. _(Apple Developer; expandir sob demanda)_
 
 ### Essentials

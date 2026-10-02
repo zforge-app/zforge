@@ -117,6 +117,7 @@ Para consultar, leia primeiro este índice e use `rg -n -i '<termos|símbolos>' 
 
 ## Expansões sob demanda
 
+- [Creating your app icon using Icon Composer](contexts/xcode-creating-your-app-icon-using-icon-composer.md)
 - [Alerts — Human Interface Guidelines](contexts/hig-alerts.md)
 - [NSItemProvider](contexts/foundation-nsitemprovider.md)
 - [performDrop(info:)](contexts/swiftui-dropdelegate-performdrop.md)
@@ -135,3 +136,12 @@ Para consultar, leia primeiro este índice e use `rg -n -i '<termos|símbolos>' 
 - [Pop-up buttons — Human Interface Guidelines](contexts/hig-pop-up-buttons.md)
 - [Form](contexts/swiftui-form.md)
 - [NSSavePanel.accessoryView](contexts/appkit-nssavepanel-accessoryview.md)
+
+## Tags e monitoramento de arquivos — expansão sob demanda
+
+- [coreservices-mdqueryexecute](contexts/coreservices-mdqueryexecute.md)
+- [coreservices-mdquerysetdispatchqueue](contexts/coreservices-mdquerysetdispatchqueue.md)
+- [foundation-nsmetadataquery](contexts/foundation-nsmetadataquery.md)
+- [foundation-metadata-query-search-scopes](contexts/foundation-metadata-query-search-scopes.md)
+- [coreservices-file-level-events](contexts/coreservices-file-level-events.md)
+- [coreservices-fseventstreamcreate](contexts/coreservices-fseventstreamcreate.md)

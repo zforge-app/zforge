@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "captured_at": "2026-09-28T23:25:02+00:00",
+  "captured_at": "2026-10-02T01:13:11+00:00",
   "seed_url": "https://developer.apple.com/documentation/SwiftUI",
   "scope": "home plus unique first-level links exposed by Overview, Featured samples, and Topics, with audited on-demand expansions",
-  "expected_contexts": 83,
-  "captured_contexts": 83,
+  "expected_contexts": 90,
+  "captured_contexts": 90,
   "failures": [],
   "captures": [
     {
@@ -1185,6 +1185,105 @@
       "categories": [
         "On-demand expansion",
         "AppKit integration"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/xcode/creating-your-app-icon-using-icon-composer",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/xcode/creating-your-app-icon-using-icon-composer.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/xcode/creating-your-app-icon-using-icon-composer.json",
+      "local_path": "contexts/xcode-creating-your-app-icon-using-icon-composer.md",
+      "sha256": "3458352b0e40d4488d5e31d413d47ece2b150bcddf4ab9b406f34865d73f728e",
+      "etag": "\"d9ba-65b3a4494b5cd\"",
+      "last_modified": "Fri, 11 Sep 2026 19:41:17 GMT",
+      "bytes": 55738,
+      "categories": [
+        "On-demand expansion",
+        "Xcode"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/coreservices/1413099-mdqueryexecute",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/coreservices/1413099-mdqueryexecute.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/coreservices/1413099-mdqueryexecute.json",
+      "local_path": "contexts/coreservices-mdqueryexecute.md",
+      "sha256": "b9311842ff1ae9efcecb3c86cf07bd47d4988396b149c2447372c38e2976cbb0",
+      "etag": "\"79a5-65b3a46b098de\"",
+      "last_modified": "Fri, 11 Sep 2026 19:41:52 GMT",
+      "bytes": 31141,
+      "categories": [
+        "On-demand expansion"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/coreservices/1413019-mdquerysetdispatchqueue",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/coreservices/1413019-mdquerysetdispatchqueue.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/coreservices/1413019-mdquerysetdispatchqueue.json",
+      "local_path": "contexts/coreservices-mdquerysetdispatchqueue.md",
+      "sha256": "a5be85a0ceb331866f230722e99637c830cefadc7cb71e2ffb00c17b0b669033",
+      "etag": "\"6d14-65b3a4660f3b0\"",
+      "last_modified": "Fri, 11 Sep 2026 19:41:47 GMT",
+      "bytes": 27924,
+      "categories": [
+        "On-demand expansion"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/foundation/nsmetadataquery",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/foundation/nsmetadataquery.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/foundation/nsmetadataquery.json",
+      "local_path": "contexts/foundation-nsmetadataquery.md",
+      "sha256": "b36d9c2b3e4fae89fb6e5c6b14394b86eee3eb30b99db5c0b1c17c93c523bef5",
+      "etag": "\"10756-65902a0d6c594\"",
+      "last_modified": "Fri, 14 Aug 2026 14:28:03 GMT",
+      "bytes": 67414,
+      "categories": [
+        "On-demand expansion"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/foundation/metadata-query-search-scopes",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/foundation/metadata-query-search-scopes.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/foundation/metadata-query-search-scopes.json",
+      "local_path": "contexts/foundation-metadata-query-search-scopes.md",
+      "sha256": "c46d9961da4810b3dfe901077ee2ae59bb55142abd6f252d5b7f980ee7a8d705",
+      "etag": "\"5578-65902a0f0edcd\"",
+      "last_modified": "Fri, 14 Aug 2026 14:28:05 GMT",
+      "bytes": 21880,
+      "categories": [
+        "On-demand expansion"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/coreservices/kfseventstreamcreateflagfileevents",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/coreservices/kfseventstreamcreateflagfileevents.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/coreservices/kfseventstreamcreateflagfileevents.json",
+      "local_path": "contexts/coreservices-file-level-events.md",
+      "sha256": "bb81dec9e7c86e6c0519f8c3bb8a24f96ab5f4a5d2fd40b47e887782e8627a58",
+      "etag": "\"170b-65b3a46ebc2c9\"",
+      "last_modified": "Fri, 11 Sep 2026 19:41:56 GMT",
+      "bytes": 5899,
+      "categories": [
+        "On-demand expansion"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/coreservices/1443980-fseventstreamcreate",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/coreservices/1443980-fseventstreamcreate.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/coreservices/1443980-fseventstreamcreate.json",
+      "local_path": "contexts/coreservices-fseventstreamcreate.md",
+      "sha256": "d9f910e072c348dc4c2676cff66e2acf8f68eb9004ae46ca349b786a4446f95a",
+      "etag": "\"8d50-65b3a476677cf\"",
+      "last_modified": "Fri, 11 Sep 2026 19:42:04 GMT",
+      "bytes": 36176,
+      "categories": [
+        "On-demand expansion"
       ],
       "depth": 2
     }
