@@ -105,6 +105,7 @@ struct BrowserBreadcrumb: View {
 }
 
 struct BrowserSidebar: View {
+    @State private var tagCatalog = FinderTagCatalog.shared
     @Bindable var browser: FileBrowserState
     @Bindable var sidebar: SidebarState
     let windowWidth: CGFloat
@@ -146,6 +147,30 @@ struct BrowserSidebar: View {
                 }
                 .buttonStyle(.plain)
             }
+            Section("Tags") {
+                if tagCatalog.tags.isEmpty {
+                    Text("No tags")
+                        .foregroundStyle(.secondary)
+                } else {
+                    ForEach(tagCatalog.tags) { tag in
+                        Button {
+                            restoreContentFocus()
+                            Task { await browser.navigateToTag(tag.name) }
+                        } label: {
+                            Label {
+                                Text(tag.name)
+                            } icon: {
+                                FinderTagDot(colorIndex: tag.colorIndex, size: 12)
+                            }
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("sidebar-tag-\(tag.name)")
+                        .foregroundStyle(browser.selectedSidebarTag == tag.name ? Color.accentColor : .primary)
+                    }
+                }
+            }
         }
         .listStyle(.sidebar)
         .navigationSplitViewColumnWidth(
@@ -164,6 +189,10 @@ struct BrowserSidebar: View {
             dragSession.modifiers = modifiers
         }
         .task { await sidebar.refresh() }
+        .task { tagCatalog.start() }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            tagCatalog.refresh()
+        }
     }
 
     private func destinationRow(_ name: String, _ url: URL, _ icon: String) -> some View {
@@ -189,6 +218,7 @@ struct BrowserSidebar: View {
             dragSession: dragSession
         )
     }
+
 }
 
 private struct SidebarDropDestinationLabel: View {

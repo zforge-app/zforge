@@ -35,8 +35,53 @@ nonisolated enum BrowserViewMode: String, CaseIterable, Identifiable, Codable, S
 nonisolated enum BrowserSortField: String, CaseIterable, Codable, Sendable {
     case name
     case modificationDate
+    case creationDate
+    case lastOpenedDate
+    case dateAdded
     case size
     case kind
+    case version
+    case comments
+    case tags
+}
+
+nonisolated enum BrowserListColumn: String, CaseIterable, Codable, Identifiable, Sendable {
+    case name, modificationDate, creationDate, lastOpenedDate, dateAdded
+    case size, kind, lastModifiedBy, sharedBy, version, comments, tags
+
+    var id: String { rawValue }
+    static let defaultVisible: [Self] = [.name, .modificationDate, .size, .kind]
+    static let selectable = allCases.filter { $0 != .lastModifiedBy && $0 != .sharedBy }
+
+    var titleKey: String.LocalizationValue {
+        switch self {
+        case .name: "Name"
+        case .modificationDate: "Date Modified"
+        case .creationDate: "Date Created"
+        case .lastOpenedDate: "Date Last Opened"
+        case .dateAdded: "Date Added"
+        case .size: "Size"
+        case .kind: "Kind"
+        case .lastModifiedBy: "Last Modified By"
+        case .sharedBy: "Shared By"
+        case .version: "Version"
+        case .comments: "Comments"
+        case .tags: "Tags"
+        }
+    }
+
+    var sortField: BrowserSortField? { BrowserSortField(rawValue: rawValue) }
+
+    func title(locale: Locale) -> String {
+        AppLocalization.string(titleKey, locale: locale)
+    }
+}
+
+nonisolated struct BrowserExtendedMetadata: Hashable, Sendable {
+    var lastOpenedDate: Date? = nil
+    var dateAdded: Date? = nil
+    var version: String? = nil
+    var comments: String? = nil
 }
 
 nonisolated struct BrowserSort: Codable, Equatable, Hashable, Sendable {
@@ -54,10 +99,24 @@ nonisolated struct BrowserSort: Codable, Equatable, Hashable, Sendable {
                 lhs.name.localizedStandardCompare(rhs.name)
             case .modificationDate:
                 compare(lhs.modificationDate ?? .distantPast, rhs.modificationDate ?? .distantPast)
+            case .creationDate:
+                compare(lhs.creationDate ?? .distantPast, rhs.creationDate ?? .distantPast)
+            case .lastOpenedDate:
+                compare(lhs.extendedMetadata.lastOpenedDate ?? .distantPast,
+                        rhs.extendedMetadata.lastOpenedDate ?? .distantPast)
+            case .dateAdded:
+                compare(lhs.extendedMetadata.dateAdded ?? .distantPast,
+                        rhs.extendedMetadata.dateAdded ?? .distantPast)
             case .size:
                 compare(lhs.size ?? 0, rhs.size ?? 0)
             case .kind:
                 lhs.kindSortKey.localizedStandardCompare(rhs.kindSortKey)
+            case .version:
+                (lhs.extendedMetadata.version ?? "").localizedStandardCompare(rhs.extendedMetadata.version ?? "")
+            case .comments:
+                (lhs.extendedMetadata.comments ?? "").localizedStandardCompare(rhs.extendedMetadata.comments ?? "")
+            case .tags:
+                lhs.tags.joined(separator: ", ").localizedStandardCompare(rhs.tags.joined(separator: ", "))
             }
 
             if comparison == .orderedSame {
@@ -264,10 +323,12 @@ nonisolated struct BrowserItem: Identifiable, Hashable, Sendable {
     let modificationDate: Date?
     let accessDate: Date?
     let tags: [String]
+    var tagColorIndexes: [String: Int] = [:]
     let contentTypeIdentifier: String?
     let encrypted: Bool
     let checksum: String?
     let compressionMethod: String?
+    var extendedMetadata = BrowserExtendedMetadata()
 
     var localURL: URL? { location.fileSystemURL }
 

@@ -1,11 +1,24 @@
 import Foundation
+import CoreServices
 import UniformTypeIdentifiers
 
 nonisolated protocol FileSystemServing: Sendable {
     func items(in directory: URL, showHidden: Bool) async throws -> [BrowserItem]
+    func items(in directory: URL, showHidden: Bool, includeExtendedMetadata: Bool) async throws -> [BrowserItem]
     func item(at url: URL) async throws -> BrowserItem
+    func item(at url: URL, includeExtendedMetadata: Bool) async throws -> BrowserItem
     func recursiveSize(at url: URL) async throws -> Int64
     func resolveNavigationURL(_ url: URL) async throws -> URL
+}
+
+extension FileSystemServing {
+    func items(in directory: URL, showHidden: Bool, includeExtendedMetadata: Bool) async throws -> [BrowserItem] {
+        try await items(in: directory, showHidden: showHidden)
+    }
+
+    func item(at url: URL, includeExtendedMetadata: Bool) async throws -> BrowserItem {
+        try await item(at: url)
+    }
 }
 
 actor FileSystemService: FileSystemServing {
@@ -31,6 +44,10 @@ actor FileSystemService: FileSystemServing {
     }
 
     func items(in directory: URL, showHidden: Bool) async throws -> [BrowserItem] {
+        try await items(in: directory, showHidden: showHidden, includeExtendedMetadata: true)
+    }
+
+    func items(in directory: URL, showHidden: Bool, includeExtendedMetadata: Bool) async throws -> [BrowserItem] {
         let options: FileManager.DirectoryEnumerationOptions = showHidden ? [] : [.skipsHiddenFiles]
         do {
             let urls = try fileManager.contentsOfDirectory(
@@ -38,7 +55,7 @@ actor FileSystemService: FileSystemServing {
                 includingPropertiesForKeys: Array(Self.keys),
                 options: options
             )
-            return try urls.map { try makeItem(at: $0) }
+            return try urls.map { try makeItem(at: $0, includeExtendedMetadata: includeExtendedMetadata) }
         } catch CocoaError.fileReadNoPermission {
             throw BrowserError.permissionDenied(directory)
         } catch {
@@ -47,7 +64,15 @@ actor FileSystemService: FileSystemServing {
     }
 
     func item(at url: URL) async throws -> BrowserItem {
-        try makeItem(at: url)
+        try await item(at: url, includeExtendedMetadata: true)
+    }
+
+    func item(at url: URL, includeExtendedMetadata: Bool) async throws -> BrowserItem {
+        // Search results and expanded hierarchies can retain URL resource
+        // caches after Finder changes tags on the same physical file.
+        var refreshedURL = url
+        refreshedURL.removeAllCachedResourceValues()
+        return try makeItem(at: refreshedURL, includeExtendedMetadata: includeExtendedMetadata)
     }
 
     func recursiveSize(at url: URL) async throws -> Int64 {
@@ -100,12 +125,12 @@ actor FileSystemService: FileSystemServing {
         return url
     }
 
-    private func makeItem(at url: URL) throws -> BrowserItem {
+    private func makeItem(at url: URL, includeExtendedMetadata: Bool) throws -> BrowserItem {
         let values = try url.resourceValues(forKeys: Self.keys)
         let isDirectory = values.isDirectory ?? false
         let isPackage = values.isPackage ?? false
         let name = values.name ?? url.lastPathComponent
-        return BrowserItem(
+        var item = BrowserItem(
             id: BrowserItemID(rawValue: "file:\(url.standardizedFileURL.path)"),
             name: name,
             location: .fileSystem(url),
@@ -121,10 +146,22 @@ actor FileSystemService: FileSystemServing {
             modificationDate: values.contentModificationDate,
             accessDate: values.contentAccessDate,
             tags: values.tagNames ?? [],
+            tagColorIndexes: values.tagNames?.isEmpty == false
+                ? FinderTagMetadata.colorIndexes(at: url) : [:],
             contentTypeIdentifier: values.contentType?.identifier,
             encrypted: false,
             checksum: nil,
             compressionMethod: nil
         )
+        if includeExtendedMetadata,
+           let metadataItem = MDItemCreateWithURL(kCFAllocatorDefault, url as CFURL) {
+            item.extendedMetadata = BrowserExtendedMetadata(
+                lastOpenedDate: MDItemCopyAttribute(metadataItem, kMDItemLastUsedDate) as? Date,
+                dateAdded: MDItemCopyAttribute(metadataItem, kMDItemDateAdded) as? Date,
+                version: MDItemCopyAttribute(metadataItem, kMDItemVersion) as? String,
+                comments: MDItemCopyAttribute(metadataItem, kMDItemFinderComment) as? String
+            )
+        }
+        return item
     }
 }

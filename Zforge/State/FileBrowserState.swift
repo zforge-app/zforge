@@ -17,6 +17,7 @@ final class FileBrowserState {
     private struct HistoryEntry {
         let components: [BrowserPathComponent]
         let location: BrowserLocation
+        let sidebarTag: String?
     }
 
     private struct HierarchyCursorSnapshot {
@@ -88,6 +89,8 @@ final class FileBrowserState {
     @ObservationIgnored private let fileSystem: any FileSystemServing
     @ObservationIgnored private let fileOperations: any FileOperationServing
     @ObservationIgnored private let recentItems: any RecentItemsServing
+    @ObservationIgnored private let taggedItems: any TaggedItemsServing
+    @ObservationIgnored private var tagRefreshTask: Task<Void, Never>?
     @ObservationIgnored private let grants: any AccessGrantStoring
     @ObservationIgnored private let archives: any ArchiveServing
     @ObservationIgnored private let monitor = DirectoryMonitor()
@@ -116,7 +119,23 @@ final class FileBrowserState {
     @ObservationIgnored private var activeFileTransferCount = 0
 
     var preferences: FileBrowserPreferences
-    var location: BrowserLocation
+    var location: BrowserLocation {
+        didSet { if location != .recents { selectedSidebarTag = nil } }
+    }
+    var selectedSidebarTag: String?
+    private var needsExtendedMetadata: Bool {
+        let extended: Set<BrowserListColumn> = [.lastOpenedDate, .dateAdded, .version, .comments]
+        let sortedByExtended = [BrowserSortField.lastOpenedDate, .dateAdded, .version, .comments]
+            .contains(preferences.sort.field)
+        return sortedByExtended || (preferences.viewMode == .list &&
+            !extended.isDisjoint(with: preferences.visibleListColumns(for: location)))
+    }
+    var sidebarTags: [String] {
+        var discovered = Set(preferences.knownSidebarTags + items.flatMap(\.tags)
+            + expandedChildren.values.flatMap { $0.flatMap(\.tags) })
+        if let selectedSidebarTag { discovered.insert(selectedSidebarTag) }
+        return discovered.sorted { $0.localizedStandardCompare($1) == .orderedAscending }
+    }
     var pathComponents: [BrowserPathComponent] = []
     var items: [BrowserItem] = [] {
         didSet { itemProjection.invalidateRoot() }
@@ -128,7 +147,12 @@ final class FileBrowserState {
         didSet { itemProjection.invalidateExpansion() }
     }
     var expandedChildren: [BrowserItemID: [BrowserItem]] = [:] {
-        didSet { itemProjection.invalidateExpandedChildren() }
+        didSet {
+            itemProjection.invalidateExpandedChildren()
+            let children = expandedChildren.values.flatMap { $0 }
+            preferences.rememberSidebarTags(children.flatMap(\.tags))
+            FinderTagCatalog.shared.observe(children)
+        }
     }
     var expandingItems: Set<BrowserItemID> = []
     var columnItems: [BrowserLocation: [BrowserItem]] = [:] {
@@ -545,6 +569,7 @@ final class FileBrowserState {
                 preferences: FileBrowserPreferences.shared,
                 fileSystem: UIFixtureFileSystemService(),
                 recentItems: UIFixtureRecentItemsService(),
+                taggedItems: UIFixtureTaggedItemsService(),
                 grants: UIFixtureAccessGrantStore(),
                 archives: UIFixtureArchiveEngine(),
                 initialURL: initialURL
@@ -566,6 +591,7 @@ final class FileBrowserState {
         fileSystem: any FileSystemServing,
         fileOperations: any FileOperationServing = FileOperationService(),
         recentItems: (any RecentItemsServing)? = nil,
+        taggedItems: (any TaggedItemsServing)? = nil,
         grants: any AccessGrantStoring,
         archives: any ArchiveServing,
         initialURL: URL? = nil
@@ -574,6 +600,7 @@ final class FileBrowserState {
         self.fileSystem = fileSystem
         self.fileOperations = fileOperations
         self.recentItems = recentItems ?? SpotlightRecentItemsService()
+        self.taggedItems = taggedItems ?? SpotlightTaggedItemsService()
         self.grants = grants
         self.archives = archives
         self.initialURL = initialURL
@@ -606,6 +633,7 @@ final class FileBrowserState {
         if await grants.hasGrant(for: home) {
             do {
                 _ = try await grants.activateGrant(for: home)
+                FinderTagCatalog.shared.refresh(searchScopes: await grants.metadataSearchScopes())
                 await reload()
             } catch {
                 await grants.removeGrant(for: home)
@@ -620,6 +648,7 @@ final class FileBrowserState {
         do {
             try await grants.storeGrant(for: selectedURL)
             _ = try await grants.activateGrant(for: intendedURL)
+            FinderTagCatalog.shared.refresh(searchScopes: await grants.metadataSearchScopes())
             pendingAuthorizationURL = nil
             let purpose = pendingAuthorizationPurpose
             pendingAuthorizationPurpose = nil
@@ -643,6 +672,7 @@ final class FileBrowserState {
         do {
             if await grants.hasGrant(for: url) {
                 _ = try await grants.activateGrant(for: url)
+                FinderTagCatalog.shared.refresh(searchScopes: await grants.metadataSearchScopes())
                 await navigate(to: .fileSystem(url), named: name, resetPath: true)
             } else {
                 requestAuthorization(for: url, purpose: .navigate(name: name))
@@ -658,6 +688,20 @@ final class FileBrowserState {
             named: AppLocalization.string("Recents", locale: preferences.language.locale),
             resetPath: true
         )
+    }
+
+    func navigateToTag(_ tag: String) async {
+        await navigate(to: .recents, named: tag, resetPath: true, sidebarTag: tag)
+    }
+
+    func refreshTagResults() {
+        guard selectedSidebarTag != nil else { return }
+        tagRefreshTask?.cancel()
+        tagRefreshTask = Task { [weak self] in
+            try? await Task.sleep(for: .milliseconds(150))
+            guard let self, !Task.isCancelled, selectedSidebarTag != nil else { return }
+            await reload()
+        }
     }
 
     func navigateToComputer() async {
@@ -1484,18 +1528,20 @@ final class FileBrowserState {
 
     func goBack() async {
         guard let entry = backStack.popLast() else { return }
-        forwardStack.append(HistoryEntry(components: pathComponents, location: location))
+        forwardStack.append(HistoryEntry(components: pathComponents, location: location, sidebarTag: selectedSidebarTag))
         pathComponents = entry.components
         location = entry.location
+        selectedSidebarTag = entry.sidebarTag
         activeColumnLocation = entry.location
         await reload()
     }
 
     func goForward() async {
         guard let entry = forwardStack.popLast() else { return }
-        backStack.append(HistoryEntry(components: pathComponents, location: location))
+        backStack.append(HistoryEntry(components: pathComponents, location: location, sidebarTag: selectedSidebarTag))
         pathComponents = entry.components
         location = entry.location
+        selectedSidebarTag = entry.sidebarTag
         activeColumnLocation = entry.location
         await reload()
     }
@@ -1511,6 +1557,7 @@ final class FileBrowserState {
         pushHistory()
         pathComponents = Array(pathComponents.prefix(index + 1))
         location = component.location
+        if component.location != .recents { selectedSidebarTag = nil }
         activeColumnLocation = component.location
         await reload()
     }
@@ -1557,15 +1604,29 @@ final class FileBrowserState {
             let loaded: [BrowserItem]
             switch currentLocation {
             case .recents:
-                let urls = await recentItems.recentItemURLs()
-                loaded = await loadRecentItems(at: urls)
+                if let selectedSidebarTag {
+                    let urls = await taggedItems.itemURLs(tagged: selectedSidebarTag)
+                    loaded = await loadRecentItems(at: urls, includeDirectories: true).filter { item in
+                        item.tags.contains {
+                            $0.localizedCaseInsensitiveCompare(selectedSidebarTag) == .orderedSame
+                        }
+                    }
+                } else {
+                    let urls = await recentItems.recentItemURLs()
+                    loaded = await loadRecentItems(at: urls)
+                }
             case let .fileSystem(url):
-                loaded = try await fileSystem.items(in: url, showHidden: preferences.showHiddenFiles)
+                loaded = try await fileSystem.items(
+                    in: url, showHidden: preferences.showHiddenFiles,
+                    includeExtendedMetadata: needsExtendedMetadata
+                )
             case let .archive(address):
                 loaded = try await archives.items(at: address)
             }
             guard generation == reloadGeneration, currentLocation == location else { return }
             items = loaded
+            preferences.rememberSidebarTags(loaded.flatMap(\.tags))
+            FinderTagCatalog.shared.observe(loaded)
             purgeRemovedHierarchies(previous: previousRootItems, current: loaded)
             columnItems[currentLocation] = preferences.sort.sorted(loaded)
             for columnLocation in refreshingColumnLocations where columnLocation != currentLocation {
@@ -2104,10 +2165,15 @@ final class FileBrowserState {
     }
 
     func setSort(_ field: BrowserSortField) {
+        let previousField = preferences.sort.field
         if preferences.sort.field == field {
             preferences.sort.ascending.toggle()
         } else {
             preferences.sort = BrowserSort(field: field, ascending: true)
+        }
+        if previousField != field,
+           [.lastOpenedDate, .dateAdded, .version, .comments].contains(field) {
+            Task { await reload() }
         }
     }
 
@@ -2520,7 +2586,10 @@ final class FileBrowserState {
                 case .recents:
                     return
                 case let .fileSystem(url):
-                    children = try await fileSystem.items(in: url, showHidden: preferences.showHiddenFiles)
+                    children = try await fileSystem.items(
+                        in: url, showHidden: preferences.showHiddenFiles,
+                        includeExtendedMetadata: needsExtendedMetadata
+                    )
                 case let .archive(address):
                     children = try await archives.items(at: address)
                 }
@@ -2800,6 +2869,8 @@ final class FileBrowserState {
         monitor.stop()
         stopExpandedDirectoryMonitors()
         recentItems.stop()
+        taggedItems.stop()
+        tagRefreshTask?.cancel()
         previewTask?.cancel()
         previewTask = nil
         reloadGeneration &+= 1
@@ -2852,11 +2923,13 @@ final class FileBrowserState {
         isArchive: Bool = false,
         resetPath: Bool = false,
         recordsHistory: Bool = true,
-        clearsSelection: Bool = true
+        clearsSelection: Bool = true,
+        sidebarTag: String? = nil
     ) async {
         cancelRenaming()
         if recordsHistory { pushHistory() }
         self.location = location
+        selectedSidebarTag = sidebarTag
         if resetPath {
             pendingColumnExpansionItemID = nil
             pathComponents = [BrowserPathComponent(location: location, name: name, isArchive: isArchive)]
@@ -2879,7 +2952,7 @@ final class FileBrowserState {
     }
 
     private func pushHistory() {
-        backStack.append(HistoryEntry(components: pathComponents, location: location))
+        backStack.append(HistoryEntry(components: pathComponents, location: location, sidebarTag: selectedSidebarTag))
         forwardStack.removeAll()
     }
 
@@ -2940,7 +3013,8 @@ final class FileBrowserState {
                     do {
                         let loaded = try await fileSystem.items(
                             in: url,
-                            showHidden: preferences.showHiddenFiles
+                            showHidden: preferences.showHiddenFiles,
+                            includeExtendedMetadata: needsExtendedMetadata
                         )
                         guard expectedReloadGeneration == reloadGeneration else { return }
                         guard expandedItems.contains(item.id) else { continue }
@@ -3063,7 +3137,8 @@ final class FileBrowserState {
         do {
             let loaded = try await fileSystem.items(
                 in: url,
-                showHidden: preferences.showHiddenFiles
+                showHidden: preferences.showHiddenFiles,
+                includeExtendedMetadata: needsExtendedMetadata
             )
             guard expandedItems.contains(itemID) else { return }
             let previousChildren = expandedChildren[itemID] ?? []
@@ -3110,15 +3185,15 @@ final class FileBrowserState {
         expandedDirectoryMonitors.removeAll()
     }
 
-    private func loadRecentItems(at urls: [URL]) async -> [BrowserItem] {
+    private func loadRecentItems(at urls: [URL], includeDirectories: Bool = false) async -> [BrowserItem] {
         var loaded: [BrowserItem] = []
         var seenIDs: Set<BrowserItemID> = []
         loaded.reserveCapacity(urls.count)
         for url in urls {
             guard !Task.isCancelled else { break }
             guard !ZforgeTemporaryStorage.contains(url) else { continue }
-            if let item = try? await fileSystem.item(at: url),
-               !item.isDirectory,
+            if let item = try? await fileSystem.item(at: url, includeExtendedMetadata: needsExtendedMetadata),
+               (includeDirectories || !item.isDirectory),
                preferences.showHiddenFiles || !item.isHidden {
                 guard seenIDs.insert(item.id).inserted else { continue }
                 loaded.append(item)
@@ -3278,7 +3353,8 @@ final class FileBrowserState {
         do {
             let loaded = try await fileSystem.items(
                 in: url,
-                showHidden: preferences.showHiddenFiles
+                showHidden: preferences.showHiddenFiles,
+                includeExtendedMetadata: needsExtendedMetadata
             )
             columnItems[location] = preferences.sort.sorted(loaded)
         } catch {

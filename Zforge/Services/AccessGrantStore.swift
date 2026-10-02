@@ -6,6 +6,11 @@ nonisolated protocol AccessGrantStoring: Sendable {
     func activateGrant(for url: URL) async throws -> URL
     func removeGrant(for url: URL) async
     func stopAll() async
+    func metadataSearchScopes() async -> [URL]
+}
+
+extension AccessGrantStoring {
+    func metadataSearchScopes() async -> [URL] { [] }
 }
 
 actor AccessGrantStore: AccessGrantStoring {
@@ -68,6 +73,8 @@ actor AccessGrantStore: AccessGrantStoring {
         }
         activeRoots.removeAll()
     }
+
+    func metadataSearchScopes() -> [URL] { Array(activeRoots.keys) }
 
     private func bookmarks() -> [String: Data] {
         defaults.dictionary(forKey: storageKey) as? [String: Data] ?? [:]

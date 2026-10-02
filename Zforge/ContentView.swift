@@ -134,11 +134,18 @@ struct ContentView: View {
             } else if previousViewMode == .columns {
                 browser.prepareStandardViewAfterColumns()
             }
+            if viewMode == .list,
+               browser.preferences.visibleListColumns(for: browser.location).contains(where: {
+                   [.lastOpenedDate, .dateAdded, .version, .comments].contains($0)
+               }) {
+                Task { await browser.reload() }
+            }
             browser.updatePreview()
             restoreContentFocus()
         }
         .onChange(of: browser.previewVisible) { _, _ in restoreContentFocus() }
         .onChange(of: browser.location) { _, _ in restoreContentFocus() }
+        .onChange(of: FinderTagCatalog.shared.revision) { _, _ in browser.refreshTagResults() }
         .onChange(of: browser.isLoading) { _, isLoading in
             if !isLoading { restoreContentFocus() }
         }

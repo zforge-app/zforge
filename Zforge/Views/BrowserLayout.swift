@@ -121,7 +121,8 @@ enum BrowserListLayout {
         let horizontalChrome = 2 * (BrowserMetrics.horizontalInset + BrowserMetrics.rowContentInset)
         let baseline = minimumNameColumnWidth + modificationDateColumnWidth
             + sizeColumnWidth + kindColumnWidth + horizontalChrome
-        return max(columnWidth + horizontalChrome, baseline) * scale
+        return (columnWidths == nil ? max(columnWidth + horizontalChrome, baseline)
+            : columnWidth + horizontalChrome) * scale
     }
 
     static func tableWidth(

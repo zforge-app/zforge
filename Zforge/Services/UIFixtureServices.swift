@@ -20,6 +20,15 @@ final class UIFixtureRecentItemsService: RecentItemsServing {
     func stop() {}
 }
 
+@MainActor
+final class UIFixtureTaggedItemsService: TaggedItemsServing {
+    func itemURLs(tagged tag: String) async -> [URL] {
+        tag == "Red" ? [URL(fileURLWithPath: "/ZforgeFixtures/Welcome.txt")] : []
+    }
+
+    func stop() {}
+}
+
 actor UIFixtureFileSystemService: FileSystemServing {
     func items(in directory: URL, showHidden: Bool) async throws -> [BrowserItem] {
         let items = [
@@ -55,7 +64,8 @@ actor UIFixtureFileSystemService: FileSystemServing {
             isContainer: directory, isDirectory: directory, isPackage: false,
             isSymbolicLink: false, isHidden: hidden, isArchive: archive, size: size,
             packedSize: nil, creationDate: nil, modificationDate: Date(timeIntervalSince1970: 1_700_000_000),
-            accessDate: nil, tags: [], contentTypeIdentifier: nil, encrypted: false,
+            accessDate: nil, tags: name == "Welcome.txt" ? ["Red"] : [],
+            contentTypeIdentifier: nil, encrypted: false,
             checksum: nil, compressionMethod: archive ? "Deflate" : nil
         )
     }

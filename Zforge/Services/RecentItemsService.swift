@@ -1,4 +1,5 @@
 import Foundation
+import CoreServices
 
 @MainActor
 protocol RecentItemsServing: AnyObject {
@@ -100,6 +101,94 @@ final class SpotlightRecentItemsService: NSObject, RecentItemsServing {
                 object: query
             )
             query.stop()
+        }
+        query = nil
+        let continuation = continuation
+        self.continuation = nil
+        continuation?.resume(returning: urls)
+    }
+}
+
+@MainActor
+protocol TaggedItemsServing: AnyObject {
+    func itemURLs(tagged tag: String) async -> [URL]
+    func stop()
+}
+
+@MainActor
+final class SpotlightTaggedItemsService: NSObject, TaggedItemsServing {
+    private let catalog: FinderTagCatalog
+    private var activeTag: String?
+    private var generation: UInt64 = 0
+    private var query: MDQuery?
+    private var notificationToken: NSObjectProtocol?
+    private var continuation: CheckedContinuation<[URL], Never>?
+
+    init(catalog: FinderTagCatalog? = nil) {
+        self.catalog = catalog ?? FinderTagCatalog.shared
+        super.init()
+    }
+
+    func itemURLs(tagged tag: String) async -> [URL] {
+        stop()
+        activeTag = tag
+        let generation = generation
+        let escapedTag = tag
+            .replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: "\"", with: "\\\"")
+        guard let query = MDQueryCreate(
+            kCFAllocatorDefault,
+            "kMDItemUserTags == \"\(escapedTag)\"" as CFString,
+            nil,
+            nil
+        ) else { return catalog.itemURLs(tagged: tag) }
+        self.query = query
+        MDQuerySetDispatchQueue(query, .main)
+        MDQuerySetSearchScope(query, [kMDQueryScopeComputer, kMDQueryScopeNetwork] as CFArray, 0)
+        return await withCheckedContinuation { continuation in
+            self.continuation = continuation
+            notificationToken = NotificationCenter.default.addObserver(
+                forName: Notification.Name(rawValue: kMDQueryDidFinishNotification as String),
+                object: query,
+                queue: .main
+            ) { [weak self] _ in
+                Task { @MainActor [weak self] in
+                    guard self?.generation == generation else { return }
+                    self?.queryDidFinishGathering()
+                }
+            }
+            if !MDQueryExecute(query, CFOptionFlags(kMDQueryWantsUpdates.rawValue)) {
+                finish(with: catalog.itemURLs(tagged: tag))
+            }
+        }
+    }
+
+    func stop() { generation &+= 1; finish(with: []) }
+
+    private func queryDidFinishGathering() {
+        guard let query else { return }
+        MDQueryDisableUpdates(query)
+        var results = RecentFileIdentityFilter(maximumCount: .max)
+        for index in 0..<MDQueryGetResultCount(query) {
+            guard let pointer = MDQueryGetResultAtIndex(query, index) else { continue }
+            let item = unsafeBitCast(pointer, to: MDItem.self)
+            guard let path = MDItemCopyAttribute(item, "kMDItemPath" as CFString) as? String else {
+                continue
+            }
+            results.appendIfNew(URL(fileURLWithPath: path))
+        }
+        for url in catalog.itemURLs(tagged: activeTag ?? "") {
+            results.appendIfNew(url)
+        }
+        finish(with: results.urls)
+    }
+
+    private func finish(with urls: [URL]) {
+        guard query != nil || continuation != nil else { return }
+        if let query {
+            if let notificationToken { NotificationCenter.default.removeObserver(notificationToken) }
+            notificationToken = nil
+            MDQueryStop(query)
         }
         query = nil
         let continuation = continuation

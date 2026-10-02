@@ -1,7 +1,7 @@
 import Foundation
 import Darwin
 
-enum UserDirectoryService {
+nonisolated enum UserDirectoryService {
     static var homeURL: URL {
         if let account = getpwuid(getuid()) {
             let path = String(cString: account.pointee.pw_dir)

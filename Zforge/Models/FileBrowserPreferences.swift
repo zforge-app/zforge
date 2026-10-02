@@ -10,6 +10,9 @@ final class FileBrowserPreferences {
         static let viewMode = "browser.viewMode"
         static let scale = "browser.scale"
         static let listColumnWidths = "browser.listColumnWidths"
+        static let listColumns = "browser.listColumns"
+        static let directoryListColumns = "browser.directoryListColumns"
+        static let knownSidebarTags = "browser.knownSidebarTags"
         static let finderColumnWidth = "browser.finderColumnWidth"
         static let previewWidth = "browser.previewWidth"
         static let sortField = "browser.sortField"
@@ -33,6 +36,15 @@ final class FileBrowserPreferences {
     var scale: CGFloat { didSet { defaults.set(scale, forKey: Key.scale) } }
     var listColumnWidths: [String: Double] {
         didSet { defaults.set(listColumnWidths, forKey: Key.listColumnWidths) }
+    }
+    private(set) var globalListColumns: [BrowserListColumn] {
+        didSet { defaults.set(globalListColumns.map(\.rawValue), forKey: Key.listColumns) }
+    }
+    private(set) var directoryListColumns: [String: [String]] {
+        didSet { defaults.set(directoryListColumns, forKey: Key.directoryListColumns) }
+    }
+    private(set) var knownSidebarTags: [String] {
+        didSet { defaults.set(knownSidebarTags, forKey: Key.knownSidebarTags) }
     }
     var finderColumnWidth: CGFloat {
         didSet { defaults.set(Double(finderColumnWidth), forKey: Key.finderColumnWidth) }
@@ -168,11 +180,63 @@ final class FileBrowserPreferences {
         let fallback: CGFloat
         switch field {
         case .name: fallback = 168
-        case .modificationDate: fallback = 180
+        case .modificationDate, .creationDate, .lastOpenedDate, .dateAdded: fallback = 180
         case .size: fallback = 90
         case .kind: fallback = 150
+        case .version: fallback = 100
+        case .comments: fallback = 220
+        case .tags: fallback = 160
         }
         return CGFloat(listColumnWidths[field.rawValue] ?? Double(fallback))
+    }
+
+    func width(forListColumn column: BrowserListColumn) -> CGFloat {
+        if let field = column.sortField { return listColumnWidth(field) }
+        return 160
+    }
+
+    func visibleListColumns(for location: BrowserLocation) -> [BrowserListColumn] {
+        guard let key = Self.directoryKey(for: location), let stored = directoryListColumns[key] else {
+            return globalListColumns
+        }
+        return Self.normalizedColumns(stored)
+    }
+
+    func setGlobalListColumns(_ columns: [BrowserListColumn]) {
+        globalListColumns = Self.normalizedColumns(columns.map(\.rawValue))
+    }
+
+    func setListColumns(_ columns: [BrowserListColumn], for location: BrowserLocation) {
+        guard let key = Self.directoryKey(for: location) else { return }
+        directoryListColumns[key] = Self.normalizedColumns(columns.map(\.rawValue)).map(\.rawValue)
+    }
+
+    func resetListColumns(for location: BrowserLocation) {
+        guard let key = Self.directoryKey(for: location) else { return }
+        directoryListColumns.removeValue(forKey: key)
+    }
+
+    func hasListColumnOverride(for location: BrowserLocation) -> Bool {
+        guard let key = Self.directoryKey(for: location) else { return false }
+        return directoryListColumns[key] != nil
+    }
+
+    func rememberSidebarTags(_ names: [String]) {
+        let names = Set(knownSidebarTags + names.filter { !$0.isEmpty })
+        let sorted = names.sorted { $0.localizedStandardCompare($1) == .orderedAscending }
+        if sorted != knownSidebarTags { knownSidebarTags = sorted }
+    }
+
+    private static func directoryKey(for location: BrowserLocation) -> String? {
+        guard case let .fileSystem(url) = location else { return nil }
+        return url.standardizedFileURL.resolvingSymlinksInPath().path
+    }
+
+    private static func normalizedColumns(_ rawValues: [String]) -> [BrowserListColumn] {
+        var seen: Set<BrowserListColumn> = [.name]
+        return [.name] + rawValues.compactMap(BrowserListColumn.init(rawValue:)).filter {
+            BrowserListColumn.selectable.contains($0) && seen.insert($0).inserted
+        }
     }
 
     func setListColumnWidth(_ width: CGFloat, for field: BrowserSortField) {
@@ -216,6 +280,11 @@ final class FileBrowserPreferences {
         let storedScale = defaults.double(forKey: Key.scale)
         scale = storedScale == 0 ? 1 : min(max(storedScale, 0.7), 1.6)
         listColumnWidths = defaults.dictionary(forKey: Key.listColumnWidths) as? [String: Double] ?? [:]
+        globalListColumns = Self.normalizedColumns(
+            defaults.stringArray(forKey: Key.listColumns) ?? BrowserListColumn.defaultVisible.map(\.rawValue)
+        )
+        directoryListColumns = defaults.dictionary(forKey: Key.directoryListColumns) as? [String: [String]] ?? [:]
+        knownSidebarTags = defaults.stringArray(forKey: Key.knownSidebarTags) ?? []
         let storedFinderWidth = defaults.double(forKey: Key.finderColumnWidth)
         finderColumnWidth = storedFinderWidth == 0 ? 260 : min(max(storedFinderWidth, 180), 800)
         let storedPreviewWidth = defaults.double(forKey: Key.previewWidth)

@@ -1,6 +1,6 @@
 # Zforge — rastreamento de atividades
 
-Atualizado em **2026-09-27**. Esta lista preserva os pedidos levantados nesta conversa. `Documentation/Requirements/CURRENT-STATE.md` descreve o comportamento existente; `Documentation/Requirements/OPEN-REQUIREMENTS.md` reúne requisitos ainda abertos; `DIVERGENCES.md` guarda lacunas e conflitos. O usuário confirmou D-01, D-03, D-05 e D-06 como OK. O arraste de colunas e preview foi exercitado no app; as demais pendências continuam identificadas abaixo.
+Atualizado em **2026-10-02**. Esta lista preserva os pedidos levantados nesta conversa. `Documentation/Requirements/CURRENT-STATE.md` descreve o comportamento existente; `Documentation/Requirements/OPEN-REQUIREMENTS.md` reúne requisitos ainda abertos; `DIVERGENCES.md` guarda lacunas e conflitos. O usuário confirmou D-01, D-03, D-05 e D-06 como OK. O arraste de colunas e preview foi exercitado no app; as demais pendências continuam identificadas abaixo.
 
 | ID | Atividade | Estado | Divergência |
 | --- | --- | --- | --- |
@@ -23,6 +23,7 @@ Atualizado em **2026-09-27**. Esta lista preserva os pedidos levantados nesta co
 | ZF-17 | Adicionar opções avançadas e perfis de compactação | Implementada com build, testes unitários e UI; validação manual de todas as combinações condicionais ainda pendente | D-19 registra ajuste adjacente de extensão |
 | ZF-18 | Adicionar itens a archive existente pelo menu e por drop na navegação | Implementada para ZIP/7z de volume único com confirmação, staging e substituição após validação; suíte unitária passou, inspeção visual do diálogo/drop ainda pendente | Sem divergência registrada |
 | ZF-19 | Explorar ícone com Z, archive e metalurgia para macOS 27 | Arquivo `.icon` exportado pelo usuário integrado em Debug e Release; build Debug compilou o ícone. Inspeção visual no Finder/Dock e das variantes ainda pendente | D-18 |
+| ZF-20 | Colunas da Lista e tags globais com filtro vivo | Implementado; build assinada, preferências, navegação e catálogo real em testes. Clique global, círculos independentes da coluna Tags e atualização sem refresh conferidos no app; arraste de ordem e matriz visual ampla pendentes | OR-09 |
 | ZF-21 | Substituir o backend CLI `7zz` por integração nativa com linkagem estática do 7-Zip | Linkagem estática confirmada; plano de implementação e critérios de validação registrados, sem build ou operação do novo motor validados | OR-10; sem divergência registrada |
 
 ## ZF-01 — Documentação de referência e prevenção de regressões

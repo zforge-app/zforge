@@ -325,6 +325,39 @@ private struct ZforgeSettingsView: View {
             }
             Toggle("Show hidden files", isOn: $preferences.showHiddenFiles)
 
+            Section("List Columns") {
+                Text("Choose the columns shown by default. Use the arrows to change their order. A folder can override this layout from a column header.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                ForEach(listColumnChoices) { column in
+                    HStack {
+                        Toggle(column.title(locale: preferences.language.locale), isOn: Binding(
+                            get: { preferences.globalListColumns.contains(column) },
+                            set: { isVisible in
+                                var columns = preferences.globalListColumns
+                                if isVisible && !columns.contains(column) { columns.append(column) }
+                                if !isVisible { columns.removeAll { $0 == column } }
+                                preferences.setGlobalListColumns(columns)
+                            }
+                        ))
+                        .disabled(column == .name)
+                        Spacer()
+                        if let index = preferences.globalListColumns.firstIndex(of: column), index > 0 {
+                            Button {
+                                moveListColumn(column, by: -1)
+                            } label: { Image(systemName: "chevron.up") }
+                            .help("Move column left")
+                            .disabled(index == 1)
+                            Button {
+                                moveListColumn(column, by: 1)
+                            } label: { Image(systemName: "chevron.down") }
+                            .help("Move column right")
+                            .disabled(index == preferences.globalListColumns.count - 1)
+                        }
+                    }
+                }
+            }
+
             Section("Compression") {
                 Picker("Default compression profile", selection: $preferences.defaultCompressionProfileID) {
                     ForEach(preferences.compressionProfiles) { profile in
@@ -373,7 +406,21 @@ private struct ZforgeSettingsView: View {
         }
         .formStyle(.grouped)
         .padding()
-        .frame(width: 600, height: 680)
+        .frame(width: 600, height: 760)
         .environment(\.locale, preferences.language.locale)
+    }
+
+    private var listColumnChoices: [BrowserListColumn] {
+        preferences.globalListColumns + BrowserListColumn.selectable.filter {
+            !preferences.globalListColumns.contains($0)
+        }
+    }
+
+    private func moveListColumn(_ column: BrowserListColumn, by offset: Int) {
+        var columns = preferences.globalListColumns
+        guard let index = columns.firstIndex(of: column),
+              columns.indices.contains(index + offset), index + offset > 0 else { return }
+        columns.swapAt(index, index + offset)
+        preferences.setGlobalListColumns(columns)
     }
 }

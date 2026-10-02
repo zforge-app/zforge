@@ -75,3 +75,17 @@ Esta matriz liga os contratos de `Documentation/Requirements/CURRENT-STATE.md` a
 1. Associar cada alteração a uma linha da matriz e apontar o teste existente, o novo teste ou o roteiro manual executado.
 2. Rodar a suíte da área, depois as suítes completas, e registrar no resumo da mudança os resultados com o caminho de execução.
 3. Se uma automação depender de Spotlight, PowerBox, Finder, Quick Look ou arraste entre apps e for instável no runner, manter teste determinístico para a regra interna e registrar a validação manual real. Não marcar como automatizado o que foi apenas inspecionado ou compilado.
+
+## Colunas configuráveis e tags globais — 2026-10-02
+
+| Contrato | Evidência | Limite |
+| --- | --- | --- |
+| Quatro colunas iniciais, layout global, substituição por pasta e restauração | `RefactoringCharacterizationTests.persistedLayoutPreferences`; menu de headers observado no app | Arraste real de ordem, persistência entre janelas e matriz visual ampla em OR-09 |
+| Tags de arquivos/pastas em diretórios distintos e busca sem resultado Spotlight | `TagCatalogTests.scansAcrossDirectories`, `fallsBackToActualFileTags`, `navigationFiltersCurrentTags` | Diretórios sem autorização e conteúdo interno de packages não entram na leitura global |
+| Catálogo/filtro atualizam sem recarregar | `TagCatalogTests.updatesGlobalCatalogueLive` usa arquivos reais, FSEvents e alterações/remoção; na interface, dois arquivos de teste em pastas distintas apareceram no filtro e trocar a tag de um atualizou a sidebar e reduziu o filtro | Descoberta inicial é progressiva; volumes externos não autorizados não foram exercitados |
+| Círculos de 12 pt na sidebar e de 8 pt no Nome, independentes da coluna Tags | Implementação e screenshot da build assinada com coluna Tags oculta; cores vêm do atributo real de cada tag | Matriz de zoom, tema claro e português ainda pendente |
+| Restore defaults após separador | Menu nativo com separador inspecionado na interface; ocultar Tags em uma pasta criou substituição local e clicar Restore defaults reaplicou as colunas globais; teste de preferências cobre persistência | Conferência localizada completa em OR-09 |
+
+A execução inicial registrou 94 testes unitários aprovados no `ZforgeTagsUnitTests.xcresult`. Os três testes novos de catálogo passaram no `ZforgeTagsCatalogueTests.xcresult`. A execução seguinte de 98 testes encontrou cache obsoleto de tags na releitura de uma URL, corrigido em `FileSystemService`; a confirmação final no `/private/tmp/ZforgeTagsVerifiedTests.xcresult` registrou **98 testes aprovados, 0 falhas e 0 ignorados**. O build Debug final, com as configurações padrão e sem sobrescrever a assinatura, terminou com **BUILD SUCCEEDED** (`/private/tmp/zforge-tags-final-build.log`).
+
+Correção adicional em 2026-10-02: `SpotlightTaggedItemsService` recebe `nil` como argumento padrão e resolve `FinderTagCatalog.shared` dentro do inicializador isolado em `MainActor`, preservando a injeção de catálogo nos testes. A build Debug padrão passou sem o diagnóstico de acesso à propriedade `shared` em contexto não isolado (`/private/tmp/zforge-actor-fix-build.log`). Esta rodada não repetiu a suíte nem a validação visual e não comprova compilação de todo o projeto em modo Swift 6.

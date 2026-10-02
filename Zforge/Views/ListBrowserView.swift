@@ -10,8 +10,11 @@ struct ListBrowserView: View {
     @State private var focusedScrollTask: Task<Void, Never>?
 
     private var scale: CGFloat { state.preferences.scale }
+    private var columns: [BrowserListColumn] {
+        state.preferences.visibleListColumns(for: state.location)
+    }
     private var columnWidths: [CGFloat] {
-        BrowserSortField.allCases.map { state.preferences.listColumnWidth($0) }
+        columns.map { state.preferences.width(forListColumn: $0) }
     }
 
     var body: some View {
@@ -57,6 +60,12 @@ struct ListBrowserView: View {
             focusedScrollTask?.cancel()
             focusedScrollTask = nil
         }
+        .onChange(of: columns) { oldColumns, newColumns in
+            let extended: Set<BrowserListColumn> = [.lastOpenedDate, .dateAdded, .version, .comments]
+            if extended.isDisjoint(with: oldColumns) && !extended.isDisjoint(with: newColumns) {
+                Task { await state.reload() }
+            }
+        }
     }
 
     private func listTable(
@@ -64,8 +73,8 @@ struct ListBrowserView: View {
         height: CGFloat,
         usesEdgeToEdgeRows: Bool
     ) -> some View {
-        let fixedWidths = BrowserSortField.allCases.dropFirst().reduce(CGFloat.zero) {
-            $0 + state.preferences.listColumnWidth($1) * scale
+        let fixedWidths = columns.dropFirst().reduce(CGFloat.zero) {
+            $0 + state.preferences.width(forListColumn: $1) * scale
         }
         let automaticNameWidth = max(
             width - fixedWidths - 2 * (BrowserMetrics.horizontalInset + BrowserMetrics.rowContentInset) * scale,
@@ -75,7 +84,7 @@ struct ListBrowserView: View {
             ? automaticNameWidth
             : state.preferences.listColumnWidth(.name) * scale
         return VStack(spacing: 0) {
-            ListHeader(state: state, scale: scale, nameWidth: nameWidth)
+            ListHeader(state: state, scale: scale, nameWidth: nameWidth, columns: columns)
 
             ScrollViewReader { scrollProxy in
                 ScrollView(.vertical) {
@@ -83,6 +92,7 @@ struct ListBrowserView: View {
                         state: state,
                         scale: scale,
                         nameWidth: nameWidth,
+                        columns: columns,
                         width: width,
                         minimumHeight: max(height - (28 * scale), 1),
                         usesEdgeToEdgeRows: usesEdgeToEdgeRows,
@@ -116,6 +126,7 @@ private struct BrowserListRows: View {
     @Bindable var state: FileBrowserState
     let scale: CGFloat
     let nameWidth: CGFloat
+    let columns: [BrowserListColumn]
     let width: CGFloat
     let minimumHeight: CGFloat
     let usesEdgeToEdgeRows: Bool
@@ -144,6 +155,7 @@ private struct BrowserListRows: View {
                         index: entry.rowIndex,
                         scale: scale,
                         nameWidth: nameWidth,
+                        columns: columns,
                         usesEdgeToEdgeBackground: usesEdgeToEdgeRows,
                         contentFocus: contentFocus,
                         dragSession: dragSession
@@ -163,17 +175,39 @@ private struct ListHeader: View {
     @Bindable var state: FileBrowserState
     let scale: CGFloat
     let nameWidth: CGFloat
+    let columns: [BrowserListColumn]
 
     var body: some View {
         HStack(spacing: 0) {
-            headerButton("Name", field: .name, showsTrailingSeparator: true)
-                .frame(width: nameWidth, alignment: .leading)
-            headerButton("Date Modified", field: .modificationDate, showsTrailingSeparator: true)
-                .frame(width: state.preferences.listColumnWidth(.modificationDate) * scale, alignment: .leading)
-            headerButton("Size", field: .size, showsTrailingSeparator: true)
-                .frame(width: state.preferences.listColumnWidth(.size) * scale, alignment: .leading)
-            headerButton("Kind", field: .kind)
-                .frame(width: state.preferences.listColumnWidth(.kind) * scale, alignment: .leading)
+            ForEach(columns) { column in
+                headerButton(column, showsTrailingSeparator: column != columns.last)
+                    .frame(
+                        width: column == .name
+                            ? nameWidth
+                            : state.preferences.width(forListColumn: column) * scale,
+                        alignment: .leading
+                    )
+                    .onDrag {
+                        NSItemProvider(object: column.rawValue as NSString)
+                    }
+                    .onDrop(of: [.plainText], isTargeted: nil) { providers in
+                        guard column != .name, let provider = providers.first else { return false }
+                        _ = provider.loadObject(ofClass: NSString.self) { value, _ in
+                            guard let raw = value as? String,
+                                  let source = BrowserListColumn(rawValue: raw),
+                                  source != .name, source != column else { return }
+                            Task { @MainActor in
+                                var reordered = state.preferences.visibleListColumns(for: state.location)
+                                guard let from = reordered.firstIndex(of: source),
+                                      let to = reordered.firstIndex(of: column) else { return }
+                                reordered.remove(at: from)
+                                reordered.insert(source, at: to)
+                                setColumns(reordered)
+                            }
+                        }
+                        return true
+                    }
+            }
             Spacer(minLength: 0)
         }
         .font(.system(size: 11 * scale, weight: .semibold))
@@ -190,29 +224,43 @@ private struct ListHeader: View {
         }
     }
 
-    private func headerButton(
-        _ title: LocalizedStringKey,
-        field: BrowserSortField,
-        leadingInset: CGFloat = BrowserMetrics.columnContentInset,
-        showsTrailingSeparator: Bool = false
-    ) -> some View {
+    private func headerButton(_ column: BrowserListColumn, showsTrailingSeparator: Bool) -> some View {
         Button {
-            state.setSort(field)
+            if let field = column.sortField { state.setSort(field) }
         } label: {
             HStack(spacing: 4 * scale) {
-                Text(title)
-                if state.preferences.sort.field == field {
+                Text(column.title(locale: state.preferences.language.locale))
+                if state.preferences.sort.field == column.sortField {
                     Image(systemName: state.preferences.sort.ascending ? "chevron.up" : "chevron.down")
                         .font(.system(size: 8 * scale, weight: .bold))
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-            .padding(.leading, leadingInset * scale)
+            .padding(.leading, BrowserMetrics.columnContentInset * scale)
             .padding(.trailing, BrowserMetrics.columnContentInset * scale)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .focusable(false)
+        .contextMenu {
+            ForEach(BrowserListColumn.allCases.filter { $0 != .name }) { candidate in
+                Toggle(candidate.title(locale: state.preferences.language.locale), isOn: Binding(
+                    get: { columns.contains(candidate) },
+                    set: { isVisible in
+                        var visible = state.preferences.visibleListColumns(for: state.location)
+                        if isVisible && !visible.contains(candidate) { visible.append(candidate) }
+                        if !isVisible { visible.removeAll { $0 == candidate } }
+                        setColumns(visible)
+                    }
+                ))
+                .disabled(!BrowserListColumn.selectable.contains(candidate))
+            }
+            Divider()
+            Button("Restore defaults") {
+                state.preferences.resetListColumns(for: state.location)
+            }
+            .disabled(!state.preferences.hasListColumnOverride(for: state.location))
+        }
         .overlay(alignment: .trailing) {
             if showsTrailingSeparator {
                 Rectangle()
@@ -221,9 +269,9 @@ private struct ListHeader: View {
             }
         }
         .overlay(alignment: .trailing) {
-            if showsTrailingSeparator {
+            if showsTrailingSeparator, let field = column.sortField {
                 BrowserColumnResizeHandle(
-                    currentWidth: field == .name
+                    currentWidth: column == .name
                         ? nameWidth / scale
                         : state.preferences.listColumnWidth(field),
                     scale: scale
@@ -235,6 +283,14 @@ private struct ListHeader: View {
             }
         }
     }
+
+    private func setColumns(_ columns: [BrowserListColumn]) {
+        if state.location.fileSystemURL != nil {
+            state.preferences.setListColumns(columns, for: state.location)
+        } else {
+            state.preferences.setGlobalListColumns(columns)
+        }
+    }
 }
 
 private struct BrowserListRow: View {
@@ -243,6 +299,7 @@ private struct BrowserListRow: View {
     let index: Int
     let scale: CGFloat
     let nameWidth: CGFloat
+    let columns: [BrowserListColumn]
     let usesEdgeToEdgeBackground: Bool
     let contentFocus: FocusState<BrowserFocusTarget?>.Binding
     let dragSession: BrowserFileDragSession
@@ -292,16 +349,28 @@ private struct BrowserListRow: View {
             }
 
             HStack(spacing: 0) {
-                Label {
-                    BrowserItemNameView(
-                        state: state,
-                        item: entry.item,
-                        contentFocus: contentFocus
-                    )
-                } icon: {
-                    FileIconView(item: entry.item, size: BrowserMetrics.iconSize * scale)
+                HStack(spacing: 4 * scale) {
+                    Label {
+                        BrowserItemNameView(
+                            state: state,
+                            item: entry.item,
+                            contentFocus: contentFocus
+                        )
+                    } icon: {
+                        FileIconView(item: entry.item, size: BrowserMetrics.iconSize * scale)
+                    }
+                    .tint(isSelected ? .white : .primary)
+                    .lineLimit(1)
+                    Spacer(minLength: 2 * scale)
+                    if !entry.item.tags.isEmpty {
+                        FinderTagDots(
+                            tags: entry.item.tags,
+                            colorIndexes: entry.item.tagColorIndexes,
+                            dotSize: 8 * scale
+                        )
+                        .padding(.trailing, 8 * scale)
+                    }
                 }
-                .tint(isSelected ? .white : .primary)
                 .frame(
                     width: max(
                         nameWidth - (CGFloat(entry.depth * 20) + BrowserMetrics.disclosureWidth) * scale,
@@ -310,28 +379,17 @@ private struct BrowserListRow: View {
                     alignment: .leading
                 )
 
-                Text(
-                    entry.item.formattedDate(
-                        entry.item.modificationDate,
-                        locale: state.preferences.language.locale
-                    )
-                )
-                    .foregroundStyle(isSelected ? Color.white.opacity(0.8) : .secondary)
-                    .padding(.leading, BrowserMetrics.columnContentInset * scale)
-                    .frame(
-                        width: state.preferences.listColumnWidth(.modificationDate) * scale,
-                        alignment: .leading
-                    )
-
-                Text(entry.item.formattedSize(locale: state.preferences.language.locale))
-                    .foregroundStyle(isSelected ? Color.white.opacity(0.8) : .secondary)
-                    .padding(.leading, BrowserMetrics.columnContentInset * scale)
-                    .frame(width: state.preferences.listColumnWidth(.size) * scale, alignment: .leading)
-
-                Text(entry.item.displayKind)
-                    .foregroundStyle(isSelected ? Color.white.opacity(0.8) : .secondary)
-                    .padding(.leading, BrowserMetrics.columnContentInset * scale)
-                    .frame(width: state.preferences.listColumnWidth(.kind) * scale, alignment: .leading)
+                ForEach(columns.filter { $0 != .name }) { column in
+                    Text(value(for: column))
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+                        .foregroundStyle(isSelected ? Color.white.opacity(0.8) : .secondary)
+                        .padding(.leading, BrowserMetrics.columnContentInset * scale)
+                        .frame(
+                            width: state.preferences.width(forListColumn: column) * scale,
+                            alignment: .leading
+                        )
+                }
                 Spacer(minLength: 0)
             }
             .contentShape(Rectangle())
@@ -378,5 +436,24 @@ private struct BrowserListRow: View {
             item: entry.item,
             dragSession: dragSession
         )
+    }
+
+    private func value(for column: BrowserListColumn) -> String {
+        let item = entry.item
+        let locale = state.preferences.language.locale
+        return switch column {
+        case .name: item.name
+        case .modificationDate: item.formattedDate(item.modificationDate, locale: locale)
+        case .creationDate: item.formattedDate(item.creationDate, locale: locale)
+        case .lastOpenedDate:
+            item.formattedDate(item.extendedMetadata.lastOpenedDate, locale: locale)
+        case .dateAdded: item.formattedDate(item.extendedMetadata.dateAdded, locale: locale)
+        case .size: item.formattedSize(locale: locale)
+        case .kind: item.displayKind
+        case .lastModifiedBy, .sharedBy: "—"
+        case .version: item.extendedMetadata.version ?? "—"
+        case .comments: item.extendedMetadata.comments ?? "—"
+        case .tags: item.tags.isEmpty ? "—" : item.tags.joined(separator: ", ")
+        }
     }
 }

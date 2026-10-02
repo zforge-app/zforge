@@ -58,6 +58,7 @@ A janela usa `NavigationSplitView` com:
 - O diretório real da conta do usuário aparece como a primeira entrada de Locais, identificado pelo nome da pasta (por exemplo, `felipe`) em vez do rótulo genérico “Home”. Não usar como destino o diretório Home redirecionado para o container do App Sandbox.
 - Em “Go to Folder”, `~` e caminhos iniciados por `~/` são expandidos a partir desse mesmo diretório real da conta, nunca pela Home redirecionada do App Sandbox.
 - Os favoritos Desktop, Documents e Downloads apontam para as pastas correspondentes dentro do diretório real da conta do usuário. As APIs de busca redirecionadas pelo App Sandbox não devem fazer essas entradas apontarem para `Library/Containers/.../Data`.
+- A seção Tags fica ao fim da sidebar e exibe o catálogo global dos arquivos autorizados e favoritos do Finder, independente da pasta atual. Seus círculos medem 12 pt (redução de 4 pt), com cor real ou contorno para tags sem cor. Toda a linha aceita clique e abre o filtro global correspondente, incluindo pastas marcadas. Alterações de tags atualizam a sidebar e o filtro aberto automaticamente; a descoberta inicial é progressiva. Voltar/avançar preserva o filtro.
 - Para localizações do sistema de arquivos, o breadcrumb sempre mostra o caminho completo desde o volume, por exemplo `Macintosh HD > Users > felipe`, mesmo quando a navegação começou por uma entrada intermediária da sidebar. Esses ancestrais visuais não devem criar níveis vazios na visualização em Colunas.
 - A superfície deve continuar visualmente pelo topo da janela, sem corte entre sidebar e titlebar.
 - Usar material do sistema, atualmente `.ultraThinMaterial`, respeitando as safe areas.
@@ -272,12 +273,14 @@ As quatro visualizações compartilham as mesmas regras fundamentais:
 
 ### Estrutura
 
-Colunas atuais:
+Colunas exibidas inicialmente:
 
 - Nome;
 - Data de modificação;
 - Tamanho;
 - Tipo.
+
+Clique secundário em qualquer header abre as opções de colunas do Finder. Nome fica fixo; Data de Criação, Última Abertura, Data de Adição, Versão, Comentários e Tags podem ser ativadas. Modificado por e Compartilhado por ficam indisponíveis sem dados de colaboração. Arrastar os demais headers altera a ordem por diretório. Settings controla a visibilidade e a ordem globais; o menu local termina com uma linha horizontal e **Restore defaults** (**Restaurar padrão**), removendo a substituição da pasta. O padrão inicial de quatro colunas é preservado. Os círculos de tags medem 8 pt em 100% e ficam à direita do nome independentemente da coluna Tags.
 
 Os headers são clicáveis:
 

@@ -4,6 +4,19 @@ import Testing
 
 @Suite("ZF-08 behavior characterization")
 struct RefactoringCharacterizationTests {
+    @Test("Finder tag metadata preserves colors and uncolored custom tags")
+    func finderTagMetadata() throws {
+        let data = try PropertyListSerialization.data(
+            fromPropertyList: ["UFAPE\n6", "UDEMY", "Roxo\n3", "Cinza\n1"],
+            format: .binary,
+            options: 0
+        )
+        #expect(FinderTagMetadata.colorIndexes(in: data) == [
+            "UFAPE": 6, "UDEMY": 0, "Roxo": 3, "Cinza": 1
+        ])
+        #expect(FinderTagMetadata.defaultColorIndex(for: "Laranja") == 7)
+    }
+
     @Test("Contextual action matrix preserves each selection class")
     @MainActor
     func contextualActions() throws {
@@ -61,6 +74,14 @@ struct RefactoringCharacterizationTests {
         preferences.setFinderColumnWidth(1)
         preferences.setPreviewWidth(1_000)
         preferences.setPreviewVisible(false, in: .list)
+        let firstFolder = BrowserLocation.fileSystem(URL(fileURLWithPath: "/tmp/zforge-column-folder-a"))
+        let secondFolder = BrowserLocation.fileSystem(URL(fileURLWithPath: "/tmp/zforge-column-folder-b"))
+        #expect(preferences.globalListColumns == [.name, .modificationDate, .size, .kind])
+        preferences.setGlobalListColumns([.name, .tags, .kind, .dateAdded])
+        preferences.setListColumns([.name, .comments, .tags], for: firstFolder)
+        preferences.rememberSidebarTags(["Red", "Blue", "Red"])
+        #expect(preferences.visibleListColumns(for: firstFolder) == [.name, .comments, .tags])
+        #expect(preferences.visibleListColumns(for: secondFolder) == [.name, .tags, .kind, .dateAdded])
         #expect(preferences.listColumnWidth(.name) == 168)
         #expect(preferences.listColumnWidth(.size) == 800)
         #expect(preferences.finderColumnWidth == 180)
@@ -75,6 +96,39 @@ struct RefactoringCharacterizationTests {
         #expect(restored.previewWidth == 800)
         #expect(!restored.previewVisible(in: .list))
         #expect(restored.previewVisible(in: .columns))
+        #expect(restored.visibleListColumns(for: firstFolder) == [.name, .comments, .tags])
+        #expect(restored.visibleListColumns(for: secondFolder) == [.name, .tags, .kind, .dateAdded])
+        #expect(restored.knownSidebarTags == ["Blue", "Red"])
+        restored.resetListColumns(for: firstFolder)
+        #expect(restored.visibleListColumns(for: firstFolder) == restored.globalListColumns)
+        restored.setGlobalListColumns([.tags, .tags, .sharedBy, .name])
+        #expect(restored.globalListColumns == [.name, .tags])
+    }
+
+    @Test("Sidebar tag navigation shows matching files and restores Recents")
+    @MainActor
+    func sidebarTagNavigation() async throws {
+        let suiteName = "ZF-Tags-\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let state = FileBrowserState(
+            preferences: FileBrowserPreferences(defaults: defaults),
+            fileSystem: UIFixtureFileSystemService(),
+            recentItems: UIFixtureRecentItemsService(),
+            taggedItems: UIFixtureTaggedItemsService(),
+            grants: UIFixtureAccessGrantStore(),
+            archives: UIFixtureArchiveEngine()
+        )
+        await state.start()
+        #expect(state.sidebarTags.contains("Red"))
+        let beforeTag = state.items.map(\.name)
+        await state.navigateToTag("Red")
+        #expect(state.selectedSidebarTag == "Red")
+        #expect(state.items.map(\.name) == ["Welcome.txt"])
+        await state.goBack()
+        #expect(state.selectedSidebarTag == nil)
+        #expect(state.items.map(\.name) == beforeTag)
+        state.close()
     }
 
     @Test("Resize geometry respects scale and the preview's reversed drag direction")
