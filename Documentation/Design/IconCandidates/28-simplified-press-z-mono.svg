@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" fill="#fff">
+  <title>Zforge — prensa e Z, versão mono</title>
+  <rect x="438" y="100" width="124" height="82" rx="13"/>
+  <rect x="378" y="182" width="244" height="156" rx="20"/>
+  <rect x="460" y="338" width="80" height="38"/>
+  <rect x="250" y="376" width="500" height="72" rx="15"/>
+  <path d="M331 448H669V519L455 742H669V816H331V745L545 522H331Z"/>
+  <rect x="233" y="816" width="534" height="82" rx="16"/>
+</svg>
