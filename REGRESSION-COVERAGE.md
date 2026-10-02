@@ -64,6 +64,12 @@ Esta matriz liga os contratos de `Documentation/Requirements/CURRENT-STATE.md` a
 - A suíte `ZforgeTests` passou com 90 casos em `/private/tmp/zforge-add-archive-derived/Logs/Test/Test-Zforge-2026.09.28_08-25-56--0300.xcresult`. `addsToExistingArchives` atualizou ZIP e 7z reais numa pasta interna, preservou um link simbólico apontado ao ZIP e rejeitou auto inclusão e ZIP com volume `.z01`; `addsToEncryptedArchives` confirmou que senha errada preserva o original e que a correta atualiza os dois formatos.
 - O teste de UI de menus encontrou “Add to Archive…” na toolbar antes de falhar ao localizar duas instâncias acessíveis de `Sample.zip` no clique secundário. Após ajustar o seletor, a execução seguinte falhou porque o runner não carregou a acessibilidade do app; portanto não há aprovação completa desse teste nem verificação visual do diálogo e do gesto real de drop. Esses caminhos permanecem em OR-07.
 
+## Integração estática do 7-Zip — ZF-21 em 2026-10-02
+
+- O [plano de implementação](Documentation/Requirements/SEVENZIP-STATIC-INTEGRATION-PLAN.md) define validação de registros de formatos/codecs em Debug e Release, operações reais pela ponte nativa, cancelamento, senha, falhas por item, limites, segurança de caminhos, volumes e escrita transacional.
+- Os testes existentes do backend CLI servem como contratos a migrar; não comprovam cobertura do motor nativo. A suíte nativa deverá executar sem depender da descoberta de `7zz` e registrar o número efetivo de casos executados.
+- Permanecem planejadas as verificações de Sandbox/acesso autorizado, fluxos reais da UI, comparação de desempenho, assinatura e recompilação/relinkagem. Nesta interação houve inspeção de fontes e documentação; não houve build, teste ou benchmark do novo backend.
+
 ## Critério de uso
 
 1. Associar cada alteração a uma linha da matriz e apontar o teste existente, o novo teste ou o roteiro manual executado.

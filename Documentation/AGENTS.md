@@ -10,6 +10,7 @@ Este diretório reúne os requisitos versionados do Zforge e a documentação t�
 4. [`Requirements/PRODUCT-REQUIREMENTS.md`](Requirements/PRODUCT-REQUIREMENTS.md) — visão de produto, plataforma, 7-Zip, segurança, licenciamento, distribuição e requisitos do marco inicial, com status explicitado no próprio documento.
 5. [`Requirements/OPEN-REQUIREMENTS.md`](Requirements/OPEN-REQUIREMENTS.md) — requisitos e decisões ainda abertos, separados do comportamento implementado.
 6. [`Requirements/DOCUMENTATION-REQUIREMENTS.md`](Requirements/DOCUMENTATION-REQUIREMENTS.md) — requisitos da fonte local de documentação SwiftUI e macOS.
+7. [`Requirements/SEVENZIP-STATIC-INTEGRATION-PLAN.md`](Requirements/SEVENZIP-STATIC-INTEGRATION-PLAN.md) — plano da ZF-21 para integração estática nativa do 7-Zip, com fases e critérios de validação; implementação pendente.
 
 ## Documentação técnica SwiftUI
 

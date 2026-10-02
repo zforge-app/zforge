@@ -23,6 +23,7 @@ Atualizado em **2026-09-27**. Esta lista preserva os pedidos levantados nesta co
 | ZF-17 | Adicionar opções avançadas e perfis de compactação | Implementada com build, testes unitários e UI; validação manual de todas as combinações condicionais ainda pendente | D-19 registra ajuste adjacente de extensão |
 | ZF-18 | Adicionar itens a archive existente pelo menu e por drop na navegação | Implementada para ZIP/7z de volume único com confirmação, staging e substituição após validação; suíte unitária passou, inspeção visual do diálogo/drop ainda pendente | Sem divergência registrada |
 | ZF-19 | Explorar ícone com Z, archive e metalurgia para macOS 27 | Direção do candidato 18 confirmada; candidato 19 estilizado gerado individualmente para avaliação; escolha e integração pendentes | D-18 |
+| ZF-21 | Substituir o backend CLI `7zz` por integração nativa com linkagem estática do 7-Zip | Linkagem estática confirmada; plano de implementação e critérios de validação registrados, sem build ou operação do novo motor validados | OR-10; sem divergência registrada |
 
 ## ZF-01 — Documentação de referência e prevenção de regressões
 
@@ -185,3 +186,23 @@ O inventário de `Documentation/Requirements/CURRENT-STATE.md` é a lista de con
 **Investigação do refinamento:** o usuário combinou `Tags`/`Where` iguais do estudo A com rótulos acima dos seletores do estudo B. A orientação oficial Apple sobre layout, pop-up buttons e campos de texto aceita essa posição dos rótulos; o `Form` macOS nativo usa comumente rótulos laterais. A API documentada do `NSSavePanel` não oferece reposicionar seus campos nativos. Por isso, a composição final usa uma folha SwiftUI própria com seletor nativo de pasta (`NSOpenPanel`).
 
 **Refinamento implementado:** os rótulos de formato, nível, método, dicionário, bytes rápidos e threads ficam acima dos respectivos seletores, com largura uniforme de 260 pt em uma folha de 580 pt. `Save As`, `Tags` e `Where` ocupam três linhas com controles largos; o seletor de perfil chega à direita da grade de opções. A altura acompanha senha e confirmação abaixo de `Protect with password`; `Encrypt file names` continua à direita. Build Debug aprovada; o teste de UI mediu a geometria, a expansão da senha e a abertura do seletor nativo de pasta. No refinamento seguinte, as quatro áreas da folha passaram a usar margem lateral de 20 pt, com colunas derivadas da largura útil; a build e um teste de UI assinado passaram, conferindo as bordas esquerda e direita nos estados compacto e com senha. O fluxo de criação real com pasta/tags e a revisão visual final ainda estão em OR-08.
+
+## ZF-21 — Motor nativo do 7-Zip compilado com o Zforge
+
+**Pedido:** substituir o uso de `Vendor/7zz`/`Process` por integração direta com o código-fonte do 7-Zip. O produto entregue deve conter o motor no bundle do Zforge, com assinatura completa do app e de seus componentes aninhados.
+
+**Estado:** planejada. `ArchiveServing` já é a fronteira tipada da UI, mas `SevenZipArchiveEngine` ainda constrói argumentos, interpreta listagem textual e executa `7zz`; `CURRENT-STATE.md` continua a descrever esse backend vigente. O usuário confirmou linkagem estática e pediu o plano. A primeira implementação planejada incorpora o motor ao executável principal com ponte Objective-C++ e execução fora da thread principal. [Plano detalhado](Documentation/Requirements/SEVENZIP-STATIC-INTEGRATION-PLAN.md), incluindo organização de fontes, callbacks, ownership, testes e condições de distribuição.
+
+**Etapas e critérios de conclusão:** fixar uma revisão exata do código-fonte e vendorizá-la de modo reproduzível com licenças e patches; compilar o módulo multiformato como biblioteca estática para arm64 e x86_64 e exercitar listagem, extração e teste em um adaptador mínimo; provar acesso a arquivos autorizados, volumes relacionados, senha, cancelamento e progresso pela fronteira nativa; portar criação e atualização de ZIP/7z, preservando staging, conflitos e substituição somente após validação; trocar a composição de produção para o backend nativo e retirar o `7zz` do bundle apenas depois da matriz de regressão passar; verificar assinatura do executável que incorpora o motor e de eventuais executáveis aninhados, Sandbox, build Release e distribuição assinada/notarizada em cada canal aplicável. Publicar a fonte correspondente e os materiais de recompilação/relinkagem exigidos pela LGPL e revisar as condições de distribuição, especialmente Mac App Store, antes do lançamento.
+
+**Marcos rastreados:**
+
+- [ ] Caracterizar os contratos atuais e separar modelos/políticas do protocolo CLI.
+- [ ] Vendorizar a revisão oficial e provar a build estática universal, incluindo registros de formatos/codecs em Release.
+- [ ] Implementar a ponte tipada com ownership, callbacks, senha, cancelamento e workers.
+- [ ] Portar leitura, teste, extração, materialização, volumes e aninhamento com limites e segurança de caminhos.
+- [ ] Portar criação e atualização transacional preservando todos os formatos e opções atuais.
+- [ ] Integrar o backend nativo na composição de produção, migrar testes e retirar o `7zz` do bundle.
+- [ ] Validar assinatura, Sandbox, distribuição aplicável e recompilação/relinkagem da fonte correspondente.
+
+**Evidência do planejamento:** a inspeção da revisão oficial 26.02 encontrou registros de formatos/codecs por inicializadores estáticos, que exigem retenção explícita na linkagem e verificação em Release. `IArchive.h` proíbe uso simultâneo da mesma instância de `IInArchive` por threads diferentes; o adaptador deve serializar operações por sessão. Não foi executada build, suíte ou benchmark do motor nativo nesta etapa.
