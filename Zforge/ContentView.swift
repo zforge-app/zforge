@@ -473,7 +473,7 @@ struct ContentView: View {
             _ title: String.LocalizationValue,
             systemImage: String,
             isEnabled: Bool,
-            handler: @escaping () -> Void
+            handler: @escaping @MainActor () -> Void
         ) {
             menu.addItem(
                 ClosureMenuItem(
@@ -772,21 +772,24 @@ private enum ViewModeMenuPresenter {
     }
 }
 
-private final class TrackedToolbarMenu: NSMenu, NSMenuDelegate {
-    private let onOpen: () -> Void
-    private let onClose: () -> Void
+nonisolated private final class TrackedToolbarMenu: NSMenu, NSMenuDelegate {
+    private let onOpen: @MainActor () -> Void
+    private let onClose: @MainActor () -> Void
 
-    init(onOpen: @escaping () -> Void, onClose: @escaping () -> Void) {
+    @MainActor
+    init(onOpen: @escaping @MainActor () -> Void, onClose: @escaping @MainActor () -> Void) {
         self.onOpen = onOpen
         self.onClose = onClose
         super.init(title: "")
         delegate = self
     }
 
+    @MainActor
     func menuWillOpen(_ menu: NSMenu) {
         onOpen()
     }
 
+    @MainActor
     func menuDidClose(_ menu: NSMenu) {
         onClose()
     }
@@ -796,14 +799,15 @@ private final class TrackedToolbarMenu: NSMenu, NSMenuDelegate {
     }
 }
 
-private final class ClosureMenuItem: NSMenuItem {
-    private let handler: () -> Void
+nonisolated private final class ClosureMenuItem: NSMenuItem {
+    private let handler: @MainActor () -> Void
 
+    @MainActor
     init(
         title: String,
         systemImage: String,
         isEnabled: Bool,
-        handler: @escaping () -> Void
+        handler: @escaping @MainActor () -> Void
     ) {
         self.handler = handler
         super.init(title: title, action: #selector(performAction), keyEquivalent: "")
@@ -812,7 +816,7 @@ private final class ClosureMenuItem: NSMenuItem {
         self.isEnabled = isEnabled
     }
 
-    @objc private func performAction() {
+    @MainActor @objc private func performAction() {
         handler()
     }
 

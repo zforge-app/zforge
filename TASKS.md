@@ -25,6 +25,7 @@ Atualizado em **2026-10-02**. Esta lista preserva os pedidos levantados nesta co
 | ZF-19 | Explorar ícone com Z, archive e metalurgia para macOS 27 | Arquivo `.icon` exportado pelo usuário integrado em Debug e Release; build Debug compilou o ícone. Inspeção visual no Finder/Dock e das variantes ainda pendente | D-18 |
 | ZF-20 | Colunas da Lista e tags globais com filtro vivo | Implementado; build assinada, preferências, navegação e catálogo real em testes. Clique global, círculos independentes da coluna Tags e atualização sem refresh conferidos no app; arraste de ordem e matriz visual ampla pendentes | OR-09 |
 | ZF-21 | Substituir o backend CLI `7zz` por integração nativa com linkagem estática do 7-Zip | Linkagem estática confirmada; plano de implementação e critérios de validação registrados, sem build ou operação do novo motor validados | OR-10; sem divergência registrada |
+| ZF-22 | Migrar app e alvos de testes para Swift 6 | Implementado; Debug/Release e 98 testes unitários aprovados; UI bloqueada na inicialização do runner | Isolamento explícito de menus, thumbnails e utilitários |
 
 ## ZF-01 — Documentação de referência e prevenção de regressões
 
@@ -187,6 +188,12 @@ O inventário de `Documentation/Requirements/CURRENT-STATE.md` é a lista de con
 **Investigação do refinamento:** o usuário combinou `Tags`/`Where` iguais do estudo A com rótulos acima dos seletores do estudo B. A orientação oficial Apple sobre layout, pop-up buttons e campos de texto aceita essa posição dos rótulos; o `Form` macOS nativo usa comumente rótulos laterais. A API documentada do `NSSavePanel` não oferece reposicionar seus campos nativos. Por isso, a composição final usa uma folha SwiftUI própria com seletor nativo de pasta (`NSOpenPanel`).
 
 **Refinamento implementado:** os rótulos de formato, nível, método, dicionário, bytes rápidos e threads ficam acima dos respectivos seletores, com largura uniforme de 260 pt em uma folha de 580 pt. `Save As`, `Tags` e `Where` ocupam três linhas com controles largos; o seletor de perfil chega à direita da grade de opções. A altura acompanha senha e confirmação abaixo de `Protect with password`; `Encrypt file names` continua à direita. Build Debug aprovada; o teste de UI mediu a geometria, a expansão da senha e a abertura do seletor nativo de pasta. No refinamento seguinte, as quatro áreas da folha passaram a usar margem lateral de 20 pt, com colunas derivadas da largura útil; a build e um teste de UI assinado passaram, conferindo as bordas esquerda e direita nos estados compacto e com senha. O fluxo de criação real com pasta/tags e a revisão visual final ainda estão em OR-08.
+
+## ZF-22 — Modo de linguagem Swift 6
+
+**Pedido:** elevar o modo de linguagem do aplicativo para Swift 6.
+
+**Implementação:** `SWIFT_VERSION = 6.0` em Debug e Release para app, testes unitários e UI. Ajustados isolamento dos menus AppKit, transferência da imagem Quick Look para `MainActor` e utilitários de metadados/layout sem estado de UI. Evidência em `REGRESSION-COVERAGE.md`.
 
 ## ZF-21 — Motor nativo do 7-Zip compilado com o Zforge
 

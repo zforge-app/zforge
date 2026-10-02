@@ -1,7 +1,7 @@
 import AppKit
 import SwiftUI
 
-enum BrowserResizeGeometry {
+nonisolated enum BrowserResizeGeometry {
     static func width(
         startWidth: CGFloat, dragStartX: CGFloat, currentX: CGFloat,
         scale: CGFloat, direction: CGFloat
@@ -10,7 +10,7 @@ enum BrowserResizeGeometry {
     }
 }
 
-enum BrowserColumnsLayout {
+nonisolated enum BrowserColumnsLayout {
     static let minimumPreviewWidth: CGFloat = 240
 
     static func terminalColumnWidth(

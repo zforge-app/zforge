@@ -433,7 +433,7 @@ nonisolated struct ArchiveBrowsingPolicy: Equatable, Sendable {
     }
 }
 
-extension BrowserItem {
+nonisolated extension BrowserItem {
     var usesStaticIconPreview: Bool {
         isContainer || isArchive
     }

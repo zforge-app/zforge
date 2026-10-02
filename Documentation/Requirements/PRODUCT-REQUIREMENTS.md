@@ -9,6 +9,10 @@ Este documento preserva as decisões de produto, integração, distribuição e 
 - As seções de estratégia, evolução do motor e distribuição são requisitos de direção do produto; sua presença aqui não significa implementação ou validação de distribuição.
 - O “marco funcional: navegador somente leitura” é um registro histórico do primeiro marco. Operações de escrita já foram implementadas posteriormente e estão descritas em `CURRENT-STATE.md`; requisitos de segurança, navegação e UX desse marco continuam aplicáveis quando não foram substituídos.
 
+## Linguagem e concorrência
+
+O app e os alvos de testes usam modo de linguagem Swift 6 em Debug e Release. Preservar o isolamento padrão `MainActor` do app e a configuração de concorrência existente; funções puras podem declarar `nonisolated`, enquanto interações AppKit e callbacks de UI permanecem no ator principal.
+
 ## Visão do produto
 
 Zforge é um gerenciador de arquivos compactados baseado no 7-Zip para macOS. O objetivo é alcançar a abrangência funcional do 7-Zip File Manager do Windows, oferecendo essa capacidade em uma aplicação nativa, moderna e integrada ao macOS.

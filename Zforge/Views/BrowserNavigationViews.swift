@@ -1,7 +1,7 @@
 import AppKit
 import SwiftUI
 
-enum BrowserSidebarLayout {
+nonisolated enum BrowserSidebarLayout {
     static let minimumWidth: CGFloat = 180
     static let idealWidth: CGFloat = 220
     static let minimumDetailWidth: CGFloat = 360

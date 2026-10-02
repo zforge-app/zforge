@@ -13,7 +13,7 @@ extension EnvironmentValues {
     }
 }
 
-enum BrowserItemVisualStyle {
+nonisolated enum BrowserItemVisualStyle {
     static let hiddenOpacity = 0.55
     static let selectedHiddenOpacity = 0.72
 
@@ -165,12 +165,12 @@ final class FileIconCache {
     }
 }
 
-struct FolderContentsCacheEntry {
+nonisolated struct FolderContentsCacheEntry {
     let modificationDate: Date?
     let hasContents: Bool
 }
 
-enum FolderContentsDetector {
+nonisolated enum FolderContentsDetector {
     static func hasContents(
         at directory: URL,
         modificationDate: Date?,

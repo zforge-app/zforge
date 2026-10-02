@@ -21,6 +21,8 @@ Levantamento inicial em **2026-09-24**, atualizado em **2026-10-02** a partir do
 | Permissões | App Sandbox, acesso a arquivos escolhidos pelo usuário e bookmarks de escopo de aplicação; helper com sandbox herdado. O projeto declara Hardened Runtime e cópia do `7zz` com `CodeSignOnCopy`. Isso é configuração de projeto, não comprovação de distribuição assinada/notarizada. | [Zforge.entitlements](../../Zforge/Zforge.entitlements), [SevenZipHelper.entitlements](../../Zforge/SevenZipHelper.entitlements), [project.pbxproj](../../Zforge.xcodeproj/project.pbxproj) |
 | 7-Zip incorporado | `Vendor/7zz` é um Mach-O universal arm64/x86_64, copiado para `Contents/MacOS`; o texto de licença do fornecedor é recurso do bundle. O código não depende de instalação externa do 7-Zip. | [ArchiveEngine.swift](../../Zforge/Services/ArchiveEngine.swift), [project.pbxproj](../../Zforge.xcodeproj/project.pbxproj), [7-Zip-License.txt](../../Vendor/7-Zip-License.txt) |
 
+O app, os testes unitários e os testes de UI estão configurados em modo de linguagem Swift 6 em Debug e Release. As subclasses dos menus AppKit preservam os inicializadores herdados não isolados e isolam explicitamente criação e callbacks de UI em `MainActor`; o callback de thumbnail envia `CGImage` ao ator principal. Cálculos puros de geometria, opacidade e classificação de documentos declaram `nonisolated`. Evidência da migração em `REGRESSION-COVERAGE.md`.
+
 ## 2. Navegação e acesso ao sistema de arquivos
 
 | Área | Contrato atual | Implementação |

@@ -201,13 +201,14 @@ final class QuickLookThumbnailHostView: NSImageView {
         self.request = request
 
         QLThumbnailGenerator.shared.generateBestRepresentation(for: request) { [weak self] representation, _ in
+            let thumbnail = representation?.cgImage
             DispatchQueue.main.async {
                 guard let self,
                       self.request === request,
                       self.requestedURL == url else { return }
                 self.request = nil
-                if let representation {
-                    self.image = representation.nsImage
+                if let thumbnail {
+                    self.image = NSImage(cgImage: thumbnail, size: .zero)
                 }
             }
         }
@@ -614,7 +615,7 @@ extension BrowserItem {
         !usesHTMLDocumentPreview && !usesStaticIconPreview && contentType?.conforms(to: .text) == true
     }
 
-    var usesStaticDocumentThumbnailPreview: Bool {
+    nonisolated var usesStaticDocumentThumbnailPreview: Bool {
         ["doc", "docx", "pages"].contains(
             URL(fileURLWithPath: name).pathExtension.lowercased()
         )
@@ -690,7 +691,7 @@ private struct SelectionInspectorIcon: View {
     }
 }
 
-struct BrowserSelectionSummary {
+nonisolated struct BrowserSelectionSummary {
     let items: [BrowserItem]
     let locale: Locale
     var sizeOverrides: [BrowserItemID: Int64] = [:]
