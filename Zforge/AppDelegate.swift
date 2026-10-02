@@ -6,12 +6,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private var pendingArchiveURLs: [URL] = []
 
-    func applicationDidFinishLaunching(_ notification: Notification) {
-        guard let iconURL = Bundle.main.url(forResource: "AppIcon", withExtension: "icns"),
-              let icon = NSImage(contentsOf: iconURL) else { return }
-        NSApplication.shared.applicationIconImage = icon
-    }
-
     func application(_ application: NSApplication, open urls: [URL]) {
         let archives = urls.filter { ArchiveFormatRegistry.recognizes($0.lastPathComponent) }
         guard !archives.isEmpty else { return }

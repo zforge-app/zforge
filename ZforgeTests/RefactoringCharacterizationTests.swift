@@ -142,9 +142,10 @@ struct RefactoringCharacterizationTests {
     @Test("Compiled app declares and bundles its macOS icon")
     func appIconBundle() throws {
         let bundle = Bundle(for: AppDelegate.self)
-        #expect(bundle.object(forInfoDictionaryKey: "CFBundleIconName") as? String == "AppIcon")
+        #expect(bundle.object(forInfoDictionaryKey: "CFBundleIconName") as? String == "zforge_icon")
+        #expect(bundle.object(forInfoDictionaryKey: "CFBundleIconFile") as? String == "zforge_icon")
         #expect(bundle.url(forResource: "Assets", withExtension: "car") != nil)
-        #expect(bundle.url(forResource: "AppIcon", withExtension: "icns") != nil)
+        #expect(bundle.url(forResource: "zforge_icon", withExtension: "icns") != nil)
     }
 
     @Test("Recents keeps distinct same-named files and discards duplicate URLs")
