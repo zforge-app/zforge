@@ -581,7 +581,7 @@ final class FileBrowserState {
             fileSystem: FileSystemService(),
             recentItems: SpotlightRecentItemsService(),
             grants: AccessGrantStore(),
-            archives: SevenZipArchiveEngine(),
+            archives: NativeSevenZipArchiveEngine(),
             initialURL: initialURL
         )
     }

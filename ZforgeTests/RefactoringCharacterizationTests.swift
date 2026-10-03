@@ -319,23 +319,12 @@ struct RefactoringCharacterizationTests {
         }
     }
 
-    @Test("7zz listing parser preserves metadata and synthesizes parent directories")
+    @Test("Archive metadata preserves metadata and synthesizes parent directories")
     func listingParser() throws {
-        let output = """
-        Path = Example.zip
-        Type = zip
-
-        Path = Folder/hello.txt
-        Folder = -
-        Size = 5
-        Packed Size = 3
-        Modified = 2026-09-23 12:00:00
-        Encrypted = +
-        CRC = ABCD1234
-        Method = Deflate
-
-        """
-        let entries = try SevenZipListingParser.parse(output)
+        let entry = ArchiveEntry(path: "Folder/hello.txt", isDirectory: false,
+            size: 5, packedSize: 3, modified: Date(), created: nil, accessed: nil,
+            encrypted: true, checksum: "ABCD1234", method: "Deflate", attributes: nil)
+        let entries = ArchiveEntry.withParents([entry.path: entry])
         #expect(entries.count == 2)
         #expect(entries["Folder"]?.isDirectory == true)
         #expect(entries["Folder/hello.txt"]?.size == 5)
@@ -345,11 +334,11 @@ struct RefactoringCharacterizationTests {
         #expect(entries["Folder/hello.txt"]?.modified != nil)
     }
 
-    @Test("7zz listing parser rejects absolute paths and traversal")
+    @Test("Archive path policy rejects absolute paths and traversal")
     func listingRejectsUnsafePaths() {
-        for path in ["/absolute.txt", "../escape.txt", "Folder/../escape.txt", "\\absolute.txt"] {
+        for path in ["nul\0path", "/absolute.txt", "../escape.txt", "Folder/../escape.txt", "\\absolute.txt"] {
             #expect(throws: ArchiveEngineError.unsafePath) {
-                _ = try SevenZipListingParser.parse("Path = \(path)\nSize = 1\n")
+                _ = try ArchivePathPolicy.safePath(path)
             }
         }
     }

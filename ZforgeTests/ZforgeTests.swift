@@ -317,28 +317,27 @@ struct ZforgeTests {
         #expect(FileBrowserPreferences(defaults: defaults).defaultCompressionProfile.name == "Auto")
     }
 
-    @Test("Compression switches are format-aware and never include the password")
+    @Test("Compression properties are format-aware and never include the password")
     func compressionOptionSwitches() throws {
         let options = CompressionOptions(
             format: .sevenZip, level: 9, method: .lzma2, dictionaryMB: 64,
             fastBytes: 128, solid: false, threads: 4,
             requiresPassword: true, encryptFileNames: true
         )
-        let args = try options.commandArguments(password: "secret-sample")
-        #expect(args.contains("-md=64m"))
-        #expect(args.contains("-mfb=128"))
-        #expect(args.contains("-ms=off"))
-        #expect(args.contains("-mhe=on"))
-        #expect(args.contains("-p"))
-        #expect(!args.joined().contains("secret-sample"))
+        let args = try options.nativeProperties(password: "secret-sample")
+        #expect(args["d"] == "64m" as NSString)
+        #expect(args["fb"] == NSNumber(value: 128))
+        #expect(args["s"] == NSNumber(value: false))
+        #expect(args["he"] == NSNumber(value: true))
+        #expect(!args.description.contains("secret-sample"))
         #expect(throws: ArchiveEngineError.passwordRequired) {
-            _ = try options.commandArguments(password: nil)
+            _ = try options.nativeProperties(password: nil)
         }
 
         var tar = options
         tar.format = .tar
-        let tarArgs = try tar.commandArguments(password: nil)
-        #expect(tarArgs == ["-ttar"])
+        let tarArgs = try tar.nativeProperties(password: nil)
+        #expect(tarArgs.isEmpty)
     }
 
     @Test("Folders remain first while size order changes")
@@ -555,7 +554,7 @@ struct ZforgeTests {
             fileSystem: FileSystemService(),
             fileOperations: FileOperationService(),
             grants: UIFixtureAccessGrantStore(),
-            archives: SevenZipArchiveEngine(helperURL: helperURL)
+            archives: NativeSevenZipArchiveEngine()
         )
         defer { state.close() }
 
@@ -597,7 +596,7 @@ struct ZforgeTests {
         let state = FileBrowserState(
             preferences: preferences, fileSystem: FileSystemService(),
             fileOperations: FileOperationService(), grants: UIFixtureAccessGrantStore(),
-            archives: SevenZipArchiveEngine(helperURL: helperURL)
+            archives: NativeSevenZipArchiveEngine()
         )
         defer { state.close() }
         await state.navigateToSidebar(root, name: root.lastPathComponent)
@@ -606,7 +605,7 @@ struct ZforgeTests {
         #expect(await state.performArchiveToolbarAction() != nil)
         let output = root.appendingPathComponent("readme.7z")
         #expect(FileManager.default.fileExists(atPath: output.path))
-        let engine = SevenZipArchiveEngine(helperURL: helperURL)
+        let engine = NativeSevenZipArchiveEngine()
         try await engine.testArchive(at: output, password: nil)
     }
 
@@ -635,7 +634,7 @@ struct ZforgeTests {
             fileSystem: FileSystemService(),
             fileOperations: FileOperationService(),
             grants: UIFixtureAccessGrantStore(),
-            archives: SevenZipArchiveEngine(helperURL: helperURL)
+            archives: NativeSevenZipArchiveEngine()
         )
         defer { state.close() }
 
@@ -682,7 +681,7 @@ struct ZforgeTests {
             try? fileManager.removeItem(at: browsingRoot)
         }
 
-        let engine = SevenZipArchiveEngine(helperURL: helperURL)
+        let engine = NativeSevenZipArchiveEngine()
         try await engine.createArchive(
             from: [sourceFolder],
             outputURL: workArchiveURL,
@@ -787,7 +786,7 @@ struct ZforgeTests {
             fileSystem: FileSystemService(),
             fileOperations: FileOperationService(),
             grants: UIFixtureAccessGrantStore(),
-            archives: SevenZipArchiveEngine(helperURL: helperURL)
+            archives: NativeSevenZipArchiveEngine()
         )
         defer { state.close() }
 
@@ -1170,7 +1169,7 @@ struct ZforgeTests {
 
     @Test("Real ZIP lists a virtual tree and materializes one item")
     func archiveRoundTrip() async throws {
-        let engine = SevenZipArchiveEngine(helperURL: helperURL)
+        let engine = NativeSevenZipArchiveEngine()
         let opened = try await engine.openArchive(at: fixturesURL.appendingPathComponent("sample-root.zip"), password: nil)
         let rootItems = try await engine.items(at: opened.address)
         #expect(rootItems.contains(where: { $0.name == "hello.txt" }))
@@ -1196,7 +1195,7 @@ struct ZforgeTests {
 
     @Test("Archive engine adds files to existing ZIP and 7z, including an internal folder")
     func addsToExistingArchives() async throws {
-        let engine = SevenZipArchiveEngine(helperURL: helperURL)
+        let engine = NativeSevenZipArchiveEngine()
         let root = FileManager.default.temporaryDirectory
             .appendingPathComponent("ZforgeArchiveUpdate-\(UUID().uuidString)", isDirectory: true)
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
@@ -1257,7 +1256,7 @@ struct ZforgeTests {
 
     @Test("Updating encrypted archives needs the password and preserves the original on failure")
     func addsToEncryptedArchives() async throws {
-        let engine = SevenZipArchiveEngine(helperURL: helperURL)
+        let engine = NativeSevenZipArchiveEngine()
         let root = FileManager.default.temporaryDirectory
             .appendingPathComponent("ZforgeEncryptedUpdate-\(UUID().uuidString)", isDirectory: true)
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
@@ -1292,6 +1291,14 @@ struct ZforgeTests {
             let entries = try await engine.items(at: opened.address)
             #expect(entries.contains(where: { $0.name == "Original.txt" }))
             #expect(entries.contains(where: { $0.name == "Added.txt" }))
+            #expect(entries.first(where: { $0.name == "Added.txt" })?.encrypted == true)
+            if format == .sevenZip {
+                await #expect(throws: ArchiveEngineError.passwordRequired) {
+                    _ = try await engine.openArchive(at: archive, password: nil)
+                }
+            } else {
+                #expect(entries.first(where: { $0.name == "Added.txt" })?.compressionMethod?.contains("AES") == true)
+            }
             await engine.closeSession(opened.address.sessionID)
         }
     }
@@ -1302,7 +1309,7 @@ struct ZforgeTests {
         #expect(ArchiveCompressionFormat.bzip2.fileExtension == "bz2")
         #expect(ArchiveCompressionFormat.gzip.fileExtension == "gz")
 
-        let engine = SevenZipArchiveEngine(helperURL: helperURL)
+        let engine = NativeSevenZipArchiveEngine()
         let root = FileManager.default.temporaryDirectory
             .appendingPathComponent("ZforgeArchiveFormats-\(UUID().uuidString)", isDirectory: true)
         let folder = root.appendingPathComponent("Folder", isDirectory: true)
@@ -1354,7 +1361,7 @@ struct ZforgeTests {
 
     @Test("Archive engine creates encrypted 7z and ZIP with advanced options")
     func createsEncryptedArchives() async throws {
-        let engine = SevenZipArchiveEngine(helperURL: helperURL)
+        let engine = NativeSevenZipArchiveEngine()
         let root = FileManager.default.temporaryDirectory
             .appendingPathComponent("ZforgeEncryptedCreation-\(UUID().uuidString)", isDirectory: true)
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
@@ -1391,7 +1398,7 @@ struct ZforgeTests {
 
     @Test("Archive engine extracts external archives and selected virtual items")
     func extractsArchivesAndSelectedItems() async throws {
-        let engine = SevenZipArchiveEngine(helperURL: helperURL)
+        let engine = NativeSevenZipArchiveEngine()
         let root = FileManager.default.temporaryDirectory
             .appendingPathComponent("ZforgeArchiveExtraction-\(UUID().uuidString)", isDirectory: true)
         let externalDestination = root.appendingPathComponent("External", isDirectory: true)
@@ -1433,7 +1440,7 @@ struct ZforgeTests {
     @MainActor
     func listInlineArchiveExpansion() async throws {
         let fileSystem = FileSystemService()
-        let engine = SevenZipArchiveEngine(helperURL: helperURL)
+        let engine = NativeSevenZipArchiveEngine()
         let state = FileBrowserState(
             preferences: FileBrowserPreferences(),
             fileSystem: fileSystem,
@@ -1475,7 +1482,7 @@ struct ZforgeTests {
 
     @Test("Encrypted archive requires and accepts an in-memory password")
     func encryptedArchive() async throws {
-        let engine = SevenZipArchiveEngine(helperURL: helperURL)
+        let engine = NativeSevenZipArchiveEngine()
         let destination = FileManager.default.temporaryDirectory
             .appendingPathComponent("ZforgeEncryptedExtraction-\(UUID().uuidString)", isDirectory: true)
         defer {
@@ -1520,7 +1527,7 @@ struct ZforgeTests {
 
     @Test("Nested archives open recursively in the same session")
     func nestedArchive() async throws {
-        let engine = SevenZipArchiveEngine(helperURL: helperURL)
+        let engine = NativeSevenZipArchiveEngine()
         let policy = ArchiveBrowsingPolicy(maximumNestedArchiveDepth: 1, rootSizeLimit: 1_000_000_000)
         let outer = try await engine.openArchive(
             at: fixturesURL.appendingPathComponent("nested.7z"),
@@ -1546,7 +1553,7 @@ struct ZforgeTests {
 
     @Test("Archive engine rejects a nested archive when its root session disallows recursion")
     func blockedNestedArchive() async {
-        let engine = SevenZipArchiveEngine(helperURL: helperURL)
+        let engine = NativeSevenZipArchiveEngine()
         let address = ArchiveAddress(
             sessionID: UUID(), archiveID: UUID(), internalPath: "inner.zip",
             allowsNestedArchives: false
@@ -1576,10 +1583,7 @@ struct ZforgeTests {
             .deletingLastPathComponent()
     }
 
-    private var helperURL: URL {
-        Bundle.main.url(forAuxiliaryExecutable: "7zz")
-            ?? projectRoot.appendingPathComponent("Vendor/7zz")
-    }
+
     private var fixturesURL: URL { projectRoot.appendingPathComponent("ZforgeTests/Fixtures") }
 
     @MainActor
@@ -1618,7 +1622,7 @@ struct ZforgeTests {
             fileSystem: FileSystemService(),
             fileOperations: FileOperationService(),
             grants: UIFixtureAccessGrantStore(),
-            archives: SevenZipArchiveEngine(helperURL: helperURL)
+            archives: NativeSevenZipArchiveEngine()
         )
         defer { state.close() }
 

@@ -99,26 +99,7 @@ nonisolated struct CompressionOptions: Codable, Equatable, Sendable {
         return result
     }
 
-    func commandArguments(password: String?) throws -> [String] {
-        let value = normalized()
-        if value.requiresPassword && (password?.isEmpty != false) {
-            throw ArchiveEngineError.passwordRequired
-        }
-        var arguments = [value.format.sevenZipTypeSwitch]
-        if value.supportsLevel { arguments.append("-mx\(value.level)") }
-        if let method = value.method.switchValue { arguments.append("-m0=\(method)") }
-        if let dictionaryMB = value.dictionaryMB { arguments.append("-md=\(dictionaryMB)m") }
-        if let fastBytes = value.fastBytes { arguments.append("-mfb=\(fastBytes)") }
-        if value.format == .sevenZip { arguments.append(value.solid ? "-ms=on" : "-ms=off") }
-        if let threads = value.threads { arguments.append("-mmt=\(threads)") }
-        if value.requiresPassword {
-            // A bare -p asks 7zz for the password on stdin; the secret never enters argv.
-            arguments.append("-p")
-            if value.format == .sevenZip && value.encryptFileNames { arguments.append("-mhe=on") }
-            if value.format == .zip { arguments.append("-mem=\(value.zipEncryption.switchValue)") }
-        }
-        return arguments
-    }
+
 }
 
 nonisolated struct CompressionProfile: Codable, Equatable, Identifiable, Sendable {
@@ -130,5 +111,39 @@ nonisolated struct CompressionProfile: Codable, Equatable, Identifiable, Sendabl
         self.id = id
         self.name = name
         self.options = options.normalized()
+    }
+}
+
+extension ArchiveCompressionFormat {
+    nonisolated var nativeHandlerName: String {
+        switch self {
+        case .sevenZip: "7z"
+        case .zip: "zip"
+        case .tar: "tar"
+        case .xz: "xz"
+        case .bzip2: "bzip2"
+        case .gzip: "gzip"
+        case .wim: "wim"
+        }
+    }
+}
+
+extension CompressionOptions {
+    /// Native ISetProperties values, independent of CLI argument spelling.
+    nonisolated func nativeProperties(password: String?) throws -> [String: NSObject] {
+        let value = normalized()
+        if value.requiresPassword && password?.isEmpty != false { throw ArchiveEngineError.passwordRequired }
+        var properties: [String: NSObject] = [:]
+        if value.supportsLevel { properties["x"] = NSNumber(value: value.level) }
+        if let method = value.method.switchValue { properties[value.format == .sevenZip ? "0" : "m"] = method as NSString }
+        if let dictionary = value.dictionaryMB { properties["d"] = "\(dictionary)m" as NSString }
+        if let fastBytes = value.fastBytes { properties["fb"] = NSNumber(value: fastBytes) }
+        if value.format == .sevenZip { properties["s"] = NSNumber(value: value.solid) }
+        if let threads = value.threads { properties["mt"] = NSNumber(value: threads) }
+        if value.requiresPassword {
+            if value.format == .sevenZip { properties["he"] = NSNumber(value: value.encryptFileNames) }
+            if value.format == .zip { properties["em"] = value.zipEncryption.switchValue as NSString }
+        }
+        return properties
     }
 }

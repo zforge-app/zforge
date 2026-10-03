@@ -11,7 +11,7 @@ Este diretório é a localização dos requisitos do projeto. Começar por este 
 | [`PRODUCT-REQUIREMENTS.md`](PRODUCT-REQUIREMENTS.md) | Visão, plataforma, segurança, integração 7-Zip, licenças, distribuição e direção funcional. Identifica como histórico o primeiro marco somente leitura e como planejadas as etapas futuras. |
 | [`OPEN-REQUIREMENTS.md`](OPEN-REQUIREMENTS.md) | Requisitos e decisões ainda pendentes, com vínculo às tasks e divergências. Não redefine funcionalidades prontas. |
 | [`DOCUMENTATION-REQUIREMENTS.md`](DOCUMENTATION-REQUIREMENTS.md) | Requisitos de cobertura, indexação, proveniência e atualização do corpus local SwiftUI/macOS. |
-| [`SEVENZIP-STATIC-INTEGRATION-PLAN.md`](SEVENZIP-STATIC-INTEGRATION-PLAN.md) | Plano da ZF-21: build estática do 7-Zip, adaptador nativo, migração, validação e distribuição. Planejado; não substitui o backend vigente. |
+| [`SEVENZIP-STATIC-INTEGRATION-PLAN.md`](SEVENZIP-STATIC-INTEGRATION-PLAN.md) | Plano da ZF-21: build estática do 7-Zip, adaptador nativo, migração, validação e distribuição. Backend implementado; evidências e verificações restantes estão registradas no plano e na matriz de regressão. |
 
 ## Precedência e atualização
 

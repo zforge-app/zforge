@@ -249,9 +249,7 @@ nonisolated enum ArchiveCompressionFormat: String, CaseIterable, Codable, Identi
         }
     }
 
-    var sevenZipTypeSwitch: String {
-        "-t\(rawValue)"
-    }
+
 }
 
 nonisolated struct ArchiveAddress: Hashable, Sendable {

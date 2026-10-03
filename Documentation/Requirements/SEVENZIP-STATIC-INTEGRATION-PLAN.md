@@ -1,10 +1,10 @@
 # ZF-21 — plano de integração estática do 7-Zip
 
-Data: **2026-10-02**. Estado: **planejado; nenhuma build ou operação do novo backend foi validada**. A linkagem estática foi escolhida pelo usuário. Este plano adota execução no processo do app para a primeira implementação. O estado vigente continua em [CURRENT-STATE.md](CURRENT-STATE.md), §6; o rastreamento está em [TASKS.md](../../TASKS.md#zf-21--motor-nativo-do-7-zip-compilado-com-o-zforge) e [OR-10](OPEN-REQUIREMENTS.md).
+Data: **2026-10-02**. Estado: **backend e build implementados em 2026-10-03; validação externa e distribuição pendentes**. A linkagem estática foi escolhida pelo usuário. O usuário refinou o escopo para arm64 exclusivamente e macOS mínimo 26.0; x86_64 fica fora do suporte. Este plano adota execução no processo do app para a primeira implementação. O estado vigente continua em [CURRENT-STATE.md](CURRENT-STATE.md), §6; o rastreamento está em [TASKS.md](../../TASKS.md#zf-21--motor-nativo-do-7-zip-compilado-com-o-zforge) e [OR-10](OPEN-REQUIREMENTS.md).
 
 ## Resultado esperado
 
-A build do Zforge compila o código-fonte oficial do 7-Zip para arm64 e x86_64 e incorpora o motor ao executável principal. O produto final realiza as operações por chamadas nativas, sem `7zz`, parsing de saída textual ou biblioteca dinâmica do motor. O código incorporado fica coberto pela assinatura do executável Zforge. Serviço XPC poderá ser avaliado em uma mudança futura; ele não faz parte desta implementação.
+A build do Zforge compila o código-fonte oficial do 7-Zip para arm64 e incorpora o motor ao executável principal. O produto final realiza as operações por chamadas nativas, sem `7zz`, parsing de saída textual ou biblioteca dinâmica do motor. O código incorporado fica coberto pela assinatura do executável Zforge. Serviço XPC poderá ser avaliado em uma mudança futura; ele não faz parte desta implementação.
 
 ```mermaid
 flowchart LR
@@ -29,7 +29,7 @@ Todos esses componentes executam no processo do Zforge. Chamadas síncronas do m
 | `Zforge/Services/NativeSevenZipArchiveEngine.swift` | Implementação de `ArchiveServing`, integração de sessões/políticas, execução e cancelamento. |
 | `ZforgeTests/Fixtures/Archives/` | Fixtures pequenas versionadas e geradores reproduzíveis para cenários maiores. |
 
-Os nomes acima são propostos. `libSevenZipCore.a` é um produto intermediário da build e não é copiado para o `.app`. Headers públicos do adaptador não expõem tipos C++, ponteiros de interfaces do 7-Zip ou sintaxe CLI à UI.
+Os nomes acima foram propostos no plano. A implementação usa a fase `Build SevenZipCore`, `ArchiveEntry.swift`, `NativeSevenZipBackend.swift` e `NativeSevenZipArchiveEngine` em `ArchiveEngine.swift`. `libSevenZipCore.a` é um produto intermediário da build e não é copiado para o `.app`. Headers públicos do adaptador não expõem tipos C++, ponteiros de interfaces do 7-Zip ou sintaxe CLI à UI.
 
 ## 1. Caracterizar o backend atual e preparar a migração
 
@@ -51,7 +51,7 @@ Os nomes acima são propostos. `libSevenZipCore.a` é um produto intermediário 
 - Integrar dependências, inputs e outputs no Xcode para uma build incremental reproduzível, sem gerar objetos dentro das fontes do fornecedor.
 - Garantir que o linker inclua os objetos que registram formatos/codecs por inicializadores. Avaliar `-force_load` restrito à biblioteca do motor ou uma estratégia explícita de retenção; não aplicar `-all_load` globalmente sem necessidade.
 
-**Saída verificável:** biblioteca e executável mínimo ligados estaticamente em Debug e Release, com inventário de formatos/leitura/escrita esperado. Conferir o resultado com dead stripping habilitado. Compilar ambas as arquiteturas não comprova execução em Intel; registrar execução nativa separadamente.
+**Saída verificável:** biblioteca e executável mínimo ligados estaticamente em Debug e Release, com inventário de formatos/leitura/escrita esperado. Conferir o resultado com dead stripping habilitado. O único destino suportado é Apple Silicon (arm64), com macOS mínimo 26.0.
 
 ## 3. Implementar a fronteira Swift / Objective-C++ / 7-Zip
 
@@ -100,8 +100,8 @@ Os nomes acima são propostos. `libSevenZipCore.a` é um produto intermediário 
 
 ## 7. Preparar a distribuição e concluir os contratos
 
-- Executar build Release universal, validar assinatura/Hardened Runtime e preparar fonte correspondente, patches, licenças e instruções de recompilação/relinkagem. Conferir a reprodução em checkout limpo e que uma modificação do motor pode ser incorporada em uma build local.
-- Verificar a distribuição do site com Developer ID, notarização e ticket quando houver identidade/acesso de lançamento autorizados. Executar no hardware disponível e manter explicitamente pendente a validação Intel se não houver host adequado.
+- Executar build Release arm64, validar assinatura/Hardened Runtime e preparar fonte correspondente, patches, licenças e instruções de recompilação/relinkagem. Conferir a reprodução em checkout limpo e que uma modificação do motor pode ser incorporada em uma build local.
+- Verificar a distribuição do site com Developer ID, notarização e ticket quando houver identidade/acesso de lançamento autorizados. Executar em Apple Silicon; o deployment target mínimo do app e do motor é macOS 26.0.
 - Preparar a variante Mac App Store conforme os requisitos existentes, incluindo Sandbox e revisão das condições LGPL/unRAR. Build local e notarização do site não comprovam aceitação na loja.
 - Atualizar `CURRENT-STATE.md` após implementação, refletir a evidência real em `REGRESSION-COVERAGE.md`, concluir ZF-21 somente para o escopo validado e manter pendências de distribuição em OR-10. Registrar divergências concretas em `DIVERGENCES.md` se surgirem.
 
@@ -117,8 +117,17 @@ Os nomes acima são propostos. `libSevenZipCore.a` é um produto intermediário 
 
 Cada marco deve resultar em uma alteração revisável de responsabilidade coerente. O primeiro trabalho de implementação é a etapa 1 seguida da prova estática da etapa 2; os riscos de linker/registro e da ponte são resolvidos antes de portar toda a superfície funcional.
 
-## Evidência que sustenta o plano
+## Evidência inicial do planejamento em 2026-10-02
 
 - Inspeção do workspace em 2026-10-02: `ArchiveServing`, `SevenZipArchiveEngine`, `SevenZipProcessRunner`, `SevenZipListingParser`, `CompressionOptions`, `AccessGrantStore`, testes de archives e configuração de embedding do Xcode.
 - Fontes oficiais locais 26.02: `Format7zF/Arc_gcc.mak`, `Common/RegisterArc.h`, `Common/RegisterCodec.h`, `Archive/IArchive.h` e `IPassword.h`. As macros de registro usam inicializadores; `IArchive.h` proíbe chamadas simultâneas na mesma instância de `IInArchive`.
-- Esta interação produziu um plano e decisões documentais. Ela não executou build, benchmarks, testes de operação nativa, notarização ou validação da ponte.
+- A etapa inicial produziu um plano e decisões documentais. Ela não executou build, benchmarks, testes de operação nativa, notarização ou validação da ponte.
+
+## Execução em 2026-10-03
+
+- Fontes oficiais vendorizadas sem patches; `.a` arm64 incorporada por `-force_load` restrito. MacOS mínimo 26.0; nenhuma dependência x86_64.
+- Ponte tipada, workers, cancelamento, propriedades, resultados por item, streams de volumes, escrita/atualização e permissões/links implementados. UI conserva `ArchiveServing` e suas políticas.
+- Referência CLI: 98 testes aprovados. Testes passaram contra o backend nativo; contagem final e artefatos estão em `REGRESSION-COVERAGE.md`.
+- Runner/parser/tradutor CLI removidos; helper não é copiado ao app. `Vendor/7zz` permanece somente como referência de desenvolvimento para gerar/comparar fixtures, sem uso pelo produto.
+- Recompilação e relinkagem de cópia modificada do motor comprovadas; instruções em `BuildSupport/SevenZip/README.md`.
+- Testes de UI não conseguiram ativar o app (Running Background). Runtime macOS 26.0, acesso externo/bookmarks, matriz ampliada de leitura e canais de distribuição permanecem em OR-10. Não publicar nem marcar notarização/loja concluídas com base nessa build local.

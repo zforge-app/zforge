@@ -168,8 +168,8 @@ extension ArchiveServing {
     }
 }
 
-actor SevenZipArchiveEngine: ArchiveServing {
-    private typealias Entry = SevenZipListingParser.Entry
+actor NativeSevenZipArchiveEngine: ArchiveServing {
+    private typealias Entry = ArchiveEntry
 
     private struct ArchiveRecord: Sendable {
         let id: UUID
@@ -190,13 +190,13 @@ actor SevenZipArchiveEngine: ArchiveServing {
     }
 
     private let fileManager: FileManager
-    private let processRunner: SevenZipProcessRunner
+    private let nativeBackend: NativeSevenZipBackend
     private let sessionsRoot: URL
     private var sessions: [UUID: Session] = [:]
 
-    init(fileManager: FileManager = .default, helperURL: URL? = nil) {
+    init(fileManager: FileManager = .default) {
         self.fileManager = fileManager
-        self.processRunner = SevenZipProcessRunner(helperURL: helperURL ?? Self.locateHelper())
+        self.nativeBackend = NativeSevenZipBackend()
         sessionsRoot = ZforgeTemporaryStorage.archiveSessionsRoot(fileManager: fileManager)
     }
 
@@ -357,7 +357,7 @@ actor SevenZipArchiveEngine: ArchiveServing {
 
         let expectedSize = item.size
         let hardLimit: Int64 = if let expectedSize {
-            expectedSize + 1_048_576
+            expectedSize > Int64.max - 1_048_576 ? Int64.max : expectedSize + 1_048_576
         } else {
             1_073_741_824
         }
@@ -370,20 +370,9 @@ actor SevenZipArchiveEngine: ArchiveServing {
         let safeName = sanitizedFileName(item.name)
         let outputURL = purposeDirectory.appendingPathComponent(safeName)
 
-        let arguments = archive.isRawStream
-            ? ["x", "-so", "-sccUTF-8", "-bso0", "-bse2", "-bsp0", "-spd", "-y", archive.fileURL.path]
-            : materializationExtractionArguments(
-                archive: archive.fileURL,
-                path: address.internalPath
-            )
-        let result = try await processRunner.run(
-            arguments: arguments,
-            password: session.password,
-            standardOutputURL: outputURL,
-            workingDirectory: session.directoryURL,
-            hardOutputLimit: hardLimit
-        )
-        try validate(result, passwordWasProvided: session.password != nil)
+        try await nativeBackend.extract(at: archive.fileURL, password: session.password,
+            paths: archive.isRawStream ? [] : [address.internalPath], destination: purposeDirectory,
+            outputFile: outputURL, byteLimit: UInt64(hardLimit))
 
         let attributes = try fileManager.attributesOfItem(atPath: outputURL.path)
         if let written = (attributes[.size] as? NSNumber)?.int64Value, written > hardLimit {
@@ -411,7 +400,7 @@ actor SevenZipArchiveEngine: ArchiveServing {
         guard !sourceURLs.isEmpty else { throw ArchiveEngineError.itemNotFound }
         let options = options.normalized()
         let format = options.format
-        _ = try options.commandArguments(password: password)
+        _ = try options.nativeProperties(password: password)
 
         let operationDirectory = sessionsRoot
             .appendingPathComponent("Operations", isDirectory: true)
@@ -464,6 +453,7 @@ actor SevenZipArchiveEngine: ArchiveServing {
             )
         }
 
+        try Task.checkCancellation()
         progress(ArchiveProgress(phase: .compressing, fraction: 1))
         try fileManager.createDirectory(
             at: outputURL.deletingLastPathComponent(),
@@ -531,13 +521,14 @@ actor SevenZipArchiveEngine: ArchiveServing {
         let workingArchive = operationDirectory.appendingPathComponent(archive.lastPathComponent)
         try fileManager.copyItem(at: archive, to: workingArchive)
         let sourceNames = stagedNames.map { (pathComponents + [$0]).joined(separator: "/") }
-        let result = try await processRunner.run(
-            arguments: ["a", "-sccUTF-8", "-bso1", "-bse2", "-bsp0", "-spd", "-y", workingArchive.path, "--"] + sourceNames,
-            password: password,
-            standardOutputURL: nil,
-            workingDirectory: inputDirectory
-        )
-        try validate(result, passwordWasProvided: password != nil)
+        let temporary = operationDirectory.appendingPathComponent("Updated-" + archive.lastPathComponent)
+        let format: ArchiveCompressionFormat = archive.pathExtension.lowercased() == "zip" ? .zip : .sevenZip
+        try await nativeBackend.write(to: temporary, updating: workingArchive,
+            options: CompressionOptions(format: format), password: password,
+            names: sourceNames, directory: inputDirectory)
+        try fileManager.removeItem(at: workingArchive)
+        try fileManager.moveItem(at: temporary, to: workingArchive)
+
         try await testArchive(at: workingArchive, password: password)
         try Task.checkCancellation()
 
@@ -556,20 +547,7 @@ actor SevenZipArchiveEngine: ArchiveServing {
         try fileManager.createDirectory(at: operationDirectory, withIntermediateDirectories: true)
         defer { try? fileManager.removeItem(at: operationDirectory) }
         let stagedURL = try stageArchiveAndVolumes(at: url, in: operationDirectory)
-        let result = try await processRunner.run(
-            arguments: ["t", "-sccUTF-8", "-bso1", "-bse2", "-bsp0", "-spd", "-y", stagedURL.path],
-            password: password,
-            standardOutputURL: nil,
-            workingDirectory: operationDirectory
-        )
-        try validate(result, passwordWasProvided: password != nil)
-        if result.code != 0 {
-            let output = String(decoding: result.stdout + result.stderr, as: UTF8.self)
-            throw ArchiveEngineError.commandFailed(
-                code: result.code,
-                message: output.trimmingCharacters(in: .whitespacesAndNewlines)
-            )
-        }
+        try await nativeBackend.test(at: stagedURL, password: password)
     }
 
     func extractArchive(
@@ -610,17 +588,9 @@ actor SevenZipArchiveEngine: ArchiveServing {
         }
 
         progress(ArchiveProgress(phase: .extracting, fraction: 0))
-        let result = try await processRunner.run(
-            arguments: extractionArguments(
-                archive: extractionArchive,
-                destination: destinationURL,
-                paths: []
-            ),
-            password: password,
-            standardOutputURL: nil,
-            workingDirectory: operationDirectory
-        )
-        try validate(result, passwordWasProvided: password != nil)
+        try await nativeBackend.extract(at: extractionArchive, password: password,
+            paths: [], destination: destinationURL)
+
         progress(ArchiveProgress(phase: .extracting, fraction: 1))
     }
 
@@ -658,17 +628,9 @@ actor SevenZipArchiveEngine: ArchiveServing {
         }
         progress(ArchiveProgress(phase: .extracting, fraction: 0))
         let effectivePassword = password ?? session.password
-        let result = try await processRunner.run(
-            arguments: extractionArguments(
-                archive: archive.fileURL,
-                destination: destinationURL,
-                paths: archive.isRawStream ? [] : paths
-            ),
-            password: effectivePassword,
-            standardOutputURL: nil,
-            workingDirectory: session.directoryURL
-        )
-        try validate(result, passwordWasProvided: effectivePassword != nil)
+        try await nativeBackend.extract(at: archive.fileURL, password: effectivePassword,
+            paths: archive.isRawStream ? [] : paths, destination: destinationURL)
+
         if let password {
             self.sessions[firstAddress.sessionID]?.password = password
         }
@@ -707,20 +669,23 @@ actor SevenZipArchiveEngine: ArchiveServing {
         sessions[sessionID] = session
     }
 
-    func closeSession(_ sessionID: UUID) {
+    func closeSession(_ sessionID: UUID) async {
         guard let session = sessions.removeValue(forKey: sessionID) else { return }
+        await nativeBackend.cancelOperations(in: session.directoryURL)
         try? fileManager.removeItem(at: session.directoryURL)
     }
 
-    func closeAllSessions() {
-        for session in sessions.values {
+    func closeAllSessions() async {
+        let closing = Array(sessions.values)
+        sessions.removeAll()
+        for session in closing {
+            await nativeBackend.cancelOperations(in: session.directoryURL)
             try? fileManager.removeItem(at: session.directoryURL)
         }
-        sessions.removeAll()
     }
 
     func cancelAllOperations() {
-        processRunner.cancelAll()
+        nativeBackend.cancelAll()
     }
 
     func cleanupStaleSessions() {
@@ -744,15 +709,8 @@ actor SevenZipArchiveEngine: ArchiveServing {
         password: String?,
         parentArchiveID: UUID? = nil
     ) async throws -> ArchiveRecord {
-        let result = try await processRunner.run(
-            arguments: listingArguments(archive: url),
-            password: password,
-            standardOutputURL: nil,
-            workingDirectory: url.deletingLastPathComponent()
-        )
-        try validate(result, passwordWasProvided: password != nil)
-        let output = String(decoding: result.stdout, as: UTF8.self)
-        var entries = try SevenZipListingParser.parse(output)
+        var entries = try await nativeBackend.list(at: url, password: password)
+
         let isRawStream = entries.isEmpty && isStreamURL(url)
         if isRawStream {
             let path = rawStreamOutputName(for: displayName)
@@ -781,17 +739,6 @@ actor SevenZipArchiveEngine: ArchiveServing {
             entries: entries,
             isRawStream: isRawStream
         )
-    }
-
-    private func validate(_ result: SevenZipCommandResult, passwordWasProvided: Bool) throws {
-        guard result.code != 0 && result.code != 1 else { return }
-        let combined = String(decoding: result.stdout + result.stderr, as: UTF8.self)
-        let lower = combined.lowercased()
-        if lower.contains("enter password") || lower.contains("encrypted archive") || lower.contains("wrong password") {
-            throw passwordWasProvided ? ArchiveEngineError.invalidPassword : ArchiveEngineError.passwordRequired
-        }
-        if result.code == 255 { throw ArchiveEngineError.cancelled }
-        throw ArchiveEngineError.commandFailed(code: result.code, message: combined.trimmingCharacters(in: .whitespacesAndNewlines))
     }
 
     private func stageArchiveAndVolumes(at url: URL, in directory: URL) throws -> URL {
@@ -839,10 +786,6 @@ actor SevenZipArchiveEngine: ArchiveServing {
         return [url]
     }
 
-    private func listingArguments(archive: URL) -> [String] {
-        ["l", "-slt", "-ba", "-sccUTF-8", "-bso1", "-bse2", "-bsp0", archive.path]
-    }
-
     private func runCreate(
         outputURL: URL,
         options: CompressionOptions,
@@ -850,44 +793,8 @@ actor SevenZipArchiveEngine: ArchiveServing {
         sourceNames: [String],
         workingDirectory: URL
     ) async throws {
-        let switches = try options.commandArguments(password: password)
-        let result = try await processRunner.run(
-            arguments: [
-                "a",
-            ] + switches + [
-                "-sccUTF-8",
-                "-bso1",
-                "-bse2",
-                "-bsp0",
-                "-y",
-                outputURL.path,
-                "--"
-            ] + sourceNames,
-            password: password,
-            standardOutputURL: nil,
-            workingDirectory: workingDirectory
-        )
-        try validate(result, passwordWasProvided: password != nil)
-    }
-
-    private func extractionArguments(
-        archive: URL,
-        destination: URL,
-        paths: [String]
-    ) -> [String] {
-        [
-            "x",
-            "-sccUTF-8",
-            "-bso0",
-            "-bse2",
-            "-bsp0",
-            "-spd",
-            "-aos",
-            "-y",
-            "-o\(destination.path)",
-            archive.path,
-            "--"
-        ] + paths
+        try await nativeBackend.write(to: outputURL, options: options, password: password,
+            names: sourceNames, directory: workingDirectory)
     }
 
     private func archiveURLForBrowsing(
@@ -902,16 +809,7 @@ actor SevenZipArchiveEngine: ArchiveServing {
             isDirectory: true
         )
         try fileManager.createDirectory(at: payloadDirectory, withIntermediateDirectories: true)
-        let result = try await processRunner.run(
-            arguments: [
-                "x", "-sccUTF-8", "-bso0", "-bse2", "-bsp0", "-spd", "-aos", "-y",
-                "-o\(payloadDirectory.path)", url.path
-            ],
-            password: password,
-            standardOutputURL: nil,
-            workingDirectory: operationDirectory
-        )
-        try validate(result, passwordWasProvided: password != nil)
+        try await nativeBackend.extract(at: url, password: password, paths: [], destination: payloadDirectory)
 
         let payloads = try fileManager.contentsOfDirectory(
             at: payloadDirectory,
@@ -946,10 +844,6 @@ actor SevenZipArchiveEngine: ArchiveServing {
             }
         }
         return URL(fileURLWithPath: displayName).deletingPathExtension().lastPathComponent
-    }
-
-    private func materializationExtractionArguments(archive: URL, path: String) -> [String] {
-        ["x", "-so", "-sccUTF-8", "-bso0", "-bse2", "-bsp0", "-spd", "-y", archive.path, "--", path]
     }
 
     private func conflictFilesToReplace(
@@ -1015,11 +909,11 @@ actor SevenZipArchiveEngine: ArchiveServing {
     }
 
     private func safeArchivePath(_ raw: String) throws -> String {
-        try SevenZipListingParser.safePath(raw)
+        try ArchivePathPolicy.safePath(raw)
     }
 
     private func normalized(_ path: String) -> String {
-        SevenZipListingParser.normalized(path)
+        ArchivePathPolicy.normalized(path)
     }
 
     private func sanitizedFileName(_ name: String) -> String {
@@ -1058,7 +952,7 @@ actor SevenZipArchiveEngine: ArchiveServing {
     private func ensureAvailableSpace(for bytes: Int64, at url: URL) throws {
         let values = try url.resourceValues(forKeys: [.volumeAvailableCapacityForImportantUsageKey])
         guard let available = values.volumeAvailableCapacityForImportantUsage else { return }
-        guard available > bytes + 536_870_912 else { throw ArchiveEngineError.insufficientSpace }
+        guard available > 536_870_912 && bytes < available - 536_870_912 else { throw ArchiveEngineError.insufficientSpace }
     }
 
     private func propagateQuarantine(from source: URL, to destination: URL) {
@@ -1070,22 +964,4 @@ actor SevenZipArchiveEngine: ArchiveServing {
         try? destination.setResourceValues(destinationValues)
     }
 
-    private nonisolated static func locateHelper() -> URL? {
-        if let override = ProcessInfo.processInfo.environment["ZFORGE_7ZZ_PATH"] {
-            return URL(fileURLWithPath: override)
-        }
-        if let bundled = Bundle.main.url(forAuxiliaryExecutable: "7zz") {
-            return bundled
-        }
-        #if DEBUG
-        let development = URL(fileURLWithPath: #filePath)
-            .deletingLastPathComponent()
-            .deletingLastPathComponent()
-            .deletingLastPathComponent()
-            .deletingLastPathComponent()
-            .appendingPathComponent("7z2602-mac/7zz")
-        if FileManager.default.fileExists(atPath: development.path) { return development }
-        #endif
-        return nil
-    }
 }
