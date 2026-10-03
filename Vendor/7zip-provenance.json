@@ -1,0 +1,22 @@
+{
+  "version": "26.02",
+  "revision": "f9d78aff31a5f2521ae7ddbdc97c4a8855808959",
+  "repository": "https://github.com/ip7z/7zip",
+  "snapshot_paths": [
+    "C",
+    "CPP",
+    "DOC",
+    "Asm"
+  ],
+  "git_archive_sha256": "a05a15feed8f191b7fd8d93fa9e85777d681068dc35266e1ed73d339fae0acc1",
+  "patches": [],
+  "build": {
+    "architecture": "arm64",
+    "minimum_macos": "26.0",
+    "bundle": "Format7zF",
+    "external_codecs": false,
+    "assembly": "ARM64 LzmaDecOpt",
+    "multithreaded": true,
+    "cxx_standard": "c++17"
+  }
+}
