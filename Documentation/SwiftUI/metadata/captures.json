@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "captured_at": "2026-10-02T01:13:11+00:00",
+  "captured_at": "2026-10-03T22:58:36.198078+00:00",
   "seed_url": "https://developer.apple.com/documentation/SwiftUI",
   "scope": "home plus unique first-level links exposed by Overview, Featured samples, and Topics, with audited on-demand expansions",
-  "expected_contexts": 90,
-  "captured_contexts": 90,
+  "expected_contexts": 92,
+  "captured_contexts": 92,
   "failures": [],
   "captures": [
     {
@@ -1284,6 +1284,36 @@
       "bytes": 36176,
       "categories": [
         "On-demand expansion"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/appkit/nstableview/draggingdestinationfeedbackstyle-swift.enum",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/appkit/nstableview/draggingdestinationfeedbackstyle-swift.enum.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/appkit/nstableview/draggingdestinationfeedbackstyle-swift.enum.json",
+      "local_path": "contexts/appkit-nstableview-dragging-destination-feedback-style.md",
+      "sha256": "6242a5f60dba545a480582eb149cda90a3c71cf9c0c398efc9f6160fcf34ddcb",
+      "etag": "\"bb6b-659026eabb221\"",
+      "last_modified": "Fri, 14 Aug 2026 14:14:01 GMT",
+      "bytes": 47979,
+      "categories": [
+        "On-demand expansion",
+        "AppKit drag and drop"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/coretransferable/datarepresentation",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/coretransferable/datarepresentation.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/coretransferable/datarepresentation.json",
+      "local_path": "contexts/coretransferable-data-representation.md",
+      "sha256": "6ddeba931f6c773c91010a27a3f1e6106dc38e31cd728eb3754c0f414f35290a",
+      "etag": "\"4455-659029bad3bff\"",
+      "last_modified": "Fri, 14 Aug 2026 14:26:36 GMT",
+      "bytes": 17493,
+      "categories": [
+        "On-demand expansion",
+        "Drag and drop"
       ],
       "depth": 2
     }
