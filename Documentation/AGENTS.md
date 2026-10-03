@@ -25,3 +25,7 @@ Este diretório reúne os requisitos versionados do Zforge e a documentação t�
 - [`../REGRESSION-COVERAGE.md`](../REGRESSION-COVERAGE.md) — matriz de contratos, testes e verificações manuais.
 
 Em cada interação, consultar os requisitos afetados e atualizar seus contratos quando houver informação nova. Mudanças de estado das atividades e divergências devem ser refletidas nos documentos de rastreamento correspondentes na mesma interação.
+
+## Comparações de implementação
+
+- [Benchmarks/7zip-linking.md](Benchmarks/7zip-linking.md) — comparação executada de CLI oficial, integração estática e dinâmica, com scripts reproduzíveis e medições individuais.

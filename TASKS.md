@@ -216,3 +216,7 @@ O inventário de `Documentation/Requirements/CURRENT-STATE.md` é a lista de con
 **Evidência histórica do planejamento em 2026-10-02:** a inspeção da revisão oficial 26.02 encontrou registros de formatos/codecs por inicializadores estáticos, que exigem retenção explícita na linkagem e verificação em Release. `IArchive.h` proíbe uso simultâneo da mesma instância de `IInArchive` por threads diferentes; o adaptador deve serializar operações por sessão. Não foi executada build, suíte ou benchmark do motor nativo nesta etapa.
 
 **Limite de conclusão da ZF-21:** a migração do backend não comprova todos os formatos upstream, todo o fluxo visual nem distribuição pública. OR-10 mantém as verificações que exigem sessão gráfica ativa, autorizações externas, runtime macOS 26.0 e credenciais/canal de lançamento.
+
+## Comparação solicitada após a ZF-21 — 2026-10-03
+
+A implementação estática está commitada nesta branch `feat/7zz-static-linking`. A variante dinâmica foi implementada e validada em `feat/7zz-dinamic-linking`, e o [mesmo benchmark para CLI/estática/dinâmica](Documentation/Benchmarks/7zip-linking.md) está versionado em ambas as branches. Git não aceita `:` no nome; foi usado `/`. A alternativa estática continua sendo o backend desta branch. A variante dinâmica não altera automaticamente a escolha de distribuição.

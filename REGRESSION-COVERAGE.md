@@ -114,3 +114,7 @@ Correção adicional em 2026-10-02: `SpotlightTaggedItemsService` recebe `nil` c
 - Ajustes de migração: menus AppKit com inicializadores herdados não isolados e criação/callbacks em `MainActor`; transferência de `CGImage` em vez de `QLThumbnailRepresentation` ao ator principal; geometria, classificação de itens, resumo de seleção e detecção de conteúdo com isolamento explícito. Nenhuma supressão global de verificação de concorrência foi adicionada.
 
 A execução unitária separada terminou com **98 aprovados, 0 falhas e 0 ignorados**, conferidos por `xcresulttool` em `/private/tmp/ZforgeSwift6UnitTests.xcresult` (`/private/tmp/zforge-swift6-unit-tests.log`). `git diff --check` passou. A verificação real de menus e thumbnails nesta migração permanece pendente devido à inicialização do runner de UI.
+
+## Comparação das três integrações — 2026-10-03
+
+A pedido do usuário, o backend desta branch foi preservado em `feat/7zz-static-linking`, e a variante dinâmica foi implementada em `feat/7zz-dinamic-linking`. [Benchmark reproduzível e dados brutos](Documentation/Benchmarks/7zip-linking.md) disponíveis em ambas: mesmos datasets e quatro operações ZIP Store, 3 repetições, 18 execuções com hashes de extração conferidos. A variante dinâmica passou nos mesmos 108 testes, Release e assinatura local do app/dylib; detalhes no relatório. Esta branch mantém a linkagem estática. UI, runtime macOS 26.0, acesso externo e distribuição continuam pendentes em OR-10.
