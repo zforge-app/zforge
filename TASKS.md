@@ -27,6 +27,7 @@ Atualizado em **2026-10-03**. Esta lista preserva os pedidos levantados nesta co
 | ZF-21 | Substituir o backend CLI `7zz` por integração nativa com linkagem estática do 7-Zip | Backend e build implementados para arm64/macOS 26.0; operações nativas verificadas; validação externa/UI e distribuição pendentes | OR-10; sem divergência registrada |
 | ZF-22 | Migrar app e alvos de testes para Swift 6 | Implementado; Debug/Release e 98 testes unitários aprovados; UI bloqueada na inicialização do runner | Isolamento explícito de menus, thumbnails e utilitários |
 | ZF-24 | Comparar RAM total do Zforge e processos 7zz em builds reais | 36 launches concluídos, hashes conferidos; sampler e séries registrados; D-21 corrigida nas duas branches; retenção em OR-11 | UI de fixture; não prova vazamento nem toda a UI |
+| ZF-25 | Investigar e otimizar desempenho e memória dos adapters nativos | Planejada a pedido do usuário; hipóteses registradas, sem profiling ou correção de desempenho | OR-11 e OR-12 |
 
 ## ZF-01 — Documentação de referência e prevenção de regressões
 
@@ -229,3 +230,25 @@ A implementação estática está commitada nesta branch `feat/7zz-static-linkin
 **Executado:** snapshots Release instrumentados apenas em diretórios temporários, janela com `ContentView` real/serviços visuais de fixture, staging e chamadas reais do motor; duas cargas × ZIP/7z × três variantes × três repetições, total de 36 launches com SHA-256 correto. Sampler externo soma a família de processos por ciclo, registra RSS/physical footprint, baseline e pós-limpeza. [Relatório e método](Documentation/Benchmarks/7zip-ram.md).
 
 **Achados:** D-21 impedia extração nativa no container e foi corrigida em ambas as branches com raiz autorizada/descritores; 109 testes passaram em cada variante. A diferença de RAM estática/dinâmica foi pequena, mas o pipeline 7z grande nativo chegou e permaneceu perto de 992 MiB após fechar sessões, contra ~56 MiB após o CLI finalizar seus filhos. Investigar a retenção em OR-11; o teste não conclui vazamento. OR-10 preserva runtime macOS 26.0, PowerBox/bookmarks externos e distribuição.
+
+
+## ZF-25 — Otimizações futuras dos adapters nativos
+
+**Pedido (2026-10-03):** documentar as pendências para retomada futura. Esta atividade não muda o comportamento implementado nem inicia uma rodada de otimização.
+
+**Evidência:** [benchmark inicial](Documentation/Benchmarks/7zip-linking.md) e [RAM do app completo](Documentation/Benchmarks/7zip-ram.md). A vantagem do CLI foi observada na extração de muitos arquivos pequenos; não é uma superioridade geral. A proximidade entre estática e dinâmica aponta para investigação do caminho compartilhado, mas não identifica a causa. Os tempos iniciais precedem a correção D-21; repetir com ambas as versões atuais antes de atribuir ganhos a uma alteração.
+
+### Hipóteses a medir
+
+1. `SevenZipBridge.mm`, callback de extração: `indices indexOfObject:@(index)` faz busca linear por entrada; extrair todas pode acumular O(n²). Comparar acesso por mapa ou índice direto, preservando seleção parcial, ordem e associação ao destino.
+2. I/O e metadados por arquivo: abertura segura por descritores, cache de diretórios, escrita, permissões e datas. Medir tempo e chamadas de sistema; preservar raiz autorizada, `O_NOFOLLOW`, limites de bytes e proteção contra traversal/links.
+3. Consultas de propriedades e alocações/cópias Foundation na ponte Objective-C++; investigar também listagens repetidas na preparação Swift da extração. O benchmark inicial não inclui o caminho Swift completo, portanto não atribuir seus tempos à travessia Swift sem outro experimento.
+4. OR-11: retenção de memória após teste de 7z grande. Separar lifetime/ownership de interfaces COM, objetos ARC, buffers de codec, caches e allocator; não declarar vazamento sem evidência.
+
+### Protocolo de retomada e conclusão
+
+- Usar Time Profiler para CPU, Allocations/VM Tracker para memória e contagem de chamadas de sistema quando pertinente; separar preparação, callbacks, codec, I/O e limpeza.
+- Comparar CLI, ponte nativa isolada e operação completa via `ArchiveServing`, com entradas, opções, cache, staging e proteção de destino explicitados. Alterar um candidato por vez.
+- Repetir operações no mesmo processo para distinguir retenção estável de crescimento acumulado; registrar memória após cada fase e após fechar sessões, sem somar picos independentes de processos.
+- Reexecutar a suíte de tempo e RAM total Zforge + filhos nas variantes estática e dinâmica; conferir hashes e registrar amostras/variabilidade, não apenas uma mediana.
+- Concluir somente com ganho medido e regressões pertinentes verificadas: seleção parcial, Unicode, conflitos, cancelamento, arquivos corrompidos, links/traversal e extração real no sandbox. Não remover garantias de segurança para obter ganho.

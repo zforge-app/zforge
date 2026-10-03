@@ -31,6 +31,14 @@ O produto deve ser tratado como uma aplicação completa de gerenciamento de arq
 - Itens locais podem ser adicionados a um archive existente por ação contextual com escolha de destino ou por drop direto no archive e nas pastas internas de sua navegação. A operação confirma a modificação antes de gravar e preserva os arquivos de origem. A implementação inicial de atualização cobre ZIP e 7z de volume único.
 - Ao tomar decisões de UI/UX, considerar tanto usuários casuais quanto usuários avançados que esperam eficiência semelhante à do 7-Zip File Manager.
 
+## Possível evolução para iOS e iPadOS — estudo futuro
+
+A pergunta do usuário sobre um port não aprova nem implementa suporte móvel; o escopo atual permanece macOS arm64/mínimo 26.0. A linkagem estática pode ser mantida: [a Apple suporta bibliotecas estáticas em XCFrameworks com variantes por plataforma](https://developer.apple.com/documentation/xcode/creating-a-multi-platform-binary-framework-bundle). O `.a` macOS atual não pode ser reutilizado como binário iOS apenas por ser arm64. Será necessário compilar o core/ponte para SDK e target de dispositivo iOS e, separadamente, simulador arm64; auditar fontes, assembly e APIs usados. XCFramework é uma opção de empacotamento, não um requisito para compilação direta no projeto.
+
+Preservar `ArchiveServing` e o domínio como candidatos a reutilização; adaptar AppKit, acesso autorizado a documentos, staging/metadados e ciclo de vida. Definir orçamento de memória, dicionário e paralelismo para dispositivos reais, resolver/investigar OR-11 e testar operações longas com as [APIs de execução em background do iOS/iPadOS](https://developer.apple.com/documentation/BackgroundTasks/performing-long-running-tasks-on-ios-and-ipados). Workers fora da thread principal não garantem execução após o app ir para background. O consumo medido no Mac não estabelece um limite móvel seguro.
+
+A distribuição futura deve revisar LGPL 2.1/relinkagem, fonte correspondente, demais licenças do snapshot, assinatura e termos do canal iOS. A escolha estática não elimina essas obrigações nem demonstra compatibilidade jurídica com a App Store. Não há build ou teste iOS/iPadOS nesta etapa.
+
 ## Referência obrigatória de UI/UX
 
 O arquivo [`UI-UX-GUIDE.md`](UI-UX-GUIDE.md), neste diretório, é a referência principal para a criação e evolução da UI/UX. Ele deve ser consultado antes de implementar ou alterar interfaces, fluxos, componentes visuais ou padrões de interação.
