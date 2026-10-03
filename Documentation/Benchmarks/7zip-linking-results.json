@@ -1,0 +1,315 @@
+{
+  "metadata": {
+    "scope": "ZIP Store core microbenchmark; 3 rotating-order warm-cache repetitions; native O2; no Swift staging, UI or sandbox; native phase timers exclude process/loader startup, CLI timers include per-command startup; extraction hashes checked outside timers",
+    "host": "macOS-27.0.1-arm64-arm-64bit",
+    "architecture": "arm64",
+    "compiler": "Apple clang version 21.0.0 (clang-2100.3.34.2)",
+    "revision": "f9d78aff31a5f2521ae7ddbdc97c4a8855808959",
+    "cli_sha256": "9c56cf3379a0d8544e9244958b96fdc7c17f9ce70f5a160eb2b41f5f3df96d8c",
+    "static_sha256": "64efb706ad40d53520452997a199cd426b3b65bd2c6c5a7da2146bb2b271a99f",
+    "dynamic_sha256": "0b8905fa6f284830731819ec3332eb49c867898929cb2f18d10dd7ab835679da",
+    "bridge_sha256": "f1015a1b8bf9beca8d325265c5b4db76b9d83ecb69f53d3088b80ed19ad265e4",
+    "datasets": {
+      "Large": {
+        "files": 1,
+        "bytes": 67108864
+      },
+      "Small": {
+        "files": 2000,
+        "bytes": 512000
+      }
+    }
+  },
+  "medians": [
+    {
+      "dataset": "Large",
+      "backend": "CLI",
+      "write_s": 0.0260754590000003,
+      "list_s": 0.0034112080000001654,
+      "test_s": 0.011225166000000009,
+      "extract_s": 0.025323959000000063
+    },
+    {
+      "dataset": "Large",
+      "backend": "static",
+      "write_s": 0.023463,
+      "list_s": 0.0005,
+      "test_s": 0.008735,
+      "extract_s": 0.026374
+    },
+    {
+      "dataset": "Large",
+      "backend": "dynamic",
+      "write_s": 0.024244,
+      "list_s": 0.000527,
+      "test_s": 0.008712,
+      "extract_s": 0.022779
+    },
+    {
+      "dataset": "Small",
+      "backend": "CLI",
+      "write_s": 0.029769082999999696,
+      "list_s": 0.0081218750000005,
+      "test_s": 0.007289416999999965,
+      "extract_s": 0.12147504100000006
+    },
+    {
+      "dataset": "Small",
+      "backend": "static",
+      "write_s": 0.02237,
+      "list_s": 0.002009,
+      "test_s": 0.00407,
+      "extract_s": 0.160208
+    },
+    {
+      "dataset": "Small",
+      "backend": "dynamic",
+      "write_s": 0.022479,
+      "list_s": 0.002051,
+      "test_s": 0.004124,
+      "extract_s": 0.163565
+    }
+  ],
+  "records": [
+    {
+      "dataset": "Large",
+      "run": 0,
+      "backend": "CLI",
+      "write_s": 0.041861833000000015,
+      "write_rss_bytes": 8126464,
+      "list_s": 0.0035262080000000307,
+      "list_rss_bytes": 3915776,
+      "test_s": 0.011293707999999958,
+      "test_rss_bytes": 3899392,
+      "extract_s": 0.029057416999999974,
+      "extract_rss_bytes": 3866624,
+      "verified_files": 1
+    },
+    {
+      "dataset": "Large",
+      "run": 0,
+      "backend": "static",
+      "peak_rss_bytes": 13320192,
+      "files": 1,
+      "write_s": 0.045083,
+      "list_s": 0.000745,
+      "test_s": 0.015257,
+      "extract_s": 0.030349,
+      "process_total_s": 0.434802833,
+      "verified_files": 1
+    },
+    {
+      "dataset": "Large",
+      "run": 0,
+      "backend": "dynamic",
+      "peak_rss_bytes": 13500416,
+      "files": 1,
+      "write_s": 0.041881,
+      "list_s": 0.000759,
+      "test_s": 0.013927,
+      "extract_s": 0.03523,
+      "process_total_s": 0.5378313749999997,
+      "verified_files": 1
+    },
+    {
+      "dataset": "Large",
+      "run": 1,
+      "backend": "static",
+      "peak_rss_bytes": 13156352,
+      "files": 1,
+      "write_s": 0.023463,
+      "list_s": 0.0005,
+      "test_s": 0.008735,
+      "extract_s": 0.026374,
+      "process_total_s": 0.06554508299999995,
+      "verified_files": 1
+    },
+    {
+      "dataset": "Large",
+      "run": 1,
+      "backend": "dynamic",
+      "peak_rss_bytes": 13271040,
+      "files": 1,
+      "write_s": 0.024244,
+      "list_s": 0.00049,
+      "test_s": 0.008506,
+      "extract_s": 0.020838,
+      "process_total_s": 0.06020858399999973,
+      "verified_files": 1
+    },
+    {
+      "dataset": "Large",
+      "run": 1,
+      "backend": "CLI",
+      "write_s": 0.024149334000000078,
+      "write_rss_bytes": 8126464,
+      "list_s": 0.0034112080000001654,
+      "list_rss_bytes": 3915776,
+      "test_s": 0.011027999999999594,
+      "test_rss_bytes": 3899392,
+      "extract_s": 0.02007891599999967,
+      "extract_rss_bytes": 3866624,
+      "verified_files": 1
+    },
+    {
+      "dataset": "Large",
+      "run": 2,
+      "backend": "dynamic",
+      "peak_rss_bytes": 13271040,
+      "files": 1,
+      "write_s": 0.019682,
+      "list_s": 0.000527,
+      "test_s": 0.008712,
+      "extract_s": 0.022779,
+      "process_total_s": 0.05786191700000032,
+      "verified_files": 1
+    },
+    {
+      "dataset": "Large",
+      "run": 2,
+      "backend": "CLI",
+      "write_s": 0.0260754590000003,
+      "write_rss_bytes": 8093696,
+      "list_s": 0.0033232920000001442,
+      "list_rss_bytes": 3883008,
+      "test_s": 0.011225166000000009,
+      "test_rss_bytes": 3883008,
+      "extract_s": 0.025323959000000063,
+      "extract_rss_bytes": 3899392,
+      "verified_files": 1
+    },
+    {
+      "dataset": "Large",
+      "run": 2,
+      "backend": "static",
+      "peak_rss_bytes": 13090816,
+      "files": 1,
+      "write_s": 0.02098,
+      "list_s": 0.0005,
+      "test_s": 0.008402,
+      "extract_s": 0.019033,
+      "process_total_s": 0.054633249999999745,
+      "verified_files": 1
+    },
+    {
+      "dataset": "Small",
+      "run": 0,
+      "backend": "CLI",
+      "write_s": 0.027283125000000297,
+      "write_rss_bytes": 7077888,
+      "list_s": 0.008297707999999737,
+      "list_rss_bytes": 4653056,
+      "test_s": 0.007289416999999965,
+      "test_rss_bytes": 4440064,
+      "extract_s": 0.12121520800000019,
+      "extract_rss_bytes": 4603904,
+      "verified_files": 2000
+    },
+    {
+      "dataset": "Small",
+      "run": 0,
+      "backend": "static",
+      "peak_rss_bytes": 16793600,
+      "files": 2000,
+      "write_s": 0.022198,
+      "list_s": 0.001963,
+      "test_s": 0.004036,
+      "extract_s": 0.160038,
+      "process_total_s": 0.252941791,
+      "verified_files": 2000
+    },
+    {
+      "dataset": "Small",
+      "run": 0,
+      "backend": "dynamic",
+      "peak_rss_bytes": 17072128,
+      "files": 2000,
+      "write_s": 0.022144,
+      "list_s": 0.002031,
+      "test_s": 0.004124,
+      "extract_s": 0.166336,
+      "process_total_s": 0.2579057090000001,
+      "verified_files": 2000
+    },
+    {
+      "dataset": "Small",
+      "run": 1,
+      "backend": "static",
+      "peak_rss_bytes": 16842752,
+      "files": 2000,
+      "write_s": 0.022401,
+      "list_s": 0.002042,
+      "test_s": 0.004133,
+      "extract_s": 0.160257,
+      "process_total_s": 0.25234625,
+      "verified_files": 2000
+    },
+    {
+      "dataset": "Small",
+      "run": 1,
+      "backend": "dynamic",
+      "peak_rss_bytes": 17022976,
+      "files": 2000,
+      "write_s": 0.022534,
+      "list_s": 0.002083,
+      "test_s": 0.004193,
+      "extract_s": 0.163565,
+      "process_total_s": 0.2559842080000001,
+      "verified_files": 2000
+    },
+    {
+      "dataset": "Small",
+      "run": 1,
+      "backend": "CLI",
+      "write_s": 0.029769082999999696,
+      "write_rss_bytes": 7028736,
+      "list_s": 0.00789758400000018,
+      "list_rss_bytes": 4587520,
+      "test_s": 0.0072192500000003434,
+      "test_rss_bytes": 4521984,
+      "extract_s": 0.13707208299999962,
+      "extract_rss_bytes": 4603904,
+      "verified_files": 2000
+    },
+    {
+      "dataset": "Small",
+      "run": 2,
+      "backend": "dynamic",
+      "peak_rss_bytes": 17104896,
+      "files": 2000,
+      "write_s": 0.022479,
+      "list_s": 0.002051,
+      "test_s": 0.004117,
+      "extract_s": 0.161983,
+      "process_total_s": 0.2553099999999997,
+      "verified_files": 2000
+    },
+    {
+      "dataset": "Small",
+      "run": 2,
+      "backend": "CLI",
+      "write_s": 0.030435624999999966,
+      "write_rss_bytes": 7045120,
+      "list_s": 0.0081218750000005,
+      "list_rss_bytes": 4636672,
+      "test_s": 0.0073344999999997995,
+      "test_rss_bytes": 4472832,
+      "extract_s": 0.12147504100000006,
+      "extract_rss_bytes": 4538368,
+      "verified_files": 2000
+    },
+    {
+      "dataset": "Small",
+      "run": 2,
+      "backend": "static",
+      "peak_rss_bytes": 16809984,
+      "files": 2000,
+      "write_s": 0.02237,
+      "list_s": 0.002009,
+      "test_s": 0.00407,
+      "extract_s": 0.160208,
+      "process_total_s": 0.25237899999999946,
+      "verified_files": 2000
+    }
+  ]
+}
