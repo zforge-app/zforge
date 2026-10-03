@@ -43,6 +43,7 @@ NS_ASSUME_NONNULL_BEGIN
     operation:(ZFSevenZipOperation *)operation error:(NSError **)error;
 + (BOOL)extractAtPath:(NSString *)path password:(nullable NSString *)password
     indices:(NSArray<NSNumber *> *)indices destinations:(NSArray<NSString *> *)destinations
+    rootPath:(NSString *)rootPath
     byteLimit:(uint64_t)byteLimit operation:(ZFSevenZipOperation *)operation
     error:(NSError **)error;
 + (BOOL)writeAtPath:(NSString *)path format:(NSString *)format

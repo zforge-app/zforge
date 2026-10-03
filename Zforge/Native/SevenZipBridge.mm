@@ -188,16 +188,23 @@ HRESULT Open(NSString *path, Context &ctx, Archive &arc) {
     }
     return S_FALSE;
 }
-int OpenOutput(NSString *path, std::map<std::string, int> &parents) {
+int OpenOutput(NSString *path, NSString *rootPath, int root,
+    std::map<std::string, int> &parents) {
+    NSString *prefix = [rootPath isEqualToString:@"/"] ? rootPath : [rootPath stringByAppendingString:@"/"];
+    if (![path hasPrefix:prefix]) return -1;
+    NSArray<NSString *> *components = [[path substringFromIndex:prefix.length] pathComponents];
+    if (!components.count) return -1;
+    for (NSString *component in components)
+        if ([component isEqualToString:@"."] || [component isEqualToString:@".."] || [component isEqualToString:@"/"])
+            return -1;
     std::string key(path.stringByDeletingLastPathComponent.fileSystemRepresentation);
     int parent;
     auto existing = parents.find(key);
     if (existing != parents.end()) parent = existing->second;
     else {
-        parent = open("/", O_RDONLY | O_DIRECTORY | O_CLOEXEC);
+        parent = dup(root);
         if (parent < 0) return -1;
-        NSArray<NSString *> *components = path.pathComponents;
-        for (NSUInteger i = 1; i + 1 < components.count; ++i) {
+        for (NSUInteger i = 0; i + 1 < components.count; ++i) {
             int child = openat(parent, components[i].fileSystemRepresentation,
                 O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
             close(parent);
@@ -252,7 +259,9 @@ public:
     CMyComPtr<IInArchive> archive;
     Output *file = nullptr;
     std::map<std::string, int> parents;
-    ~ExtractCallback() { for (auto &parent : parents) close(parent.second); }
+    NSString *rootPath = nil;
+    int root = -1;
+    ~ExtractCallback() { for (auto &parent : parents) close(parent.second); if (root >= 0) close(root); }
 };
 Z7_COM7F_IMF(ExtractCallback::SetTotal(UInt64)) { return context->check(); }
 Z7_COM7F_IMF(ExtractCallback::SetCompleted(const UInt64 *)) { return context->check(); }
@@ -284,7 +293,7 @@ Z7_COM7F_IMF(ExtractCallback::GetStream(UInt32 index, ISequentialOutStream **str
     if (destination.length == 0) return S_OK; // directory, created by Swift
     file = new Output;
     output = file; file->context = context; file->limit = limit;
-    file->fd = OpenOutput(destination, parents);
+    file->fd = OpenOutput(destination, rootPath, root, parents);
     if (file->fd < 0) { file = nullptr; output.Release(); return E_FAIL; }
     auto mode = Property(archive, index, kpidPosixAttrib);
     auto attributes = Property(archive, index, kpidAttrib);
@@ -430,7 +439,7 @@ bool Finish(HRESULT result, Context &context, NSError **error, int itemResult = 
 }
 + (BOOL)extractAtPath:(NSString *)path password:(NSString *)password
     indices:(NSArray<NSNumber *> *)indices destinations:(NSArray<NSString *> *)destinations
-    byteLimit:(uint64_t)byteLimit operation:(ZFSevenZipOperation *)operation error:(NSError **)error {
+    rootPath:(NSString *)rootPath byteLimit:(uint64_t)byteLimit operation:(ZFSevenZipOperation *)operation error:(NSError **)error {
     Context ctx{operation, password};
     try {
         if (indices.count != destinations.count) return Finish(E_INVALIDARG, ctx, error);
@@ -443,6 +452,9 @@ bool Finish(HRESULT result, Context &context, NSError **error, int itemResult = 
         CMyComPtr<IArchiveExtractCallback> owner = callback;
         callback->context = &ctx; callback->archive = arc.handler; callback->indices = indices;
         callback->destinations = destinations; callback->limit = byteLimit;
+        callback->rootPath = rootPath;
+        callback->root = open(rootPath.fileSystemRepresentation, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+        if (callback->root < 0) return Finish(E_FAIL, ctx, error);
         HRESULT result = selected.empty() ? S_OK : arc.handler->Extract(selected.data(), (UInt32)selected.size(), 0, owner);
         return Finish(result, ctx, error, callback->itemResult);
     } catch (...) { return Finish(E_FAIL, ctx, error); }

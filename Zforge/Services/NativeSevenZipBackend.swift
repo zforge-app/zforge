@@ -159,7 +159,7 @@ nonisolated final class NativeSevenZipBackend: @unchecked Sendable {
                 }
             }
             try ZFSevenZipBridge.extract(atPath: url.path, password: password, indices: indices,
-                destinations: destinations, byteLimit: byteLimit, operation: operation)
+                destinations: destinations, rootPath: root.path, byteLimit: byteLimit, operation: operation)
             var links: [(URL, String)] = []
             for (record, output) in outputs {
                 if record.symbolicLink && outputFile == nil {

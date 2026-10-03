@@ -8,6 +8,20 @@ struct NativeSevenZipTests {
         URL(fileURLWithPath: #filePath).deletingLastPathComponent().appendingPathComponent("Fixtures/sample-root.zip")
     }
 
+    @Test("Native extraction remains anchored to the authorized output root")
+    func outputRootBoundary() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        let destination = root.appendingPathComponent("Output")
+        try FileManager.default.createDirectory(at: destination, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let outside = root.appendingPathComponent("Escaped.txt")
+        await #expect(throws: (any Error).self) {
+            try await NativeSevenZipBackend().extract(at: fixture, password: nil, paths: [],
+                destination: destination, outputFile: outside)
+        }
+        #expect(!FileManager.default.fileExists(atPath: outside.path))
+    }
+
     @Test("Advanced properties work through the actual native handlers")
     func advancedProperties() async throws {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)

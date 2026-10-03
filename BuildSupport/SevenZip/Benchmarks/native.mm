@@ -21,7 +21,7 @@ int main(int argc,char **argv) { @autoreleasepool {
  NSString *output=[root stringByAppendingPathComponent:@"Output"];[fm createDirectoryAtPath:output withIntermediateDirectories:YES attributes:nil error:nil];
  NSMutableArray *indices=[NSMutableArray array],*destinations=[NSMutableArray array];
  for(ZFSevenZipEntry *entry in entries){[indices addObject:@(entry.index)];[destinations addObject:[output stringByAppendingPathComponent:entry.path]];}
- if(![ZFSevenZipBridge extractAtPath:archive password:nil indices:indices destinations:destinations byteLimit:UINT64_MAX operation:operation error:&error]) {NSLog(@"%@",error);return 5;}
+ if(![ZFSevenZipBridge extractAtPath:archive password:nil indices:indices destinations:destinations rootPath:output byteLimit:UINT64_MAX operation:operation error:&error]) {NSLog(@"%@",error);return 5;}
  double extract=NSDate.timeIntervalSinceReferenceDate-start;
  rusage usage; getrusage(RUSAGE_SELF, &usage);
  printf("{\"peak_rss_bytes\":%ld,\"files\":%lu,\"write_s\":%.6f,\"list_s\":%.6f,\"test_s\":%.6f,\"extract_s\":%.6f}\n",usage.ru_maxrss,(unsigned long)entries.count,write,list,test,extract);
