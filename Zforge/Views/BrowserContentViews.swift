@@ -65,8 +65,8 @@ struct BrowserContent: View {
         .onModifierKeysChanged(mask: [.option, .command]) { _, modifiers in
             dragSession.modifiers = modifiers
         }
-        .dragContainer(for: URL.self, itemID: \.self) { (draggedURLs: [URL]) in
-            state.prepareDragPayload(draggedURLs)
+        .dragContainer(for: BrowserDraggedFile.self, itemID: \.url) { (draggedURLs: [URL]) in
+            state.prepareDragPayload(draggedURLs).map { BrowserDraggedFile(url: $0) }
         }
         .dragContainerSelection(state.dragSelectionURLs)
         .dragConfiguration(.browserFileOperations)
@@ -328,6 +328,16 @@ struct BrowserItemActionsMenu: View {
             }
             .disabled(menuItems.isEmpty || menuItems.contains { $0.isContainer || $0.localURL == nil })
         }
+        if !menuItems.isEmpty && menuItems.allSatisfy({ $0.isDirectory && !$0.isPackage && $0.localURL != nil }) {
+            Divider()
+            Button("Add to Sidebar", systemImage: "pin") {
+                let urls = menuItems.compactMap(\.localURL)
+                Task { await state.pinFolders(urls) }
+            }
+            .disabled(menuItems.allSatisfy { item in
+                item.localURL.map { PinnedFolderStore.shared.contains($0) } ?? false
+            })
+        }
         Divider()
         Button("Share", systemImage: "square.and.arrow.up") {
             if !state.selection.contains(item.id) { state.select(item) }
@@ -524,6 +534,16 @@ nonisolated enum BrowserFileDropProposalResolver {
         // a copy before an explicit copy operation has been requested.
         case .automatic: .move
         }
+    }
+}
+
+/// Export the location, not a promised file whose URL can point to a temporary copy.
+nonisolated struct BrowserDraggedFile: Transferable {
+    let url: URL
+    var fileURLData: Data { Data(url.absoluteString.utf8) }
+
+    static var transferRepresentation: some TransferRepresentation {
+        DataRepresentation(exportedContentType: .fileURL) { item in item.fileURLData }
     }
 }
 

@@ -176,3 +176,23 @@ Os identificadores permitem localizar o pedido original no histórico local. O c
 ### D-22 — Build estática bloqueada pelo sandbox de scripts do Xcode
 
 **Corrigida no projeto em 2026-10-03.** O relato do usuário foi reproduzido no DerivedData padrão do Xcode: `Build SevenZipCore` falhava ao criar `SevenZip/Debug` com `Operation not permitted`. O perfil gerado permitia somente os caminhos literais declarados em `DERIVED_FILE_DIR`, sem autorizar seus descendentes; uma lista explícita de objetos ainda bloqueava os arquivos temporários do `libtool`. A fase agora usa `TARGET_TEMP_DIR/SevenZip`, sob a área de temporários que o perfil autoriza recursivamente, declara a biblioteca final como saída e mantém os caminhos de linkagem sincronizados em Debug/Release. `ENABLE_USER_SCRIPT_SANDBOXING` permanece habilitado; não houve mudança de backend ou de permissões do app. Evidência de build em `REGRESSION-COVERAGE.md`; ZF-21.
+
+### D-23 — Feedback de arraste inconstante e ícone substituído na sidebar
+
+Relato de 2026-10-03, com gravações do Zforge e Finder e captura da seleção monocromática. A sidebar alternava entre o fundo nativo da List e o contorno customizado; os destinos trocavam seus símbolos por pasta aberta. Também não representava o diretório atual com destaque próprio.
+
+**Reproduções 18:56 e 19:47:** a primeira revisão retinha highlight e falhava no acabamento/fim de lista; a segunda, com delegate global, regrediu o pin e foi revertida a pedido do usuário. Nesta terceira revisão voltam os handlers por item, com bordas superior/inferior, seleção monocromática, símbolos estáveis e limpeza nativa por owner. Removida somente a entrada visível “Add Folder…”. Pin via menu foi exercitado com referência descartável; pin com o payload real de URL foi executado em teste. A estabilidade do gesto contínuo ainda não foi confirmada por automação; D-23 permanece com conferência visual pendente.
+
+### D-24 — Drag automático na própria pasta cria cópia
+
+Gravação de 19:47 mostra cópia de PDF com sufixo depois da extensão. Corrigido no código: exportar a URL original como `public.file-url`, e verificar a igualdade canônica do diretório pai antes da inferência de operação por volume. Automatic/move para o mesmo pai retornam os originais sem criar arquivos. Option/paste/Duplicate continuam copiando. Teste com arquivo/pasta e URLs alternativas/symlink aprovado; provider de bytes carregado por NSURL e pin no destino original aprovados. O vídeo demonstra a reprodução anterior; não foi tratado como execução da build corrigida.
+
+**Retorno 20:11:** usuário confirma que a parte funcional foi resolvida (pin e regressão de cópia), mas o indicador é recortado. O overlay de cada célula desenhava metade do círculo para fora dos seus limites. Ajustado somente o desenho: camada nativa acima da clip view, ancorada à célula, sem hit testing; handlers por item preservados. Teste da hierarquia nativa e build aprovados; acabamento da nova build durante gesto ainda não conferido por automação.
+
+**Refinamento visual 20:22 (D-23):** vídeo confirma melhoria do recorte, mas highlight da pasta atual ainda cobria parte da linha. Corrigida a composição: backing layer próprio do indicador com zPosition superior às camadas irmãs, inclusive após criação tardia de highlight. Espessura da linha passa a 2 pt por pedido do usuário. Teste da hierarquia/composição aprovado; conferência durante drag real da build nova permanece pendente.
+
+**Refinamento do círculo em 2026-10-03:** usuário confirma melhoria da linha e pede um círculo proporcional. Diâmetro externo aumentado de 5 para 8 pt, contorno de 1 para 2 pt; centro vertical, início à esquerda e extremidade direita preservados. Conferência visual do novo tamanho durante drag pendente.
+
+**Ajuste solicitado em 2026-10-03:** círculo do indicador ampliado para 12 pt de diâmetro externo; contorno e linha mantidos em 2 pt. Centro vertical e limites horizontais preservados.
+
+**Escolha final em 2026-10-03:** por pedido do usuário, círculo retorna a 8 pt de diâmetro externo, com contorno e linha de 2 pt. O estudo de 12 pt é histórico.

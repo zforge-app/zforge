@@ -113,15 +113,21 @@ actor FileOperationService: FileOperationServing {
         for sourceURL in sourceURLs {
             let source = sourceURL.standardizedFileURL
             let sourceParent = source.deletingLastPathComponent().standardizedFileURL
+            let sameParent = sourceParent.resolvingSymlinksInPath().path
+                == directory.standardizedFileURL.resolvingSymlinksInPath().path
+            if sameParent && (operation == .automatic || operation == .move) {
+                destinations.append(source)
+                continue
+            }
             let effectiveOperation = resolvedOperation(operation, source: source, destination: directory)
 
-            if effectiveOperation == .move && sourceParent == directory.standardizedFileURL {
+            if effectiveOperation == .move && sameParent {
                 destinations.append(source)
                 continue
             }
 
             let destination: URL
-            if effectiveOperation == .copy && sourceParent == directory.standardizedFileURL {
+            if effectiveOperation == .copy && sameParent {
                 let extensionName = source.pathExtension
                 let stem = extensionName.isEmpty
                     ? source.lastPathComponent
