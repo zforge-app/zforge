@@ -29,3 +29,5 @@ Em cada interação, consultar os requisitos afetados e atualizar seus contratos
 ## Comparações de implementação
 
 - [Benchmarks/7zip-linking.md](Benchmarks/7zip-linking.md) — comparação executada de CLI oficial, integração estática e dinâmica, com scripts reproduzíveis e medições individuais.
+
+- [Benchmarks/7zip-ram.md](Benchmarks/7zip-ram.md) — RAM total do Zforge e motores, teste real com séries temporais, baseline e pós-limpeza.

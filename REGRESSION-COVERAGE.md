@@ -118,3 +118,9 @@ A execução unitária separada terminou com **98 aprovados, 0 falhas e 0 ignora
 ## Comparação das três integrações — 2026-10-03
 
 A pedido do usuário, o backend desta branch foi preservado em `feat/7zz-static-linking`, e a variante dinâmica foi implementada em `feat/7zz-dinamic-linking`. [Benchmark reproduzível e dados brutos](Documentation/Benchmarks/7zip-linking.md) disponíveis em ambas: mesmos datasets e quatro operações ZIP Store, 3 repetições, 18 execuções com hashes de extração conferidos. A variante dinâmica passou nos mesmos 108 testes, Release e assinatura local do app/dylib; detalhes no relatório. Esta branch mantém a linkagem estática. UI, runtime macOS 26.0, acesso externo e distribuição continuam pendentes em OR-10.
+
+## RAM total e extração com sandbox — ZF-24 em 2026-10-03
+
+- D-21 reproduzida em Release real e corrigida por ancoragem no destino autorizado. Suíte estática `/private/tmp/ZforgeOutputRootStaticTests.xcresult` e dinâmica `/private/tmp/ZforgeOutputRootTestsFixed.xcresult`: **109 aprovados, 0 falhas, 0 ignorados** em cada. Logs `zforge-output-root-static-tests.log` e `zforge-output-root-tests-fixed.log` em `/private/tmp`.
+- [Teste de RAM real](Documentation/Benchmarks/7zip-ram.md): 36 launches independentes concluídos, cada um com uma janela de medição e hashes verificados. Inclui Zforge + filhos `7zz`; registra RSS e footprint contemporâneos, intervalos efetivos e fases sem amostras. Séries completas e resumos disponíveis junto ao relatório; artifacts locais `/private/tmp/ZforgeFullRAM3`.
+- Extração/criação no container provadas por essas cargas; não equivalem a PowerBox/bookmarks externos nem prova visual dos menus. A janela usa `ContentView` real com serviços visuais de fixture, sem publicar 10.000 itens na UI. Retenção no pipeline nativo 7z grande registrada em OR-11, sem concluir vazamento.

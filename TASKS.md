@@ -26,6 +26,7 @@ Atualizado em **2026-10-03**. Esta lista preserva os pedidos levantados nesta co
 | ZF-20 | Colunas da Lista e tags globais com filtro vivo | Implementado; build assinada, preferências, navegação e catálogo real em testes. Clique global, círculos independentes da coluna Tags e atualização sem refresh conferidos no app; arraste de ordem e matriz visual ampla pendentes | OR-09 |
 | ZF-21 | Substituir o backend CLI `7zz` por integração nativa com linkagem estática do 7-Zip | Backend e build implementados para arm64/macOS 26.0; operações nativas verificadas; validação externa/UI e distribuição pendentes | OR-10; sem divergência registrada |
 | ZF-22 | Migrar app e alvos de testes para Swift 6 | Implementado; Debug/Release e 98 testes unitários aprovados; UI bloqueada na inicialização do runner | Isolamento explícito de menus, thumbnails e utilitários |
+| ZF-24 | Comparar RAM total do Zforge e processos 7zz em builds reais | 36 launches concluídos, hashes conferidos; sampler e séries registrados; D-21 corrigida nas duas branches; retenção em OR-11 | UI de fixture; não prova vazamento nem toda a UI |
 
 ## ZF-01 — Documentação de referência e prevenção de regressões
 
@@ -220,3 +221,11 @@ O inventário de `Documentation/Requirements/CURRENT-STATE.md` é a lista de con
 ## Comparação solicitada após a ZF-21 — 2026-10-03
 
 A implementação estática está commitada nesta branch `feat/7zz-static-linking`. A variante dinâmica foi implementada e validada em `feat/7zz-dinamic-linking`, e o [mesmo benchmark para CLI/estática/dinâmica](Documentation/Benchmarks/7zip-linking.md) está versionado em ambas as branches. Git não aceita `:` no nome; foi usado `/`. A alternativa estática continua sendo o backend desta branch. A variante dinâmica não altera automaticamente a escolha de distribuição.
+
+## ZF-24 — RAM total do app e do motor
+
+**Pedido:** substituir a comparação de RSS de harnesses por medição do processo real do Zforge mais seus processos `7zz`.
+
+**Executado:** snapshots Release instrumentados apenas em diretórios temporários, janela com `ContentView` real/serviços visuais de fixture, staging e chamadas reais do motor; duas cargas × ZIP/7z × três variantes × três repetições, total de 36 launches com SHA-256 correto. Sampler externo soma a família de processos por ciclo, registra RSS/physical footprint, baseline e pós-limpeza. [Relatório e método](Documentation/Benchmarks/7zip-ram.md).
+
+**Achados:** D-21 impedia extração nativa no container e foi corrigida em ambas as branches com raiz autorizada/descritores; 109 testes passaram em cada variante. A diferença de RAM estática/dinâmica foi pequena, mas o pipeline 7z grande nativo chegou e permaneceu perto de 992 MiB após fechar sessões, contra ~56 MiB após o CLI finalizar seus filhos. Investigar a retenção em OR-11; o teste não conclui vazamento. OR-10 preserva runtime macOS 26.0, PowerBox/bookmarks externos e distribuição.
