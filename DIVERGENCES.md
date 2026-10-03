@@ -171,3 +171,8 @@ Os identificadores permitem localizar o pedido original no histórico local. O c
 ### D-21 — Extração nativa no container do app com sandbox
 
 **Corrigido em 2026-10-03 durante a preparação do benchmark de RAM.** A build Release instrumentada criava, listava e testava ZIP, mas falhava ao extrair um arquivo de 256 MiB no próprio tmp do app. A ponte abria os componentes absolutos desde `/`; esse percurso pelos ancestrais do destino falhava no caminho do container. A correção recebe a raiz de destino autorizada, abre seu descritor diretamente e só percorre os descendentes com `openat`/`O_NOFOLLOW`, preservando a proteção de caminhos. O caso real passou após a correção e conferiu SHA-256. 109 testes da variante dinâmica passaram, incluindo recusa de saída fora da raiz. Isso não comprova PowerBox/bookmarks externos nem todos os estados de UI; a matriz completa de RAM será registrada separadamente.
+
+
+### D-22 — Build estática bloqueada pelo sandbox de scripts do Xcode
+
+**Corrigida no projeto em 2026-10-03.** O relato do usuário foi reproduzido no DerivedData padrão do Xcode: `Build SevenZipCore` falhava ao criar `SevenZip/Debug` com `Operation not permitted`. O perfil gerado permitia somente os caminhos literais declarados em `DERIVED_FILE_DIR`, sem autorizar seus descendentes; uma lista explícita de objetos ainda bloqueava os arquivos temporários do `libtool`. A fase agora usa `TARGET_TEMP_DIR/SevenZip`, sob a área de temporários que o perfil autoriza recursivamente, declara a biblioteca final como saída e mantém os caminhos de linkagem sincronizados em Debug/Release. `ENABLE_USER_SCRIPT_SANDBOXING` permanece habilitado; não houve mudança de backend ou de permissões do app. Evidência de build em `REGRESSION-COVERAGE.md`; ZF-21.

@@ -199,6 +199,8 @@ O inventário de `Documentation/Requirements/CURRENT-STATE.md` é a lista de con
 
 ## ZF-21 — Motor nativo do 7-Zip compilado com o Zforge
 
+**Correção de build em 2026-10-03 (D-22):** fase e linker estáticos usam `TARGET_TEMP_DIR/SevenZip`, permitindo objetos/dependências/temporários do libtool com o sandbox de scripts habilitado no DerivedData padrão. Validação desta correção em `REGRESSION-COVERAGE.md`.
+
 **Pedido:** substituir o uso de `Vendor/7zz`/`Process` por integração direta com o código-fonte do 7-Zip. O produto entregue deve conter o motor no bundle do Zforge, com assinatura completa do app e de seus componentes aninhados.
 
 **Estado:** backend implementado. `NativeSevenZipArchiveEngine` preserva `ArchiveServing`, sessões e políticas, usa metadados tipados e executa `NativeSevenZipBackend`/ponte Objective-C++ em workers. O 7-Zip oficial 26.02 é compilado estaticamente para arm64, com macOS mínimo 26.0; os scripts mantêm o sandbox do Xcode e não dependem de checkout externo. Runner, parser, tradutores CLI e embedding de `7zz` foram retirados. Operações e evidência em [REGRESSION-COVERAGE.md](REGRESSION-COVERAGE.md); pendências de UI, acesso externo e lançamento em OR-10. [Plano detalhado](Documentation/Requirements/SEVENZIP-STATIC-INTEGRATION-PLAN.md).

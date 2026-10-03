@@ -277,12 +277,11 @@
 			);
 			name = "Build SevenZipCore";
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/SevenZip",
-				"$(DERIVED_FILE_DIR)/SevenZip/libSevenZipCore.a",
+				"$(TARGET_TEMP_DIR)/SevenZip/libSevenZipCore.a",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/bash;
-			shellScript = "bash \"$SRCROOT/BuildSupport/SevenZip/build.sh\" \"$DERIVED_FILE_DIR/SevenZip\" \"$CONFIGURATION\" arm64";
+			shellScript = "bash \"$SRCROOT/BuildSupport/SevenZip/build.sh\" \"$TARGET_TEMP_DIR/SevenZip\" \"$CONFIGURATION\" arm64";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -492,7 +491,7 @@
 					"-Xlinker",
 					"-force_load",
 					"-Xlinker",
-					"$(DERIVED_FILE_DIR)/SevenZip/libSevenZipCore.a",
+					"$(TARGET_TEMP_DIR)/SevenZip/libSevenZipCore.a",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = io.libor.Zforge;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -547,7 +546,7 @@
 					"-Xlinker",
 					"-force_load",
 					"-Xlinker",
-					"$(DERIVED_FILE_DIR)/SevenZip/libSevenZipCore.a",
+					"$(TARGET_TEMP_DIR)/SevenZip/libSevenZipCore.a",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = io.libor.Zforge;
 				PRODUCT_NAME = "$(TARGET_NAME)";

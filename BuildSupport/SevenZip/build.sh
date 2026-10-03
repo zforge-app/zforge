@@ -1,6 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 repository_dir="$(cd "$(dirname "$0")/../.." && pwd)"
+# Xcode passes TARGET_TEMP_DIR/SevenZip: its sandbox permits recursive temporary
+# writes there, including compiler dependencies and libtool temporary archives.
 output_dir="${1:?output directory required}"
 configuration="${2:-Release}"
 architectures="${3:-arm64}"

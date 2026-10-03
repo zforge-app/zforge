@@ -137,4 +137,6 @@ A validação na interface confirmou o filtro global de uma tag real a partir de
 
 ### Integração estática — ZF-21 em 2026-10-03
 
+A fase `Build SevenZipCore` e o linker de Debug/Release usam `$(TARGET_TEMP_DIR)/SevenZip/libSevenZipCore.a`; intermediários do motor ficam na área de temporários autorizada pelo sandbox de scripts do Xcode, que permanece habilitado. D-22 registra a falha anterior e a correção, com evidência em `REGRESSION-COVERAGE.md`.
+
 O backend CLI foi retirado da composição e do bundle. A build usa arm64 exclusivamente e mínimo macOS 26.0, conforme ajuste do usuário. O motor, a ponte e o app executam no mesmo processo; falha nativa fatal pode encerrar o app. A build de referência anterior executou 98 testes; a migração portou os testes reais de archives e acrescentou casos de nomes Unicode/com quebras de linha, limite efetivo de bytes, cancelamento, traversal, CRC, registros, links e volumes. Os resultados e limites estão em `REGRESSION-COVERAGE.md`. A execução foi no host macOS 27.0.1; ainda não há teste de runtime num host macOS 26.0.

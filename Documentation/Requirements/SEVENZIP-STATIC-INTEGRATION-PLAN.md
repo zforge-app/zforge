@@ -29,7 +29,7 @@ Todos esses componentes executam no processo do Zforge. Chamadas síncronas do m
 | `Zforge/Services/NativeSevenZipArchiveEngine.swift` | Implementação de `ArchiveServing`, integração de sessões/políticas, execução e cancelamento. |
 | `ZforgeTests/Fixtures/Archives/` | Fixtures pequenas versionadas e geradores reproduzíveis para cenários maiores. |
 
-Os nomes acima foram propostos no plano. A implementação usa a fase `Build SevenZipCore`, `ArchiveEntry.swift`, `NativeSevenZipBackend.swift` e `NativeSevenZipArchiveEngine` em `ArchiveEngine.swift`. `libSevenZipCore.a` é um produto intermediário da build e não é copiado para o `.app`. Headers públicos do adaptador não expõem tipos C++, ponteiros de interfaces do 7-Zip ou sintaxe CLI à UI.
+Os nomes acima foram propostos no plano. A implementação usa a fase `Build SevenZipCore`, `ArchiveEntry.swift`, `NativeSevenZipBackend.swift` e `NativeSevenZipArchiveEngine` em `ArchiveEngine.swift`. `libSevenZipCore.a` é um produto intermediário da build e não é copiado para o `.app`. Objetos, dependências e arquivos temporários do motor ficam em `$(TARGET_TEMP_DIR)/SevenZip`; a fase declara a biblioteca final como saída e Debug/Release vinculam esse mesmo caminho. O sandbox de scripts do Xcode permanece habilitado. Headers públicos do adaptador não expõem tipos C++, ponteiros de interfaces do 7-Zip ou sintaxe CLI à UI.
 
 ## 1. Caracterizar o backend atual e preparar a migração
 
