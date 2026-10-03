@@ -1,0 +1,6340 @@
+{
+  "metadata": {
+    "refs": {
+      "CLI": "05d1720c7c82197bc078b6d35b6699614251fa45",
+      "static": "35863844dcfbebf20fc24518a24cb3ecf4ddd4fe",
+      "dynamic": "d0848d1ef057935399e8db3b622fc6774d5396c5"
+    },
+    "driver_sha256": "22167043c2e09b728a3e31ad42b661320184c7645e5c7b113a88a2e21b30485f",
+    "sampler_sha256": "3d355c0b7936d93ef43abde55a79891512dc6a581a8ea19b04eddb33585b086b",
+    "host": "ProductName:\t\tmacOS\nProductVersion:\t\t27.0.1\nBuildVersion:\t\t26A434",
+    "variants": [
+      "CLI",
+      "static",
+      "dynamic"
+    ],
+    "datasets": [
+      "Large",
+      "Small"
+    ],
+    "formats": [
+      "zip",
+      "7z"
+    ],
+    "interval_ms": 5,
+    "repetitions": 3,
+    "scope": "Real Release app with fixture UI; actual ArchiveServing engine and staging; full descendant process tree; RSS and physical footprint sampled externally; temporary injected automation only"
+  },
+  "records": [
+    {
+      "case": "Large-zip-0-CLI",
+      "dataset": "Large",
+      "format": "zip",
+      "repetition": 0,
+      "variant": "CLI",
+      "pid": 37291,
+      "windows": 1,
+      "verified_files": 1,
+      "phases": {
+        "baseline": {
+          "duration_s": 2.038634,
+          "samples": 237,
+          "peak_rss": 126320640,
+          "peak_footprint": 58393680,
+          "median_rss": 126320640,
+          "median_footprint": 58393680,
+          "max_processes": 1
+        },
+        "create": {
+          "duration_s": 2.956494,
+          "samples": 395,
+          "peak_rss": 169803776,
+          "peak_footprint": 99894880,
+          "median_rss": 169803776,
+          "median_footprint": 99894880,
+          "max_processes": 2
+        },
+        "list": {
+          "duration_s": 0.131449,
+          "samples": 18,
+          "peak_rss": 126615552,
+          "peak_footprint": 58475600,
+          "median_rss": 126386176.0,
+          "median_footprint": 58295376.0,
+          "max_processes": 2
+        },
+        "test": {
+          "duration_s": 0.25036,
+          "samples": 33,
+          "peak_rss": 131547136,
+          "peak_footprint": 61408744,
+          "median_rss": 126844928,
+          "median_footprint": 58688712,
+          "max_processes": 2
+        },
+        "extract": {
+          "duration_s": 0.440498,
+          "samples": 60,
+          "peak_rss": 131547136,
+          "peak_footprint": 61408744,
+          "median_rss": 126648320.0,
+          "median_footprint": 58532956.0,
+          "max_processes": 2
+        },
+        "cleanup": {
+          "duration_s": 0.000508,
+          "samples": 0,
+          "warning": "phase shorter than sampling interval; no isolated peak inferred"
+        },
+        "post": {
+          "duration_s": 3.082868,
+          "samples": 415,
+          "peak_rss": 126648320,
+          "peak_footprint": 58508368,
+          "median_rss": 126648320,
+          "median_footprint": 58508368,
+          "max_processes": 1
+        }
+      },
+      "peak_rss": 169803776,
+      "peak_footprint": 99894880,
+      "max_processes": 2,
+      "samples_with_7zz": 429,
+      "median_interval_ms": 7.6,
+      "max_interval_ms": 8.445,
+      "events": [
+        {
+          "kind": "ready",
+          "benchmark_window_visible": true,
+          "pid": 37291,
+          "windows": 1,
+          "timestamp_ns": 120017730182000
+        },
+        {
+          "kind": "begin",
+          "phase": "baseline",
+          "timestamp_ns": 120017735659000
+        },
+        {
+          "kind": "end",
+          "duration": "2.038360291 seconds",
+          "phase": "baseline",
+          "timestamp_ns": 120019774293000
+        },
+        {
+          "kind": "begin",
+          "phase": "create",
+          "timestamp_ns": 120019775147000
+        },
+        {
+          "kind": "end",
+          "duration": "2.957291292 seconds",
+          "phase": "create",
+          "timestamp_ns": 120022731641000
+        },
+        {
+          "kind": "begin",
+          "phase": "list",
+          "timestamp_ns": 120022732457000
+        },
+        {
+          "kind": "end",
+          "phase": "list",
+          "duration": "0.132255625 seconds",
+          "timestamp_ns": 120022863906000
+        },
+        {
+          "kind": "begin",
+          "phase": "test",
+          "timestamp_ns": 120022864369000
+        },
+        {
+          "kind": "end",
+          "phase": "test",
+          "duration": "0.250689208 seconds",
+          "timestamp_ns": 120023114729000
+        },
+        {
+          "kind": "begin",
+          "phase": "extract",
+          "timestamp_ns": 120023115523000
+        },
+        {
+          "kind": "end",
+          "phase": "extract",
+          "duration": "0.441179375 seconds",
+          "timestamp_ns": 120023556021000
+        },
+        {
+          "kind": "begin",
+          "phase": "cleanup",
+          "timestamp_ns": 120023556913000
+        },
+        {
+          "kind": "end",
+          "duration": "0.000172667 seconds",
+          "phase": "cleanup",
+          "timestamp_ns": 120023557421000
+        },
+        {
+          "kind": "begin",
+          "phase": "post",
+          "timestamp_ns": 120023557949000
+        },
+        {
+          "kind": "end",
+          "duration": "3.084385458 seconds",
+          "phase": "post",
+          "timestamp_ns": 120026640817000
+        },
+        {
+          "kind": "done",
+          "hashes_match": true,
+          "verified_files": 1,
+          "timestamp_ns": 120026778409000
+        }
+      ]
+    },
+    {
+      "case": "Large-zip-0-static",
+      "dataset": "Large",
+      "format": "zip",
+      "repetition": 0,
+      "variant": "static",
+      "pid": 37302,
+      "windows": 1,
+      "verified_files": 1,
+      "phases": {
+        "baseline": {
+          "duration_s": 2.097955,
+          "samples": 282,
+          "peak_rss": 127500288,
+          "peak_footprint": 58213432,
+          "median_rss": 127500288.0,
+          "median_footprint": 58213432.0,
+          "max_processes": 1
+        },
+        "create": {
+          "duration_s": 2.853373,
+          "samples": 387,
+          "peak_rss": 167247872,
+          "peak_footprint": 97862808,
+          "median_rss": 167247872,
+          "median_footprint": 97862808,
+          "max_processes": 1
+        },
+        "list": {
+          "duration_s": 0.000772,
+          "samples": 1,
+          "peak_rss": 167346176,
+          "peak_footprint": 97846424,
+          "median_rss": 167346176,
+          "median_footprint": 97846424,
+          "max_processes": 1
+        },
+        "test": {
+          "duration_s": 0.086157,
+          "samples": 11,
+          "peak_rss": 168165376,
+          "peak_footprint": 98632856,
+          "median_rss": 168165376,
+          "median_footprint": 98632856,
+          "max_processes": 1
+        },
+        "extract": {
+          "duration_s": 0.181915,
+          "samples": 26,
+          "peak_rss": 168165376,
+          "peak_footprint": 98632856,
+          "median_rss": 168165376.0,
+          "median_footprint": 98632856.0,
+          "max_processes": 1
+        },
+        "cleanup": {
+          "duration_s": 0.000473,
+          "samples": 0,
+          "warning": "phase shorter than sampling interval; no isolated peak inferred"
+        },
+        "post": {
+          "duration_s": 3.078654,
+          "samples": 414,
+          "peak_rss": 168165376,
+          "peak_footprint": 98632856,
+          "median_rss": 168165376.0,
+          "median_footprint": 98632856.0,
+          "max_processes": 1
+        }
+      },
+      "peak_rss": 168165376,
+      "peak_footprint": 98632856,
+      "max_processes": 1,
+      "samples_with_7zz": 0,
+      "median_interval_ms": 7.584,
+      "max_interval_ms": 7.746,
+      "events": [
+        {
+          "windows": 1,
+          "kind": "ready",
+          "benchmark_window_visible": true,
+          "pid": 37302,
+          "timestamp_ns": 120030567050000
+        },
+        {
+          "kind": "begin",
+          "phase": "baseline",
+          "timestamp_ns": 120030572721000
+        },
+        {
+          "duration": "2.097651375 seconds",
+          "kind": "end",
+          "phase": "baseline",
+          "timestamp_ns": 120032670676000
+        },
+        {
+          "kind": "begin",
+          "phase": "create",
+          "timestamp_ns": 120032671455000
+        },
+        {
+          "duration": "2.8541695 seconds",
+          "kind": "end",
+          "phase": "create",
+          "timestamp_ns": 120035524828000
+        },
+        {
+          "kind": "begin",
+          "phase": "list",
+          "timestamp_ns": 120035525554000
+        },
+        {
+          "kind": "end",
+          "phase": "list",
+          "duration": "0.001527959 seconds",
+          "timestamp_ns": 120035526326000
+        },
+        {
+          "kind": "begin",
+          "phase": "test",
+          "timestamp_ns": 120035526854000
+        },
+        {
+          "kind": "end",
+          "phase": "test",
+          "duration": "0.086629917 seconds",
+          "timestamp_ns": 120035613011000
+        },
+        {
+          "kind": "begin",
+          "phase": "extract",
+          "timestamp_ns": 120035613688000
+        },
+        {
+          "kind": "end",
+          "phase": "extract",
+          "duration": "0.182524583 seconds",
+          "timestamp_ns": 120035795603000
+        },
+        {
+          "kind": "begin",
+          "phase": "cleanup",
+          "timestamp_ns": 120035796302000
+        },
+        {
+          "duration": "0.000151667 seconds",
+          "kind": "end",
+          "phase": "cleanup",
+          "timestamp_ns": 120035796775000
+        },
+        {
+          "kind": "begin",
+          "phase": "post",
+          "timestamp_ns": 120035797200000
+        },
+        {
+          "duration": "3.079873833 seconds",
+          "kind": "end",
+          "phase": "post",
+          "timestamp_ns": 120038875854000
+        },
+        {
+          "hashes_match": true,
+          "kind": "done",
+          "verified_files": 1,
+          "timestamp_ns": 120039016377000
+        }
+      ]
+    },
+    {
+      "case": "Large-zip-0-dynamic",
+      "dataset": "Large",
+      "format": "zip",
+      "repetition": 0,
+      "variant": "dynamic",
+      "pid": 37306,
+      "windows": 1,
+      "verified_files": 1,
+      "phases": {
+        "baseline": {
+          "duration_s": 2.001145,
+          "samples": 273,
+          "peak_rss": 127909888,
+          "peak_footprint": 58836024,
+          "median_rss": 127909888,
+          "median_footprint": 58836024,
+          "max_processes": 1
+        },
+        "create": {
+          "duration_s": 2.865122,
+          "samples": 386,
+          "peak_rss": 167657472,
+          "peak_footprint": 98419864,
+          "median_rss": 167657472.0,
+          "median_footprint": 98419864.0,
+          "max_processes": 1
+        },
+        "list": {
+          "duration_s": 0.001146,
+          "samples": 0,
+          "warning": "phase shorter than sampling interval; no isolated peak inferred"
+        },
+        "test": {
+          "duration_s": 0.086992,
+          "samples": 12,
+          "peak_rss": 168542208,
+          "peak_footprint": 99173528,
+          "median_rss": 168542208.0,
+          "median_footprint": 99173528.0,
+          "max_processes": 1
+        },
+        "extract": {
+          "duration_s": 0.182951,
+          "samples": 24,
+          "peak_rss": 168542208,
+          "peak_footprint": 99173528,
+          "median_rss": 168542208.0,
+          "median_footprint": 99173528.0,
+          "max_processes": 1
+        },
+        "cleanup": {
+          "duration_s": 0.000482,
+          "samples": 0,
+          "warning": "phase shorter than sampling interval; no isolated peak inferred"
+        },
+        "post": {
+          "duration_s": 3.073459,
+          "samples": 413,
+          "peak_rss": 168542208,
+          "peak_footprint": 99173528,
+          "median_rss": 168542208,
+          "median_footprint": 99173528,
+          "max_processes": 1
+        }
+      },
+      "peak_rss": 168542208,
+      "peak_footprint": 99173528,
+      "max_processes": 1,
+      "samples_with_7zz": 0,
+      "median_interval_ms": 7.583,
+      "max_interval_ms": 14.103,
+      "events": [
+        {
+          "kind": "ready",
+          "benchmark_window_visible": true,
+          "pid": 37306,
+          "windows": 1,
+          "timestamp_ns": 120043010147000
+        },
+        {
+          "kind": "begin",
+          "phase": "baseline",
+          "timestamp_ns": 120043015704000
+        },
+        {
+          "duration": "2.000879708 seconds",
+          "kind": "end",
+          "phase": "baseline",
+          "timestamp_ns": 120045016849000
+        },
+        {
+          "kind": "begin",
+          "phase": "create",
+          "timestamp_ns": 120045017744000
+        },
+        {
+          "duration": "2.86603525 seconds",
+          "kind": "end",
+          "phase": "create",
+          "timestamp_ns": 120047882866000
+        },
+        {
+          "kind": "begin",
+          "phase": "list",
+          "timestamp_ns": 120047883588000
+        },
+        {
+          "duration": "0.001768708 seconds",
+          "kind": "end",
+          "phase": "list",
+          "timestamp_ns": 120047884734000
+        },
+        {
+          "kind": "begin",
+          "phase": "test",
+          "timestamp_ns": 120047885317000
+        },
+        {
+          "duration": "0.087659875 seconds",
+          "kind": "end",
+          "phase": "test",
+          "timestamp_ns": 120047972309000
+        },
+        {
+          "kind": "begin",
+          "phase": "extract",
+          "timestamp_ns": 120047973001000
+        },
+        {
+          "duration": "0.183562375 seconds",
+          "kind": "end",
+          "phase": "extract",
+          "timestamp_ns": 120048155952000
+        },
+        {
+          "kind": "begin",
+          "phase": "cleanup",
+          "timestamp_ns": 120048156828000
+        },
+        {
+          "duration": "0.000145083 seconds",
+          "kind": "end",
+          "phase": "cleanup",
+          "timestamp_ns": 120048157310000
+        },
+        {
+          "kind": "begin",
+          "phase": "post",
+          "timestamp_ns": 120048157723000
+        },
+        {
+          "duration": "3.07486525 seconds",
+          "kind": "end",
+          "phase": "post",
+          "timestamp_ns": 120051231182000
+        },
+        {
+          "verified_files": 1,
+          "kind": "done",
+          "hashes_match": true,
+          "timestamp_ns": 120051371488000
+        }
+      ]
+    },
+    {
+      "case": "Large-zip-1-static",
+      "dataset": "Large",
+      "format": "zip",
+      "repetition": 1,
+      "variant": "static",
+      "pid": 37310,
+      "windows": 1,
+      "verified_files": 1,
+      "phases": {
+        "baseline": {
+          "duration_s": 2.012496,
+          "samples": 271,
+          "peak_rss": 127320064,
+          "peak_footprint": 58016800,
+          "median_rss": 127320064,
+          "median_footprint": 58016800,
+          "max_processes": 1
+        },
+        "create": {
+          "duration_s": 2.862724,
+          "samples": 389,
+          "peak_rss": 167100416,
+          "peak_footprint": 97682560,
+          "median_rss": 167100416,
+          "median_footprint": 97682560,
+          "max_processes": 1
+        },
+        "list": {
+          "duration_s": 0.000738,
+          "samples": 0,
+          "warning": "phase shorter than sampling interval; no isolated peak inferred"
+        },
+        "test": {
+          "duration_s": 0.085891,
+          "samples": 12,
+          "peak_rss": 167968768,
+          "peak_footprint": 98403456,
+          "median_rss": 167968768.0,
+          "median_footprint": 98403456.0,
+          "max_processes": 1
+        },
+        "extract": {
+          "duration_s": 0.192426,
+          "samples": 27,
+          "peak_rss": 167968768,
+          "peak_footprint": 98403456,
+          "median_rss": 167968768,
+          "median_footprint": 98403456,
+          "max_processes": 1
+        },
+        "cleanup": {
+          "duration_s": 0.000474,
+          "samples": 0,
+          "warning": "phase shorter than sampling interval; no isolated peak inferred"
+        },
+        "post": {
+          "duration_s": 3.130555,
+          "samples": 418,
+          "peak_rss": 167968768,
+          "peak_footprint": 98403456,
+          "median_rss": 167968768.0,
+          "median_footprint": 98403456.0,
+          "max_processes": 1
+        }
+      },
+      "peak_rss": 167968768,
+      "peak_footprint": 98403456,
+      "max_processes": 1,
+      "samples_with_7zz": 0,
+      "median_interval_ms": 7.583,
+      "max_interval_ms": 8.588,
+      "events": [
+        {
+          "pid": 37310,
+          "benchmark_window_visible": true,
+          "kind": "ready",
+          "windows": 1,
+          "timestamp_ns": 120055062421000
+        },
+        {
+          "phase": "baseline",
+          "kind": "begin",
+          "timestamp_ns": 120055068050000
+        },
+        {
+          "phase": "baseline",
+          "kind": "end",
+          "duration": "2.012198708 seconds",
+          "timestamp_ns": 120057080546000
+        },
+        {
+          "phase": "create",
+          "kind": "begin",
+          "timestamp_ns": 120057081335000
+        },
+        {
+          "phase": "create",
+          "kind": "end",
+          "duration": "2.863519334 seconds",
+          "timestamp_ns": 120059944059000
+        },
+        {
+          "phase": "list",
+          "kind": "begin",
+          "timestamp_ns": 120059944775000
+        },
+        {
+          "phase": "list",
+          "kind": "end",
+          "duration": "0.001473334 seconds",
+          "timestamp_ns": 120059945513000
+        },
+        {
+          "phase": "test",
+          "kind": "begin",
+          "timestamp_ns": 120059946039000
+        },
+        {
+          "phase": "test",
+          "kind": "end",
+          "duration": "0.086377083 seconds",
+          "timestamp_ns": 120060031930000
+        },
+        {
+          "phase": "extract",
+          "kind": "begin",
+          "timestamp_ns": 120060032497000
+        },
+        {
+          "phase": "extract",
+          "kind": "end",
+          "duration": "0.1929185 seconds",
+          "timestamp_ns": 120060224923000
+        },
+        {
+          "phase": "cleanup",
+          "kind": "begin",
+          "timestamp_ns": 120060225691000
+        },
+        {
+          "phase": "cleanup",
+          "kind": "end",
+          "duration": "0.000161583 seconds",
+          "timestamp_ns": 120060226165000
+        },
+        {
+          "phase": "post",
+          "kind": "begin",
+          "timestamp_ns": 120060226592000
+        },
+        {
+          "phase": "post",
+          "kind": "end",
+          "duration": "3.131830083 seconds",
+          "timestamp_ns": 120063357147000
+        },
+        {
+          "hashes_match": true,
+          "kind": "done",
+          "verified_files": 1,
+          "timestamp_ns": 120063495219000
+        }
+      ]
+    },
+    {
+      "case": "Large-zip-1-dynamic",
+      "dataset": "Large",
+      "format": "zip",
+      "repetition": 1,
+      "variant": "dynamic",
+      "pid": 37314,
+      "windows": 1,
+      "verified_files": 1,
+      "phases": {
+        "baseline": {
+          "duration_s": 2.104353,
+          "samples": 283,
+          "peak_rss": 127057920,
+          "peak_footprint": 58098744,
+          "median_rss": 127057920,
+          "median_footprint": 58098744,
+          "max_processes": 1
+        },
+        "create": {
+          "duration_s": 2.860496,
+          "samples": 388,
+          "peak_rss": 166838272,
+          "peak_footprint": 97780888,
+          "median_rss": 166838272.0,
+          "median_footprint": 97780888.0,
+          "max_processes": 1
+        },
+        "list": {
+          "duration_s": 0.001574,
+          "samples": 1,
+          "peak_rss": 166936576,
+          "peak_footprint": 97764504,
+          "median_rss": 166936576,
+          "median_footprint": 97764504,
+          "max_processes": 1
+        },
+        "test": {
+          "duration_s": 0.086569,
+          "samples": 11,
+          "peak_rss": 167854080,
+          "peak_footprint": 98665624,
+          "median_rss": 167854080,
+          "median_footprint": 98665624,
+          "max_processes": 1
+        },
+        "extract": {
+          "duration_s": 0.181365,
+          "samples": 25,
+          "peak_rss": 167854080,
+          "peak_footprint": 98665624,
+          "median_rss": 167854080,
+          "median_footprint": 98665624,
+          "max_processes": 1
+        },
+        "cleanup": {
+          "duration_s": 0.000455,
+          "samples": 0,
+          "warning": "phase shorter than sampling interval; no isolated peak inferred"
+        },
+        "post": {
+          "duration_s": 3.05554,
+          "samples": 410,
+          "peak_rss": 167870464,
+          "peak_footprint": 98682008,
+          "median_rss": 167870464.0,
+          "median_footprint": 98682008.0,
+          "max_processes": 1
+        }
+      },
+      "peak_rss": 167870464,
+      "peak_footprint": 98682008,
+      "max_processes": 1,
+      "samples_with_7zz": 0,
+      "median_interval_ms": 7.583,
+      "max_interval_ms": 7.779,
+      "events": [
+        {
+          "windows": 1,
+          "benchmark_window_visible": true,
+          "kind": "ready",
+          "pid": 37314,
+          "timestamp_ns": 120067189220000
+        },
+        {
+          "kind": "begin",
+          "phase": "baseline",
+          "timestamp_ns": 120067195073000
+        },
+        {
+          "kind": "end",
+          "duration": "2.104072667 seconds",
+          "phase": "baseline",
+          "timestamp_ns": 120069299426000
+        },
+        {
+          "kind": "begin",
+          "phase": "create",
+          "timestamp_ns": 120069300229000
+        },
+        {
+          "kind": "end",
+          "duration": "2.861291542 seconds",
+          "phase": "create",
+          "timestamp_ns": 120072160725000
+        },
+        {
+          "kind": "begin",
+          "phase": "list",
+          "timestamp_ns": 120072161443000
+        },
+        {
+          "kind": "end",
+          "duration": "0.002314 seconds",
+          "phase": "list",
+          "timestamp_ns": 120072163017000
+        },
+        {
+          "kind": "begin",
+          "phase": "test",
+          "timestamp_ns": 120072163546000
+        },
+        {
+          "kind": "end",
+          "duration": "0.087068083 seconds",
+          "phase": "test",
+          "timestamp_ns": 120072250115000
+        },
+        {
+          "kind": "begin",
+          "phase": "extract",
+          "timestamp_ns": 120072250714000
+        },
+        {
+          "kind": "end",
+          "duration": "0.181881792 seconds",
+          "phase": "extract",
+          "timestamp_ns": 120072432079000
+        },
+        {
+          "kind": "begin",
+          "phase": "cleanup",
+          "timestamp_ns": 120072432843000
+        },
+        {
+          "kind": "end",
+          "duration": "0.000169708 seconds",
+          "phase": "cleanup",
+          "timestamp_ns": 120072433298000
+        },
+        {
+          "kind": "begin",
+          "phase": "post",
+          "timestamp_ns": 120072433709000
+        },
+        {
+          "kind": "end",
+          "duration": "3.056752792 seconds",
+          "phase": "post",
+          "timestamp_ns": 120075489249000
+        },
+        {
+          "kind": "done",
+          "verified_files": 1,
+          "hashes_match": true,
+          "timestamp_ns": 120075631438000
+        }
+      ]
+    },
+    {
+      "case": "Large-zip-1-CLI",
+      "dataset": "Large",
+      "format": "zip",
+      "repetition": 1,
+      "variant": "CLI",
+      "pid": 37318,
+      "windows": 1,
+      "verified_files": 1,
+      "phases": {
+        "baseline": {
+          "duration_s": 2.099926,
+          "samples": 281,
+          "peak_rss": 126353408,
+          "peak_footprint": 58459192,
+          "median_rss": 126353408,
+          "median_footprint": 58459192,
+          "max_processes": 1
+        },
+        "create": {
+          "duration_s": 2.947031,
+          "samples": 391,
+          "peak_rss": 169705472,
+          "peak_footprint": 99812936,
+          "median_rss": 169705472,
+          "median_footprint": 99812936,
+          "max_processes": 2
+        },
+        "list": {
+          "duration_s": 0.129792,
+          "samples": 17,
+          "peak_rss": 129679360,
+          "peak_footprint": 59835856,
+          "median_rss": 126320640,
+          "median_footprint": 58246200,
+          "max_processes": 2
+        },
+        "test": {
+          "duration_s": 0.248699,
+          "samples": 34,
+          "peak_rss": 131432448,
+          "peak_footprint": 61310416,
+          "median_rss": 126550016.0,
+          "median_footprint": 58426424.0,
+          "max_processes": 2
+        },
+        "extract": {
+          "duration_s": 0.429062,
+          "samples": 57,
+          "peak_rss": 131448832,
+          "peak_footprint": 61326800,
+          "median_rss": 130940928,
+          "median_footprint": 60818896,
+          "max_processes": 2
+        },
+        "cleanup": {
+          "duration_s": 0.000486,
+          "samples": 0,
+          "warning": "phase shorter than sampling interval; no isolated peak inferred"
+        },
+        "post": {
+          "duration_s": 3.059977,
+          "samples": 409,
+          "peak_rss": 126550016,
+          "peak_footprint": 58426424,
+          "median_rss": 126550016,
+          "median_footprint": 58426424,
+          "max_processes": 1
+        }
+      },
+      "peak_rss": 169705472,
+      "peak_footprint": 99812936,
+      "max_processes": 2,
+      "samples_with_7zz": 427,
+      "median_interval_ms": 7.599,
+      "max_interval_ms": 10.9,
+      "events": [
+        {
+          "windows": 1,
+          "kind": "ready",
+          "pid": 37318,
+          "benchmark_window_visible": true,
+          "timestamp_ns": 120079284682000
+        },
+        {
+          "kind": "begin",
+          "phase": "baseline",
+          "timestamp_ns": 120079290415000
+        },
+        {
+          "kind": "end",
+          "phase": "baseline",
+          "duration": "2.099687291 seconds",
+          "timestamp_ns": 120081390341000
+        },
+        {
+          "kind": "begin",
+          "phase": "create",
+          "timestamp_ns": 120081391144000
+        },
+        {
+          "kind": "end",
+          "phase": "create",
+          "duration": "2.947819 seconds",
+          "timestamp_ns": 120084338175000
+        },
+        {
+          "kind": "begin",
+          "phase": "list",
+          "timestamp_ns": 120084338920000
+        },
+        {
+          "kind": "end",
+          "phase": "list",
+          "duration": "0.130505542 seconds",
+          "timestamp_ns": 120084468712000
+        },
+        {
+          "kind": "begin",
+          "phase": "test",
+          "timestamp_ns": 120084469210000
+        },
+        {
+          "kind": "end",
+          "phase": "test",
+          "duration": "0.24909425 seconds",
+          "timestamp_ns": 120084717909000
+        },
+        {
+          "kind": "begin",
+          "phase": "extract",
+          "timestamp_ns": 120084718681000
+        },
+        {
+          "kind": "end",
+          "phase": "extract",
+          "duration": "0.4297455 seconds",
+          "timestamp_ns": 120085147743000
+        },
+        {
+          "kind": "begin",
+          "phase": "cleanup",
+          "timestamp_ns": 120085148588000
+        },
+        {
+          "kind": "end",
+          "phase": "cleanup",
+          "duration": "0.000228458 seconds",
+          "timestamp_ns": 120085149074000
+        },
+        {
+          "kind": "begin",
+          "phase": "post",
+          "timestamp_ns": 120085149553000
+        },
+        {
+          "kind": "end",
+          "phase": "post",
+          "duration": "3.06134275 seconds",
+          "timestamp_ns": 120088209530000
+        },
+        {
+          "kind": "done",
+          "verified_files": 1,
+          "hashes_match": true,
+          "timestamp_ns": 120088350003000
+        }
+      ]
+    },
+    {
+      "case": "Large-zip-2-dynamic",
+      "dataset": "Large",
+      "format": "zip",
+      "repetition": 2,
+      "variant": "dynamic",
+      "pid": 37327,
+      "windows": 1,
+      "verified_files": 1,
+      "phases": {
+        "baseline": {
+          "duration_s": 2.068992,
+          "samples": 279,
+          "peak_rss": 127827968,
+          "peak_footprint": 58786896,
+          "median_rss": 127827968,
+          "median_footprint": 58786896,
+          "max_processes": 1
+        },
+        "create": {
+          "duration_s": 2.859007,
+          "samples": 389,
+          "peak_rss": 167624704,
+          "peak_footprint": 98419888,
+          "median_rss": 167624704,
+          "median_footprint": 98419888,
+          "max_processes": 1
+        },
+        "list": {
+          "duration_s": 0.000814,
+          "samples": 0,
+          "warning": "phase shorter than sampling interval; no isolated peak inferred"
+        },
+        "test": {
+          "duration_s": 0.086737,
+          "samples": 12,
+          "peak_rss": 168656896,
+          "peak_footprint": 99321008,
+          "median_rss": 168656896.0,
+          "median_footprint": 99321008.0,
+          "max_processes": 1
+        },
+        "extract": {
+          "duration_s": 0.183516,
+          "samples": 24,
+          "peak_rss": 168656896,
+          "peak_footprint": 99321008,
+          "median_rss": 168656896.0,
+          "median_footprint": 99321008.0,
+          "max_processes": 1
+        },
+        "cleanup": {
+          "duration_s": 0.000487,
+          "samples": 0,
+          "warning": "phase shorter than sampling interval; no isolated peak inferred"
+        },
+        "post": {
+          "duration_s": 3.184035,
+          "samples": 427,
+          "peak_rss": 168656896,
+          "peak_footprint": 99321008,
+          "median_rss": 168656896,
+          "median_footprint": 99321008,
+          "max_processes": 1
+        }
+      },
+      "peak_rss": 168656896,
+      "peak_footprint": 99321008,
+      "max_processes": 1,
+      "samples_with_7zz": 0,
+      "median_interval_ms": 7.582,
+      "max_interval_ms": 7.855,
+      "events": [
+        {
+          "pid": 37327,
+          "windows": 1,
+          "kind": "ready",
+          "benchmark_window_visible": true,
+          "timestamp_ns": 120092063336000
+        },
+        {
+          "kind": "begin",
+          "phase": "baseline",
+          "timestamp_ns": 120092068987000
+        },
+        {
+          "kind": "end",
+          "phase": "baseline",
+          "duration": "2.068739125 seconds",
+          "timestamp_ns": 120094137979000
+        },
+        {
+          "kind": "begin",
+          "phase": "create",
+          "timestamp_ns": 120094138755000
+        },
+        {
+          "kind": "end",
+          "phase": "create",
+          "duration": "2.859793875 seconds",
+          "timestamp_ns": 120096997762000
+        },
+        {
+          "kind": "begin",
+          "phase": "list",
+          "timestamp_ns": 120096998479000
+        },
+        {
+          "kind": "end",
+          "phase": "list",
+          "duration": "0.001546 seconds",
+          "timestamp_ns": 120096999293000
+        },
+        {
+          "kind": "begin",
+          "phase": "test",
+          "timestamp_ns": 120096999711000
+        },
+        {
+          "kind": "end",
+          "phase": "test",
+          "duration": "0.087125625 seconds",
+          "timestamp_ns": 120097086448000
+        },
+        {
+          "kind": "begin",
+          "phase": "extract",
+          "timestamp_ns": 120097086988000
+        },
+        {
+          "kind": "end",
+          "phase": "extract",
+          "duration": "0.183964792 seconds",
+          "timestamp_ns": 120097270504000
+        },
+        {
+          "kind": "begin",
+          "phase": "cleanup",
+          "timestamp_ns": 120097271301000
+        },
+        {
+          "kind": "end",
+          "phase": "cleanup",
+          "duration": "0.000150458 seconds",
+          "timestamp_ns": 120097271788000
+        },
+        {
+          "kind": "begin",
+          "phase": "post",
+          "timestamp_ns": 120097272208000
+        },
+        {
+          "kind": "end",
+          "phase": "post",
+          "duration": "3.185361875 seconds",
+          "timestamp_ns": 120100456243000
+        },
+        {
+          "kind": "done",
+          "verified_files": 1,
+          "hashes_match": true,
+          "timestamp_ns": 120100598353000
+        }
+      ]
+    },
+    {
+      "case": "Large-zip-2-CLI",
+      "dataset": "Large",
+      "format": "zip",
+      "repetition": 2,
+      "variant": "CLI",
+      "pid": 37331,
+      "windows": 1,
+      "verified_files": 1,
+      "phases": {
+        "baseline": {
+          "duration_s": 2.11795,
+          "samples": 285,
+          "peak_rss": 126205952,
+          "peak_footprint": 58295352,
+          "median_rss": 126205952,
+          "median_footprint": 58295352,
+          "max_processes": 1
+        },
+        "create": {
+          "duration_s": 2.955393,
+          "samples": 398,
+          "peak_rss": 169639936,
+          "peak_footprint": 99747400,
+          "median_rss": 169639936.0,
+          "median_footprint": 99747400.0,
+          "max_processes": 2
+        },
+        "list": {
+          "duration_s": 0.130378,
+          "samples": 18,
+          "peak_rss": 126746624,
+          "peak_footprint": 58377344,
+          "median_rss": 126271488.0,
+          "median_footprint": 58197048.0,
+          "max_processes": 2
+        },
+        "test": {
+          "duration_s": 0.240762,
+          "samples": 32,
+          "peak_rss": 131399680,
+          "peak_footprint": 61277648,
+          "median_rss": 126615552.0,
+          "median_footprint": 58500212.0,
+          "max_processes": 2
+        },
+        "extract": {
+          "duration_s": 0.436737,
+          "samples": 58,
+          "peak_rss": 131448832,
+          "peak_footprint": 61326800,
+          "median_rss": 127180800.0,
+          "median_footprint": 58893524.0,
+          "max_processes": 2
+        },
+        "cleanup": {
+          "duration_s": 0.00053,
+          "samples": 0,
+          "warning": "phase shorter than sampling interval; no isolated peak inferred"
+        },
+        "post": {
+          "duration_s": 3.050886,
+          "samples": 409,
+          "peak_rss": 126533632,
+          "peak_footprint": 58410040,
+          "median_rss": 126533632,
+          "median_footprint": 58410040,
+          "max_processes": 1
+        }
+      },
+      "peak_rss": 169639936,
+      "peak_footprint": 99747400,
+      "max_processes": 2,
+      "samples_with_7zz": 432,
+      "median_interval_ms": 7.597,
+      "max_interval_ms": 7.725,
+      "events": [
+        {
+          "kind": "ready",
+          "pid": 37331,
+          "benchmark_window_visible": true,
+          "windows": 1,
+          "timestamp_ns": 120104259801000
+        },
+        {
+          "kind": "begin",
+          "phase": "baseline",
+          "timestamp_ns": 120104265150000
+        },
+        {
+          "kind": "end",
+          "phase": "baseline",
+          "duration": "2.117754333 seconds",
+          "timestamp_ns": 120106383100000
+        },
+        {
+          "kind": "begin",
+          "phase": "create",
+          "timestamp_ns": 120106383947000
+        },
+        {
+          "kind": "end",
+          "phase": "create",
+          "duration": "2.956219708 seconds",
+          "timestamp_ns": 120109339340000
+        },
+        {
+          "kind": "begin",
+          "phase": "list",
+          "timestamp_ns": 120109340101000
+        },
+        {
+          "phase": "list",
+          "duration": "0.131108208 seconds",
+          "kind": "end",
+          "timestamp_ns": 120109470479000
+        },
+        {
+          "phase": "test",
+          "kind": "begin",
+          "timestamp_ns": 120109470897000
+        },
+        {
+          "phase": "test",
+          "duration": "0.241063209 seconds",
+          "kind": "end",
+          "timestamp_ns": 120109711659000
+        },
+        {
+          "phase": "extract",
+          "kind": "begin",
+          "timestamp_ns": 120109712500000
+        },
+        {
+          "phase": "extract",
+          "duration": "0.437489541 seconds",
+          "kind": "end",
+          "timestamp_ns": 120110149237000
+        },
+        {
+          "phase": "cleanup",
+          "kind": "begin",
+          "timestamp_ns": 120110150149000
+        },
+        {
+          "kind": "end",
+          "phase": "cleanup",
+          "duration": "0.000161625 seconds",
+          "timestamp_ns": 120110150679000
+        },
+        {
+          "kind": "begin",
+          "phase": "post",
+          "timestamp_ns": 120110151122000
+        },
+        {
+          "kind": "end",
+          "phase": "post",
+          "duration": "3.052421083 seconds",
+          "timestamp_ns": 120113202008000
+        },
+        {
+          "hashes_match": true,
+          "kind": "done",
+          "verified_files": 1,
+          "timestamp_ns": 120113343312000
+        }
+      ]
+    },
+    {
+      "case": "Large-zip-2-static",
+      "dataset": "Large",
+      "format": "zip",
+      "repetition": 2,
+      "variant": "static",
+      "pid": 37352,
+      "windows": 1,
+      "verified_files": 1,
+      "phases": {
+        "baseline": {
+          "duration_s": 2.042998,
+          "samples": 275,
+          "peak_rss": 128122880,
+          "peak_footprint": 58655800,
+          "median_rss": 128122880,
+          "median_footprint": 58655800,
+          "max_processes": 1
+        },
+        "create": {
+          "duration_s": 2.868008,
+          "samples": 385,
+          "peak_rss": 167886848,
+          "peak_footprint": 98305176,
+          "median_rss": 167886848,
+          "median_footprint": 98305176,
+          "max_processes": 1
+        },
+        "list": {
+          "duration_s": 0.001015,
+          "samples": 0,
+          "warning": "phase shorter than sampling interval; no isolated peak inferred"
+        },
+        "test": {
+          "duration_s": 0.086368,
+          "samples": 11,
+          "peak_rss": 168771584,
+          "peak_footprint": 99042456,
+          "median_rss": 168771584,
+          "median_footprint": 99042456,
+          "max_processes": 1
+        },
+        "extract": {
+          "duration_s": 0.183997,
+          "samples": 25,
+          "peak_rss": 168771584,
+          "peak_footprint": 99042456,
+          "median_rss": 168771584,
+          "median_footprint": 99042456,
+          "max_processes": 1
+        },
+        "cleanup": {
+          "duration_s": 0.000536,
+          "samples": 0,
+          "warning": "phase shorter than sampling interval; no isolated peak inferred"
+        },
+        "post": {
+          "duration_s": 3.164818,
+          "samples": 425,
+          "peak_rss": 168771584,
+          "peak_footprint": 99042456,
+          "median_rss": 168771584,
+          "median_footprint": 99042456,
+          "max_processes": 1
+        }
+      },
+      "peak_rss": 168771584,
+      "peak_footprint": 99042456,
+      "max_processes": 1,
+      "samples_with_7zz": 0,
+      "median_interval_ms": 7.582,
+      "max_interval_ms": 7.783,
+      "events": [
+        {
+          "kind": "ready",
+          "windows": 1,
+          "benchmark_window_visible": true,
+          "pid": 37352,
+          "timestamp_ns": 120117075889000
+        },
+        {
+          "phase": "baseline",
+          "kind": "begin",
+          "timestamp_ns": 120117080897000
+        },
+        {
+          "phase": "baseline",
+          "duration": "2.042748209 seconds",
+          "kind": "end",
+          "timestamp_ns": 120119123895000
+        },
+        {
+          "phase": "create",
+          "kind": "begin",
+          "timestamp_ns": 120119124707000
+        },
+        {
+          "phase": "create",
+          "duration": "2.868828458 seconds",
+          "kind": "end",
+          "timestamp_ns": 120121992715000
+        },
+        {
+          "phase": "list",
+          "kind": "begin",
+          "timestamp_ns": 120121993434000
+        },
+        {
+          "phase": "list",
+          "duration": "0.001750959 seconds",
+          "kind": "end",
+          "timestamp_ns": 120121994449000
+        },
+        {
+          "phase": "test",
+          "kind": "begin",
+          "timestamp_ns": 120121995039000
+        },
+        {
+          "phase": "test",
+          "duration": "0.086934541 seconds",
+          "kind": "end",
+          "timestamp_ns": 120122081407000
+        },
+        {
+          "phase": "extract",
+          "kind": "begin",
+          "timestamp_ns": 120122081973000
+        },
+        {
+          "phase": "extract",
+          "duration": "0.184475 seconds",
+          "kind": "end",
+          "timestamp_ns": 120122265970000
+        },
+        {
+          "phase": "cleanup",
+          "kind": "begin",
+          "timestamp_ns": 120122266761000
+        },
+        {
+          "phase": "cleanup",
+          "duration": "0.000170875 seconds",
+          "kind": "end",
+          "timestamp_ns": 120122267297000
+        },
+        {
+          "phase": "post",
+          "kind": "begin",
+          "timestamp_ns": 120122267717000
+        },
+        {
+          "phase": "post",
+          "duration": "3.166178083 seconds",
+          "kind": "end",
+          "timestamp_ns": 120125432535000
+        },
+        {
+          "hashes_match": true,
+          "verified_files": 1,
+          "kind": "done",
+          "timestamp_ns": 120125569970000
+        }
+      ]
+    },
+    {
+      "case": "Large-7z-0-CLI",
+      "dataset": "Large",
+      "format": "7z",
+      "repetition": 0,
+      "variant": "CLI",
+      "pid": 37356,
+      "windows": 1,
+      "verified_files": 1,
+      "phases": {
+        "baseline": {
+          "duration_s": 2.10982,
+          "samples": 283,
+          "peak_rss": 126435328,
+          "peak_footprint": 58508344,
+          "median_rss": 126435328,
+          "median_footprint": 58508344,
+          "max_processes": 1
+        },
+        "create": {
+          "duration_s": 0.906538,
+          "samples": 121,
+          "peak_rss": 842760192,
+          "peak_footprint": 773097416,
+          "median_rss": 842629120,
+          "median_footprint": 772966344,
+          "max_processes": 2
+        },
+        "list": {
+          "duration_s": 0.130437,
+          "samples": 17,
+          "peak_rss": 130367488,
+          "peak_footprint": 58360888,
+          "median_rss": 126418944,
+          "median_footprint": 58360888,
+          "max_processes": 2
+        },
+        "test": {
+          "duration_s": 0.24116,
+          "samples": 32,
+          "peak_rss": 399589376,
+          "peak_footprint": 329565864,
+          "median_rss": 162111488.0,
+          "median_footprint": 91964916.0,
+          "max_processes": 2
+        },
+        "extract": {
+          "duration_s": 0.427869,
+          "samples": 58,
+          "peak_rss": 399572992,
+          "peak_footprint": 329549480,
+          "median_rss": 126681088.0,
+          "median_footprint": 58573880.0,
+          "max_processes": 2
+        },
+        "cleanup": {
+          "duration_s": 0.000496,
+          "samples": 0,
+          "warning": "phase shorter than sampling interval; no isolated peak inferred"
+        },
+        "post": {
+          "duration_s": 3.024912,
+          "samples": 409,
+          "peak_rss": 126713856,
+          "peak_footprint": 58606648,
+          "median_rss": 126713856,
+          "median_footprint": 58606648,
+          "max_processes": 1
+        }
+      },
+      "peak_rss": 842760192,
+      "peak_footprint": 773097416,
+      "max_processes": 2,
+      "samples_with_7zz": 152,
+      "median_interval_ms": 7.59,
+      "max_interval_ms": 7.766,
+      "events": [
+        {
+          "windows": 1,
+          "kind": "ready",
+          "benchmark_window_visible": true,
+          "pid": 37356,
+          "timestamp_ns": 120129241552000
+        },
+        {
+          "phase": "baseline",
+          "kind": "begin",
+          "timestamp_ns": 120129247342000
+        },
+        {
+          "phase": "baseline",
+          "kind": "end",
+          "duration": "2.109517083 seconds",
+          "timestamp_ns": 120131357162000
+        },
+        {
+          "phase": "create",
+          "kind": "begin",
+          "timestamp_ns": 120131357927000
+        },
+        {
+          "phase": "create",
+          "kind": "end",
+          "duration": "0.907280875 seconds",
+          "timestamp_ns": 120132264465000
+        },
+        {
+          "phase": "list",
+          "kind": "begin",
+          "timestamp_ns": 120132265188000
+        },
+        {
+          "phase": "list",
+          "kind": "end",
+          "duration": "0.131085375 seconds",
+          "timestamp_ns": 120132395625000
+        },
+        {
+          "phase": "test",
+          "kind": "begin",
+          "timestamp_ns": 120132396182000
+        },
+        {
+          "phase": "test",
+          "kind": "end",
+          "duration": "0.241656666 seconds",
+          "timestamp_ns": 120132637342000
+        },
+        {
+          "phase": "extract",
+          "kind": "begin",
+          "timestamp_ns": 120132638149000
+        },
+        {
+          "phase": "extract",
+          "kind": "end",
+          "duration": "0.428580916 seconds",
+          "timestamp_ns": 120133066018000
+        },
+        {
+          "phase": "cleanup",
+          "kind": "begin",
+          "timestamp_ns": 120133066873000
+        },
+        {
+          "phase": "cleanup",
+          "kind": "end",
+          "duration": "0.000184292 seconds",
+          "timestamp_ns": 120133067369000
+        },
+        {
+          "phase": "post",
+          "kind": "begin",
+          "timestamp_ns": 120133067820000
+        },
+        {
+          "phase": "post",
+          "kind": "end",
+          "duration": "3.02632 seconds",
+          "timestamp_ns": 120136092732000
+        },
+        {
+          "verified_files": 1,
+          "kind": "done",
+          "hashes_match": true,
+          "timestamp_ns": 120136235775000
+        }
+      ]
+    },
+    {
+      "case": "Large-7z-0-static",
+      "dataset": "Large",
+      "format": "7z",
+      "repetition": 0,
+      "variant": "static",
+      "pid": 37365,
+      "windows": 1,
+      "verified_files": 1,
+      "phases": {
+        "baseline": {
+          "duration_s": 2.048168,
+          "samples": 275,
+          "peak_rss": 128040960,
+          "peak_footprint": 58573880,
+          "median_rss": 128040960,
+          "median_footprint": 58573880,
+          "max_processes": 1
+        },
+        "create": {
+          "duration_s": 0.804058,
+          "samples": 108,
+          "peak_rss": 841105408,
+          "peak_footprint": 771769904,
+          "median_rss": 840892416.0,
+          "median_footprint": 771556912.0,
+          "max_processes": 1
+        },
+        "list": {
+          "duration_s": 0.000455,
+          "samples": 0,
+          "warning": "phase shorter than sampling interval; no isolated peak inferred"
+        },
+        "test": {
+          "duration_s": 0.118075,
+          "samples": 16,
+          "peak_rss": 1109901312,
+          "peak_footprint": 1040549616,
+          "median_rss": 1008017408.0,
+          "median_footprint": 938624692.0,
+          "max_processes": 1
+        },
+        "extract": {
+          "duration_s": 0.134445,
+          "samples": 20,
+          "peak_rss": 1109901312,
+          "peak_footprint": 1040549616,
+          "median_rss": 1109901312.0,
+          "median_footprint": 1040549616.0,
+          "max_processes": 1
+        },
+        "cleanup": {
+          "duration_s": 0.000506,
+          "samples": 0,
+          "warning": "phase shorter than sampling interval; no isolated peak inferred"
+        },
+        "post": {
+          "duration_s": 3.030417,
+          "samples": 411,
+          "peak_rss": 1109901312,
+          "peak_footprint": 1040549616,
+          "median_rss": 1109901312,
+          "median_footprint": 1040549616,
+          "max_processes": 1
+        }
+      },
+      "peak_rss": 1109901312,
+      "peak_footprint": 1040549616,
+      "max_processes": 1,
+      "samples_with_7zz": 0,
+      "median_interval_ms": 7.585,
+      "max_interval_ms": 9.111,
+      "events": [
+        {
+          "kind": "ready",
+          "windows": 1,
+          "pid": 37365,
+          "benchmark_window_visible": true,
+          "timestamp_ns": 120139909457000
+        },
+        {
+          "phase": "baseline",
+          "kind": "begin",
+          "timestamp_ns": 120139915148000
+        },
+        {
+          "phase": "baseline",
+          "duration": "2.047886958 seconds",
+          "kind": "end",
+          "timestamp_ns": 120141963316000
+        },
+        {
+          "phase": "create",
+          "kind": "begin",
+          "timestamp_ns": 120141964099000
+        },
+        {
+          "phase": "create",
+          "duration": "0.804843958 seconds",
+          "kind": "end",
+          "timestamp_ns": 120142768157000
+        },
+        {
+          "phase": "list",
+          "kind": "begin",
+          "timestamp_ns": 120142768903000
+        },
+        {
+          "phase": "list",
+          "duration": "0.000837458 seconds",
+          "kind": "end",
+          "timestamp_ns": 120142769358000
+        },
+        {
+          "phase": "test",
+          "kind": "begin",
+          "timestamp_ns": 120142769758000
+        },
+        {
+          "phase": "test",
+          "duration": "0.118802667 seconds",
+          "kind": "end",
+          "timestamp_ns": 120142887833000
+        },
+        {
+          "phase": "extract",
+          "kind": "begin",
+          "timestamp_ns": 120142888458000
+        },
+        {
+          "phase": "extract",
+          "duration": "0.13497825 seconds",
+          "kind": "end",
+          "timestamp_ns": 120143022903000
+        },
+        {
+          "phase": "cleanup",
+          "kind": "begin",
+          "timestamp_ns": 120143023858000
+        },
+        {
+          "phase": "cleanup",
+          "duration": "0.000135833 seconds",
+          "kind": "end",
+          "timestamp_ns": 120143024364000
+        },
+        {
+          "phase": "post",
+          "kind": "begin",
+          "timestamp_ns": 120143024813000
+        },
+        {
+          "phase": "post",
+          "duration": "3.0319705 seconds",
+          "kind": "end",
+          "timestamp_ns": 120146055230000
+        },
+        {
+          "verified_files": 1,
+          "hashes_match": true,
+          "kind": "done",
+          "timestamp_ns": 120146197424000
+        }
+      ]
+    },
+    {
+      "case": "Large-7z-0-dynamic",
+      "dataset": "Large",
+      "format": "7z",
+      "repetition": 0,
+      "variant": "dynamic",
+      "pid": 37416,
+      "windows": 1,
+      "verified_files": 1,
+      "phases": {
+        "baseline": {
+          "duration_s": 2.106522,
+          "samples": 284,
+          "peak_rss": 127352832,
+          "peak_footprint": 58442808,
+          "median_rss": 127352832.0,
+          "median_footprint": 58442808.0,
+          "max_processes": 1
+        },
+        "create": {
+          "duration_s": 0.808363,
+          "samples": 110,
+          "peak_rss": 840187904,
+          "peak_footprint": 771393072,
+          "median_rss": 840187904.0,
+          "median_footprint": 771393072.0,
+          "max_processes": 1
+        },
+        "list": {
+          "duration_s": 0.000437,
+          "samples": 0,
+          "warning": "phase shorter than sampling interval; no isolated peak inferred"
+        },
+        "test": {
+          "duration_s": 0.118511,
+          "samples": 16,
+          "peak_rss": 1109229568,
+          "peak_footprint": 1040434928,
+          "median_rss": 998703104.0,
+          "median_footprint": 929867444.0,
+          "max_processes": 1
+        },
+        "extract": {
+          "duration_s": 0.125664,
+          "samples": 17,
+          "peak_rss": 1109229568,
+          "peak_footprint": 1040434928,
+          "median_rss": 1109229568,
+          "median_footprint": 1040434928,
+          "max_processes": 1
+        },
+        "cleanup": {
+          "duration_s": 0.000456,
+          "samples": 1,
+          "peak_rss": 1109229568,
+          "peak_footprint": 1040434928,
+          "median_rss": 1109229568,
+          "median_footprint": 1040434928,
+          "max_processes": 1
+        },
+        "post": {
+          "duration_s": 3.045986,
+          "samples": 408,
+          "peak_rss": 1109262336,
+          "peak_footprint": 1040467696,
+          "median_rss": 1109229568.0,
+          "median_footprint": 1040434928.0,
+          "max_processes": 1
+        }
+      },
+      "peak_rss": 1109262336,
+      "peak_footprint": 1040467696,
+      "max_processes": 1,
+      "samples_with_7zz": 0,
+      "median_interval_ms": 7.586,
+      "max_interval_ms": 13.542,
+      "events": [
+        {
+          "benchmark_window_visible": true,
+          "kind": "ready",
+          "pid": 37416,
+          "windows": 1,
+          "timestamp_ns": 120149882628000
+        },
+        {
+          "phase": "baseline",
+          "kind": "begin",
+          "timestamp_ns": 120149888344000
+        },
+        {
+          "phase": "baseline",
+          "duration": "2.106274708 seconds",
+          "kind": "end",
+          "timestamp_ns": 120151994866000
+        },
+        {
+          "phase": "create",
+          "kind": "begin",
+          "timestamp_ns": 120151995672000
+        },
+        {
+          "phase": "create",
+          "duration": "0.809163875 seconds",
+          "kind": "end",
+          "timestamp_ns": 120152804035000
+        },
+        {
+          "phase": "list",
+          "kind": "begin",
+          "timestamp_ns": 120152804703000
+        },
+        {
+          "kind": "end",
+          "phase": "list",
+          "duration": "0.00080075 seconds",
+          "timestamp_ns": 120152805140000
+        },
+        {
+          "kind": "begin",
+          "phase": "test",
+          "timestamp_ns": 120152805520000
+        },
+        {
+          "kind": "end",
+          "phase": "test",
+          "duration": "0.119187667 seconds",
+          "timestamp_ns": 120152924031000
+        },
+        {
+          "kind": "begin",
+          "phase": "extract",
+          "timestamp_ns": 120152924619000
+        },
+        {
+          "kind": "end",
+          "phase": "extract",
+          "duration": "0.126189417 seconds",
+          "timestamp_ns": 120153050283000
+        },
+        {
+          "kind": "begin",
+          "phase": "cleanup",
+          "timestamp_ns": 120153051000000
+        },
+        {
+          "phase": "cleanup",
+          "duration": "0.000124792 seconds",
+          "kind": "end",
+          "timestamp_ns": 120153051456000
+        },
+        {
+          "phase": "post",
+          "kind": "begin",
+          "timestamp_ns": 120153051875000
+        },
+        {
+          "phase": "post",
+          "duration": "3.047203208 seconds",
+          "kind": "end",
+          "timestamp_ns": 120156097861000
+        },
+        {
+          "verified_files": 1,
+          "hashes_match": true,
+          "kind": "done",
+          "timestamp_ns": 120156235960000
+        }
+      ]
+    },
+    {
+      "case": "Large-7z-1-static",
+      "dataset": "Large",
+      "format": "7z",
+      "repetition": 1,
+      "variant": "static",
+      "pid": 37420,
+      "windows": 1,
+      "verified_files": 1,
+      "phases": {
+        "baseline": {
+          "duration_s": 2.100965,
+          "samples": 284,
+          "peak_rss": 128139264,
+          "peak_footprint": 58655824,
+          "median_rss": 128139264.0,
+          "median_footprint": 58655824.0,
+          "max_processes": 1
+        },
+        "create": {
+          "duration_s": 0.803783,
+          "samples": 106,
+          "peak_rss": 840892416,
+          "peak_footprint": 771524144,
+          "median_rss": 840892416.0,
+          "median_footprint": 771524144.0,
+          "max_processes": 1
+        },
+        "list": {
+          "duration_s": 0.000452,
+          "samples": 0,
+          "warning": "phase shorter than sampling interval; no isolated peak inferred"
+        },
+        "test": {
+          "duration_s": 0.117805,
+          "samples": 16,
+          "peak_rss": 1109934080,
+          "peak_footprint": 1040549616,
+          "median_rss": 1008607232.0,
+          "median_footprint": 939181748.0,
+          "max_processes": 1
+        },
+        "extract": {
+          "duration_s": 0.126627,
+          "samples": 18,
+          "peak_rss": 1109934080,
+          "peak_footprint": 1040549616,
+          "median_rss": 1109934080.0,
+          "median_footprint": 1040549616.0,
+          "max_processes": 1
+        },
+        "cleanup": {
+          "duration_s": 0.000466,
+          "samples": 0,
+          "warning": "phase shorter than sampling interval; no isolated peak inferred"
+        },
+        "post": {
+          "duration_s": 3.03762,
+          "samples": 409,
+          "peak_rss": 1109983232,
+          "peak_footprint": 1040598768,
+          "median_rss": 1109950464,
+          "median_footprint": 1040566000,
+          "max_processes": 1
+        }
+      },
+      "peak_rss": 1109983232,
+      "peak_footprint": 1040598768,
+      "max_processes": 1,
+      "samples_with_7zz": 0,
+      "median_interval_ms": 7.592,
+      "max_interval_ms": 7.752,
+      "events": [
+        {
+          "benchmark_window_visible": true,
+          "kind": "ready",
+          "pid": 37420,
+          "windows": 1,
+          "timestamp_ns": 120159893935000
+        },
+        {
+          "kind": "begin",
+          "phase": "baseline",
+          "timestamp_ns": 120159899826000
+        },
+        {
+          "duration": "2.100736208 seconds",
+          "kind": "end",
+          "phase": "baseline",
+          "timestamp_ns": 120162000791000
+        },
+        {
+          "kind": "begin",
+          "phase": "create",
+          "timestamp_ns": 120162001594000
+        },
+        {
+          "duration": "0.80456875 seconds",
+          "kind": "end",
+          "phase": "create",
+          "timestamp_ns": 120162805377000
+        },
+        {
+          "kind": "begin",
+          "phase": "list",
+          "timestamp_ns": 120162806107000
+        },
+        {
+          "duration": "0.000769333 seconds",
+          "kind": "end",
+          "phase": "list",
+          "timestamp_ns": 120162806559000
+        },
+        {
+          "kind": "begin",
+          "phase": "test",
+          "timestamp_ns": 120162806934000
+        },
+        {
+          "duration": "0.1185725 seconds",
+          "kind": "end",
+          "phase": "test",
+          "timestamp_ns": 120162924739000
+        },
+        {
+          "kind": "begin",
+          "phase": "extract",
+          "timestamp_ns": 120162925385000
+        },
+        {
+          "duration": "0.127216125 seconds",
+          "kind": "end",
+          "phase": "extract",
+          "timestamp_ns": 120163052012000
+        },
+        {
+          "kind": "begin",
+          "phase": "cleanup",
+          "timestamp_ns": 120163052762000
+        },
+        {
+          "duration": "0.0001605 seconds",
+          "kind": "end",
+          "phase": "cleanup",
+          "timestamp_ns": 120163053228000
+        },
+        {
+          "kind": "begin",
+          "phase": "post",
+          "timestamp_ns": 120163053655000
+        },
+        {
+          "duration": "3.038899041 seconds",
+          "kind": "end",
+          "phase": "post",
+          "timestamp_ns": 120166091275000
+        },
+        {
+          "hashes_match": true,
+          "kind": "done",
+          "verified_files": 1,
+          "timestamp_ns": 120166232770000
+        }
+      ]
+    },
+    {
+      "case": "Large-7z-1-dynamic",
+      "dataset": "Large",
+      "format": "7z",
+      "repetition": 1,
+      "variant": "dynamic",
+      "pid": 37424,
+      "windows": 1,
+      "verified_files": 1,
+      "phases": {
+        "baseline": {
+          "duration_s": 2.122665,
+          "samples": 284,
+          "peak_rss": 127844352,
+          "peak_footprint": 58754128,
+          "median_rss": 127844352.0,
+          "median_footprint": 58754128.0,
+          "max_processes": 1
+        },
+        "create": {
+          "duration_s": 0.802908,
+          "samples": 107,
+          "peak_rss": 840974336,
+          "peak_footprint": 771933768,
+          "median_rss": 840695808,
+          "median_footprint": 771688008,
+          "max_processes": 1
+        },
+        "list": {
+          "duration_s": 0.000468,
+          "samples": 0,
+          "warning": "phase shorter than sampling interval; no isolated peak inferred"
+        },
+        "test": {
+          "duration_s": 0.118129,
+          "samples": 16,
+          "peak_rss": 1109688320,
+          "peak_footprint": 1040680712,
+          "median_rss": 1014341632.0,
+          "median_footprint": 945293004.0,
+          "max_processes": 1
+        },
+        "extract": {
+          "duration_s": 0.126269,
+          "samples": 16,
+          "peak_rss": 1109688320,
+          "peak_footprint": 1040680712,
+          "median_rss": 1109688320.0,
+          "median_footprint": 1040680712.0,
+          "max_processes": 1
+        },
+        "cleanup": {
+          "duration_s": 0.000458,
+          "samples": 0,
+          "warning": "phase shorter than sampling interval; no isolated peak inferred"
+        },
+        "post": {
+          "duration_s": 3.065079,
+          "samples": 411,
+          "peak_rss": 1109721088,
+          "peak_footprint": 1040713480,
+          "median_rss": 1109721088,
+          "median_footprint": 1040713480,
+          "max_processes": 1
+        }
+      },
+      "peak_rss": 1109721088,
+      "peak_footprint": 1040713480,
+      "max_processes": 1,
+      "samples_with_7zz": 0,
+      "median_interval_ms": 7.589,
+      "max_interval_ms": 10.054,
+      "events": [
+        {
+          "kind": "ready",
+          "windows": 1,
+          "pid": 37424,
+          "benchmark_window_visible": true,
+          "timestamp_ns": 120169928662000
+        },
+        {
+          "phase": "baseline",
+          "kind": "begin",
+          "timestamp_ns": 120169934470000
+        },
+        {
+          "phase": "baseline",
+          "kind": "end",
+          "duration": "2.12236775 seconds",
+          "timestamp_ns": 120172057135000
+        },
+        {
+          "phase": "create",
+          "kind": "begin",
+          "timestamp_ns": 120172057913000
+        },
+        {
+          "phase": "create",
+          "kind": "end",
+          "duration": "0.803691541 seconds",
+          "timestamp_ns": 120172860821000
+        },
+        {
+          "phase": "list",
+          "kind": "begin",
+          "timestamp_ns": 120172861496000
+        },
+        {
+          "phase": "list",
+          "kind": "end",
+          "duration": "0.00083825 seconds",
+          "timestamp_ns": 120172861964000
+        },
+        {
+          "phase": "test",
+          "kind": "begin",
+          "timestamp_ns": 120172862340000
+        },
+        {
+          "phase": "test",
+          "kind": "end",
+          "duration": "0.118789333 seconds",
+          "timestamp_ns": 120172980469000
+        },
+        {
+          "phase": "extract",
+          "kind": "begin",
+          "timestamp_ns": 120172981080000
+        },
+        {
+          "phase": "extract",
+          "kind": "end",
+          "duration": "0.12681075 seconds",
+          "timestamp_ns": 120173107349000
+        },
+        {
+          "phase": "cleanup",
+          "kind": "begin",
+          "timestamp_ns": 120173108040000
+        },
+        {
+          "phase": "cleanup",
+          "kind": "end",
+          "duration": "0.000130834 seconds",
+          "timestamp_ns": 120173108498000
+        },
+        {
+          "phase": "post",
+          "kind": "begin",
+          "timestamp_ns": 120173108918000
+        },
+        {
+          "phase": "post",
+          "kind": "end",
+          "duration": "3.066274666 seconds",
+          "timestamp_ns": 120176173997000
+        },
+        {
+          "hashes_match": true,
+          "kind": "done",
+          "verified_files": 1,
+          "timestamp_ns": 120176313554000
+        }
+      ]
+    },
+    {
+      "case": "Large-7z-1-CLI",
+      "dataset": "Large",
+      "format": "7z",
+      "repetition": 1,
+      "variant": "CLI",
+      "pid": 37470,
+      "windows": 1,
+      "verified_files": 1,
+      "phases": {
+        "baseline": {
+          "duration_s": 2.039725,
+          "samples": 274,
+          "peak_rss": 126320640,
+          "peak_footprint": 58410016,
+          "median_rss": 126320640.0,
+          "median_footprint": 58410016.0,
+          "max_processes": 1
+        },
+        "create": {
+          "duration_s": 0.906484,
+          "samples": 121,
+          "peak_rss": 842678272,
+          "peak_footprint": 772999088,
+          "median_rss": 842547200,
+          "median_footprint": 772868016,
+          "max_processes": 2
+        },
+        "list": {
+          "duration_s": 0.131692,
+          "samples": 18,
+          "peak_rss": 126943232,
+          "peak_footprint": 58672400,
+          "median_rss": 126353408.0,
+          "median_footprint": 58278944.0,
+          "max_processes": 2
+        },
+        "test": {
+          "duration_s": 0.238371,
+          "samples": 33,
+          "peak_rss": 399491072,
+          "peak_footprint": 329451152,
+          "median_rss": 169787392,
+          "median_footprint": 99632616,
+          "max_processes": 2
+        },
+        "extract": {
+          "duration_s": 0.375047,
+          "samples": 50,
+          "peak_rss": 399523840,
+          "peak_footprint": 329483920,
+          "median_rss": 126615552.0,
+          "median_footprint": 58491936.0,
+          "max_processes": 2
+        },
+        "cleanup": {
+          "duration_s": 0.000499,
+          "samples": 0,
+          "warning": "phase shorter than sampling interval; no isolated peak inferred"
+        },
+        "post": {
+          "duration_s": 3.021848,
+          "samples": 404,
+          "peak_rss": 126615552,
+          "peak_footprint": 58491936,
+          "median_rss": 126615552.0,
+          "median_footprint": 58491936.0,
+          "max_processes": 1
+        }
+      },
+      "peak_rss": 842678272,
+      "peak_footprint": 772999088,
+      "max_processes": 2,
+      "samples_with_7zz": 154,
+      "median_interval_ms": 7.591,
+      "max_interval_ms": 7.87,
+      "events": [
+        {
+          "kind": "ready",
+          "windows": 1,
+          "pid": 37470,
+          "benchmark_window_visible": true,
+          "timestamp_ns": 120180044517000
+        },
+        {
+          "phase": "baseline",
+          "kind": "begin",
+          "timestamp_ns": 120180050225000
+        },
+        {
+          "duration": "2.039455209 seconds",
+          "phase": "baseline",
+          "kind": "end",
+          "timestamp_ns": 120182089950000
+        },
+        {
+          "phase": "create",
+          "kind": "begin",
+          "timestamp_ns": 120182090857000
+        },
+        {
+          "duration": "0.907384291 seconds",
+          "phase": "create",
+          "kind": "end",
+          "timestamp_ns": 120182997341000
+        },
+        {
+          "phase": "list",
+          "kind": "begin",
+          "timestamp_ns": 120182998098000
+        },
+        {
+          "duration": "0.132400666 seconds",
+          "phase": "list",
+          "kind": "end",
+          "timestamp_ns": 120183129790000
+        },
+        {
+          "phase": "test",
+          "kind": "begin",
+          "timestamp_ns": 120183130269000
+        },
+        {
+          "duration": "0.238773583 seconds",
+          "phase": "test",
+          "kind": "end",
+          "timestamp_ns": 120183368640000
+        },
+        {
+          "phase": "extract",
+          "kind": "begin",
+          "timestamp_ns": 120183369405000
+        },
+        {
+          "duration": "0.375721792 seconds",
+          "phase": "extract",
+          "kind": "end",
+          "timestamp_ns": 120183744452000
+        },
+        {
+          "phase": "cleanup",
+          "kind": "begin",
+          "timestamp_ns": 120183745365000
+        },
+        {
+          "duration": "0.000134709 seconds",
+          "phase": "cleanup",
+          "kind": "end",
+          "timestamp_ns": 120183745864000
+        },
+        {
+          "phase": "post",
+          "kind": "begin",
+          "timestamp_ns": 120183746296000
+        },
+        {
+          "duration": "3.023358166 seconds",
+          "phase": "post",
+          "kind": "end",
+          "timestamp_ns": 120186768144000
+        },
+        {
+          "hashes_match": true,
+          "verified_files": 1,
+          "kind": "done",
+          "timestamp_ns": 120186903663000
+        }
+      ]
+    },
+    {
+      "case": "Large-7z-2-dynamic",
+      "dataset": "Large",
+      "format": "7z",
+      "repetition": 2,
+      "variant": "dynamic",
+      "pid": 37479,
+      "windows": 1,
+      "verified_files": 1,
+      "phases": {
+        "baseline": {
+          "duration_s": 2.020357,
+          "samples": 273,
+          "peak_rss": 128024576,
+          "peak_footprint": 58983504,
+          "median_rss": 128024576,
+          "median_footprint": 58983504,
+          "max_processes": 1
+        },
+        "create": {
+          "duration_s": 0.790859,
+          "samples": 105,
+          "peak_rss": 840876032,
+          "peak_footprint": 771917384,
+          "median_rss": 840876032,
+          "median_footprint": 771917384,
+          "max_processes": 1
+        },
+        "list": {
+          "duration_s": 0.000453,
+          "samples": 0,
+          "warning": "phase shorter than sampling interval; no isolated peak inferred"
+        },
+        "test": {
+          "duration_s": 0.117523,
+          "samples": 16,
+          "peak_rss": 1109868544,
+          "peak_footprint": 1040910088,
+          "median_rss": 1006682112.0,
+          "median_footprint": 937682636.0,
+          "max_processes": 1
+        },
+        "extract": {
+          "duration_s": 0.129912,
+          "samples": 17,
+          "peak_rss": 1109884928,
+          "peak_footprint": 1040926472,
+          "median_rss": 1109884928,
+          "median_footprint": 1040926472,
+          "max_processes": 1
+        },
+        "cleanup": {
+          "duration_s": 0.00046,
+          "samples": 0,
+          "warning": "phase shorter than sampling interval; no isolated peak inferred"
+        },
+        "post": {
+          "duration_s": 3.075906,
+          "samples": 418,
+          "peak_rss": 1109917696,
+          "peak_footprint": 1040959240,
+          "median_rss": 1109884928.0,
+          "median_footprint": 1040926472.0,
+          "max_processes": 1
+        }
+      },
+      "peak_rss": 1109917696,
+      "peak_footprint": 1040959240,
+      "max_processes": 1,
+      "samples_with_7zz": 0,
+      "median_interval_ms": 7.585,
+      "max_interval_ms": 10.777,
+      "events": [
+        {
+          "benchmark_window_visible": true,
+          "pid": 37479,
+          "windows": 1,
+          "kind": "ready",
+          "timestamp_ns": 120190625814000
+        },
+        {
+          "phase": "baseline",
+          "kind": "begin",
+          "timestamp_ns": 120190631533000
+        },
+        {
+          "phase": "baseline",
+          "duration": "2.020313125 seconds",
+          "kind": "end",
+          "timestamp_ns": 120192651890000
+        },
+        {
+          "phase": "create",
+          "kind": "begin",
+          "timestamp_ns": 120192652054000
+        },
+        {
+          "phase": "create",
+          "duration": "0.790890625 seconds",
+          "kind": "end",
+          "timestamp_ns": 120193442913000
+        },
+        {
+          "phase": "list",
+          "kind": "begin",
+          "timestamp_ns": 120193443596000
+        },
+        {
+          "kind": "end",
+          "phase": "list",
+          "duration": "0.000781958 seconds",
+          "timestamp_ns": 120193444049000
+        },
+        {
+          "kind": "begin",
+          "phase": "test",
+          "timestamp_ns": 120193444436000
+        },
+        {
+          "kind": "end",
+          "phase": "test",
+          "duration": "0.118270292 seconds",
+          "timestamp_ns": 120193561959000
+        },
+        {
+          "kind": "begin",
+          "phase": "extract",
+          "timestamp_ns": 120193562491000
+        },
+        {
+          "kind": "end",
+          "phase": "extract",
+          "duration": "0.130343542 seconds",
+          "timestamp_ns": 120193692403000
+        },
+        {
+          "kind": "begin",
+          "phase": "cleanup",
+          "timestamp_ns": 120193693099000
+        },
+        {
+          "phase": "cleanup",
+          "duration": "0.000131791 seconds",
+          "kind": "end",
+          "timestamp_ns": 120193693559000
+        },
+        {
+          "phase": "post",
+          "kind": "begin",
+          "timestamp_ns": 120193694021000
+        },
+        {
+          "phase": "post",
+          "duration": "3.077184834 seconds",
+          "kind": "end",
+          "timestamp_ns": 120196769927000
+        },
+        {
+          "verified_files": 1,
+          "hashes_match": true,
+          "kind": "done",
+          "timestamp_ns": 120196905571000
+        }
+      ]
+    },
+    {
+      "case": "Large-7z-2-CLI",
+      "dataset": "Large",
+      "format": "7z",
+      "repetition": 2,
+      "variant": "CLI",
+      "pid": 37525,
+      "windows": 1,
+      "verified_files": 1,
+      "phases": {
+        "baseline": {
+          "duration_s": 2.096908,
+          "samples": 281,
+          "peak_rss": 126320640,
+          "peak_footprint": 58426424,
+          "median_rss": 126320640,
+          "median_footprint": 58426424,
+          "max_processes": 1
+        },
+        "create": {
+          "duration_s": 0.90699,
+          "samples": 120,
+          "peak_rss": 843186176,
+          "peak_footprint": 773048264,
+          "median_rss": 842661888.0,
+          "median_footprint": 771344328.0,
+          "max_processes": 2
+        },
+        "list": {
+          "duration_s": 0.131718,
+          "samples": 18,
+          "peak_rss": 126369792,
+          "peak_footprint": 58295352,
+          "median_rss": 126369792.0,
+          "median_footprint": 58295352.0,
+          "max_processes": 1
+        },
+        "test": {
+          "duration_s": 0.248808,
+          "samples": 34,
+          "peak_rss": 399491072,
+          "peak_footprint": 329451176,
+          "median_rss": 155475968.0,
+          "median_footprint": 85304808.0,
+          "max_processes": 2
+        },
+        "extract": {
+          "duration_s": 0.432086,
+          "samples": 58,
+          "peak_rss": 399507456,
+          "peak_footprint": 329467560,
+          "median_rss": 126582784.0,
+          "median_footprint": 58459192.0,
+          "max_processes": 2
+        },
+        "cleanup": {
+          "duration_s": 0.000537,
+          "samples": 0,
+          "warning": "phase shorter than sampling interval; no isolated peak inferred"
+        },
+        "post": {
+          "duration_s": 3.010509,
+          "samples": 402,
+          "peak_rss": 126615552,
+          "peak_footprint": 58491960,
+          "median_rss": 126615552.0,
+          "median_footprint": 58491960.0,
+          "max_processes": 1
+        }
+      },
+      "peak_rss": 843186176,
+      "peak_footprint": 773048264,
+      "max_processes": 2,
+      "samples_with_7zz": 151,
+      "median_interval_ms": 7.592499999999999,
+      "max_interval_ms": 9.695,
+      "events": [
+        {
+          "pid": 37525,
+          "windows": 1,
+          "benchmark_window_visible": true,
+          "kind": "ready",
+          "timestamp_ns": 120200614219000
+        },
+        {
+          "kind": "begin",
+          "phase": "baseline",
+          "timestamp_ns": 120200619820000
+        },
+        {
+          "kind": "end",
+          "phase": "baseline",
+          "duration": "2.096577542 seconds",
+          "timestamp_ns": 120202716728000
+        },
+        {
+          "kind": "begin",
+          "phase": "create",
+          "timestamp_ns": 120202717632000
+        },
+        {
+          "kind": "end",
+          "phase": "create",
+          "duration": "0.907881666 seconds",
+          "timestamp_ns": 120203624622000
+        },
+        {
+          "kind": "begin",
+          "phase": "list",
+          "timestamp_ns": 120203625328000
+        },
+        {
+          "kind": "end",
+          "phase": "list",
+          "duration": "0.132384625 seconds",
+          "timestamp_ns": 120203757046000
+        },
+        {
+          "kind": "begin",
+          "phase": "test",
+          "timestamp_ns": 120203757518000
+        },
+        {
+          "kind": "end",
+          "phase": "test",
+          "duration": "0.249184209 seconds",
+          "timestamp_ns": 120204006326000
+        },
+        {
+          "kind": "begin",
+          "phase": "extract",
+          "timestamp_ns": 120204007072000
+        },
+        {
+          "kind": "end",
+          "phase": "extract",
+          "duration": "0.432715958 seconds",
+          "timestamp_ns": 120204439158000
+        },
+        {
+          "kind": "begin",
+          "phase": "cleanup",
+          "timestamp_ns": 120204440009000
+        },
+        {
+          "kind": "end",
+          "phase": "cleanup",
+          "duration": "0.000186083 seconds",
+          "timestamp_ns": 120204440546000
+        },
+        {
+          "kind": "begin",
+          "phase": "post",
+          "timestamp_ns": 120204440992000
+        },
+        {
+          "kind": "end",
+          "phase": "post",
+          "duration": "3.011952208 seconds",
+          "timestamp_ns": 120207451501000
+        },
+        {
+          "kind": "done",
+          "hashes_match": true,
+          "verified_files": 1,
+          "timestamp_ns": 120207593257000
+        }
+      ]
+    },
+    {
+      "case": "Large-7z-2-static",
+      "dataset": "Large",
+      "format": "7z",
+      "repetition": 2,
+      "variant": "static",
+      "pid": 37534,
+      "windows": 1,
+      "verified_files": 1,
+      "phases": {
+        "baseline": {
+          "duration_s": 2.12371,
+          "samples": 284,
+          "peak_rss": 127352832,
+          "peak_footprint": 58049592,
+          "median_rss": 127352832.0,
+          "median_footprint": 58049592.0,
+          "max_processes": 1
+        },
+        "create": {
+          "duration_s": 0.808056,
+          "samples": 109,
+          "peak_rss": 840499200,
+          "peak_footprint": 771311152,
+          "median_rss": 840237056,
+          "median_footprint": 771065392,
+          "max_processes": 1
+        },
+        "list": {
+          "duration_s": 0.000468,
+          "samples": 0,
+          "warning": "phase shorter than sampling interval; no isolated peak inferred"
+        },
+        "test": {
+          "duration_s": 0.117972,
+          "samples": 16,
+          "peak_rss": 1109245952,
+          "peak_footprint": 1040058096,
+          "median_rss": 1016487936.0,
+          "median_footprint": 947259060.0,
+          "max_processes": 1
+        },
+        "extract": {
+          "duration_s": 0.126614,
+          "samples": 17,
+          "peak_rss": 1109245952,
+          "peak_footprint": 1040058096,
+          "median_rss": 1109245952,
+          "median_footprint": 1040058096,
+          "max_processes": 1
+        },
+        "cleanup": {
+          "duration_s": 0.000382,
+          "samples": 0,
+          "warning": "phase shorter than sampling interval; no isolated peak inferred"
+        },
+        "post": {
+          "duration_s": 3.072001,
+          "samples": 415,
+          "peak_rss": 1109278720,
+          "peak_footprint": 1040090864,
+          "median_rss": 1109278720,
+          "median_footprint": 1040090864,
+          "max_processes": 1
+        }
+      },
+      "peak_rss": 1109278720,
+      "peak_footprint": 1040090864,
+      "max_processes": 1,
+      "samples_with_7zz": 0,
+      "median_interval_ms": 7.586,
+      "max_interval_ms": 8.797,
+      "events": [
+        {
+          "benchmark_window_visible": true,
+          "pid": 37534,
+          "kind": "ready",
+          "windows": 1,
+          "timestamp_ns": 120211256287000
+        },
+        {
+          "phase": "baseline",
+          "kind": "begin",
+          "timestamp_ns": 120211261861000
+        },
+        {
+          "phase": "baseline",
+          "duration": "2.1234395 seconds",
+          "kind": "end",
+          "timestamp_ns": 120213385571000
+        },
+        {
+          "phase": "create",
+          "kind": "begin",
+          "timestamp_ns": 120213386382000
+        },
+        {
+          "phase": "create",
+          "duration": "0.808867959 seconds",
+          "kind": "end",
+          "timestamp_ns": 120214194438000
+        },
+        {
+          "phase": "list",
+          "kind": "begin",
+          "timestamp_ns": 120214195119000
+        },
+        {
+          "phase": "list",
+          "duration": "0.000788416 seconds",
+          "kind": "end",
+          "timestamp_ns": 120214195587000
+        },
+        {
+          "phase": "test",
+          "kind": "begin",
+          "timestamp_ns": 120214195987000
+        },
+        {
+          "phase": "test",
+          "duration": "0.118724375 seconds",
+          "kind": "end",
+          "timestamp_ns": 120214313959000
+        },
+        {
+          "phase": "extract",
+          "kind": "begin",
+          "timestamp_ns": 120214314563000
+        },
+        {
+          "phase": "extract",
+          "duration": "0.127131875 seconds",
+          "kind": "end",
+          "timestamp_ns": 120214441177000
+        },
+        {
+          "phase": "cleanup",
+          "kind": "begin",
+          "timestamp_ns": 120214441816000
+        },
+        {
+          "phase": "cleanup",
+          "duration": "0.000126875 seconds",
+          "kind": "end",
+          "timestamp_ns": 120214442198000
+        },
+        {
+          "phase": "post",
+          "kind": "begin",
+          "timestamp_ns": 120214442551000
+        },
+        {
+          "phase": "post",
+          "duration": "3.073030459 seconds",
+          "kind": "end",
+          "timestamp_ns": 120217514552000
+        },
+        {
+          "hashes_match": true,
+          "verified_files": 1,
+          "kind": "done",
+          "timestamp_ns": 120217653532000
+        }
+      ]
+    },
+    {
+      "case": "Small-zip-0-CLI",
+      "dataset": "Small",
+      "format": "zip",
+      "repetition": 0,
+      "variant": "CLI",
+      "pid": 37538,
+      "windows": 1,
+      "verified_files": 10000,
+      "phases": {
+        "baseline": {
+          "duration_s": 2.092373,
+          "samples": 278,
+          "peak_rss": 143884288,
+          "peak_footprint": 58278992,
+          "median_rss": 143704064.0,
+          "median_footprint": 58180688.0,
+          "max_processes": 1
+        },
+        "create": {
+          "duration_s": 2.135625,
+          "samples": 305,
+          "peak_rss": 200146944,
+          "peak_footprint": 112641632,
+          "median_rss": 146915328,
+          "median_footprint": 61326416,
+          "max_processes": 2
+        },
+        "list": {
+          "duration_s": 0.867633,
+          "samples": 118,
+          "peak_rss": 179912704,
+          "peak_footprint": 94192744,
+          "median_rss": 179388416.0,
+          "median_footprint": 93668456.0,
+          "max_processes": 2
+        },
+        "test": {
+          "duration_s": 0.177749,
+          "samples": 23,
+          "peak_rss": 187072512,
+          "peak_footprint": 99370520,
+          "median_rss": 187072512,
+          "median_footprint": 99370520,
+          "max_processes": 2
+        },
+        "extract": {
+          "duration_s": 2.051743,
+          "samples": 280,
+          "peak_rss": 192774144,
+          "peak_footprint": 105072152,
+          "median_rss": 189849600.0,
+          "median_footprint": 102434112.0,
+          "max_processes": 2
+        },
+        "cleanup": {
+          "duration_s": 0.000497,
+          "samples": 0,
+          "warning": "phase shorter than sampling interval; no isolated peak inferred"
+        },
+        "post": {
+          "duration_s": 3.101086,
+          "samples": 415,
+          "peak_rss": 185565184,
+          "peak_footprint": 99845224,
+          "median_rss": 185565184,
+          "median_footprint": 99845224,
+          "max_processes": 1
+        }
+      },
+      "peak_rss": 200146944,
+      "peak_footprint": 112641632,
+      "max_processes": 2,
+      "samples_with_7zz": 256,
+      "median_interval_ms": 7.608,
+      "max_interval_ms": 14.461,
+      "events": [
+        {
+          "windows": 1,
+          "pid": 37538,
+          "benchmark_window_visible": true,
+          "kind": "ready",
+          "timestamp_ns": 120222319305000
+        },
+        {
+          "kind": "begin",
+          "phase": "baseline",
+          "timestamp_ns": 120222324510000
+        },
+        {
+          "duration": "2.091986417 seconds",
+          "kind": "end",
+          "phase": "baseline",
+          "timestamp_ns": 120224416883000
+        },
+        {
+          "kind": "begin",
+          "phase": "create",
+          "timestamp_ns": 120224417846000
+        },
+        {
+          "kind": "end",
+          "phase": "create",
+          "duration": "2.136695541 seconds",
+          "timestamp_ns": 120226553471000
+        },
+        {
+          "kind": "begin",
+          "phase": "list",
+          "timestamp_ns": 120226553769000
+        },
+        {
+          "kind": "end",
+          "phase": "list",
+          "duration": "0.867699167 seconds",
+          "timestamp_ns": 120227421402000
+        },
+        {
+          "kind": "begin",
+          "phase": "test",
+          "timestamp_ns": 120227422272000
+        },
+        {
+          "kind": "end",
+          "phase": "test",
+          "duration": "0.178659042 seconds",
+          "timestamp_ns": 120227600021000
+        },
+        {
+          "kind": "begin",
+          "phase": "extract",
+          "timestamp_ns": 120227600884000
+        },
+        {
+          "kind": "end",
+          "phase": "extract",
+          "duration": "2.052506167 seconds",
+          "timestamp_ns": 120229652627000
+        },
+        {
+          "kind": "begin",
+          "phase": "cleanup",
+          "timestamp_ns": 120229653501000
+        },
+        {
+          "kind": "end",
+          "phase": "cleanup",
+          "duration": "0.000524667 seconds",
+          "timestamp_ns": 120229653998000
+        },
+        {
+          "kind": "begin",
+          "phase": "post",
+          "timestamp_ns": 120229654450000
+        },
+        {
+          "kind": "end",
+          "phase": "post",
+          "duration": "3.10207275 seconds",
+          "timestamp_ns": 120232755536000
+        },
+        {
+          "kind": "done",
+          "verified_files": 10000,
+          "hashes_match": true,
+          "timestamp_ns": 120232985484000
+        }
+      ]
+    },
+    {
+      "case": "Small-zip-0-static",
+      "dataset": "Small",
+      "format": "zip",
+      "repetition": 0,
+      "variant": "static",
+      "pid": 37565,
+      "windows": 1,
+      "verified_files": 10000,
+      "phases": {
+        "baseline": {
+          "duration_s": 2.02783,
+          "samples": 268,
+          "peak_rss": 146030592,
+          "peak_footprint": 58868792,
+          "median_rss": 145866752.0,
+          "median_footprint": 58737720.0,
+          "max_processes": 1
+        },
+        "create": {
+          "duration_s": 2.482299,
+          "samples": 355,
+          "peak_rss": 205635584,
+          "peak_footprint": 118408344,
+          "median_rss": 153583616,
+          "median_footprint": 66438200,
+          "max_processes": 1
+        },
+        "list": {
+          "duration_s": 0.052724,
+          "samples": 7,
+          "peak_rss": 209453056,
+          "peak_footprint": 122094744,
+          "median_rss": 209436672,
+          "median_footprint": 122094744,
+          "max_processes": 1
+        },
+        "test": {
+          "duration_s": 0.105016,
+          "samples": 14,
+          "peak_rss": 209485824,
+          "peak_footprint": 122111128,
+          "median_rss": 209485824.0,
+          "median_footprint": 122111128.0,
+          "max_processes": 1
+        },
+        "extract": {
+          "duration_s": 2.653645,
+          "samples": 360,
+          "peak_rss": 245350400,
+          "peak_footprint": 158008520,
+          "median_rss": 236503040.0,
+          "median_footprint": 149161160.0,
+          "max_processes": 1
+        },
+        "cleanup": {
+          "duration_s": 0.000185,
+          "samples": 0,
+          "warning": "phase shorter than sampling interval; no isolated peak inferred"
+        },
+        "post": {
+          "duration_s": 3.085614,
+          "samples": 417,
+          "peak_rss": 211845120,
+          "peak_footprint": 89146472,
+          "median_rss": 211845120,
+          "median_footprint": 89146472,
+          "max_processes": 1
+        }
+      },
+      "peak_rss": 245350400,
+      "peak_footprint": 158008520,
+      "max_processes": 1,
+      "samples_with_7zz": 0,
+      "median_interval_ms": 7.604,
+      "max_interval_ms": 17.645,
+      "events": [
+        {
+          "pid": 37565,
+          "kind": "ready",
+          "windows": 1,
+          "benchmark_window_visible": true,
+          "timestamp_ns": 120238632782000
+        },
+        {
+          "phase": "baseline",
+          "kind": "begin",
+          "timestamp_ns": 120238638537000
+        },
+        {
+          "phase": "baseline",
+          "kind": "end",
+          "duration": "2.027595542 seconds",
+          "timestamp_ns": 120240666367000
+        },
+        {
+          "phase": "create",
+          "kind": "begin",
+          "timestamp_ns": 120240667249000
+        },
+        {
+          "phase": "create",
+          "kind": "end",
+          "duration": "2.483225958 seconds",
+          "timestamp_ns": 120243149548000
+        },
+        {
+          "phase": "list",
+          "kind": "begin",
+          "timestamp_ns": 120243149851000
+        },
+        {
+          "phase": "list",
+          "kind": "end",
+          "duration": "0.052912334 seconds",
+          "timestamp_ns": 120243202575000
+        },
+        {
+          "phase": "test",
+          "kind": "begin",
+          "timestamp_ns": 120243203261000
+        },
+        {
+          "phase": "test",
+          "kind": "end",
+          "duration": "0.105687083 seconds",
+          "timestamp_ns": 120243308277000
+        },
+        {
+          "phase": "extract",
+          "kind": "begin",
+          "timestamp_ns": 120243309001000
+        },
+        {
+          "phase": "extract",
+          "kind": "end",
+          "duration": "2.654353917 seconds",
+          "timestamp_ns": 120245962646000
+        },
+        {
+          "phase": "cleanup",
+          "kind": "begin",
+          "timestamp_ns": 120245962993000
+        },
+        {
+          "phase": "cleanup",
+          "kind": "end",
+          "duration": "0.000478625 seconds",
+          "timestamp_ns": 120245963178000
+        },
+        {
+          "phase": "post",
+          "kind": "begin",
+          "timestamp_ns": 120245963330000
+        },
+        {
+          "phase": "post",
+          "kind": "end",
+          "duration": "3.085503875 seconds",
+          "timestamp_ns": 120249048944000
+        },
+        {
+          "verified_files": 10000,
+          "kind": "done",
+          "hashes_match": true,
+          "timestamp_ns": 120249278367000
+        }
+      ]
+    },
+    {
+      "case": "Small-zip-0-dynamic",
+      "dataset": "Small",
+      "format": "zip",
+      "repetition": 0,
+      "variant": "dynamic",
+      "pid": 37579,
+      "windows": 1,
+      "verified_files": 10000,
+      "phases": {
+        "baseline": {
+          "duration_s": 2.007874,
+          "samples": 269,
+          "peak_rss": 145358848,
+          "peak_footprint": 58573880,
+          "median_rss": 145211392,
+          "median_footprint": 58475576,
+          "max_processes": 1
+        },
+        "create": {
+          "duration_s": 2.485203,
+          "samples": 354,
+          "peak_rss": 204963840,
+          "peak_footprint": 118080664,
+          "median_rss": 152698880.0,
+          "median_footprint": 65913912.0,
+          "max_processes": 1
+        },
+        "list": {
+          "duration_s": 0.050703,
+          "samples": 7,
+          "peak_rss": 210108416,
+          "peak_footprint": 123110552,
+          "median_rss": 210108416,
+          "median_footprint": 123110552,
+          "max_processes": 1
+        },
+        "test": {
+          "duration_s": 0.105987,
+          "samples": 14,
+          "peak_rss": 210141184,
+          "peak_footprint": 123126936,
+          "median_rss": 210141184.0,
+          "median_footprint": 123126936.0,
+          "max_processes": 1
+        },
+        "extract": {
+          "duration_s": 2.633946,
+          "samples": 359,
+          "peak_rss": 249610240,
+          "peak_footprint": 162612400,
+          "median_rss": 239550464,
+          "median_footprint": 152552624,
+          "max_processes": 1
+        },
+        "cleanup": {
+          "duration_s": 0.000631,
+          "samples": 1,
+          "peak_rss": 216072192,
+          "peak_footprint": 92095568,
+          "median_rss": 216072192,
+          "median_footprint": 92095568,
+          "max_processes": 1
+        },
+        "post": {
+          "duration_s": 3.018419,
+          "samples": 404,
+          "peak_rss": 216072192,
+          "peak_footprint": 92095568,
+          "median_rss": 216072192.0,
+          "median_footprint": 92095568.0,
+          "max_processes": 1
+        }
+      },
+      "peak_rss": 249610240,
+      "peak_footprint": 162612400,
+      "max_processes": 1,
+      "samples_with_7zz": 0,
+      "median_interval_ms": 7.604,
+      "max_interval_ms": 13.977,
+      "events": [
+        {
+          "windows": 1,
+          "kind": "ready",
+          "benchmark_window_visible": true,
+          "pid": 37579,
+          "timestamp_ns": 120254841026000
+        },
+        {
+          "kind": "begin",
+          "phase": "baseline",
+          "timestamp_ns": 120254846917000
+        },
+        {
+          "kind": "end",
+          "phase": "baseline",
+          "duration": "2.007623125 seconds",
+          "timestamp_ns": 120256854791000
+        },
+        {
+          "kind": "begin",
+          "phase": "create",
+          "timestamp_ns": 120256855773000
+        },
+        {
+          "kind": "end",
+          "phase": "create",
+          "duration": "2.486249541 seconds",
+          "timestamp_ns": 120259340976000
+        },
+        {
+          "kind": "begin",
+          "phase": "list",
+          "timestamp_ns": 120259341301000
+        },
+        {
+          "kind": "end",
+          "phase": "list",
+          "duration": "0.050977833 seconds",
+          "timestamp_ns": 120259392004000
+        },
+        {
+          "kind": "begin",
+          "phase": "test",
+          "timestamp_ns": 120259392430000
+        },
+        {
+          "kind": "end",
+          "phase": "test",
+          "duration": "0.1061755 seconds",
+          "timestamp_ns": 120259498417000
+        },
+        {
+          "kind": "begin",
+          "phase": "extract",
+          "timestamp_ns": 120259498943000
+        },
+        {
+          "kind": "end",
+          "phase": "extract",
+          "duration": "2.634552167 seconds",
+          "timestamp_ns": 120262132889000
+        },
+        {
+          "kind": "begin",
+          "phase": "cleanup",
+          "timestamp_ns": 120262133769000
+        },
+        {
+          "kind": "end",
+          "phase": "cleanup",
+          "duration": "0.000541666 seconds",
+          "timestamp_ns": 120262134400000
+        },
+        {
+          "kind": "begin",
+          "phase": "post",
+          "timestamp_ns": 120262134879000
+        },
+        {
+          "kind": "end",
+          "phase": "post",
+          "duration": "3.019626791 seconds",
+          "timestamp_ns": 120265153298000
+        },
+        {
+          "kind": "done",
+          "verified_files": 10000,
+          "hashes_match": true,
+          "timestamp_ns": 120265383975000
+        }
+      ]
+    },
+    {
+      "case": "Small-zip-1-static",
+      "dataset": "Small",
+      "format": "zip",
+      "repetition": 1,
+      "variant": "static",
+      "pid": 37593,
+      "windows": 1,
+      "verified_files": 10000,
+      "phases": {
+        "baseline": {
+          "duration_s": 2.013035,
+          "samples": 269,
+          "peak_rss": 145342464,
+          "peak_footprint": 58442808,
+          "median_rss": 145195008,
+          "median_footprint": 58295352,
+          "max_processes": 1
+        },
+        "create": {
+          "duration_s": 2.505293,
+          "samples": 358,
+          "peak_rss": 205012992,
+          "peak_footprint": 118015128,
+          "median_rss": 153026560.0,
+          "median_footprint": 66110520.0,
+          "max_processes": 1
+        },
+        "list": {
+          "duration_s": 0.05323,
+          "samples": 7,
+          "peak_rss": 211910656,
+          "peak_footprint": 124798104,
+          "median_rss": 210927616,
+          "median_footprint": 123815064,
+          "max_processes": 1
+        },
+        "test": {
+          "duration_s": 0.104992,
+          "samples": 15,
+          "peak_rss": 211943424,
+          "peak_footprint": 124798104,
+          "median_rss": 211943424,
+          "median_footprint": 124798104,
+          "max_processes": 1
+        },
+        "extract": {
+          "duration_s": 2.646013,
+          "samples": 360,
+          "peak_rss": 248135680,
+          "peak_footprint": 161023176,
+          "median_rss": 238911488.0,
+          "median_footprint": 151798984.0,
+          "max_processes": 1
+        },
+        "cleanup": {
+          "duration_s": 0.000543,
+          "samples": 0,
+          "warning": "phase shorter than sampling interval; no isolated peak inferred"
+        },
+        "post": {
+          "duration_s": 3.198022,
+          "samples": 427,
+          "peak_rss": 214630400,
+          "peak_footprint": 90637416,
+          "median_rss": 214630400,
+          "median_footprint": 90637416,
+          "max_processes": 1
+        }
+      },
+      "peak_rss": 248135680,
+      "peak_footprint": 161023176,
+      "max_processes": 1,
+      "samples_with_7zz": 0,
+      "median_interval_ms": 7.604,
+      "max_interval_ms": 16.984,
+      "events": [
+        {
+          "kind": "ready",
+          "benchmark_window_visible": true,
+          "pid": 37593,
+          "windows": 1,
+          "timestamp_ns": 120270838670000
+        },
+        {
+          "phase": "baseline",
+          "kind": "begin",
+          "timestamp_ns": 120270844254000
+        },
+        {
+          "phase": "baseline",
+          "duration": "2.012744458 seconds",
+          "kind": "end",
+          "timestamp_ns": 120272857289000
+        },
+        {
+          "phase": "create",
+          "kind": "begin",
+          "timestamp_ns": 120272858217000
+        },
+        {
+          "phase": "create",
+          "duration": "2.506307916 seconds",
+          "kind": "end",
+          "timestamp_ns": 120275363510000
+        },
+        {
+          "phase": "list",
+          "kind": "begin",
+          "timestamp_ns": 120275363814000
+        },
+        {
+          "phase": "list",
+          "kind": "end",
+          "duration": "0.05342425 seconds",
+          "timestamp_ns": 120275417044000
+        },
+        {
+          "phase": "test",
+          "kind": "begin",
+          "timestamp_ns": 120275417761000
+        },
+        {
+          "phase": "test",
+          "kind": "end",
+          "duration": "0.105713083 seconds",
+          "timestamp_ns": 120275522753000
+        },
+        {
+          "phase": "extract",
+          "kind": "begin",
+          "timestamp_ns": 120275523472000
+        },
+        {
+          "phase": "extract",
+          "kind": "end",
+          "duration": "2.64665475 seconds",
+          "timestamp_ns": 120278169485000
+        },
+        {
+          "phase": "cleanup",
+          "kind": "begin",
+          "timestamp_ns": 120278170342000
+        },
+        {
+          "phase": "cleanup",
+          "duration": "0.000455416 seconds",
+          "kind": "end",
+          "timestamp_ns": 120278170885000
+        },
+        {
+          "phase": "post",
+          "kind": "begin",
+          "timestamp_ns": 120278171340000
+        },
+        {
+          "phase": "post",
+          "duration": "3.199156458 seconds",
+          "kind": "end",
+          "timestamp_ns": 120281369362000
+        },
+        {
+          "verified_files": 10000,
+          "kind": "done",
+          "hashes_match": true,
+          "timestamp_ns": 120281607674000
+        }
+      ]
+    },
+    {
+      "case": "Small-zip-1-dynamic",
+      "dataset": "Small",
+      "format": "zip",
+      "repetition": 1,
+      "variant": "dynamic",
+      "pid": 37610,
+      "windows": 1,
+      "verified_files": 10000,
+      "phases": {
+        "baseline": {
+          "duration_s": 2.085623,
+          "samples": 278,
+          "peak_rss": 144801792,
+          "peak_footprint": 58213432,
+          "median_rss": 144654336.0,
+          "median_footprint": 58049592.0,
+          "max_processes": 1
+        },
+        "create": {
+          "duration_s": 2.389859,
+          "samples": 344,
+          "peak_rss": 204308480,
+          "peak_footprint": 117589144,
+          "median_rss": 151896064.0,
+          "median_footprint": 65291320.0,
+          "max_processes": 1
+        },
+        "list": {
+          "duration_s": 0.053258,
+          "samples": 8,
+          "peak_rss": 209371136,
+          "peak_footprint": 122553496,
+          "median_rss": 209371136.0,
+          "median_footprint": 122553496.0,
+          "max_processes": 1
+        },
+        "test": {
+          "duration_s": 0.106109,
+          "samples": 14,
+          "peak_rss": 209403904,
+          "peak_footprint": 122569880,
+          "median_rss": 209403904.0,
+          "median_footprint": 122569880.0,
+          "max_processes": 1
+        },
+        "extract": {
+          "duration_s": 2.631613,
+          "samples": 357,
+          "peak_rss": 248954880,
+          "peak_footprint": 162137264,
+          "median_rss": 238616576,
+          "median_footprint": 151798960,
+          "max_processes": 1
+        },
+        "cleanup": {
+          "duration_s": 0.000605,
+          "samples": 0,
+          "warning": "phase shorter than sampling interval; no isolated peak inferred"
+        },
+        "post": {
+          "duration_s": 3.097867,
+          "samples": 413,
+          "peak_rss": 215416832,
+          "peak_footprint": 91620432,
+          "median_rss": 215416832,
+          "median_footprint": 91620432,
+          "max_processes": 1
+        }
+      },
+      "peak_rss": 248954880,
+      "peak_footprint": 162137264,
+      "max_processes": 1,
+      "samples_with_7zz": 0,
+      "median_interval_ms": 7.6,
+      "max_interval_ms": 14.143,
+      "events": [
+        {
+          "kind": "ready",
+          "windows": 1,
+          "pid": 37610,
+          "benchmark_window_visible": true,
+          "timestamp_ns": 120287017354000
+        },
+        {
+          "phase": "baseline",
+          "kind": "begin",
+          "timestamp_ns": 120287022315000
+        },
+        {
+          "duration": "2.085308916 seconds",
+          "phase": "baseline",
+          "kind": "end",
+          "timestamp_ns": 120289107938000
+        },
+        {
+          "phase": "create",
+          "kind": "begin",
+          "timestamp_ns": 120289108783000
+        },
+        {
+          "duration": "2.390785833 seconds",
+          "phase": "create",
+          "kind": "end",
+          "timestamp_ns": 120291498642000
+        },
+        {
+          "phase": "list",
+          "kind": "begin",
+          "timestamp_ns": 120291498947000
+        },
+        {
+          "duration": "0.053472208 seconds",
+          "phase": "list",
+          "kind": "end",
+          "timestamp_ns": 120291552205000
+        },
+        {
+          "phase": "test",
+          "kind": "begin",
+          "timestamp_ns": 120291552769000
+        },
+        {
+          "duration": "0.106643875 seconds",
+          "phase": "test",
+          "kind": "end",
+          "timestamp_ns": 120291658878000
+        },
+        {
+          "phase": "extract",
+          "kind": "begin",
+          "timestamp_ns": 120291659579000
+        },
+        {
+          "duration": "2.632224542 seconds",
+          "phase": "extract",
+          "kind": "end",
+          "timestamp_ns": 120294291192000
+        },
+        {
+          "phase": "cleanup",
+          "kind": "begin",
+          "timestamp_ns": 120294292069000
+        },
+        {
+          "duration": "0.0004935 seconds",
+          "phase": "cleanup",
+          "kind": "end",
+          "timestamp_ns": 120294292674000
+        },
+        {
+          "phase": "post",
+          "kind": "begin",
+          "timestamp_ns": 120294293174000
+        },
+        {
+          "duration": "3.099161791 seconds",
+          "phase": "post",
+          "kind": "end",
+          "timestamp_ns": 120297391041000
+        },
+        {
+          "hashes_match": true,
+          "verified_files": 10000,
+          "kind": "done",
+          "timestamp_ns": 120297617180000
+        }
+      ]
+    },
+    {
+      "case": "Small-zip-1-CLI",
+      "dataset": "Small",
+      "format": "zip",
+      "repetition": 1,
+      "variant": "CLI",
+      "pid": 37627,
+      "windows": 1,
+      "verified_files": 10000,
+      "phases": {
+        "baseline": {
+          "duration_s": 2.063935,
+          "samples": 274,
+          "peak_rss": 143687680,
+          "peak_footprint": 58278944,
+          "median_rss": 143572992.0,
+          "median_footprint": 58197024.0,
+          "max_processes": 1
+        },
+        "create": {
+          "duration_s": 2.138995,
+          "samples": 311,
+          "peak_rss": 199999488,
+          "peak_footprint": 112641584,
+          "median_rss": 146735104,
+          "median_footprint": 61309984,
+          "max_processes": 2
+        },
+        "list": {
+          "duration_s": 0.872979,
+          "samples": 119,
+          "peak_rss": 179044352,
+          "peak_footprint": 93471800,
+          "median_rss": 178520064,
+          "median_footprint": 92947512,
+          "max_processes": 2
+        },
+        "test": {
+          "duration_s": 0.186109,
+          "samples": 24,
+          "peak_rss": 186187776,
+          "peak_footprint": 98633192,
+          "median_rss": 186187776.0,
+          "median_footprint": 98633192.0,
+          "max_processes": 2
+        },
+        "extract": {
+          "duration_s": 2.068777,
+          "samples": 282,
+          "peak_rss": 192806912,
+          "peak_footprint": 105252328,
+          "median_rss": 186122240.0,
+          "median_footprint": 99959864.0,
+          "max_processes": 2
+        },
+        "cleanup": {
+          "duration_s": 0.00053,
+          "samples": 0,
+          "warning": "phase shorter than sampling interval; no isolated peak inferred"
+        },
+        "post": {
+          "duration_s": 3.011387,
+          "samples": 405,
+          "peak_rss": 185532416,
+          "peak_footprint": 99959864,
+          "median_rss": 185532416,
+          "median_footprint": 99959864,
+          "max_processes": 1
+        }
+      },
+      "peak_rss": 199999488,
+      "peak_footprint": 112641584,
+      "max_processes": 2,
+      "samples_with_7zz": 251,
+      "median_interval_ms": 7.598,
+      "max_interval_ms": 16.583,
+      "events": [
+        {
+          "windows": 1,
+          "pid": 37627,
+          "benchmark_window_visible": true,
+          "kind": "ready",
+          "timestamp_ns": 120303107038000
+        },
+        {
+          "kind": "begin",
+          "phase": "baseline",
+          "timestamp_ns": 120303113010000
+        },
+        {
+          "duration": "2.063701584 seconds",
+          "kind": "end",
+          "phase": "baseline",
+          "timestamp_ns": 120305176945000
+        },
+        {
+          "kind": "begin",
+          "phase": "create",
+          "timestamp_ns": 120305177801000
+        },
+        {
+          "duration": "2.139939459 seconds",
+          "phase": "create",
+          "kind": "end",
+          "timestamp_ns": 120307316796000
+        },
+        {
+          "phase": "list",
+          "kind": "begin",
+          "timestamp_ns": 120307317110000
+        },
+        {
+          "phase": "list",
+          "duration": "0.873125291 seconds",
+          "kind": "end",
+          "timestamp_ns": 120308190089000
+        },
+        {
+          "phase": "test",
+          "kind": "begin",
+          "timestamp_ns": 120308190950000
+        },
+        {
+          "phase": "test",
+          "duration": "0.1869595 seconds",
+          "kind": "end",
+          "timestamp_ns": 120308377059000
+        },
+        {
+          "phase": "extract",
+          "kind": "begin",
+          "timestamp_ns": 120308377859000
+        },
+        {
+          "phase": "extract",
+          "duration": "2.069496 seconds",
+          "kind": "end",
+          "timestamp_ns": 120310446636000
+        },
+        {
+          "phase": "cleanup",
+          "kind": "begin",
+          "timestamp_ns": 120310447506000
+        },
+        {
+          "duration": "0.000651083 seconds",
+          "phase": "cleanup",
+          "kind": "end",
+          "timestamp_ns": 120310448036000
+        },
+        {
+          "phase": "post",
+          "kind": "begin",
+          "timestamp_ns": 120310448476000
+        },
+        {
+          "duration": "3.012338834 seconds",
+          "phase": "post",
+          "kind": "end",
+          "timestamp_ns": 120313459863000
+        },
+        {
+          "verified_files": 10000,
+          "hashes_match": true,
+          "kind": "done",
+          "timestamp_ns": 120313686802000
+        }
+      ]
+    },
+    {
+      "case": "Small-zip-2-dynamic",
+      "dataset": "Small",
+      "format": "zip",
+      "repetition": 2,
+      "variant": "dynamic",
+      "pid": 37687,
+      "windows": 1,
+      "verified_files": 10000,
+      "phases": {
+        "baseline": {
+          "duration_s": 2.014361,
+          "samples": 267,
+          "peak_rss": 145555456,
+          "peak_footprint": 58901560,
+          "median_rss": 145375232,
+          "median_footprint": 58704952,
+          "max_processes": 1
+        },
+        "create": {
+          "duration_s": 2.546471,
+          "samples": 360,
+          "peak_rss": 205111296,
+          "peak_footprint": 118293656,
+          "median_rss": 152748032.0,
+          "median_footprint": 66028600.0,
+          "max_processes": 1
+        },
+        "list": {
+          "duration_s": 0.052813,
+          "samples": 7,
+          "peak_rss": 212615168,
+          "peak_footprint": 125682840,
+          "median_rss": 211501056,
+          "median_footprint": 124568728,
+          "max_processes": 1
+        },
+        "test": {
+          "duration_s": 0.10719,
+          "samples": 15,
+          "peak_rss": 212631552,
+          "peak_footprint": 125682840,
+          "median_rss": 212631552,
+          "median_footprint": 125682840,
+          "max_processes": 1
+        },
+        "extract": {
+          "duration_s": 2.677667,
+          "samples": 359,
+          "peak_rss": 251789312,
+          "peak_footprint": 164873416,
+          "median_rss": 241696768,
+          "median_footprint": 154780872,
+          "max_processes": 1
+        },
+        "cleanup": {
+          "duration_s": 0.000416,
+          "samples": 0,
+          "warning": "phase shorter than sampling interval; no isolated peak inferred"
+        },
+        "post": {
+          "duration_s": 3.009782,
+          "samples": 402,
+          "peak_rss": 218251264,
+          "peak_footprint": 94438504,
+          "median_rss": 218251264.0,
+          "median_footprint": 94438504.0,
+          "max_processes": 1
+        }
+      },
+      "peak_rss": 251789312,
+      "peak_footprint": 164873416,
+      "max_processes": 1,
+      "samples_with_7zz": 0,
+      "median_interval_ms": 7.613,
+      "max_interval_ms": 17.657,
+      "events": [
+        {
+          "windows": 1,
+          "kind": "ready",
+          "pid": 37687,
+          "benchmark_window_visible": true,
+          "timestamp_ns": 120319158712000
+        },
+        {
+          "phase": "baseline",
+          "kind": "begin",
+          "timestamp_ns": 120319163590000
+        },
+        {
+          "duration": "2.014040708 seconds",
+          "phase": "baseline",
+          "kind": "end",
+          "timestamp_ns": 120321177951000
+        },
+        {
+          "phase": "create",
+          "kind": "begin",
+          "timestamp_ns": 120321178818000
+        },
+        {
+          "duration": "2.547421417 seconds",
+          "phase": "create",
+          "kind": "end",
+          "timestamp_ns": 120323725289000
+        },
+        {
+          "phase": "list",
+          "kind": "begin",
+          "timestamp_ns": 120323725466000
+        },
+        {
+          "kind": "end",
+          "phase": "list",
+          "duration": "0.052963459 seconds",
+          "timestamp_ns": 120323778279000
+        },
+        {
+          "kind": "begin",
+          "phase": "test",
+          "timestamp_ns": 120323778428000
+        },
+        {
+          "kind": "end",
+          "phase": "test",
+          "duration": "0.1072365 seconds",
+          "timestamp_ns": 120323885618000
+        },
+        {
+          "kind": "begin",
+          "phase": "extract",
+          "timestamp_ns": 120323886003000
+        },
+        {
+          "kind": "end",
+          "phase": "extract",
+          "duration": "2.677939583 seconds",
+          "timestamp_ns": 120326563670000
+        },
+        {
+          "kind": "begin",
+          "phase": "cleanup",
+          "timestamp_ns": 120326564488000
+        },
+        {
+          "duration": "0.000499167 seconds",
+          "phase": "cleanup",
+          "kind": "end",
+          "timestamp_ns": 120326564904000
+        },
+        {
+          "phase": "post",
+          "kind": "begin",
+          "timestamp_ns": 120326565202000
+        },
+        {
+          "duration": "3.010624958 seconds",
+          "phase": "post",
+          "kind": "end",
+          "timestamp_ns": 120329574984000
+        },
+        {
+          "hashes_match": true,
+          "kind": "done",
+          "verified_files": 10000,
+          "timestamp_ns": 120329806195000
+        }
+      ]
+    },
+    {
+      "case": "Small-zip-2-CLI",
+      "dataset": "Small",
+      "format": "zip",
+      "repetition": 2,
+      "variant": "CLI",
+      "pid": 37744,
+      "windows": 1,
+      "verified_files": 10000,
+      "phases": {
+        "baseline": {
+          "duration_s": 2.106774,
+          "samples": 277,
+          "peak_rss": 144556032,
+          "peak_footprint": 58803232,
+          "median_rss": 144375808,
+          "median_footprint": 58623008,
+          "max_processes": 1
+        },
+        "create": {
+          "duration_s": 2.07423,
+          "samples": 303,
+          "peak_rss": 201392128,
+          "peak_footprint": 113657392,
+          "median_rss": 147603456,
+          "median_footprint": 61801504,
+          "max_processes": 2
+        },
+        "list": {
+          "duration_s": 0.866139,
+          "samples": 118,
+          "peak_rss": 180600832,
+          "peak_footprint": 94651448,
+          "median_rss": 180068352.0,
+          "median_footprint": 94118968.0,
+          "max_processes": 2
+        },
+        "test": {
+          "duration_s": 0.186061,
+          "samples": 25,
+          "peak_rss": 187744256,
+          "peak_footprint": 99812840,
+          "median_rss": 187744256,
+          "median_footprint": 99812840,
+          "max_processes": 2
+        },
+        "extract": {
+          "duration_s": 2.02883,
+          "samples": 278,
+          "peak_rss": 193495040,
+          "peak_footprint": 105563624,
+          "median_rss": 187662336.0,
+          "median_footprint": 100320312.0,
+          "max_processes": 2
+        },
+        "cleanup": {
+          "duration_s": 0.000267,
+          "samples": 0,
+          "warning": "phase shorter than sampling interval; no isolated peak inferred"
+        },
+        "post": {
+          "duration_s": 3.056091,
+          "samples": 412,
+          "peak_rss": 186269696,
+          "peak_footprint": 100320312,
+          "median_rss": 186269696.0,
+          "median_footprint": 100320312.0,
+          "max_processes": 1
+        }
+      },
+      "peak_rss": 201392128,
+      "peak_footprint": 113657392,
+      "max_processes": 2,
+      "samples_with_7zz": 243,
+      "median_interval_ms": 7.607,
+      "max_interval_ms": 22.695,
+      "events": [
+        {
+          "windows": 1,
+          "benchmark_window_visible": true,
+          "kind": "ready",
+          "pid": 37744,
+          "timestamp_ns": 120335358523000
+        },
+        {
+          "kind": "begin",
+          "phase": "baseline",
+          "timestamp_ns": 120335364239000
+        },
+        {
+          "kind": "end",
+          "phase": "baseline",
+          "duration": "2.106512708 seconds",
+          "timestamp_ns": 120337471013000
+        },
+        {
+          "kind": "begin",
+          "phase": "create",
+          "timestamp_ns": 120337472011000
+        },
+        {
+          "kind": "end",
+          "phase": "create",
+          "duration": "2.075302459 seconds",
+          "timestamp_ns": 120339546241000
+        },
+        {
+          "kind": "begin",
+          "phase": "list",
+          "timestamp_ns": 120339546566000
+        },
+        {
+          "kind": "end",
+          "phase": "list",
+          "duration": "0.866293 seconds",
+          "timestamp_ns": 120340412705000
+        },
+        {
+          "kind": "begin",
+          "phase": "test",
+          "timestamp_ns": 120340413523000
+        },
+        {
+          "kind": "end",
+          "phase": "test",
+          "duration": "0.186861833 seconds",
+          "timestamp_ns": 120340599584000
+        },
+        {
+          "kind": "begin",
+          "phase": "extract",
+          "timestamp_ns": 120340600304000
+        },
+        {
+          "kind": "end",
+          "phase": "extract",
+          "duration": "2.029516834 seconds",
+          "timestamp_ns": 120342629134000
+        },
+        {
+          "kind": "begin",
+          "phase": "cleanup",
+          "timestamp_ns": 120342629583000
+        },
+        {
+          "duration": "0.000600833 seconds",
+          "kind": "end",
+          "phase": "cleanup",
+          "timestamp_ns": 120342629850000
+        },
+        {
+          "kind": "begin",
+          "phase": "post",
+          "timestamp_ns": 120342630030000
+        },
+        {
+          "duration": "3.056063292 seconds",
+          "kind": "end",
+          "phase": "post",
+          "timestamp_ns": 120345686121000
+        },
+        {
+          "hashes_match": true,
+          "kind": "done",
+          "verified_files": 10000,
+          "timestamp_ns": 120345914860000
+        }
+      ]
+    },
+    {
+      "case": "Small-zip-2-static",
+      "dataset": "Small",
+      "format": "zip",
+      "repetition": 2,
+      "variant": "static",
+      "pid": 37763,
+      "windows": 1,
+      "verified_files": 10000,
+      "phases": {
+        "baseline": {
+          "duration_s": 2.019701,
+          "samples": 273,
+          "peak_rss": 146014208,
+          "peak_footprint": 58950712,
+          "median_rss": 145866752,
+          "median_footprint": 58786872,
+          "max_processes": 1
+        },
+        "create": {
+          "duration_s": 2.543274,
+          "samples": 361,
+          "peak_rss": 205602816,
+          "peak_footprint": 118408344,
+          "median_rss": 153436160,
+          "median_footprint": 66339896,
+          "max_processes": 1
+        },
+        "list": {
+          "duration_s": 0.052914,
+          "samples": 8,
+          "peak_rss": 212680704,
+          "peak_footprint": 125371544,
+          "median_rss": 211697664.0,
+          "median_footprint": 124404888.0,
+          "max_processes": 1
+        },
+        "test": {
+          "duration_s": 0.106309,
+          "samples": 14,
+          "peak_rss": 212697088,
+          "peak_footprint": 125371544,
+          "median_rss": 212697088.0,
+          "median_footprint": 125371544.0,
+          "max_processes": 1
+        },
+        "extract": {
+          "duration_s": 2.642992,
+          "samples": 359,
+          "peak_rss": 248446976,
+          "peak_footprint": 161154248,
+          "median_rss": 239239168,
+          "median_footprint": 151946440,
+          "max_processes": 1
+        },
+        "cleanup": {
+          "duration_s": 0.000334,
+          "samples": 0,
+          "warning": "phase shorter than sampling interval; no isolated peak inferred"
+        },
+        "post": {
+          "duration_s": 3.182869,
+          "samples": 428,
+          "peak_rss": 214941696,
+          "peak_footprint": 90801256,
+          "median_rss": 214941696.0,
+          "median_footprint": 90801256.0,
+          "max_processes": 1
+        }
+      },
+      "peak_rss": 248446976,
+      "peak_footprint": 161154248,
+      "max_processes": 1,
+      "samples_with_7zz": 0,
+      "median_interval_ms": 7.601,
+      "max_interval_ms": 14.939,
+      "events": [
+        {
+          "benchmark_window_visible": true,
+          "kind": "ready",
+          "windows": 1,
+          "pid": 37763,
+          "timestamp_ns": 120351486664000
+        },
+        {
+          "phase": "baseline",
+          "kind": "begin",
+          "timestamp_ns": 120351492194000
+        },
+        {
+          "phase": "baseline",
+          "kind": "end",
+          "duration": "2.01948475 seconds",
+          "timestamp_ns": 120353511895000
+        },
+        {
+          "phase": "create",
+          "kind": "begin",
+          "timestamp_ns": 120353512685000
+        },
+        {
+          "phase": "create",
+          "kind": "end",
+          "duration": "2.544125959 seconds",
+          "timestamp_ns": 120356055959000
+        },
+        {
+          "phase": "list",
+          "kind": "begin",
+          "timestamp_ns": 120356056235000
+        },
+        {
+          "phase": "list",
+          "kind": "end",
+          "duration": "0.053070291 seconds",
+          "timestamp_ns": 120356109149000
+        },
+        {
+          "phase": "test",
+          "kind": "begin",
+          "timestamp_ns": 120356109828000
+        },
+        {
+          "phase": "test",
+          "kind": "end",
+          "duration": "0.106991833 seconds",
+          "timestamp_ns": 120356216137000
+        },
+        {
+          "phase": "extract",
+          "kind": "begin",
+          "timestamp_ns": 120356216838000
+        },
+        {
+          "phase": "extract",
+          "kind": "end",
+          "duration": "2.643651125 seconds",
+          "timestamp_ns": 120358859830000
+        },
+        {
+          "phase": "cleanup",
+          "kind": "begin",
+          "timestamp_ns": 120358860374000
+        },
+        {
+          "phase": "cleanup",
+          "kind": "end",
+          "duration": "0.000465916 seconds",
+          "timestamp_ns": 120358860708000
+        },
+        {
+          "phase": "post",
+          "kind": "begin",
+          "timestamp_ns": 120358860987000
+        },
+        {
+          "phase": "post",
+          "kind": "end",
+          "duration": "3.183303708 seconds",
+          "timestamp_ns": 120362043856000
+        },
+        {
+          "verified_files": 10000,
+          "kind": "done",
+          "hashes_match": true,
+          "timestamp_ns": 120362269634000
+        }
+      ]
+    },
+    {
+      "case": "Small-7z-0-CLI",
+      "dataset": "Small",
+      "format": "7z",
+      "repetition": 0,
+      "variant": "CLI",
+      "pid": 37776,
+      "windows": 1,
+      "verified_files": 10000,
+      "phases": {
+        "baseline": {
+          "duration_s": 2.00622,
+          "samples": 268,
+          "peak_rss": 144408576,
+          "peak_footprint": 58721360,
+          "median_rss": 144195584.0,
+          "median_footprint": 58524752.0,
+          "max_processes": 1
+        },
+        "create": {
+          "duration_s": 2.159344,
+          "samples": 312,
+          "peak_rss": 603684864,
+          "peak_footprint": 516130640,
+          "median_rss": 147472384.0,
+          "median_footprint": 61736016.0,
+          "max_processes": 2
+        },
+        "list": {
+          "duration_s": 0.836482,
+          "samples": 114,
+          "peak_rss": 167297024,
+          "peak_footprint": 81413200,
+          "median_rss": 165625856.0,
+          "median_footprint": 79742032.0,
+          "max_processes": 2
+        },
+        "test": {
+          "duration_s": 0.426792,
+          "samples": 58,
+          "peak_rss": 235372544,
+          "peak_footprint": 147473968,
+          "median_rss": 209256448.0,
+          "median_footprint": 121341464.0,
+          "max_processes": 2
+        },
+        "extract": {
+          "duration_s": 2.211669,
+          "samples": 303,
+          "peak_rss": 241139712,
+          "peak_footprint": 153241136,
+          "median_rss": 215859200,
+          "median_footprint": 126977560,
+          "max_processes": 2
+        },
+        "cleanup": {
+          "duration_s": 0.000541,
+          "samples": 0,
+          "warning": "phase shorter than sampling interval; no isolated peak inferred"
+        },
+        "post": {
+          "duration_s": 3.0701,
+          "samples": 415,
+          "peak_rss": 172752896,
+          "peak_footprint": 86869072,
+          "median_rss": 172752896,
+          "median_footprint": 86869072,
+          "max_processes": 1
+        }
+      },
+      "peak_rss": 603684864,
+      "peak_footprint": 516130640,
+      "max_processes": 2,
+      "samples_with_7zz": 320,
+      "median_interval_ms": 7.607,
+      "max_interval_ms": 14.948,
+      "events": [
+        {
+          "pid": 37776,
+          "windows": 1,
+          "benchmark_window_visible": true,
+          "kind": "ready",
+          "timestamp_ns": 120367808257000
+        },
+        {
+          "kind": "begin",
+          "phase": "baseline",
+          "timestamp_ns": 120367814053000
+        },
+        {
+          "kind": "end",
+          "phase": "baseline",
+          "duration": "2.005994 seconds",
+          "timestamp_ns": 120369820273000
+        },
+        {
+          "kind": "begin",
+          "phase": "create",
+          "timestamp_ns": 120369821065000
+        },
+        {
+          "duration": "2.160204917 seconds",
+          "kind": "end",
+          "phase": "create",
+          "timestamp_ns": 120371980409000
+        },
+        {
+          "kind": "begin",
+          "phase": "list",
+          "timestamp_ns": 120371980709000
+        },
+        {
+          "kind": "end",
+          "phase": "list",
+          "duration": "0.836611834 seconds",
+          "timestamp_ns": 120372817191000
+        },
+        {
+          "kind": "begin",
+          "phase": "test",
+          "timestamp_ns": 120372817797000
+        },
+        {
+          "kind": "end",
+          "phase": "test",
+          "duration": "0.427350875 seconds",
+          "timestamp_ns": 120373244589000
+        },
+        {
+          "kind": "begin",
+          "phase": "extract",
+          "timestamp_ns": 120373245384000
+        },
+        {
+          "kind": "end",
+          "phase": "extract",
+          "duration": "2.212397125 seconds",
+          "timestamp_ns": 120375457053000
+        },
+        {
+          "kind": "begin",
+          "phase": "cleanup",
+          "timestamp_ns": 120375457934000
+        },
+        {
+          "duration": "0.000535792 seconds",
+          "kind": "end",
+          "phase": "cleanup",
+          "timestamp_ns": 120375458475000
+        },
+        {
+          "kind": "begin",
+          "phase": "post",
+          "timestamp_ns": 120375458917000
+        },
+        {
+          "duration": "3.071194 seconds",
+          "kind": "end",
+          "phase": "post",
+          "timestamp_ns": 120378529017000
+        },
+        {
+          "hashes_match": true,
+          "kind": "done",
+          "verified_files": 10000,
+          "timestamp_ns": 120378756021000
+        }
+      ]
+    },
+    {
+      "case": "Small-7z-0-static",
+      "dataset": "Small",
+      "format": "7z",
+      "repetition": 0,
+      "variant": "static",
+      "pid": 37803,
+      "windows": 1,
+      "verified_files": 10000,
+      "phases": {
+        "baseline": {
+          "duration_s": 2.132382,
+          "samples": 286,
+          "peak_rss": 146161664,
+          "peak_footprint": 58868792,
+          "median_rss": 146014208.0,
+          "median_footprint": 58721336.0,
+          "max_processes": 1
+        },
+        "create": {
+          "duration_s": 2.633024,
+          "samples": 376,
+          "peak_rss": 608141312,
+          "peak_footprint": 520897928,
+          "median_rss": 154034176.0,
+          "median_footprint": 66774072.0,
+          "max_processes": 1
+        },
+        "list": {
+          "duration_s": 0.051156,
+          "samples": 7,
+          "peak_rss": 611680256,
+          "peak_footprint": 524338568,
+          "median_rss": 610729984,
+          "median_footprint": 523404680,
+          "max_processes": 1
+        },
+        "test": {
+          "duration_s": 0.339963,
+          "samples": 46,
+          "peak_rss": 631881728,
+          "peak_footprint": 544523680,
+          "median_rss": 631881728.0,
+          "median_footprint": 544523680.0,
+          "max_processes": 1
+        },
+        "extract": {
+          "duration_s": 2.882576,
+          "samples": 391,
+          "peak_rss": 668286976,
+          "peak_footprint": 580945336,
+          "median_rss": 657702912,
+          "median_footprint": 570361272,
+          "max_processes": 1
+        },
+        "cleanup": {
+          "duration_s": 0.000585,
+          "samples": 0,
+          "warning": "phase shorter than sampling interval; no isolated peak inferred"
+        },
+        "post": {
+          "duration_s": 3.098808,
+          "samples": 416,
+          "peak_rss": 232325120,
+          "peak_footprint": 88966248,
+          "median_rss": 232275968.0,
+          "median_footprint": 88917096.0,
+          "max_processes": 1
+        }
+      },
+      "peak_rss": 668286976,
+      "peak_footprint": 580945336,
+      "max_processes": 1,
+      "samples_with_7zz": 0,
+      "median_interval_ms": 7.604,
+      "max_interval_ms": 16.375,
+      "events": [
+        {
+          "windows": 1,
+          "kind": "ready",
+          "benchmark_window_visible": true,
+          "pid": 37803,
+          "timestamp_ns": 120384218981000
+        },
+        {
+          "kind": "begin",
+          "phase": "baseline",
+          "timestamp_ns": 120384224674000
+        },
+        {
+          "duration": "2.132265833 seconds",
+          "kind": "end",
+          "phase": "baseline",
+          "timestamp_ns": 120386357056000
+        },
+        {
+          "kind": "begin",
+          "phase": "create",
+          "timestamp_ns": 120386357698000
+        },
+        {
+          "duration": "2.633682458 seconds",
+          "kind": "end",
+          "phase": "create",
+          "timestamp_ns": 120388990722000
+        },
+        {
+          "kind": "begin",
+          "phase": "list",
+          "timestamp_ns": 120388991046000
+        },
+        {
+          "duration": "0.051399667 seconds",
+          "kind": "end",
+          "phase": "list",
+          "timestamp_ns": 120389042202000
+        },
+        {
+          "kind": "begin",
+          "phase": "test",
+          "timestamp_ns": 120389042823000
+        },
+        {
+          "duration": "0.340589959 seconds",
+          "kind": "end",
+          "phase": "test",
+          "timestamp_ns": 120389382786000
+        },
+        {
+          "kind": "begin",
+          "phase": "extract",
+          "timestamp_ns": 120389382987000
+        },
+        {
+          "duration": "2.882565792 seconds",
+          "kind": "end",
+          "phase": "extract",
+          "timestamp_ns": 120392265563000
+        },
+        {
+          "kind": "begin",
+          "phase": "cleanup",
+          "timestamp_ns": 120392266279000
+        },
+        {
+          "duration": "0.000694916 seconds",
+          "kind": "end",
+          "phase": "cleanup",
+          "timestamp_ns": 120392266864000
+        },
+        {
+          "kind": "begin",
+          "phase": "post",
+          "timestamp_ns": 120392267346000
+        },
+        {
+          "duration": "3.099837292 seconds",
+          "kind": "end",
+          "phase": "post",
+          "timestamp_ns": 120395366154000
+        },
+        {
+          "hashes_match": true,
+          "kind": "done",
+          "verified_files": 10000,
+          "timestamp_ns": 120395573481000
+        }
+      ]
+    },
+    {
+      "case": "Small-7z-0-dynamic",
+      "dataset": "Small",
+      "format": "7z",
+      "repetition": 0,
+      "variant": "dynamic",
+      "pid": 37832,
+      "windows": 1,
+      "verified_files": 10000,
+      "phases": {
+        "baseline": {
+          "duration_s": 2.077901,
+          "samples": 277,
+          "peak_rss": 145522688,
+          "peak_footprint": 58770488,
+          "median_rss": 145375232,
+          "median_footprint": 58623032,
+          "max_processes": 1
+        },
+        "create": {
+          "duration_s": 2.621145,
+          "samples": 370,
+          "peak_rss": 608763904,
+          "peak_footprint": 521946504,
+          "median_rss": 153337856.0,
+          "median_footprint": 66536504.0,
+          "max_processes": 1
+        },
+        "list": {
+          "duration_s": 0.050959,
+          "samples": 7,
+          "peak_rss": 612286464,
+          "peak_footprint": 525387144,
+          "median_rss": 611254272,
+          "median_footprint": 524354952,
+          "max_processes": 1
+        },
+        "test": {
+          "duration_s": 0.33905,
+          "samples": 46,
+          "peak_rss": 632471552,
+          "peak_footprint": 545572256,
+          "median_rss": 632471552.0,
+          "median_footprint": 545572256.0,
+          "max_processes": 1
+        },
+        "extract": {
+          "duration_s": 2.855291,
+          "samples": 389,
+          "peak_rss": 669401088,
+          "peak_footprint": 582518200,
+          "median_rss": 658604032,
+          "median_footprint": 571721144,
+          "max_processes": 1
+        },
+        "cleanup": {
+          "duration_s": 0.000533,
+          "samples": 0,
+          "warning": "phase shorter than sampling interval; no isolated peak inferred"
+        },
+        "post": {
+          "duration_s": 3.050945,
+          "samples": 408,
+          "peak_rss": 233390080,
+          "peak_footprint": 90211432,
+          "median_rss": 233390080.0,
+          "median_footprint": 90211432.0,
+          "max_processes": 1
+        }
+      },
+      "peak_rss": 669401088,
+      "peak_footprint": 582518200,
+      "max_processes": 1,
+      "samples_with_7zz": 0,
+      "median_interval_ms": 7.603,
+      "max_interval_ms": 15.287,
+      "events": [
+        {
+          "pid": 37832,
+          "benchmark_window_visible": true,
+          "windows": 1,
+          "kind": "ready",
+          "timestamp_ns": 120401017287000
+        },
+        {
+          "phase": "baseline",
+          "kind": "begin",
+          "timestamp_ns": 120401022639000
+        },
+        {
+          "phase": "baseline",
+          "kind": "end",
+          "duration": "2.077690167 seconds",
+          "timestamp_ns": 120403100540000
+        },
+        {
+          "phase": "create",
+          "kind": "begin",
+          "timestamp_ns": 120403101548000
+        },
+        {
+          "phase": "create",
+          "kind": "end",
+          "duration": "2.622220208 seconds",
+          "timestamp_ns": 120405722693000
+        },
+        {
+          "phase": "list",
+          "kind": "begin",
+          "timestamp_ns": 120405722982000
+        },
+        {
+          "phase": "list",
+          "kind": "end",
+          "duration": "0.05110475 seconds",
+          "timestamp_ns": 120405773941000
+        },
+        {
+          "phase": "test",
+          "kind": "begin",
+          "timestamp_ns": 120405774664000
+        },
+        {
+          "phase": "test",
+          "kind": "end",
+          "duration": "0.339652667 seconds",
+          "timestamp_ns": 120406113714000
+        },
+        {
+          "phase": "extract",
+          "kind": "begin",
+          "timestamp_ns": 120406114636000
+        },
+        {
+          "phase": "extract",
+          "kind": "end",
+          "duration": "2.856227083 seconds",
+          "timestamp_ns": 120408969927000
+        },
+        {
+          "phase": "cleanup",
+          "kind": "begin",
+          "timestamp_ns": 120408970715000
+        },
+        {
+          "phase": "cleanup",
+          "kind": "end",
+          "duration": "0.000661833 seconds",
+          "timestamp_ns": 120408971248000
+        },
+        {
+          "phase": "post",
+          "kind": "begin",
+          "timestamp_ns": 120408971713000
+        },
+        {
+          "phase": "post",
+          "kind": "end",
+          "duration": "3.051835792 seconds",
+          "timestamp_ns": 120412022658000
+        },
+        {
+          "hashes_match": true,
+          "kind": "done",
+          "verified_files": 10000,
+          "timestamp_ns": 120412252143000
+        }
+      ]
+    },
+    {
+      "case": "Small-7z-1-static",
+      "dataset": "Small",
+      "format": "7z",
+      "repetition": 1,
+      "variant": "static",
+      "pid": 37848,
+      "windows": 1,
+      "verified_files": 10000,
+      "phases": {
+        "baseline": {
+          "duration_s": 2.01568,
+          "samples": 269,
+          "peak_rss": 146194432,
+          "peak_footprint": 59409464,
+          "median_rss": 145997824,
+          "median_footprint": 59196472,
+          "max_processes": 1
+        },
+        "create": {
+          "duration_s": 2.574789,
+          "samples": 368,
+          "peak_rss": 608272384,
+          "peak_footprint": 521454984,
+          "median_rss": 154255360.0,
+          "median_footprint": 67421240.0,
+          "max_processes": 1
+        },
+        "list": {
+          "duration_s": 0.051383,
+          "samples": 6,
+          "peak_rss": 611794944,
+          "peak_footprint": 524895624,
+          "median_rss": 610861056.0,
+          "median_footprint": 523961736.0,
+          "max_processes": 1
+        },
+        "test": {
+          "duration_s": 0.339526,
+          "samples": 46,
+          "peak_rss": 632061952,
+          "peak_footprint": 545129888,
+          "median_rss": 632061952.0,
+          "median_footprint": 545129888.0,
+          "max_processes": 1
+        },
+        "extract": {
+          "duration_s": 2.856814,
+          "samples": 390,
+          "peak_rss": 668418048,
+          "peak_footprint": 581502392,
+          "median_rss": 657629184.0,
+          "median_footprint": 570713528.0,
+          "max_processes": 1
+        },
+        "cleanup": {
+          "duration_s": 0.000501,
+          "samples": 1,
+          "peak_rss": 232439808,
+          "peak_footprint": 90063976,
+          "median_rss": 232439808,
+          "median_footprint": 90063976,
+          "max_processes": 1
+        },
+        "post": {
+          "duration_s": 3.083758,
+          "samples": 413,
+          "peak_rss": 232439808,
+          "peak_footprint": 90063976,
+          "median_rss": 232439808,
+          "median_footprint": 90063976,
+          "max_processes": 1
+        }
+      },
+      "peak_rss": 668418048,
+      "peak_footprint": 581502392,
+      "max_processes": 1,
+      "samples_with_7zz": 0,
+      "median_interval_ms": 7.598,
+      "max_interval_ms": 15.853,
+      "events": [
+        {
+          "windows": 1,
+          "kind": "ready",
+          "pid": 37848,
+          "benchmark_window_visible": true,
+          "timestamp_ns": 120417813884000
+        },
+        {
+          "kind": "begin",
+          "phase": "baseline",
+          "timestamp_ns": 120417817856000
+        },
+        {
+          "duration": "2.015381625 seconds",
+          "kind": "end",
+          "phase": "baseline",
+          "timestamp_ns": 120419833536000
+        },
+        {
+          "kind": "begin",
+          "phase": "create",
+          "timestamp_ns": 120419834144000
+        },
+        {
+          "duration": "2.575471792 seconds",
+          "kind": "end",
+          "phase": "create",
+          "timestamp_ns": 120422408933000
+        },
+        {
+          "kind": "begin",
+          "phase": "list",
+          "timestamp_ns": 120422409245000
+        },
+        {
+          "phase": "list",
+          "kind": "end",
+          "duration": "0.051621292 seconds",
+          "timestamp_ns": 120422460628000
+        },
+        {
+          "phase": "test",
+          "kind": "begin",
+          "timestamp_ns": 120422461126000
+        },
+        {
+          "phase": "test",
+          "kind": "end",
+          "duration": "0.339881208 seconds",
+          "timestamp_ns": 120422800652000
+        },
+        {
+          "phase": "extract",
+          "kind": "begin",
+          "timestamp_ns": 120422801648000
+        },
+        {
+          "phase": "extract",
+          "kind": "end",
+          "duration": "2.857772375 seconds",
+          "timestamp_ns": 120425658462000
+        },
+        {
+          "phase": "cleanup",
+          "kind": "begin",
+          "timestamp_ns": 120425659238000
+        },
+        {
+          "duration": "0.000694375 seconds",
+          "kind": "end",
+          "phase": "cleanup",
+          "timestamp_ns": 120425659739000
+        },
+        {
+          "kind": "begin",
+          "phase": "post",
+          "timestamp_ns": 120425660167000
+        },
+        {
+          "duration": "3.084518 seconds",
+          "kind": "end",
+          "phase": "post",
+          "timestamp_ns": 120428743925000
+        },
+        {
+          "verified_files": 10000,
+          "kind": "done",
+          "hashes_match": true,
+          "timestamp_ns": 120428972276000
+        }
+      ]
+    },
+    {
+      "case": "Small-7z-1-dynamic",
+      "dataset": "Small",
+      "format": "7z",
+      "repetition": 1,
+      "variant": "dynamic",
+      "pid": 37864,
+      "windows": 1,
+      "verified_files": 10000,
+      "phases": {
+        "baseline": {
+          "duration_s": 2.009811,
+          "samples": 266,
+          "peak_rss": 144850944,
+          "peak_footprint": 58557496,
+          "median_rss": 144769024.0,
+          "median_footprint": 58475576.0,
+          "max_processes": 1
+        },
+        "create": {
+          "duration_s": 2.571264,
+          "samples": 371,
+          "peak_rss": 608026624,
+          "peak_footprint": 521667976,
+          "median_rss": 152731648,
+          "median_footprint": 66389048,
+          "max_processes": 1
+        },
+        "list": {
+          "duration_s": 0.052533,
+          "samples": 7,
+          "peak_rss": 611516416,
+          "peak_footprint": 525075848,
+          "median_rss": 610713600,
+          "median_footprint": 524273032,
+          "max_processes": 1
+        },
+        "test": {
+          "duration_s": 0.339098,
+          "samples": 45,
+          "peak_rss": 631668736,
+          "peak_footprint": 545228192,
+          "median_rss": 631668736,
+          "median_footprint": 545228192,
+          "max_processes": 1
+        },
+        "extract": {
+          "duration_s": 2.837444,
+          "samples": 387,
+          "peak_rss": 668499968,
+          "peak_footprint": 582075832,
+          "median_rss": 657866752,
+          "median_footprint": 571442616,
+          "max_processes": 1
+        },
+        "cleanup": {
+          "duration_s": 0.000526,
+          "samples": 0,
+          "warning": "phase shorter than sampling interval; no isolated peak inferred"
+        },
+        "post": {
+          "duration_s": 3.058185,
+          "samples": 406,
+          "peak_rss": 232521728,
+          "peak_footprint": 90653800,
+          "median_rss": 232521728.0,
+          "median_footprint": 90653800.0,
+          "max_processes": 1
+        }
+      },
+      "peak_rss": 668499968,
+      "peak_footprint": 582075832,
+      "max_processes": 1,
+      "samples_with_7zz": 0,
+      "median_interval_ms": 7.602,
+      "max_interval_ms": 17.298,
+      "events": [
+        {
+          "pid": 37864,
+          "kind": "ready",
+          "windows": 1,
+          "benchmark_window_visible": true,
+          "timestamp_ns": 120434569729000
+        },
+        {
+          "phase": "baseline",
+          "kind": "begin",
+          "timestamp_ns": 120434575441000
+        },
+        {
+          "phase": "baseline",
+          "duration": "2.009538459 seconds",
+          "kind": "end",
+          "timestamp_ns": 120436585252000
+        },
+        {
+          "phase": "create",
+          "kind": "begin",
+          "timestamp_ns": 120436586158000
+        },
+        {
+          "phase": "create",
+          "duration": "2.572251542 seconds",
+          "kind": "end",
+          "timestamp_ns": 120439157422000
+        },
+        {
+          "phase": "list",
+          "kind": "begin",
+          "timestamp_ns": 120439157758000
+        },
+        {
+          "phase": "list",
+          "duration": "0.052769375 seconds",
+          "kind": "end",
+          "timestamp_ns": 120439210291000
+        },
+        {
+          "phase": "test",
+          "kind": "begin",
+          "timestamp_ns": 120439210953000
+        },
+        {
+          "phase": "test",
+          "duration": "0.339671083 seconds",
+          "kind": "end",
+          "timestamp_ns": 120439550051000
+        },
+        {
+          "phase": "extract",
+          "kind": "begin",
+          "timestamp_ns": 120439550942000
+        },
+        {
+          "phase": "extract",
+          "duration": "2.83828775 seconds",
+          "kind": "end",
+          "timestamp_ns": 120442388386000
+        },
+        {
+          "phase": "cleanup",
+          "kind": "begin",
+          "timestamp_ns": 120442389146000
+        },
+        {
+          "phase": "cleanup",
+          "duration": "0.0006745 seconds",
+          "kind": "end",
+          "timestamp_ns": 120442389672000
+        },
+        {
+          "phase": "post",
+          "kind": "begin",
+          "timestamp_ns": 120442390122000
+        },
+        {
+          "phase": "post",
+          "duration": "3.058987833 seconds",
+          "kind": "end",
+          "timestamp_ns": 120445448307000
+        },
+        {
+          "verified_files": 10000,
+          "hashes_match": true,
+          "kind": "done",
+          "timestamp_ns": 120445676964000
+        }
+      ]
+    },
+    {
+      "case": "Small-7z-1-CLI",
+      "dataset": "Small",
+      "format": "7z",
+      "repetition": 1,
+      "variant": "CLI",
+      "pid": 37878,
+      "windows": 1,
+      "verified_files": 10000,
+      "phases": {
+        "baseline": {
+          "duration_s": 2.031235,
+          "samples": 270,
+          "peak_rss": 144293888,
+          "peak_footprint": 59032632,
+          "median_rss": 144113664.0,
+          "median_footprint": 58885176.0,
+          "max_processes": 1
+        },
+        "create": {
+          "duration_s": 2.189831,
+          "samples": 318,
+          "peak_rss": 603242496,
+          "peak_footprint": 516147000,
+          "median_rss": 147374080.0,
+          "median_footprint": 62080056.0,
+          "max_processes": 2
+        },
+        "list": {
+          "duration_s": 0.848948,
+          "samples": 112,
+          "peak_rss": 167362560,
+          "peak_footprint": 81921080,
+          "median_rss": 165699584.0,
+          "median_footprint": 80258104.0,
+          "max_processes": 2
+        },
+        "test": {
+          "duration_s": 0.425002,
+          "samples": 59,
+          "peak_rss": 235634688,
+          "peak_footprint": 147899928,
+          "median_rss": 209879040,
+          "median_footprint": 121587200,
+          "max_processes": 2
+        },
+        "extract": {
+          "duration_s": 2.335441,
+          "samples": 320,
+          "peak_rss": 241205248,
+          "peak_footprint": 153749016,
+          "median_rss": 216457216.0,
+          "median_footprint": 128984576.0,
+          "max_processes": 2
+        },
+        "cleanup": {
+          "duration_s": 0.000554,
+          "samples": 0,
+          "warning": "phase shorter than sampling interval; no isolated peak inferred"
+        },
+        "post": {
+          "duration_s": 2.999879,
+          "samples": 401,
+          "peak_rss": 172834816,
+          "peak_footprint": 87393336,
+          "median_rss": 172834816,
+          "median_footprint": 87393336,
+          "max_processes": 1
+        }
+      },
+      "peak_rss": 603242496,
+      "peak_footprint": 516147000,
+      "max_processes": 2,
+      "samples_with_7zz": 338,
+      "median_interval_ms": 7.608,
+      "max_interval_ms": 17.357,
+      "events": [
+        {
+          "windows": 1,
+          "pid": 37878,
+          "benchmark_window_visible": true,
+          "kind": "ready",
+          "timestamp_ns": 120451150249000
+        },
+        {
+          "phase": "baseline",
+          "kind": "begin",
+          "timestamp_ns": 120451155673000
+        },
+        {
+          "phase": "baseline",
+          "duration": "2.03087525 seconds",
+          "kind": "end",
+          "timestamp_ns": 120453186908000
+        },
+        {
+          "phase": "create",
+          "kind": "begin",
+          "timestamp_ns": 120453187796000
+        },
+        {
+          "phase": "create",
+          "duration": "2.190842875 seconds",
+          "kind": "end",
+          "timestamp_ns": 120455377627000
+        },
+        {
+          "phase": "list",
+          "kind": "begin",
+          "timestamp_ns": 120455377946000
+        },
+        {
+          "phase": "list",
+          "duration": "0.849070959 seconds",
+          "kind": "end",
+          "timestamp_ns": 120456226894000
+        },
+        {
+          "phase": "test",
+          "kind": "begin",
+          "timestamp_ns": 120456227859000
+        },
+        {
+          "phase": "test",
+          "duration": "0.4258885 seconds",
+          "kind": "end",
+          "timestamp_ns": 120456652861000
+        },
+        {
+          "phase": "extract",
+          "kind": "begin",
+          "timestamp_ns": 120456653827000
+        },
+        {
+          "phase": "extract",
+          "duration": "2.336332666 seconds",
+          "kind": "end",
+          "timestamp_ns": 120458989268000
+        },
+        {
+          "phase": "cleanup",
+          "kind": "begin",
+          "timestamp_ns": 120458990234000
+        },
+        {
+          "phase": "cleanup",
+          "duration": "0.000675208 seconds",
+          "kind": "end",
+          "timestamp_ns": 120458990788000
+        },
+        {
+          "phase": "post",
+          "kind": "begin",
+          "timestamp_ns": 120458991243000
+        },
+        {
+          "phase": "post",
+          "duration": "3.001001667 seconds",
+          "kind": "end",
+          "timestamp_ns": 120461991122000
+        },
+        {
+          "verified_files": 10000,
+          "hashes_match": true,
+          "kind": "done",
+          "timestamp_ns": 120462224950000
+        }
+      ]
+    },
+    {
+      "case": "Small-7z-2-dynamic",
+      "dataset": "Small",
+      "format": "7z",
+      "repetition": 2,
+      "variant": "dynamic",
+      "pid": 37897,
+      "windows": 1,
+      "verified_files": 10000,
+      "phases": {
+        "baseline": {
+          "duration_s": 2.005962,
+          "samples": 266,
+          "peak_rss": 145670144,
+          "peak_footprint": 59294800,
+          "median_rss": 145457152.0,
+          "median_footprint": 59098192.0,
+          "max_processes": 1
+        },
+        "create": {
+          "duration_s": 2.547276,
+          "samples": 365,
+          "peak_rss": 607518720,
+          "peak_footprint": 521094560,
+          "median_rss": 153632768,
+          "median_footprint": 67224656,
+          "max_processes": 1
+        },
+        "list": {
+          "duration_s": 0.052796,
+          "samples": 8,
+          "peak_rss": 610992128,
+          "peak_footprint": 524486048,
+          "median_rss": 610172928.0,
+          "median_footprint": 523666848.0,
+          "max_processes": 1
+        },
+        "test": {
+          "duration_s": 0.339531,
+          "samples": 45,
+          "peak_rss": 631177216,
+          "peak_footprint": 544671160,
+          "median_rss": 631177216,
+          "median_footprint": 544671160,
+          "max_processes": 1
+        },
+        "extract": {
+          "duration_s": 2.871721,
+          "samples": 389,
+          "peak_rss": 668057600,
+          "peak_footprint": 581567952,
+          "median_rss": 657457152,
+          "median_footprint": 570967504,
+          "max_processes": 1
+        },
+        "cleanup": {
+          "duration_s": 0.000588,
+          "samples": 0,
+          "warning": "phase shorter than sampling interval; no isolated peak inferred"
+        },
+        "post": {
+          "duration_s": 3.019938,
+          "samples": 401,
+          "peak_rss": 232079360,
+          "peak_footprint": 90047616,
+          "median_rss": 232079360,
+          "median_footprint": 90047616,
+          "max_processes": 1
+        }
+      },
+      "peak_rss": 668057600,
+      "peak_footprint": 581567952,
+      "max_processes": 1,
+      "samples_with_7zz": 0,
+      "median_interval_ms": 7.606,
+      "max_interval_ms": 14.019,
+      "events": [
+        {
+          "windows": 1,
+          "kind": "ready",
+          "benchmark_window_visible": true,
+          "pid": 37897,
+          "timestamp_ns": 120467770006000
+        },
+        {
+          "kind": "begin",
+          "phase": "baseline",
+          "timestamp_ns": 120467775827000
+        },
+        {
+          "duration": "2.005661541 seconds",
+          "kind": "end",
+          "phase": "baseline",
+          "timestamp_ns": 120469781789000
+        },
+        {
+          "kind": "begin",
+          "phase": "create",
+          "timestamp_ns": 120469782673000
+        },
+        {
+          "duration": "2.548253583 seconds",
+          "phase": "create",
+          "kind": "end",
+          "timestamp_ns": 120472329949000
+        },
+        {
+          "phase": "list",
+          "kind": "begin",
+          "timestamp_ns": 120472330277000
+        },
+        {
+          "duration": "0.053023583 seconds",
+          "phase": "list",
+          "kind": "end",
+          "timestamp_ns": 120472383073000
+        },
+        {
+          "phase": "test",
+          "kind": "begin",
+          "timestamp_ns": 120472383707000
+        },
+        {
+          "duration": "0.3400725 seconds",
+          "phase": "test",
+          "kind": "end",
+          "timestamp_ns": 120472723238000
+        },
+        {
+          "phase": "extract",
+          "kind": "begin",
+          "timestamp_ns": 120472724058000
+        },
+        {
+          "duration": "2.872520583 seconds",
+          "phase": "extract",
+          "kind": "end",
+          "timestamp_ns": 120475595779000
+        },
+        {
+          "phase": "cleanup",
+          "kind": "begin",
+          "timestamp_ns": 120475596579000
+        },
+        {
+          "duration": "0.000658458 seconds",
+          "phase": "cleanup",
+          "kind": "end",
+          "timestamp_ns": 120475597167000
+        },
+        {
+          "phase": "post",
+          "kind": "begin",
+          "timestamp_ns": 120475597601000
+        },
+        {
+          "duration": "3.02082975 seconds",
+          "phase": "post",
+          "kind": "end",
+          "timestamp_ns": 120478617539000
+        },
+        {
+          "hashes_match": true,
+          "verified_files": 10000,
+          "kind": "done",
+          "timestamp_ns": 120478845209000
+        }
+      ]
+    },
+    {
+      "case": "Small-7z-2-CLI",
+      "dataset": "Small",
+      "format": "7z",
+      "repetition": 2,
+      "variant": "CLI",
+      "pid": 37911,
+      "windows": 1,
+      "verified_files": 10000,
+      "phases": {
+        "baseline": {
+          "duration_s": 2.119285,
+          "samples": 282,
+          "peak_rss": 144261120,
+          "peak_footprint": 58770488,
+          "median_rss": 144080896.0,
+          "median_footprint": 58573880.0,
+          "max_processes": 1
+        },
+        "create": {
+          "duration_s": 2.185329,
+          "samples": 311,
+          "peak_rss": 603389952,
+          "peak_footprint": 516015928,
+          "median_rss": 147341312,
+          "median_footprint": 61768760,
+          "max_processes": 2
+        },
+        "list": {
+          "duration_s": 0.844473,
+          "samples": 113,
+          "peak_rss": 167280640,
+          "peak_footprint": 81560632,
+          "median_rss": 165609472,
+          "median_footprint": 79889464,
+          "max_processes": 2
+        },
+        "test": {
+          "duration_s": 0.427098,
+          "samples": 58,
+          "peak_rss": 235552768,
+          "peak_footprint": 147818008,
+          "median_rss": 209100800.0,
+          "median_footprint": 121349632.0,
+          "max_processes": 2
+        },
+        "extract": {
+          "duration_s": 2.234526,
+          "samples": 304,
+          "peak_rss": 241139712,
+          "peak_footprint": 153404952,
+          "median_rss": 214556672.0,
+          "median_footprint": 125879808.0,
+          "max_processes": 2
+        },
+        "cleanup": {
+          "duration_s": 0.000622,
+          "samples": 0,
+          "warning": "phase shorter than sampling interval; no isolated peak inferred"
+        },
+        "post": {
+          "duration_s": 3.105043,
+          "samples": 416,
+          "peak_rss": 172736512,
+          "peak_footprint": 87016504,
+          "median_rss": 172736512.0,
+          "median_footprint": 87016504.0,
+          "max_processes": 1
+        }
+      },
+      "peak_rss": 603389952,
+      "peak_footprint": 516015928,
+      "max_processes": 2,
+      "samples_with_7zz": 328,
+      "median_interval_ms": 7.611,
+      "max_interval_ms": 22.663,
+      "events": [
+        {
+          "windows": 1,
+          "kind": "ready",
+          "pid": 37911,
+          "benchmark_window_visible": true,
+          "timestamp_ns": 120484335382000
+        },
+        {
+          "kind": "begin",
+          "phase": "baseline",
+          "timestamp_ns": 120484340946000
+        },
+        {
+          "kind": "end",
+          "phase": "baseline",
+          "duration": "2.119120709 seconds",
+          "timestamp_ns": 120486460231000
+        },
+        {
+          "kind": "begin",
+          "phase": "create",
+          "timestamp_ns": 120486460815000
+        },
+        {
+          "phase": "create",
+          "duration": "2.185930208 seconds",
+          "kind": "end",
+          "timestamp_ns": 120488646144000
+        },
+        {
+          "phase": "list",
+          "kind": "begin",
+          "timestamp_ns": 120488646452000
+        },
+        {
+          "phase": "list",
+          "duration": "0.844582917 seconds",
+          "kind": "end",
+          "timestamp_ns": 120489490925000
+        },
+        {
+          "phase": "test",
+          "kind": "begin",
+          "timestamp_ns": 120489491845000
+        },
+        {
+          "phase": "test",
+          "duration": "0.427919958 seconds",
+          "kind": "end",
+          "timestamp_ns": 120489918943000
+        },
+        {
+          "phase": "extract",
+          "kind": "begin",
+          "timestamp_ns": 120489920000000
+        },
+        {
+          "phase": "extract",
+          "duration": "2.235548916 seconds",
+          "kind": "end",
+          "timestamp_ns": 120492154526000
+        },
+        {
+          "phase": "cleanup",
+          "kind": "begin",
+          "timestamp_ns": 120492155446000
+        },
+        {
+          "phase": "cleanup",
+          "duration": "0.000568625 seconds",
+          "kind": "end",
+          "timestamp_ns": 120492156068000
+        },
+        {
+          "phase": "post",
+          "kind": "begin",
+          "timestamp_ns": 120492156576000
+        },
+        {
+          "phase": "post",
+          "duration": "3.106333916 seconds",
+          "kind": "end",
+          "timestamp_ns": 120495261619000
+        },
+        {
+          "verified_files": 10000,
+          "hashes_match": true,
+          "kind": "done",
+          "timestamp_ns": 120495503203000
+        }
+      ]
+    },
+    {
+      "case": "Small-7z-2-static",
+      "dataset": "Small",
+      "format": "7z",
+      "repetition": 2,
+      "variant": "static",
+      "pid": 37929,
+      "windows": 1,
+      "verified_files": 10000,
+      "phases": {
+        "baseline": {
+          "duration_s": 2.103834,
+          "samples": 279,
+          "peak_rss": 146014208,
+          "peak_footprint": 58950712,
+          "median_rss": 145850368,
+          "median_footprint": 58786872,
+          "max_processes": 1
+        },
+        "create": {
+          "duration_s": 2.547695,
+          "samples": 359,
+          "peak_rss": 609140736,
+          "peak_footprint": 522077576,
+          "median_rss": 153927680,
+          "median_footprint": 66847800,
+          "max_processes": 1
+        },
+        "list": {
+          "duration_s": 0.052251,
+          "samples": 8,
+          "peak_rss": 612646912,
+          "peak_footprint": 525485448,
+          "median_rss": 611655680.0,
+          "median_footprint": 524510600.0,
+          "max_processes": 1
+        },
+        "test": {
+          "duration_s": 0.340188,
+          "samples": 48,
+          "peak_rss": 632864768,
+          "peak_footprint": 545686944,
+          "median_rss": 632864768.0,
+          "median_footprint": 545686944.0,
+          "max_processes": 1
+        },
+        "extract": {
+          "duration_s": 2.918564,
+          "samples": 396,
+          "peak_rss": 669253632,
+          "peak_footprint": 582092216,
+          "median_rss": 658235392.0,
+          "median_footprint": 571073976.0,
+          "max_processes": 1
+        },
+        "cleanup": {
+          "duration_s": 0.000538,
+          "samples": 0,
+          "warning": "phase shorter than sampling interval; no isolated peak inferred"
+        },
+        "post": {
+          "duration_s": 3.084739,
+          "samples": 412,
+          "peak_rss": 233259008,
+          "peak_footprint": 89949288,
+          "median_rss": 233259008.0,
+          "median_footprint": 89949288.0,
+          "max_processes": 1
+        }
+      },
+      "peak_rss": 669253632,
+      "peak_footprint": 582092216,
+      "max_processes": 1,
+      "samples_with_7zz": 0,
+      "median_interval_ms": 7.608,
+      "max_interval_ms": 16.489,
+      "events": [
+        {
+          "windows": 1,
+          "benchmark_window_visible": true,
+          "kind": "ready",
+          "pid": 37929,
+          "timestamp_ns": 120500855617000
+        },
+        {
+          "phase": "baseline",
+          "kind": "begin",
+          "timestamp_ns": 120500860433000
+        },
+        {
+          "duration": "2.103447208 seconds",
+          "phase": "baseline",
+          "kind": "end",
+          "timestamp_ns": 120502964267000
+        },
+        {
+          "phase": "create",
+          "kind": "begin",
+          "timestamp_ns": 120502965242000
+        },
+        {
+          "duration": "2.5487815 seconds",
+          "phase": "create",
+          "kind": "end",
+          "timestamp_ns": 120505512937000
+        },
+        {
+          "phase": "list",
+          "kind": "begin",
+          "timestamp_ns": 120505513233000
+        },
+        {
+          "duration": "0.052520375 seconds",
+          "phase": "list",
+          "kind": "end",
+          "timestamp_ns": 120505565484000
+        },
+        {
+          "phase": "test",
+          "kind": "begin",
+          "timestamp_ns": 120505565824000
+        },
+        {
+          "duration": "0.3403615 seconds",
+          "phase": "test",
+          "kind": "end",
+          "timestamp_ns": 120505906012000
+        },
+        {
+          "phase": "extract",
+          "kind": "begin",
+          "timestamp_ns": 120505906850000
+        },
+        {
+          "duration": "2.919366125 seconds",
+          "phase": "extract",
+          "kind": "end",
+          "timestamp_ns": 120508825414000
+        },
+        {
+          "phase": "cleanup",
+          "kind": "begin",
+          "timestamp_ns": 120508826236000
+        },
+        {
+          "duration": "0.000719459 seconds",
+          "phase": "cleanup",
+          "kind": "end",
+          "timestamp_ns": 120508826774000
+        },
+        {
+          "phase": "post",
+          "kind": "begin",
+          "timestamp_ns": 120508827259000
+        },
+        {
+          "duration": "3.085617167 seconds",
+          "phase": "post",
+          "kind": "end",
+          "timestamp_ns": 120511911998000
+        },
+        {
+          "verified_files": 10000,
+          "hashes_match": true,
+          "kind": "done",
+          "timestamp_ns": 120512141377000
+        }
+      ]
+    }
+  ],
+  "summary": [
+    {
+      "dataset": "Large",
+      "format": "zip",
+      "variant": "CLI",
+      "peak_rss_mib": 161.84375,
+      "peak_rss_range_mib": [
+        161.78125,
+        161.9375
+      ],
+      "peak_footprint_mib": 95.18903350830078,
+      "peak_footprint_range_mib": [
+        95.12653350830078,
+        95.26718139648438
+      ],
+      "baseline_footprint_mib": 55.68855285644531,
+      "create_footprint_mib": 95.18903350830078,
+      "test_footprint_mib": 58.47016906738281,
+      "extract_footprint_mib": 58.48579406738281,
+      "post_footprint_mib": 55.71977996826172,
+      "delta_peak_from_baseline_mib": 39.53175354003906
+    },
+    {
+      "dataset": "Large",
+      "format": "zip",
+      "variant": "static",
+      "peak_rss_mib": 160.375,
+      "peak_rss_range_mib": [
+        160.1875,
+        160.953125
+      ],
+      "peak_footprint_mib": 94.0636215209961,
+      "peak_footprint_range_mib": [
+        93.8448486328125,
+        94.4542465209961
+      ],
+      "baseline_footprint_mib": 55.51665496826172,
+      "create_footprint_mib": 93.3292465209961,
+      "test_footprint_mib": 94.0636215209961,
+      "extract_footprint_mib": 94.0636215209961,
+      "post_footprint_mib": 94.0636215209961,
+      "delta_peak_from_baseline_mib": 38.515716552734375
+    },
+    {
+      "dataset": "Large",
+      "format": "zip",
+      "variant": "dynamic",
+      "peak_rss_mib": 160.734375,
+      "peak_rss_range_mib": [
+        160.09375,
+        160.84375
+      ],
+      "peak_footprint_mib": 94.5792465209961,
+      "peak_footprint_range_mib": [
+        94.1104965209961,
+        94.71989440917969
+      ],
+      "baseline_footprint_mib": 56.06355285644531,
+      "create_footprint_mib": 93.8604965209961,
+      "test_footprint_mib": 94.5792465209961,
+      "extract_footprint_mib": 94.5792465209961,
+      "post_footprint_mib": 94.5792465209961,
+      "delta_peak_from_baseline_mib": 38.656341552734375
+    },
+    {
+      "dataset": "Large",
+      "format": "7z",
+      "variant": "CLI",
+      "peak_rss_mib": 803.71875,
+      "peak_rss_range_mib": [
+        803.640625,
+        804.125
+      ],
+      "peak_footprint_mib": 737.2362747192383,
+      "peak_footprint_range_mib": [
+        737.1893768310547,
+        737.2831497192383
+      ],
+      "baseline_footprint_mib": 55.71977996826172,
+      "create_footprint_mib": 737.2362747192383,
+      "test_footprint_mib": 314.18912506103516,
+      "extract_footprint_mib": 314.22035217285156,
+      "post_footprint_mib": 55.78227996826172,
+      "delta_peak_from_baseline_mib": 681.4852447509766
+    },
+    {
+      "dataset": "Large",
+      "format": "7z",
+      "variant": "static",
+      "peak_rss_mib": 1058.484375,
+      "peak_rss_range_mib": [
+        1057.890625,
+        1058.5625
+      ],
+      "peak_footprint_mib": 992.3454437255859,
+      "peak_footprint_range_mib": [
+        991.9079437255859,
+        992.3923187255859
+      ],
+      "baseline_footprint_mib": 55.86040496826172,
+      "create_footprint_mib": 735.7827606201172,
+      "test_footprint_mib": 992.3454437255859,
+      "extract_footprint_mib": 992.3454437255859,
+      "post_footprint_mib": 992.3454437255859,
+      "delta_peak_from_baseline_mib": 936.4850387573242
+    },
+    {
+      "dataset": "Large",
+      "format": "7z",
+      "variant": "dynamic",
+      "peak_rss_mib": 1058.3125,
+      "peak_rss_range_mib": [
+        1057.875,
+        1058.5
+      ],
+      "peak_footprint_mib": 992.5017166137695,
+      "peak_footprint_range_mib": [
+        992.2673187255859,
+        992.7360916137695
+      ],
+      "baseline_footprint_mib": 56.03230285644531,
+      "create_footprint_mib": 736.1577835083008,
+      "test_footprint_mib": 992.4704666137695,
+      "extract_footprint_mib": 992.4704666137695,
+      "post_footprint_mib": 992.5017166137695,
+      "delta_peak_from_baseline_mib": 936.4850387573242
+    },
+    {
+      "dataset": "Small",
+      "format": "zip",
+      "variant": "CLI",
+      "peak_rss_mib": 190.875,
+      "peak_rss_range_mib": [
+        190.734375,
+        192.0625
+      ],
+      "peak_footprint_mib": 107.42343139648438,
+      "peak_footprint_range_mib": [
+        107.42338562011719,
+        108.39213562011719
+      ],
+      "baseline_footprint_mib": 55.501007080078125,
+      "create_footprint_mib": 107.42343139648438,
+      "test_footprint_mib": 94.7671127319336,
+      "extract_footprint_mib": 100.3764419555664,
+      "post_footprint_mib": 95.32915496826172,
+      "delta_peak_from_baseline_mib": 51.93800354003906
+    },
+    {
+      "dataset": "Small",
+      "format": "zip",
+      "variant": "static",
+      "peak_rss_mib": 236.640625,
+      "peak_rss_range_mib": [
+        233.984375,
+        236.9375
+      ],
+      "peak_footprint_mib": 153.56366729736328,
+      "peak_footprint_range_mib": [
+        150.68866729736328,
+        153.68866729736328
+      ],
+      "baseline_footprint_mib": 56.01665496826172,
+      "create_footprint_mib": 112.9229965209961,
+      "test_footprint_mib": 119.0167465209961,
+      "extract_footprint_mib": 153.56366729736328,
+      "post_footprint_mib": 86.4385757446289,
+      "delta_peak_from_baseline_mib": 97.62513732910156
+    },
+    {
+      "dataset": "Small",
+      "format": "zip",
+      "variant": "dynamic",
+      "peak_rss_mib": 238.046875,
+      "peak_rss_range_mib": [
+        237.421875,
+        240.125
+      ],
+      "peak_footprint_mib": 155.0792694091797,
+      "peak_footprint_range_mib": [
+        154.6261444091797,
+        157.23554229736328
+      ],
+      "baseline_footprint_mib": 55.76665496826172,
+      "create_footprint_mib": 112.6104965209961,
+      "test_footprint_mib": 117.4229965209961,
+      "extract_footprint_mib": 155.0792694091797,
+      "post_footprint_mib": 87.82917785644531,
+      "delta_peak_from_baseline_mib": 99.31261444091797
+    },
+    {
+      "dataset": "Small",
+      "format": "7z",
+      "variant": "CLI",
+      "peak_rss_mib": 575.4375,
+      "peak_rss_range_mib": [
+        575.296875,
+        575.71875
+      ],
+      "peak_footprint_mib": 492.2205352783203,
+      "peak_footprint_range_mib": [
+        492.1111373901367,
+        492.2361373901367
+      ],
+      "baseline_footprint_mib": 55.86040496826172,
+      "create_footprint_mib": 492.2205352783203,
+      "test_footprint_mib": 140.9702377319336,
+      "extract_footprint_mib": 146.2983627319336,
+      "post_footprint_mib": 82.98540496826172,
+      "delta_peak_from_baseline_mib": 436.250732421875
+    },
+    {
+      "dataset": "Small",
+      "format": "7z",
+      "variant": "static",
+      "peak_rss_mib": 637.453125,
+      "peak_rss_range_mib": [
+        637.328125,
+        638.25
+      ],
+      "peak_footprint_mib": 554.5638961791992,
+      "peak_footprint_range_mib": [
+        554.0326461791992,
+        555.1263961791992
+      ],
+      "baseline_footprint_mib": 56.06352996826172,
+      "create_footprint_mib": 497.29822540283203,
+      "test_footprint_mib": 519.8763732910156,
+      "extract_footprint_mib": 554.5638961791992,
+      "post_footprint_mib": 85.7823257446289,
+      "delta_peak_from_baseline_mib": 498.1097412109375
+    },
+    {
+      "dataset": "Small",
+      "format": "7z",
+      "variant": "dynamic",
+      "peak_rss_mib": 637.53125,
+      "peak_rss_range_mib": [
+        637.109375,
+        638.390625
+      ],
+      "peak_footprint_mib": 555.1107711791992,
+      "peak_footprint_range_mib": [
+        554.6264190673828,
+        555.5326461791992
+      ],
+      "baseline_footprint_mib": 55.90727996826172,
+      "create_footprint_mib": 497.50135040283203,
+      "test_footprint_mib": 519.9701232910156,
+      "extract_footprint_mib": 555.1107711791992,
+      "post_footprint_mib": 86.0323257446289,
+      "delta_peak_from_baseline_mib": 499.3441162109375
+    }
+  ]
+}
