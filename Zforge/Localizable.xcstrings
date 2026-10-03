@@ -1,6 +1,36 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Remove from Sidebar" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remover da barra lateral"
+          }
+        }
+      }
+    },
+    "Only folders can be added to Favorites." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Somente pastas podem ser adicionadas aos Favoritos."
+          }
+        }
+      }
+    },
+    "Add to Sidebar" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adicionar à barra lateral"
+          }
+        }
+      }
+    },
     "" : {
 
     },

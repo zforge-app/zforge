@@ -65,8 +65,8 @@ struct BrowserContent: View {
         .onModifierKeysChanged(mask: [.option, .command]) { _, modifiers in
             dragSession.modifiers = modifiers
         }
-        .dragContainer(for: URL.self, itemID: \.self) { (draggedURLs: [URL]) in
-            state.prepareDragPayload(draggedURLs)
+        .dragContainer(for: BrowserDraggedFile.self, itemID: \.url) { (draggedURLs: [URL]) in
+            state.prepareDragPayload(draggedURLs).map { BrowserDraggedFile(url: $0) }
         }
         .dragContainerSelection(state.dragSelectionURLs)
         .dragConfiguration(.browserFileOperations)
@@ -423,6 +423,16 @@ nonisolated enum BrowserFileDropProposalResolver {
         // a copy before an explicit copy operation has been requested.
         case .automatic: .move
         }
+    }
+}
+
+/// Export the location, not a promised file whose URL can point to a temporary copy.
+nonisolated struct BrowserDraggedFile: Transferable {
+    let url: URL
+    var fileURLData: Data { Data(url.absoluteString.utf8) }
+
+    static var transferRepresentation: some TransferRepresentation {
+        DataRepresentation(exportedContentType: .fileURL) { item in item.fileURLData }
     }
 }
 

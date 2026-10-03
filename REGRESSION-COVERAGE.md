@@ -156,3 +156,71 @@ A pedido do usuário, o backend desta branch foi preservado em `feat/7zz-static-
 - Bundle Debug atualizado `/private/tmp/ZforgeTagsBuild/Build/Products/Debug/Zforge.app` aberto sem fixtures para o usuário; janela Recentes e toolbar com Edit Tags confirmadas por acessibilidade e janela trazida à frente.
 
 - Aceite do usuário em 2026-10-03: informou que está tudo OK e autorizou commits/integração na main. O aceite não substitui a matriz técnica ainda pendente acima.
+## Pastas fixadas na sidebar — 2026-10-03
+
+| Contrato | Evidência executada | Limites |
+| --- | --- | --- |
+| Ordem, persistência e remoção sem alterar a pasta | `PinnedFolderTests.persistsOrderAndRemoval`, `preservesEmptyList`; inclusão pelo seletor e navegação em pasta temporária reais; favorito restaurado e navegável após reiniciar o app; remoção via menu real | Múltiplas janelas simultâneas, renomeação/movimentação da pasta enquanto aberto e volumes desconectados pendentes |
+| Deduplicação e validação de pastas | `deduplicatesCanonicalFolders` (incluindo favoritos iniciais por symlink), `rejectsFilesAtomically`, `rejectsPackagesAndRemoteURLs` usam diretórios, symlink, arquivo e package reais | Autorizações externas/volumes de rede pendentes |
+| Consumo de providers na callback do drop, mantendo ordem e conteúdo | `consumesDropProviders` executa `performPinDrop` com `NSItemProvider` reais; insere antes de um anchor e verifica pastas intactas | Automação de drag não produziu inclusão confirmável. Hit testing, indicador e distinção entre inserir favorito e transferir sobre uma pasta exigem validação manual; arraste externo do Finder também pendente |
+| Comandos e apresentação nativa | “Add Folder…” e “Add to Sidebar” exercitados; menu em Ícones adicionou pasta e “Remove from Sidebar” retirou somente a referência. Espaçamento corrigido e conferido visualmente | Matriz dos quatro modos, seleção múltipla na UI, foco/teclado, português, tema claro e redimensionamento pendentes |
+
+Build Debug assinada aprovada usando Xcode/SDK macOS 27 (deployment target continua 26.0). `/tmp/zforge-pin-tests.xcresult`: 114 testes executados, 114 aprovados, zero ignorados/falhas. Após ajustes visuais e inclusão do teste de transporte de drop, `/tmp/zforge-pin-final-tests.xcresult`: 6 testes de favoritos executados e aprovados. A segunda rodada é da suíte específica e não representa outra execução completa; resultados temporários não são artefatos versionados. `git diff --check` sem erros.
+
+**Confirmação do usuário em 2026-10-03:** a funcionalidade de fixar pastas está OK. Essa evidência manual não converte as tentativas de automação de arraste em testes aprovados. O usuário escolheu a alternativa B para o indicador: linha de 1 pt, círculo vazado de 5 pt e início 8 pt mais à esquerda. Alteração apenas visual, com área de drop preservada; validação visual do novo acabamento durante arraste pendente.
+
+**Alternativa B aplicada:** build Debug assinada aprovada (`/tmp/zforge-pin-indicator-b.log`, `BUILD SUCCEEDED`), `git diff --check` sem erros e aplicação reaberta. Mudança exclusivamente no desenho do indicador; não houve nova execução de testes funcionais. Conferência do círculo/linha durante arraste no app permanece pendente.
+
+## Feedback e diretório atual na sidebar — 2026-10-03
+
+- As gravações fornecidas mostram o estado anterior alternando fundo sólido e contorno, com ícone de pasta aberta. A gravação/captura do Finder fundamenta o alvo accent sólido, o símbolo preservado e a seleção monocromática.
+- `SidebarInteractionTests`: passagem entre linhas com `dropExited` atrasado; alternância exclusiva de inserção/transferência dentro da linha; igualdade canônica do diretório atual (incluindo symlink), exclusão de ancestrais/localização sem URL; desativação do feedback nativo apenas na tabela ancestral, sem interferir na tabela de conteúdo.
+- `/tmp/zforge-sidebar-feedback-tests.xcresult`: 119 testes executados/aprovados, zero falhas/ignorados, confirmados no summary do xcresult. Build Debug assinada final aprovada; SDK macOS 27.0, target 26.0; `git diff --check` sem erros. Ajustes finais de identidade de linhas duplicadas, recusa de payload inválido e margem visual foram compilados depois da suíte.
+- No app, navegar para Downloads mostrou seu nome semibold e fundo cinza, preservando seu símbolo. Aplicação reaberta com os ajustes. A estabilidade do gesto contínuo, indicador de inserção, transferência sobre pasta, cancelamento fora da sidebar, todas as views/idiomas/temas e contraste aumentado ainda não foram confirmados por automação visual após esta correção. Testes do modelo não substituem essa verificação.
+- Referência técnica capturada no corpus: `appkit-nstableview-dragging-destination-feedback-style.md`; API também conferida em `NSTableView.h` do SDK local.
+
+### Revisão da sidebar — gravação de 18:56 (2026-10-03) — histórica, revertida após reprodução 19:47
+
+- **Reprodução do usuário:** highlight retido no último alvo (Applications), indicador sobrepondo a entrada seguinte e posição final ausente/instável. A implementação anterior e seus 119 testes não estabeleceram estabilidade visual.
+- **Implementação revisada:** um delegate da sidebar, posições medidas para hit testing e desenho, linha sobreposta ao intervalo sem modificar layout, área final sem botão adicional, lista vazia e proteção contra falso fim ao rolar. O cursor/botão nativos limpam feedback mesmo sem o callback de saída. Símbolos originais, seleção monocromática e backend de transferência/modificadores preservados. “Add Folder…” e seu seletor removidos; fixar via menu/drop continua disponível.
+- **Execução:** 121 testes unitários passaram, zero falhas/ignorados, no bundle `/tmp/zforge-sidebar-final-slots-tests.xcresult`. `SidebarInteractionTests` executou saída/release sem callback da linha, transições corpo/intervalo, alinhamento pelo mesmo centro, área final, lista vazia, rolagem parcial, seleção canônica e isolamento da tabela. SDK macOS 27.0, runtime 27.0.1, target 26.0.
+- **UI:** aplicação reaberta; ausência de “Add Folder…” confirmada no accessibility tree e na captura. Tentativas de drag nas pastas descartáveis `/tmp/zforge-sidebar-ui` selecionaram o item, mas não produziram uma inclusão confirmável. Portanto, estabilidade contínua e acabamento durante drag real nesta revisão permanecem pendentes, assim como a matriz de temas/idiomas/arraste externo. Testes do modelo e build não são prova visual desses gestos.
+
+### Restauração e nova correção — gravação 19:47 (2026-10-03)
+
+- Delegate global da List, geometria por preferências e watcher global retirados. Restaurados handlers de pin por cabeçalho/item; somente o link “Add Folder…” permanece ausente. Corpo de transferência, symbols e destaque atual preservados. Indicador nas bordas completas das linhas, incluindo após o último favorito; feedback observado nativamente por owner.
+- `SidebarInteractionTests` cobre saída/release sem callback, owner anterior não limpando o atual, lados adjacentes resolvendo o mesmo anchor, fim da lista, corpo de transferência, igualdade canônica e isolamento da tabela. `PinnedFolderTests.consumesFileURLData` registra o formato de bytes realmente exportado pelo drag num NSItemProvider, carrega-o via NSURL e fixa a pasta original sem alteração de conteúdo. `sameDirectoryDragDoesNothing` executa automatic/move com arquivo e pasta, destino com marcação diferente e symlink, conferindo ausência de cópias; cópia explícita permanece funcional.
+- Suíte completa: 121 testes aprovados, zero falhas/ignorados, `/tmp/zforge-drag-original-url-tests.xcresult`; build Debug assinada, SDK 27.0, target 26.0. Resultados temporários não são artefatos versionados.
+- UI: menu “Add to Sidebar” adicionou Beta aos Favoritos; “Remove from Sidebar” removeu apenas sua referência. Nenhum “Add Folder…” visível. Tentativas de drag em Lista/Ícones pela automação não confirmaram inclusão. Pin por gesto contínuo, indicador durante drag, saída/cancelamento e matriz de temas/idiomas/modos ainda precisam de conferência visual. A build final foi reaberta.
+
+### Indicador sem recorte — gravação 20:11 (2026-10-03)
+
+- **Evidência do usuário:** parte funcional resolvida; gravação mostra círculo pela metade na borda inferior. Confirma pin e correção funcional, mas não valida o novo desenho.
+- **Mudança visual:** NSView transparente como sibling acima da clip view, com âncora na célula; remove overlays SwiftUI limitados à célula. Linha de 1 pt/círculo de 5 pt e início 8 pt à esquerda preservados. Scroll atualiza desenho; hit testing retorna nil. Delegates, zonas, payload e operações não foram alterados.
+- **Executado:** build Debug assinada aprovada (`/tmp/zforge-sidebar-overlay-build.log`). 5 testes de SidebarInteractionTests passaram, zero falhas/ignorados (`/tmp/zforge-sidebar-unclipped-tests.xcresult`); teste novo monta NSScrollView/NSTableView com célula que recorta filhos e verifica que o indicador reside acima da clip view, atravessa ambas as bordas da célula, cabe na viewport, limpa corretamente e não intercepta eventos. Isso valida hierarquia/geometria nativa; não é screenshot de drag. A suíte completa anterior de 121 testes não foi repetida para esta alteração visual.
+- Aplicação reaberta. Acabamento do indicador durante drag contínuo, temas e scroll real continuam sem conferência visual automatizada nesta revisão.
+
+### Indicador acima do highlight — gravação 20:22 (2026-10-03)
+
+- Vídeo do usuário mostra o indicador parcialmente coberto pelo destaque monocromático de Downloads. Overlay agora usa backing layer própria; a atualização da âncora promove o zPosition acima de todas as camadas irmãs. Linha de 2 pt (antes 1 pt); comprimento, círculo de 5 pt/contorno de 1 pt, áreas e handlers preservados.
+- 5 testes de SidebarInteractionTests aprovados, zero falhas/ignorados (`/tmp/zforge-indicator-above-highlight-tests.xcresult`). O teste nativo acrescenta depois uma view de highlight com layer elevada e verifica que a camada do indicador permanece acima; clipping, bordas e hit testing continuam cobertos. Build Debug assinada incluída nessa execução; `git diff --check` sem erros. Não houve nova suíte completa para a alteração visual.
+- Aplicação reaberta. Teste de zPosition/hierarquia não substitui conferência visual durante drag real nesta build, ainda pendente.
+
+### Círculo proporcional do indicador — 2026-10-03
+
+- Após confirmação de melhoria pelo usuário, círculo aumentado para 8 pt de diâmetro externo e contorno de 2 pt, mantendo a linha de 2 pt. Frame de desenho ampliado simetricamente ao redor da borda para não recortar o círculo.
+- Build Debug e 5 testes de SidebarInteractionTests aprovados (`/tmp/zforge-indicator-circle-tests.xcresult`); teste existente da hierarquia cobre o frame de 8 pt acima do highlight e das células. `git diff --check` aprovado. Acabamento durante drag real desta revisão permanece pendente.
+
+**Círculo de 12 pt — 2026-10-03:** diâmetro externo atualizado por pedido do usuário, com contorno de 2 pt. Frame ampliado e centrado na borda; teste existente de recorte atualizado. Build Debug e 5 testes da sidebar aprovados (`/tmp/zforge-indicator-circle12-tests.xcresult`), diff sem erros. Aparência durante drag real permanece pendente.
+
+**Retorno a 8 pt — 2026-10-03:** escolha final do usuário restaura o desenho de 8 pt/contorno de 2 pt já testado na revisão anterior. Build Debug aprovado (`/tmp/zforge-indicator-circle8-restored-build.log`) e diff sem erros; testes não reexecutados nesta reversão visual. Conferência durante drag real permanece pendente.
+
+### Validação final antes dos commits — 2026-10-03
+
+- Build Debug e suíte unitária completa aprovados: 122 testes executados, 122 aprovados, nenhum erro ou skip, confirmados pelo resumo do xcresult (`/tmp/zforge-sidebar-precommit-tests.xcresult`). Desenho final: círculo de 8 pt e linha/contorno de 2 pt.
+- Catálogo de strings e metadados do corpus parseados como JSON; diff sem erros. A suíte de UI e o drag contínuo da versão final não foram executados nesta validação.
+
+### Integração na main — 2026-10-03
+
+- Menu de pin integrado a `BrowserNativeContextMenu`, preservando os comandos e a linha rápida de tags da main. `PinnedFolderTests.nativeMenuKeepsPinAndTags` confirma pin para pastas, coexistência com tags e ausência para arquivo. O teste de favoritos padrão agora usa store isolado, evitando interferência dos testes de providers no store global.
+- Build Debug e 130 testes unitários aprovados, sem falhas/ignorados (`/tmp/zforge-main-sidebar-merge-passed-tests.xcresult`). Duas rodadas anteriores detectaram setup incorreto na fixture do novo teste e interferência no teste antigo; ambos corrigidos antes do merge. JSON e diff conferidos. UI/drag contínuo não reexecutados nesta integração.

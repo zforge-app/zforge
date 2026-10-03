@@ -48,6 +48,32 @@ struct FileOperationServiceTests {
         #expect(moved.first?.lastPathComponent == "Document.txt 2")
     }
 
+    @Test("Default same-directory drags do not copy files or folders through alternate URL spellings")
+    func sameDirectoryDragDoesNothing() async throws {
+        let root = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let source = root.appendingPathComponent("Document.pdf")
+        let folder = root.appendingPathComponent("Folder", isDirectory: true)
+        try Data("original".utf8).write(to: source)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: false)
+        let link = root.appendingPathComponent("Link", isDirectory: true)
+        try FileManager.default.createSymbolicLink(at: link, withDestinationURL: root)
+        let service = FileOperationService()
+        for destination in [URL(fileURLWithPath: root.path, isDirectory: false), link] {
+            for operation in [BrowserFileTransferOperation.automatic, .move] {
+                let result = try await service.transfer([source, folder], to: destination, operation: operation)
+                #expect(result == [source.standardizedFileURL, folder.standardizedFileURL])
+                #expect(try FileManager.default.contentsOfDirectory(atPath: root.path).sorted()
+                        == ["Document.pdf", "Folder", "Link"])
+                #expect(try Data(contentsOf: source) == Data("original".utf8))
+            }
+        }
+        // Explicit copy remains available for Option-drag / paste / duplicate.
+        let copied = try await service.transfer([source], to: link, operation: .copy)
+        #expect(copied.count == 1 && copied[0].lastPathComponent != source.lastPathComponent)
+        #expect(try Data(contentsOf: copied[0]) == Data("original".utf8))
+    }
+
     @Test("Renames an item and rejects invalid names")
     func renaming() async throws {
         let root = try makeTemporaryDirectory()

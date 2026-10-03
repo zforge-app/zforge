@@ -105,6 +105,15 @@ enum BrowserNativeContextMenu {
         }
         applications(always: false)
         applications(always: true)
+        if !items.isEmpty && items.allSatisfy({ $0.isDirectory && !$0.isPackage && $0.localURL != nil }) {
+            menu.addItem(.separator())
+            add("Add to Sidebar", "pin", enabled: !items.allSatisfy { item in
+                item.localURL.map { PinnedFolderStore.shared.contains($0) } ?? false
+            }) {
+                let urls = items.compactMap(\.localURL)
+                Task { await state.pinFolders(urls) }
+            }
+        }
         menu.addItem(.separator())
         add("Share", "square.and.arrow.up", enabled: items.contains { !$0.isContainer }) { selectTargets(); state.shareItems() }
         add("Copy", "doc.on.doc", enabled: items.allSatisfy { $0.localURL != nil }) { selectTargets(); state.copySelectionToPasteboard() }

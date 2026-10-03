@@ -29,6 +29,8 @@ Atualizado em **2026-10-03**. Esta lista preserva os pedidos levantados nesta co
 | ZF-24 | Comparar RAM total do Zforge e processos 7zz em builds reais | 36 launches concluídos, hashes conferidos; sampler e séries registrados; D-21 corrigida nas duas branches; retenção em OR-11 | UI de fixture; não prova vazamento nem toda a UI |
 | ZF-25 | Investigar e otimizar desempenho e memória dos adapters nativos | Planejada a pedido do usuário; hipóteses registradas, sem profiling ou correção de desempenho | OR-11 e OR-12 |
 | ZF-26 | Definir/criar tags pelo contexto e toolbar e colorir pastas | Implementada; build Debug assinada, 114 testes unitários e 3 de UI aprovados; conferência visual ampla pendente | D-23; OR-09 |
+| ZF-27 | Fixar novas pastas na sidebar | Implementada: menu contextual, alvos de drop e persistência; ação do seletor preservada sem link na sidebar; build e testes aprovados, seletor/menu/remoção/reabertura exercitados no app; funcionalidade confirmada pelo usuário; alternativa B aplicada ao indicador; conferência visual do acabamento pendente | Matriz ampla e automação em REGRESSION-COVERAGE.md |
+| ZF-28 | Refinar feedback de arraste e seleção do diretório na sidebar | Implementado: símbolos preservados, alvo único, seleção monocromática; testes/build e seleção real conferidos; gesto contínuo e matriz visual pendentes | D-24 |
 
 ## ZF-01 — Documentação de referência e prevenção de regressões
 
@@ -263,3 +265,33 @@ A implementação estática está commitada nesta branch `feat/7zz-static-linkin
 Refinamento da ZF-26 em 2026-10-03: sete círculos interativos na primeira linha dos menus, Edit Tags com ícone na segunda, hover +/x e check. Pilha invertida e cor da tag da frente; preservação da ordem dos metadados e recoloração seletiva com papel branco e representação nativa de 512 px. Menus dos quatro modos usam ponte AppKit passiva para inserir a linha customizada; handlers e alternantes Option preservados. Validação: 116 unitários e 6 casos de UI aprovados (122 no total); contexto nos quatro modos, estado aplicado, hover com x, menus de compactação e overflow. Renderização de sete cores com papel branco inspecionada. Limites em `REGRESSION-COVERAGE.md`.
 
 Confirmação final da ZF-26 pelo usuário em 2026-10-03: “está tudo OK”; autorizada integração na main e commits da versão refinada. Pendências da matriz ampla permanecem em OR-09.
+
+## ZF-27 — Pastas fixadas na sidebar
+
+Pedido de 2026-10-03, com gravação de referência mostrando inserção entre favoritos e remoção. Implementação usa store global observável, bookmarks, deduplicação canônica, pin múltiplo e remoção sem alterar arquivos. Favoritos iniciais preservam seus ícones/localização e podem ser removidos. O menu contextual é compartilhado pelos quatro modos; o corpo dos destinos conserva a transferência de arquivos.
+
+Validação: build Debug assinada com Xcode/SDK macOS 27; suíte completa de 114 testes aprovada antes do teste adicional de providers; depois, os 6 testes de `PinnedFolderTests` passaram na versão final. Seletor nativo, inclusão via menu em Ícones, navegação/reabertura e remoção exercitados na build. Tentativas de arraste via automação não produziram uma inclusão confirmável; não declarar validação visual desse gesto. Restam arraste manual entre entradas, arraste externo do Finder, múltiplas janelas simultâneas, todos os modos/idiomas/temas, teclado e acesso em volumes externos.
+
+**Retorno do usuário em 2026-10-03:** funcionalidade OK. Solicita estudos visuais do indicador de inserção: linha mais fina, início um pouco mais à esquerda e acabamento mais refinado. Escolhida a alternativa B e aplicada: linha de 1 pt, círculo vazado de 5 pt e início 8 pt mais à esquerda. Área de drop e espaçamento preservados; conferência do acabamento durante arraste pendente.
+
+## ZF-28 — Feedback e seleção da sidebar
+
+Em 2026-10-03, o usuário forneceu duas gravações e uma captura do Finder: manter ícones originais, estabilizar o alvo de arraste e destacar o diretório atual de maneira monocromática. Aplicado no mesmo fluxo de sidebar usado pelas quatro views. A primeira implementação resolveu alvos por um delegate por linha (substituído na revisão abaixo); o feedback nativo sobreposto é desativado apenas na tabela da sidebar. Símbolos das views de conteúdo continuam com seu comportamento anterior. Seleção da pasta atual real conferida em Downloads; matriz e gesto contínuo pendentes. 119 testes unitários aprovados; detalhes e limites na matriz.
+
+**Nota histórica — revisão de 2026-10-03, gravação 18:56, revertida às 19:47:** o usuário reproduziu highlight retido em Applications, linha desalinhada e ausência/instabilidade no fim. Substituídos os delegates por linha por um delegate da sidebar, com zonas e indicador derivados das mesmas posições; slot final e lista vazia cobertos, incluindo proteção contra falso fim durante scroll. Limpeza adicional por posição/botão nativos. Removidos “Add Folder…” e o seletor sem outro ponto de entrada. Build e nova cobertura registradas em `REGRESSION-COVERAGE.md`; a automação não confirmou o gesto contínuo.
+
+**Revisão 19:47 — rodada anterior revertida:** o usuário reportou que o pin por drag deixou de funcionar e que soltar no próprio diretório criava cópia. Removidos o delegate global, o modelo de geometria/preferências e o watcher global; restaurados handlers por favorito/cabeçalho, com padding/limites coerentes, inserção inferior no último favorito e limpeza por owner/posição/botão. Nenhum link “Add Folder…” foi reintroduzido. Payload explícito de URL original e no-op canônico para drag automático/move na própria pasta; Option/paste/Duplicate preservados. Pin por menu conferido na UI com Beta, seguido de remoção só da referência. Execução de testes e limites visuais na matriz; não tratar a confirmação anterior de funcionalidade como validação desta revisão.
+
+**Refinamento 20:11:** usuário confirma parte funcional resolvida e mostra indicador recortado. Removidos overlays SwiftUI que ultrapassavam a célula; indicador B agora pintado numa NSView transparente acima da clip view, com âncora por célula e atualização no scroll. Handler e zonas de drop preservados. Build Debug assinada e 5 testes específicos aprovados; novo teste monta tabela/célula com clipping e verifica camada externa, bordas superior/inferior, limpeza e hit testing nulo. Conferência visual durante drag da nova build permanece pendente.
+
+**Refinamento 20:22:** usuário mostra sobreposição parcial do highlight de Downloads sobre a linha e pede dobrar a espessura. Linha alterada de 1 para 2 pt, com comprimento e círculo preservados. Overlay agora tem backing layer própria e zPosition acima das camadas irmãs, recalculado a cada atualização da âncora. Teste ampliado adiciona um highlight elevado depois do indicador e verifica a promoção; 5 testes da sidebar e build assinada aprovados. Aplicação reaberta; acabamento durante drag real desta revisão não confirmado por automação.
+
+**Refinamento do círculo em 2026-10-03:** usuário confirma melhoria da linha e pede um círculo proporcional. Diâmetro externo aumentado de 5 para 8 pt, contorno de 1 para 2 pt; centro vertical, início à esquerda e extremidade direita preservados. Conferência visual do novo tamanho durante drag pendente.
+
+**Ajuste solicitado em 2026-10-03:** círculo do indicador ampliado para 12 pt de diâmetro externo; contorno e linha mantidos em 2 pt. Centro vertical e limites horizontais preservados.
+
+**Escolha final em 2026-10-03:** por pedido do usuário, círculo retorna a 8 pt de diâmetro externo, com contorno e linha de 2 pt. O estudo de 12 pt é histórico.
+
+**Validação final de ZF-27/ZF-28 para commit em 2026-10-03:** build Debug e 122 testes unitários aprovados, com contagem confirmada no xcresult. Contratos atuais sincronizados com o círculo de 8 pt; matriz visual ampla e gesto real final permanecem pendentes.
+
+**Integração na main em 2026-10-03:** ZF-27/ZF-28 mescladas com a edição de tags (ZF-26); comando de pin adaptado ao menu nativo vigente, com teste de coexistência. Build e 130 unitários aprovados. Identificadores da sidebar renumerados para evitar colisão: ZF-27/ZF-28 e D-24/D-25.

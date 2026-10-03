@@ -85,8 +85,12 @@ struct ZforgeTests {
 
     @Test("The sidebar places the real user directory in Locations")
     @MainActor
-    func sidebarUsesRealUserHome() {
+    func sidebarUsesRealUserHome() throws {
+        let suite = "SidebarDefaults-\(UUID())"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
         let sidebar = SidebarState()
+        sidebar.pinnedFolders = PinnedFolderStore(defaults: defaults)
 
         #expect(sidebar.userHome.url == UserDirectoryService.homeURL)
         #expect(sidebar.userHome.name == UserDirectoryService.homeURL.lastPathComponent)
