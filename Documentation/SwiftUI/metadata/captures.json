@@ -3,8 +3,8 @@
   "captured_at": "2026-10-02T01:13:11+00:00",
   "seed_url": "https://developer.apple.com/documentation/SwiftUI",
   "scope": "home plus unique first-level links exposed by Overview, Featured samples, and Topics, with audited on-demand expansions",
-  "expected_contexts": 90,
-  "captured_contexts": 90,
+  "expected_contexts": 91,
+  "captured_contexts": 91,
   "failures": [],
   "captures": [
     {
@@ -1286,6 +1286,20 @@
         "On-demand expansion"
       ],
       "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/MenuList/Articles/ViewsInMenuItems.html",
+      "fetch_url": "https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/MenuList/Articles/ViewsInMenuItems.html",
+      "final_url": "https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/MenuList/Articles/ViewsInMenuItems.html",
+      "local_path": "contexts/appkit-menu-item-views.md",
+      "sha256": "ae53df9fa1083c999122091540e08f7e2a2f3ca8ea6f3b7b94f9c17853b85615",
+      "etag": null,
+      "last_modified": "Fri, 30 Jan 2026 23:11:39 GMT",
+      "bytes": 15328,
+      "categories": [
+        "On-demand expansion"
+      ],
+      "depth": 1
     }
   ]
 }
