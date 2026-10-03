@@ -168,6 +168,10 @@ struct ContentView: View {
                 Task { await browser.navigateToSidebar(url, name: url.lastPathComponent) }
             }
         }
+        .sheet(item: Binding(get: { browser.tagEditingRequest }, set: { browser.tagEditingRequest = $0 }), onDismiss: restoreContentFocus) { request in
+            FinderTagEditor(request: request, browser: browser)
+                .environment(\.locale, browser.preferences.language.locale)
+        }
         .sheet(isPresented: goToFolderBinding, onDismiss: restoreContentFocus) {
             GoToFolderSheet(browser: browser)
         }
@@ -422,6 +426,17 @@ struct ContentView: View {
                 .accessibilityLabel("Share")
 
                 Button {
+                    browser.editTags()
+                } label: {
+                    ToolbarActionIcon(kind: .tag)
+                }
+                .disabled(!browser.canEditTags)
+                .focusable(false)
+                .help("Edit Tags")
+                .accessibilityLabel("Edit Tags")
+                .accessibilityIdentifier("edit-tags-action")
+
+                Button {
                     showToolbarActionsMenu(
                         includesViewSelector: false,
                         includesArchiveAction: false,
@@ -559,7 +574,7 @@ struct ContentView: View {
             browser.showGetInfo()
         }
         menu.addItem(.separator())
-        addItem("Add Tag", systemImage: "tag", isEnabled: false) { }
+        FinderTagQuickMenu.append(to: menu, state: browser, items: selected)
         addItem("Rename", systemImage: "pencil", isEnabled: browser.canRenameSelection) {
             browser.beginRenamingSelectedItem()
         }
@@ -799,7 +814,7 @@ nonisolated private final class TrackedToolbarMenu: NSMenu, NSMenuDelegate {
     }
 }
 
-nonisolated private final class ClosureMenuItem: NSMenuItem {
+nonisolated final class ClosureMenuItem: NSMenuItem {
     private let handler: @MainActor () -> Void
 
     @MainActor
@@ -871,13 +886,14 @@ private struct ArchiveOperationIcon: View {
 private struct ToolbarActionIcon: View {
     enum Kind {
         case share
+        case tag
         case more
     }
 
     let kind: Kind
 
     var body: some View {
-        Image(systemName: kind == .share ? "square.and.arrow.up" : "ellipsis")
+        Image(systemName: kind == .share ? "square.and.arrow.up" : kind == .tag ? "tag" : "ellipsis")
             .font(.system(size: 15, weight: .regular))
             .frame(width: 25, height: 18)
             .accessibilityHidden(true)

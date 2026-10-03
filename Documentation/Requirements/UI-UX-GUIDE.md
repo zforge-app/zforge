@@ -148,18 +148,19 @@ Entre `678` e `899 pt`, o seletor usa uma cápsula compacta própria, com o íco
 
 ### Grupo de ações
 
-Na apresentação expandida, o grupo permanece com três ações:
+Na apresentação expandida, o grupo permanece com quatro ações:
 
 1. ação contextual de archive;
 2. Share;
-3. reticências para ações adicionais.
+3. Tags (`tag`), para editar a seleção local;
+4. reticências para ações adicionais.
 
-As três ações compartilham uma única cápsula nativa, separada da cápsula do seletor de visualização. Cada label preserva uma faixa visual de `25 pt` para manter o padding regular entre os símbolos.
+As quatro ações compartilham uma única cápsula nativa, separada da cápsula do seletor de visualização. Cada label preserva uma faixa visual de `25 pt` para manter o padding regular entre os símbolos.
 Elas devem ser declaradas como itens nativos de um `ToolbarItemGroup`, delimitado do seletor por um `ToolbarSpacer` fixo. Não envolver o conjunto em um `ControlGroup` adaptativo dentro de um único `ToolbarItem`: depois de passar pelo overflow, essa composição pode retornar à toolbar conservando o espaçamento compacto.
 
 Em Recentes, a ação contextual é habilitada conforme a seleção. A extração usa por padrão a pasta real de cada archive, e a compressão conjunta grava o archive na pasta do item ativo. A escolha explícita de destino nos painéis continua disponível.
 
-Quando o grupo de ações não cabe, um botão com duplo chevron reproduz o indicador nativo de overflow da toolbar. Entre `840` e `899 pt`, a ação contextual de archive continua visível em cápsula própria e o menu começa por Share; abaixo de `840 pt`, a ação de archive também entra no menu. Open, Quick Look, Get Info, Add Tag, Rename e Duplicate permanecem sempre expandidos no nível principal desse menu. Diferentemente do Finder, esse conteúdo não vira um submenu `Action`. Abaixo de `678 pt`, o submenu `View` é acrescentado no início. As ações usam os mesmos handlers e estados habilitados da apresentação expandida; não delegar esse comportamento ao overflow automático da `NSToolbar`.
+Quando o grupo de ações não cabe, um botão com duplo chevron reproduz o indicador nativo de overflow da toolbar. Entre `840` e `899 pt`, a ação contextual de archive continua visível em cápsula própria e o menu começa por Share; abaixo de `840 pt`, a ação de archive também entra no menu. Open, Quick Look, Get Info, Edit Tags, Rename e Duplicate permanecem sempre expandidos no nível principal desse menu. Diferentemente do Finder, esse conteúdo não vira um submenu `Action`. Abaixo de `678 pt`, o submenu `View` é acrescentado no início. As ações usam os mesmos handlers e estados habilitados da apresentação expandida; não delegar esse comportamento ao overflow automático da `NSToolbar`.
 
 No clique secundário de um item, oferecer Open with, Share e Copy sem perder a seleção múltipla quando o item já pertence a ela. Open with é um submenu dos apps compatíveis, com Other… para escolha manual; com Option vira Always open with para arquivos locais. Copy vira Copy pathname com Option, copiando texto em vez de referências de arquivo. Quick Look vira Slideshow com Option. No menu File, New tab usa `⌘T` e Open with/Always open with e Quick Look/Slideshow seguem a mesma alternância nativa. Desabilitar ações sem alvo válido e localizar todos os novos rótulos.
 
@@ -169,7 +170,7 @@ O duplo chevron usa cor secundária enquanto o menu está fechado e só assume a
 
 | Largura da janela | Seletor de visualização | Ações |
 | --- | --- | --- |
-| `≥ 900 pt` | completo | três ações |
+| `≥ 900 pt` | completo | quatro ações |
 | `840–899 pt` | cápsula compacta | archive visível; demais no duplo chevron |
 | `678–839 pt` | cápsula compacta | expandidas no menu de duplo chevron |
 | `< 678 pt` | submenu no menu de duplo chevron | expandidas no mesmo menu |
@@ -527,3 +528,13 @@ Ao surgir uma dúvida de UI/UX:
 6. manter a ponte AppKit pequena, isolada e substituível;
 7. testar a sequência completa de estados, não apenas a aparência estática final;
 8. registrar neste documento a decisão e o motivo.
+
+### Edição de tags — 2026-10-03
+
+O menu de contexto e o ícone entre Share e reticências abrem a mesma folha de edição localizada. Mostrar estado integral/parcial das tags na seleção múltipla, catálogo existente e criação por nome/cor, com Cancelar e Aplicar. Preservar tags não editadas de cada item. A pilha de círculos avança da direita para a esquerda e a primeira tag colorida à esquerda (última colorida nos metadados) define a cor da pasta nos quatro modos, previews e drop; packages e arquivos mantêm seus ícones. Conferir a nova largura do grupo nas transições de toolbar antes de declarar a validação visual completa.
+
+#### Refinamento dos menus e material da pasta — 2026-10-03
+
+A seção de tags em contexto e reticências/overflow tem duas linhas: sete primeiros nomes do catálogo em círculos (sem mostrar os demais), seguidos por Edit Tags com símbolo `tag`. Check indica aplicação em todos os alvos; hover mostra x nos aplicados e + nos não aplicados. Seleção parcial usa traço e hover +, aplicando a todos ao clicar. O clique rápido grava imediatamente; Edit Tags continua abrindo a folha. A linha customizada AppKit mantém tooltips, estado e nomes para acessibilidade; o editor completo continua disponível como item convencional de teclado.
+
+Os círculos de tags na Lista preservam a ordem dos metadados invertida visualmente, com o círculo à esquerda cobrindo parte do vizinho à direita. A pasta adota a primeira cor dessa pilha, ignorando tags sem cor. A recoloração deve substituir apenas a matiz do material azul, preservar luminosidade, sombras, papel branco e detalhes neutros, e renderizar as representações nativas em resolução de preview antes da alteração de pixels. Não aplicar uma camada uniforme sobre a pasta composta. Os ícones de sistema continuam sendo obtidos por APIs públicas, sem recursos privados do Finder.

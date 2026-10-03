@@ -43,6 +43,10 @@ nonisolated enum FinderTagMetadata {
         return colors
     }
 
+    static func colorName(_ index: Int) -> String {
+        ["None", "Gray", "Green", "Purple", "Blue", "Yellow", "Red", "Orange"][min(7, max(0, index))]
+    }
+
     static func defaultColorIndex(for name: String) -> Int {
         switch name.localizedLowercase {
         case "gray", "grey", "cinza": 1
@@ -55,6 +59,17 @@ nonisolated enum FinderTagMetadata {
         default: 0
         }
     }
+}
+
+nonisolated enum FinderTagPresentation {
+    /// Metadata order is retained; newer/frontmost tags appear on the left.
+    static func leadingNames(_ tags: [String]) -> [String] { Array(tags.reversed()) }
+
+    static func folderColor(tags: [String], colors: [String: Int]) -> Int? {
+        leadingNames(tags).compactMap { colors[$0] }.first { (1...7).contains($0) }
+    }
+
+    static func quickTags(_ tags: [FinderTag]) -> [FinderTag] { Array(tags.prefix(7)) }
 }
 
 @MainActor
@@ -371,13 +386,15 @@ struct FinderTagDots: View {
 
     var body: some View {
         HStack(spacing: -dotSize * 0.45) {
-            ForEach(tags, id: \.self) { name in
+            ForEach(Array(tags.enumerated().reversed()), id: \.element) { entry in
+                let name = entry.element
                 FinderTagDot(
                     colorIndex: colorIndexes[name]
                         ?? FinderTagCatalog.shared.tags.first { $0.name == name }?.colorIndex
                         ?? FinderTagMetadata.defaultColorIndex(for: name),
                     size: dotSize
                 )
+                .zIndex(Double(entry.offset))
             }
         }
         .accessibilityLabel(tags.joined(separator: ", "))

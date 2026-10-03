@@ -28,6 +28,7 @@ Atualizado em **2026-10-03**. Esta lista preserva os pedidos levantados nesta co
 | ZF-22 | Migrar app e alvos de testes para Swift 6 | Implementado; Debug/Release e 98 testes unitários aprovados; UI bloqueada na inicialização do runner | Isolamento explícito de menus, thumbnails e utilitários |
 | ZF-24 | Comparar RAM total do Zforge e processos 7zz em builds reais | 36 launches concluídos, hashes conferidos; sampler e séries registrados; D-21 corrigida nas duas branches; retenção em OR-11 | UI de fixture; não prova vazamento nem toda a UI |
 | ZF-25 | Investigar e otimizar desempenho e memória dos adapters nativos | Planejada a pedido do usuário; hipóteses registradas, sem profiling ou correção de desempenho | OR-11 e OR-12 |
+| ZF-26 | Definir/criar tags pelo contexto e toolbar e colorir pastas | Implementada; build Debug assinada, 114 testes unitários e 3 de UI aprovados; conferência visual ampla pendente | D-23; OR-09 |
 
 ## ZF-01 — Documentação de referência e prevenção de regressões
 
@@ -254,3 +255,11 @@ A implementação estática está commitada nesta branch `feat/7zz-static-linkin
 - Repetir operações no mesmo processo para distinguir retenção estável de crescimento acumulado; registrar memória após cada fase e após fechar sessões, sem somar picos independentes de processos.
 - Reexecutar a suíte de tempo e RAM total Zforge + filhos nas variantes estática e dinâmica; conferir hashes e registrar amostras/variabilidade, não apenas uma mediana.
 - Concluir somente com ganho medido e regressões pertinentes verificadas: seleção parcial, Unicode, conflitos, cancelamento, arquivos corrompidos, links/traversal e extração real no sandbox. Não remover garantias de segurança para obter ganho.
+
+### ZF-26 — Definir/criar tags e colorir pastas
+
+**Implementado em 2026-10-03; build e testes aprovados.** Editar tags por menu de contexto, toolbar entre Share e reticências e overflow, com criação de nome/cor e edição múltipla que preserva tags não editadas. Recolorir pastas nos quatro modos, previews e drop. Gravação real em arquivos/pastas e preservação da seleção múltipla têm testes unitários; folha por toolbar/contexto e overflow em 650/860 pt têm testes de UI aprovados. Conferir ainda Finder real, localização, temas, seleção múltipla visual e todos os modos/breakpoints; evidência em `REGRESSION-COVERAGE.md`.
+
+Refinamento da ZF-26 em 2026-10-03: sete círculos interativos na primeira linha dos menus, Edit Tags com ícone na segunda, hover +/x e check. Pilha invertida e cor da tag da frente; preservação da ordem dos metadados e recoloração seletiva com papel branco e representação nativa de 512 px. Menus dos quatro modos usam ponte AppKit passiva para inserir a linha customizada; handlers e alternantes Option preservados. Validação: 116 unitários e 6 casos de UI aprovados (122 no total); contexto nos quatro modos, estado aplicado, hover com x, menus de compactação e overflow. Renderização de sete cores com papel branco inspecionada. Limites em `REGRESSION-COVERAGE.md`.
+
+Confirmação final da ZF-26 pelo usuário em 2026-10-03: “está tudo OK”; autorizada integração na main e commits da versão refinada. Pendências da matriz ampla permanecem em OR-09.

@@ -51,7 +51,7 @@ Os identificadores permitem localizar o pedido original no histórico local. O c
 ### D-06 — Botão `•••` da toolbar não oferece as mesmas opções contextuais (resolvido; confirmado pelo usuário)
 
 - **Pedido:** as opções da matriz de D-05 também devem aparecer no botão de reticências mostrado na captura, preservando o comportamento já existente (C-07).
-- **Resolução no código:** [showToolbarActionsMenu](Zforge/ContentView.swift) consome a mesma matriz/handler de D-05, mantendo Quick Look, Informações, Tag desabilitada, Renomear, Duplicar e Compartilhar no overflow aplicável. **Confirmação:** o usuário informou que D-06 está OK. [Task ZF-06](TASKS.md).
+- **Resolução no código:** [showToolbarActionsMenu](Zforge/ContentView.swift) consome a mesma matriz/handler de D-05, mantendo Quick Look, Informações, Tags (habilitada para seleção local desde 2026-10-03), Renomear, Duplicar e Compartilhar no overflow aplicável. **Confirmação:** o usuário informou que D-06 está OK. [Task ZF-06](TASKS.md).
 
 ## Divergências entre documentos antigos e comportamento vigente
 
@@ -176,3 +176,11 @@ Os identificadores permitem localizar o pedido original no histórico local. O c
 ### D-22 — Build estática bloqueada pelo sandbox de scripts do Xcode
 
 **Corrigida no projeto em 2026-10-03.** O relato do usuário foi reproduzido no DerivedData padrão do Xcode: `Build SevenZipCore` falhava ao criar `SevenZip/Debug` com `Operation not permitted`. O perfil gerado permitia somente os caminhos literais declarados em `DERIVED_FILE_DIR`, sem autorizar seus descendentes; uma lista explícita de objetos ainda bloqueava os arquivos temporários do `libtool`. A fase agora usa `TARGET_TEMP_DIR/SevenZip`, sob a área de temporários que o perfil autoriza recursivamente, declara a biblioteca final como saída e mantém os caminhos de linkagem sincronizados em Debug/Release. `ENABLE_USER_SCRIPT_SANDBOXING` permanece habilitado; não houve mudança de backend ou de permissões do app. Evidência de build em `REGRESSION-COVERAGE.md`; ZF-21.
+
+### D-23 — Tags somente para leitura
+
+**Corrigido e confirmado pelo usuário em 2026-10-03; 116 testes unitários e 6 de UI aprovados no refinamento final, matriz visual ampla pendente.** O pedido adiciona definição/criação de tags pelo menu de contexto e ícone entre Share e reticências, além da cor das pastas. A folha compartilhada edita metadados Finder locais, preserva tags não editadas de cada item e atualiza catálogo/filtro. A primeira versão adotava a primeira tag colorida na ordem do nome; o refinamento abaixo usa a cor da frente na pilha invertida. A evidência executada está em `REGRESSION-COVERAGE.md`.
+
+#### Refinamento de D-23 solicitado após teste do usuário
+
+A primeira versão só oferecia o item que abria a folha, empilhava círculos da esquerda para a direita e recoloria a pasta inteira (inclusive papel). O refinamento implementa linha rápida de sete tags, check/hover +/x e Edit Tags com símbolo, pilha da direita para a esquerda e escolha da cor da frente. A recoloração passa a operar apenas no material azul, mantendo papel e detalhes neutros; a rasterização usa 512 px para não ampliar uma representação lógica de 32 pt. Cobertura e limites em `REGRESSION-COVERAGE.md`.

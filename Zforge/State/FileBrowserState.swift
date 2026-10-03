@@ -540,6 +540,35 @@ final class FileBrowserState {
     var hasLocalSelection: Bool {
         !selectedItems.isEmpty && selectedItems.allSatisfy { $0.localURL != nil }
     }
+    var tagEditingRequest: TagEditingRequest?
+    var canEditTags: Bool { hasLocalSelection && !archiveOperationInProgress }
+
+    func editTags(items: [BrowserItem]? = nil) {
+        let targets = items ?? selectedItems
+        guard !targets.isEmpty, targets.allSatisfy({ $0.localURL != nil }),
+              !archiveOperationInProgress else { return }
+        tagEditingRequest = TagEditingRequest(items: targets)
+    }
+
+    func applyTags(additions: [String: Int], removals: Set<String>, items targets: [BrowserItem]) async -> String? {
+        var failures: [String] = []
+        var updated: [BrowserItem] = []
+        for item in targets {
+            guard let url = item.localURL else { continue }
+            do {
+                try await Task.detached(priority: .userInitiated) {
+                    try FinderTagWriter.apply(additions: additions, removals: removals, to: url)
+                }.value
+                updated.append(try await fileSystem.item(at: url))
+            } catch {
+                failures.append("\(item.name): \(error.localizedDescription)")
+            }
+        }
+        FinderTagCatalog.shared.observe(updated)
+        await reload()
+        return failures.isEmpty ? nil : failures.joined(separator: "\n")
+    }
+
     var canRenameSelection: Bool {
         selectedItems.count == 1 && selectedItems[0].localURL != nil
     }
