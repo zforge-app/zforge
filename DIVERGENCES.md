@@ -202,3 +202,9 @@ Os identificadores permitem localizar o pedido original no histórico local. O c
 - **Pasta fechada cheia:** o usuário aprovou a correção aberta e apontou papel sobre a borda externa na versão fechada. O recorte horizontal de restauração da face terminava abaixo de sua borda superior. Substituído pelo recorte arredondado da face completa, fazendo a borda nativa cobrir o papel. Selo, material, estados de conteúdo e pasta aberta preservados.
 
 - **Pasta aberta vazia:** a exportação revelou degrau na borda esquerda e gradiente retangular residual, oculto pelo papel no estado cheio. A amostragem por coluna ainda alcançava a face fechada. Substituída por amostras exclusivamente do material traseiro intacto, com transição suave desde o topo nativo e alfa antialias na borda. Painel vazio contínuo; face/selo/perspectiva preservados.
+
+### D-24 — Diretórios locais usam o design anterior às correções de archives
+
+- **Pedido de 2026-10-03:** reutilizar os ícones aprovados para diretórios internos, retirando o indicador de compressão.
+- **Correção implementada:** composição compartilhada para diretórios locais comuns, nos estados fechado/aberto e vazio/com conteúdo, sem máscaras do selo. Retirados o compositor local antigo e o recurso `ofld`; papel atrás da borda, base e painel traseiro seguem a geometria refinada. Expansão na Lista atualiza linha e preview; drop local conserva a transição. Arquivos/packages continuam com ícones próprios do sistema; a detecção local de conteúdo mantém qualquer filho direto.
+- **Verificação:** renderização e testes registrados em `REGRESSION-COVERAGE.md`; conferência ampla dos modos e interação de drop continua em OR-13.

@@ -14,7 +14,7 @@ struct FileIconViewTests {
             return true
         }
 
-        let composed = NonEmptyFolderIconComposer.compose(from: baseIcon)
+        let composed = ArchiveFolderIconComposer.compose(from: baseIcon, scale: .large, containsFiles: true, showsArchiveStamp: false)
 
         #expect(composed.representations.contains { $0 is NSCustomImageRep })
     }
@@ -35,8 +35,41 @@ struct FileIconViewTests {
         let emptyIcon = FileIconCache.shared.openFolderIcon(for: empty)
         let nonEmptyIcon = FileIconCache.shared.openFolderIcon(for: nonEmpty)
 
-        #expect(!emptyIcon.representations.contains { $0 is NSCustomImageRep })
+        #expect(emptyIcon.representations.contains { $0 is NSCustomImageRep })
+        #expect(emptyIcon !== nonEmptyIcon)
         #expect(nonEmptyIcon.representations.contains { $0 is NSCustomImageRep })
+    }
+
+    @Test("Local folders share archive material and contents geometry without the compression seal")
+    @MainActor
+    func localFoldersHaveConsistentUnstampedStates() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("LocalFolderStates-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: root) }
+        func bitmap(_ image: NSImage) throws -> NSBitmapImageRep {
+            var bounds = NSRect(origin: .zero, size: image.size)
+            return NSBitmapImageRep(cgImage: try #require(image.cgImage(forProposedRect: &bounds, context: nil, hints: nil)))
+        }
+        for hasContents in [false, true] {
+            let folder = root.appendingPathComponent(hasContents ? "Full" : "Empty")
+            try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+            if hasContents { try Data().write(to: folder.appendingPathComponent("file.txt")) }
+            for isOpen in [false, true] {
+                let local = try bitmap(isOpen ? FileIconCache.shared.openFolderIcon(for: folder) : FileIconCache.shared.icon(for: folder))
+                let archive = try bitmap(FileIconCache.shared.archiveDirectoryIcon(size: 190, containsFiles: hasContents, isExpanded: isOpen))
+                var changedSealPixels = 0
+                for y in stride(from: 0, to: local.pixelsHigh, by: 6) {
+                    for x in stride(from: 0, to: local.pixelsWide, by: 6) {
+                        let a = try #require(local.colorAt(x: x, y: y)?.usingColorSpace(.deviceRGB))
+                        let b = try #require(archive.colorAt(x: x, y: y)?.usingColorSpace(.deviceRGB))
+                        let difference = max(abs(a.redComponent - b.redComponent), abs(a.greenComponent - b.greenComponent), abs(a.blueComponent - b.blueComponent))
+                        let insideSeal = Double(x) / Double(local.pixelsWide) > 0.54 && Double(y) / Double(local.pixelsHigh) > 0.43
+                        if insideSeal, difference > 0.03 { changedSealPixels += 1 }
+                        if !insideSeal { #expect(difference < 0.015) }
+                    }
+                }
+                #expect(changedSealPixels > 20)
+            }
+        }
     }
 
     @Test("Approved archive relief is bundled and has neutral light and shadow masks")
@@ -95,7 +128,7 @@ struct FileIconViewTests {
         #expect(abs(fullLip.blueComponent - emptyLip.blueComponent) < 0.02)
     }
 
-    @Test("Archive expansion uses the open icon only in List and has a separate cache entry")
+    @Test("Folder expansion uses the open icon only in List and archive states have separate cache entries")
     @MainActor
     func archiveExpansionIconState() throws {
         let defaultsName = "ArchiveExpansionIcons-\(UUID().uuidString)"
@@ -116,18 +149,18 @@ struct FileIconViewTests {
             encrypted: false, checksum: nil, compressionMethod: nil
         )
         state.preferences.viewMode = .list
-        #expect(!state.usesOpenArchiveFolderIcon(for: folder))
+        #expect(!state.usesOpenFolderIcon(for: folder))
         state.expandedItems.insert(folder.id)
-        #expect(state.usesOpenArchiveFolderIcon(for: folder))
+        #expect(state.usesOpenFolderIcon(for: folder))
         folder.archiveDirectoryContainsFiles = true
-        #expect(state.usesOpenArchiveFolderIcon(for: folder))
+        #expect(state.usesOpenFolderIcon(for: folder))
         for mode in [BrowserViewMode.columns, .icons, .gallery] {
             state.preferences.viewMode = mode
-            #expect(!state.usesOpenArchiveFolderIcon(for: folder))
+            #expect(!state.usesOpenFolderIcon(for: folder))
         }
         state.preferences.viewMode = .list
         state.expandedItems.remove(folder.id)
-        #expect(!state.usesOpenArchiveFolderIcon(for: folder))
+        #expect(!state.usesOpenFolderIcon(for: folder))
         state.expandedItems.insert(folder.id)
         let localFolder = BrowserItem(
             id: folder.id, name: "Folder", location: .fileSystem(URL(fileURLWithPath: "/tmp/Folder")),
@@ -137,7 +170,7 @@ struct FileIconViewTests {
             accessDate: nil, tags: [], contentTypeIdentifier: nil,
             encrypted: false, checksum: nil, compressionMethod: nil
         )
-        #expect(!state.usesOpenArchiveFolderIcon(for: localFolder))
+        #expect(state.usesOpenFolderIcon(for: localFolder))
         for size: CGFloat in [16, 24, 32, 48, 64, 190] {
             for hasFiles in [false, true] {
                 let open = FileIconCache.shared.archiveDirectoryIcon(size: size, containsFiles: hasFiles, isExpanded: true)

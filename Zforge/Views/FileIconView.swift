@@ -47,19 +47,16 @@ final class FileIconCache {
         let isExpanded: Bool
     }
     private var archiveFolderIcons: [ArchiveFolderKey: NSImage] = [:]
-    private lazy var cachedOpenFolderIcon: NSImage = {
-        let osTypeTag = UTTagClass(rawValue: "com.apple.ostype")
-        guard let contentType = UTType(
-            tag: "ofld",
-            tagClass: osTypeTag,
-            conformingTo: nil
-        ) else {
-            return NSImage(named: NSImage.folderName) ?? NSImage()
-        }
-        return NSWorkspace.shared.icon(for: contentType)
-    }()
-    private lazy var cachedOpenFolderWithContentsIcon: NSImage =
-        NonEmptyFolderIconComposer.compose(from: cachedOpenFolderIcon)
+    private var localFolderIcons: [ArchiveFolderKey: NSImage] = [:]
+
+    private func localDirectoryIcon(hasContents: Bool, isOpen: Bool = false) -> NSImage {
+        let key = ArchiveFolderKey(scale: .large, containsFiles: hasContents, isExpanded: isOpen)
+        if let cached = localFolderIcons[key] { return cached }
+        let icon = ArchiveFolderIconComposer.compose(from: nativeFolderIcon, scale: .large,
+            containsFiles: hasContents, isOpen: isOpen, showsArchiveStamp: false)
+        localFolderIcons[key] = icon
+        return icon
+    }
 
     private init() {
         cache.countLimit = 2_048
@@ -124,16 +121,15 @@ final class FileIconCache {
             return icon
         }
 
-        let systemIcon = NSWorkspace.shared.icon(forFile: standardizedURL.path)
-        let icon = hasContents
-            ? NonEmptyFolderIconComposer.compose(from: systemIcon)
-            : systemIcon
+        let icon = isDirectory && !isPackage
+            ? localDirectoryIcon(hasContents: hasContents)
+            : NSWorkspace.shared.icon(forFile: standardizedURL.path)
         cache.setObject(icon, forKey: key)
         return icon
     }
 
     func openFolderIcon(for item: BrowserItem) -> NSImage {
-        guard let url = item.localURL else { return cachedOpenFolderIcon }
+        guard let url = item.localURL else { return localDirectoryIcon(hasContents: false, isOpen: true) }
         return openFolderIcon(
             for: url,
             isDirectory: item.isDirectory,
@@ -162,13 +158,13 @@ final class FileIconCache {
         isPackage: Bool,
         modificationDate: Date?
     ) -> NSImage {
-        guard isDirectory, !isPackage else { return cachedOpenFolderIcon }
+        guard isDirectory, !isPackage else { return NSWorkspace.shared.icon(forFile: url.path) }
         let hasContents = FolderContentsDetector.hasContents(
             at: url.standardizedFileURL,
             modificationDate: modificationDate,
             cache: &directoryContentsCache
         )
-        return hasContents ? cachedOpenFolderWithContentsIcon : cachedOpenFolderIcon
+        return localDirectoryIcon(hasContents: hasContents, isOpen: true)
     }
 
     private func cacheKey(
@@ -211,66 +207,6 @@ nonisolated enum FolderContentsDetector {
     }
 }
 
-enum NonEmptyFolderIconComposer {
-    static func compose(from folderIcon: NSImage) -> NSImage {
-        let size = folderIcon.size
-        guard size.width > 0, size.height > 0 else { return folderIcon }
-
-        return NSImage(size: size, flipped: false) { bounds in
-            folderIcon.draw(
-                in: bounds,
-                from: .zero,
-                operation: .sourceOver,
-                fraction: 1
-            )
-
-            // Finder builds this state from separate private layers. Reproduce
-            // the same ordering while retaining the public NSWorkspace folder:
-            // insert the document, then redraw the native front face above it.
-            let documentRect = NSRect(
-                x: bounds.width * 0.11,
-                y: bounds.height * 0.61,
-                width: bounds.width * 0.78,
-                height: bounds.height * 0.145
-            )
-            drawDocument(in: documentRect)
-
-            NSGraphicsContext.saveGraphicsState()
-            NSBezierPath(
-                rect: NSRect(
-                    x: bounds.minX,
-                    y: bounds.minY,
-                    width: bounds.width,
-                    height: bounds.height * 0.715
-                )
-            ).addClip()
-            folderIcon.draw(
-                in: bounds,
-                from: .zero,
-                operation: .sourceOver,
-                fraction: 1
-            )
-            NSGraphicsContext.restoreGraphicsState()
-            return true
-        }
-    }
-
-    private static func drawDocument(in rect: NSRect) {
-        let path = NSBezierPath(
-            roundedRect: rect,
-            xRadius: rect.height * 0.15,
-            yRadius: rect.height * 0.15
-        )
-
-        NSColor(calibratedWhite: 0.96, alpha: 1).setFill()
-        path.fill()
-
-        NSColor(calibratedWhite: 0.76, alpha: 0.7).setStroke()
-        path.lineWidth = max(0.35, rect.height * 0.025)
-        path.stroke()
-    }
-}
-
 struct FolderIconTransition: View {
     let closedIcon: NSImage
     let openIcon: NSImage
@@ -304,11 +240,11 @@ struct FileIconView: View {
                 Image(nsImage: FileIconCache.shared.archiveDirectoryIcon(size: size, containsFiles: item.archiveDirectoryContainsFiles, isExpanded: isExpanded))
                     .resizable()
                     .interpolation(.high)
-            } else if item.isDirectory, item.localURL != nil {
+            } else if item.isDirectory, !item.isPackage, item.localURL != nil {
                 FolderIconTransition(
                     closedIcon: FileIconCache.shared.icon(for: item),
                     openIcon: FileIconCache.shared.openFolderIcon(for: item),
-                    isOpen: isOpenDropTarget
+                    isOpen: isExpanded || isOpenDropTarget
                 )
             } else if item.localURL != nil {
                 Image(nsImage: FileIconCache.shared.icon(for: item))

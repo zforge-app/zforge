@@ -34,7 +34,7 @@ enum ArchiveFolderIconComposer {
         )
     }
 
-    static func compose(from folder: NSImage, scale: Scale, containsFiles: Bool = false, isOpen: Bool = false) -> NSImage {
+    static func compose(from folder: NSImage, scale: Scale, containsFiles: Bool = false, isOpen: Bool = false, showsArchiveStamp: Bool = true) -> NSImage {
         guard folder.size.width > 0, folder.size.height > 0 else { return folder }
         // NSWorkspace defaults to a 32 pt canvas. A large composition canvas makes
         // Icon Services choose its detailed representation instead of enlarging
@@ -42,9 +42,9 @@ enum ArchiveFolderIconComposer {
         let nativeFolder = folder.copy() as! NSImage
         nativeFolder.size = NSSize(width: 512, height: 512)
         let smoothFolder = smoothBase(of: nativeFolder)
-        let relief = approvedRelief
+        let relief = showsArchiveStamp ? approvedRelief : nil
         if isOpen {
-            return composeOpen(from: smoothFolder, scale: scale, containsFiles: containsFiles)
+            return composeOpen(from: smoothFolder, scale: scale, containsFiles: containsFiles, showsArchiveStamp: showsArchiveStamp)
         }
         return NSImage(size: nativeFolder.size, flipped: false) { bounds in
             smoothFolder.draw(in: bounds, from: .zero, operation: .sourceOver, fraction: 1)
@@ -59,7 +59,8 @@ enum ArchiveFolderIconComposer {
 
     /// Open the same native front rather than switching to the older textured ofld artwork.
     /// The face and relief share one perspective warp, so their material and lighting stay together.
-    private static func composeOpen(from folder: NSImage, scale: Scale, containsFiles: Bool) -> NSImage {
+    private static func composeOpen(from folder: NSImage, scale: Scale, containsFiles: Bool, showsArchiveStamp: Bool) -> NSImage {
+        let relief = showsArchiveStamp ? approvedRelief : nil
         let front = NSImage(size: folder.size, flipped: false) { bounds in
             NSGraphicsContext.saveGraphicsState()
             defer { NSGraphicsContext.restoreGraphicsState() }
@@ -67,11 +68,11 @@ enum ArchiveFolderIconComposer {
                                             width: bounds.width * 0.916, height: bounds.height * 0.60),
                          xRadius: bounds.width * 0.06, yRadius: bounds.height * 0.06).addClip()
             folder.draw(in: bounds)
-            approvedRelief?.draw(in: stampRect(in: bounds, scale: scale))
+            relief?.draw(in: stampRect(in: bounds, scale: scale))
             return true
         }
         guard let warped = tiltedFront(front) else {
-            return compose(from: folder, scale: scale, containsFiles: containsFiles)
+            return compose(from: folder, scale: scale, containsFiles: containsFiles, showsArchiveStamp: showsArchiveStamp)
         }
         let cleanBack = continuousBackPanel(from: folder)
         return NSImage(size: folder.size, flipped: false) { bounds in

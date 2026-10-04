@@ -210,3 +210,13 @@ A pedido do usuário, o backend desta branch foi preservado em `feat/7zz-static-
 - Build Debug e **6 testes de ícones aprovados, 0 falhas** em `/private/tmp/ZforgeArchiveStamp/Logs/Test/Test-Zforge-2026.10.03_18-26-02--0300.xcresult`; log `/private/tmp/zforge-open-empty-panel-tests.log`. Render AppKit e `git diff --check` conferidos. Não repetida suíte completa nem automação de UI; a validação visual final no app continua com o usuário. Nova build aberta ao término.
 
 O usuário confirmou em 2026-10-03 que os estados internos ficaram corretos e autorizou o commit do trabalho atual. Essa aceitação se refere ao design observado; não substitui a matriz visual ampla nem altera a evidência da falha intermitente de seleção em Colunas.
+
+## 2026-10-03 — Diretórios locais com a composição aprovada, sem selo
+
+- Removidos o compositor local anterior e o ícone aberto `ofld`. Diretórios comuns reutilizam a composição refinada de archives, sem aplicar as máscaras do selo; arquivos e packages conservam `NSWorkspace.icon(forFile:)`.
+- Cache separado para os quatro estados locais. Expansão na Lista também abre o ícone da linha e dos heros de preview; demais modos não herdam expansão. O drop local conserva a transição existente e a detecção de conteúdo considera qualquer filho direto, incluindo ocultos/subpastas.
+- Build Debug e **7 testes de FileIconViewTests aprovados** em `/private/tmp/ZforgeArchiveStamp/Logs/Test/Test-Zforge-2026.10.03_21-55-13--0300.xcresult`. Inclui comparação por pixels dos quatro estados locais e internos: material/geometria iguais fora do selo e diferenças na região do selo, além de conteúdo, perspectiva e expansão.
+- Renderização AppKit real em 16, 24, 32, 48, 64 e 190 pt conferida em `Documentation/Design/LocalFolderIcons/folder-states-v2.png`: papel atrás da borda fechada e painel vazio contínuo, base preservada e topo aberto alargado. PNGs são artefatos de revisão, não recursos da aplicação.
+- Limite: esta rodada executou a suíte de ícones, não toda a suíte nem automação UI. Conferência ampla de Lista/Colunas/Ícones/Galeria, seleção múltipla, temas e drag real continua em OR-13. O histórico de falha intermitente de seleção rápida registrado acima permanece sem novo resultado nesta rodada.
+
+- Conferência UI pontual da aplicação compilada, selecionada pelo caminho exato do bundle: diretório local com conteúdo na Lista apresentou ícone fechado corrigido e, após expansão, versão aberta na linha e no preview, sem selo. A aplicação atualizada ficou aberta nesse estado. Esta conferência não cobre a matriz visual completa nem drag real.
