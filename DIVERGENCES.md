@@ -235,3 +235,9 @@ Gravação de 19:47 mostra cópia de PDF com sufixo depois da extensão. Corrigi
 - **Pedido de 2026-10-03:** reutilizar os ícones aprovados para diretórios internos, retirando o indicador de compressão.
 - **Correção implementada:** composição compartilhada para diretórios locais comuns, nos estados fechado/aberto e vazio/com conteúdo, sem máscaras do selo. Retirados o compositor local antigo e o recurso `ofld`; papel atrás da borda, base e painel traseiro seguem a geometria refinada. Expansão na Lista atualiza linha e preview; drop local conserva a transição. Arquivos/packages continuam com ícones próprios do sistema; a detecção local de conteúdo mantém qualquer filho direto.
 - **Verificação:** renderização e testes registrados em `REGRESSION-COVERAGE.md`; conferência ampla dos modos e interação de drop continua em OR-13.
+
+### D-28 — Teste de seleção rápida em Colunas falha intermitentemente na suíte
+
+- **Evidência anterior:** `rapidColumnArchiveSelectionPublishesOnlyCurrentArchive` falhou em `firstStarted` na suíte integrada (135 aprovados/1 falha) e passou isolado. Não há regressão funcional comprovada nem causa de agendamento estabelecida.
+- **Correção do teste:** retirada a consulta repetida com pausas de 1 ms; espera por sinal explícito do motor simulado. Primeiro carregamento fica suspenso até cancelamento, sem conclusão automática após 2 s; segundo não usa atraso artificial. Timeout de 10 s detecta travamento real e falha fatal na preparação encerra o cenário. Sinais antecipados são lembrados; continuations e watchdogs são removidos no sinal, cancelamento, timeout ou encerramento.
+- **Escopo:** apenas fixture/testes e cobertura documentada; nenhum handler de produção alterado. Verificação repetida em `REGRESSION-COVERAGE.md`; ZF-32.

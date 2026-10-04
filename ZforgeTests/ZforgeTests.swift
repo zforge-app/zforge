@@ -1091,14 +1091,21 @@ struct ZforgeTests {
         state.archiveOperationDescription = "Compressing selected items…"
 
         let firstActivation = state.activateColumnItem(firstArchive, in: rootLocation)
-        let firstStarted = await engine.waitUntilStarted("First.zip")
-        #expect(firstStarted)
+        // End the setup immediately if the start signal never arrives.
+        do {
+            try await engine.waitUntilStarted("First.zip")
+        } catch {
+            state.close()
+            await engine.shutdown()
+            throw error
+        }
         #expect(state.archiveOperationInProgress)
         #expect(state.archiveOperationDescription == "Loading…")
         let secondActivation = state.activateColumnItem(secondArchive, in: rootLocation)
 
         await secondActivation.value
         await firstActivation.value
+        await engine.shutdown()
 
         let events = await engine.eventsSnapshot()
         let firstCancellation = try #require(events.firstIndex(of: "cancelled:First.zip"))
@@ -1109,6 +1116,54 @@ struct ZforgeTests {
         #expect(state.pathComponents.last?.name == "Second.zip")
         #expect(state.pathComponents.contains(where: { $0.name == "First.zip" }) == false)
         #expect(state.items.map(\.name) == ["Second.zip content"])
+    }
+
+    @Test("Archive start signals remain available to late waiters")
+    func archiveRaceSignalBeforeWaiter() async throws {
+        let engine = ColumnArchiveRaceEngine()
+        _ = try await engine.openArchive(at: URL(fileURLWithPath: "/tmp/Second.zip"),
+                                         password: nil, policy: .standard)
+        try await engine.waitUntilStarted("Second.zip")
+        #expect(await engine.pendingWaiterCount() == 0)
+        await engine.shutdown()
+    }
+
+    @Test("Archive start waits time out and release their continuations")
+    func archiveRaceSignalTimeout() async throws {
+        let engine = ColumnArchiveRaceEngine()
+        await #expect(throws: ColumnArchiveRaceEngine.WaitError.timedOut("started:Missing.zip")) {
+            try await engine.waitUntilStarted("Missing.zip", timeout: .milliseconds(20))
+        }
+        #expect(await engine.pendingWaiterCount() == 0)
+        await engine.shutdown()
+    }
+
+    @Test("Cancelled archive start waits release their continuations")
+    func archiveRaceSignalCancellation() async throws {
+        let engine = ColumnArchiveRaceEngine()
+        let waiting = Task { try await engine.waitUntilStarted("Missing.zip") }
+        waiting.cancel()
+        await #expect(throws: CancellationError.self) { try await waiting.value }
+        #expect(await engine.pendingWaiterCount() == 0)
+        await engine.shutdown()
+    }
+
+    @Test("Shutting down the race engine releases a pending archive load")
+    func archiveRaceShutdownStopsPendingLoad() async throws {
+        let engine = ColumnArchiveRaceEngine()
+        let loading = Task {
+            try await engine.openArchive(at: URL(fileURLWithPath: "/tmp/First.zip"),
+                                         password: nil, policy: .standard)
+        }
+        do { try await engine.waitUntilStarted("First.zip") }
+        catch {
+            loading.cancel()
+            await engine.shutdown()
+            throw error
+        }
+        await engine.shutdown()
+        await #expect(throws: ColumnArchiveRaceEngine.WaitError.shutDown) { try await loading.value }
+        #expect(await engine.pendingWaiterCount() == 0)
     }
 
     @Test("Entering column view opens the selected folder without changing history")
@@ -1689,6 +1744,17 @@ private final class RecentItemsStub: RecentItemsServing {
 private actor ColumnArchiveRaceEngine: ArchiveServing {
     private var events: [String] = []
     private var namesByArchiveID: [UUID: String] = [:]
+    private struct Waiter {
+        let event: String
+        let continuation: CheckedContinuation<Void, any Error>
+        let timeout: Task<Void, Never>
+    }
+    enum WaitError: Error, Equatable {
+        case timedOut(String)
+        case shutDown
+    }
+    private var waiters: [UUID: Waiter] = [:]
+    private var isShutDown = false
 
     func openArchive(
         at url: URL,
@@ -1696,14 +1762,16 @@ private actor ColumnArchiveRaceEngine: ArchiveServing {
         policy: ArchiveBrowsingPolicy
     ) async throws -> ArchiveOpenResult {
         let name = url.lastPathComponent
-        events.append("started:\(name)")
+        record("started:\(name)")
         do {
-            try await Task.sleep(
-                nanoseconds: name == "First.zip" ? 2_000_000_000 : 10_000_000
-            )
+            // Keep the first load pending until the next selection cancels it.
+            // A timeout detects broken cancellation instead of completing it by chance.
+            if name == "First.zip" {
+                try await wait(for: "release:\(name)")
+            }
             try Task.checkCancellation()
         } catch {
-            events.append("cancelled:\(name)")
+            record(error is CancellationError ? "cancelled:\(name)" : "failed:\(name)")
             throw error
         }
 
@@ -1749,13 +1817,48 @@ private actor ColumnArchiveRaceEngine: ArchiveServing {
         ]
     }
 
-    func waitUntilStarted(_ name: String) async -> Bool {
-        for _ in 0..<1_000 {
-            if events.contains("started:\(name)") { return true }
-            try? await Task.sleep(nanoseconds: 1_000_000)
-        }
-        return false
+    func waitUntilStarted(_ name: String, timeout: Duration = .seconds(10)) async throws {
+        try await wait(for: "started:\(name)", timeout: timeout)
     }
+
+    private func wait(for event: String, timeout: Duration = .seconds(10)) async throws {
+        let id = UUID()
+        try await withTaskCancellationHandler {
+            try Task.checkCancellation()
+            guard !isShutDown else { throw WaitError.shutDown }
+            // Remember signals delivered before a waiter registers.
+            if events.contains(event) { return }
+            try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, any Error>) in
+                let watchdog = Task {
+                    do { try await Task.sleep(for: timeout) }
+                    catch { return }
+                    finish(id, result: .failure(WaitError.timedOut(event)))
+                }
+                waiters[id] = Waiter(event: event, continuation: continuation, timeout: watchdog)
+            }
+        } onCancel: {
+            Task { await self.finish(id, result: .failure(CancellationError())) }
+        }
+    }
+
+    private func record(_ event: String) {
+        events.append(event)
+        let matching = waiters.filter { $0.value.event == event }.map(\.key)
+        for id in matching { finish(id, result: .success(())) }
+    }
+
+    private func finish(_ id: UUID, result: Result<Void, any Error>) {
+        guard let waiter = waiters.removeValue(forKey: id) else { return }
+        waiter.timeout.cancel()
+        waiter.continuation.resume(with: result)
+    }
+
+    func shutdown() {
+        isShutDown = true
+        for id in Array(waiters.keys) { finish(id, result: .failure(WaitError.shutDown)) }
+    }
+
+    func pendingWaiterCount() -> Int { waiters.count }
 
     func eventsSnapshot() -> [String] { events }
 
