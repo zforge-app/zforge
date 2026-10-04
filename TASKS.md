@@ -35,7 +35,8 @@ Atualizado em **2026-10-03**. Esta lista preserva os pedidos levantados nesta co
 | ZF-29 | Usar pasta nativa com selo circular do Zforge nos diretórios internos de archives | V6 aprovada implementada com máscaras de luz/sombra, cache e posição por tamanho/conteúdo; pastas internas com arquivos usam versão fechada com papel; build e 114 testes unitários aprovados; renderização conferida; matriz visual ampla em OR-13; pasta aberta aplicada a linhas internas expandidas e previews na Lista; material corrigido a partir da pasta fechada após rejeição visual de ofld; linhas traseiras e sobreposição do papel na borda fechada corrigidas; 6 testes de ícones aprovados; seleção rápida falhou na última suíte e passou isolada | D-26; OR-13 |
 | ZF-30 | Implementar drag and drop de itens dentro de archives | Pendente; pedido do usuário após aprovação da pasta aberta; ainda sem implementação | OR-14; não confundir com adição de arquivos locais por drop |
 | ZF-31 | Uniformizar os ícones de diretórios locais com a composição aprovada para archives, sem selo | Implementado nos quatro estados, com expansão na Lista/preview e transição no drop; build e 7 testes de ícones aprovados; renderização 16–190 pt conferida; matriz visual/interação ampla pendente | D-27; OR-13 |
-| ZF-32 | Abrir o menu de reticências com clique secundário no espaço vazio | Implementado; build assinada e 33 testes unitários aprovados; gesto conferido nos quatro modos; executor UI bloqueado ao iniciar automação | D-28 |
+| ZF-32 | Eliminar a espera por polling no teste de seleção rápida em Colunas | Implementado no motor simulado com timeout e limpeza; 140 testes distintos/420 execuções em três repetições aprovados, sem falhas; nenhum código de produção alterado | REGRESSION-COVERAGE.md |
+| ZF-33 | Abrir o menu de reticências com clique secundário no espaço vazio | Implementado e integrado em 2026-10-04; build assinada e 140 testes unitários aprovados; gesto conferido nos quatro modos; executor UI bloqueado ao iniciar automação | D-29 |
 
 ## ZF-01 — Documentação de referência e prevenção de regressões
 
@@ -301,8 +302,10 @@ Em 2026-10-03, o usuário forneceu duas gravações e uma captura do Finder: man
 
 **Integração na main em 2026-10-03:** ZF-27/ZF-28 mescladas com a edição de tags (ZF-26); comando de pin adaptado ao menu nativo vigente, com teste de coexistência. Build e 130 unitários aprovados. Identificadores da sidebar renumerados para evitar colisão: ZF-27/ZF-28 e D-24/D-25.
 
-## ZF-32 — Menu de ações no espaço vazio
+## ZF-33 — Menu de ações no espaço vazio
 
 **Pedido em 2026-10-03:** clique secundário no espaço vazio deve abrir o mesmo menu do botão `…` (gravação 22:18:43).
 
 **Implementação:** construtor `BrowserActionsMenu` compartilhado com a toolbar e monitores nativos das áreas vazias dos quatro modos. Conserva a seleção; menus de itens têm prioridade independentemente da ordem dos monitores. Overflow conserva seus acréscimos responsivos. Validação em `REGRESSION-COVERAGE.md`.
+
+**Integração em 2026-10-04:** correção renumerada para ZF-33/D-29 para preservar os IDs usados pela main no teste de Colunas. Build assinada e 140 unitários aprovados no estado integrado; limites de UI preservados em `REGRESSION-COVERAGE.md`.
