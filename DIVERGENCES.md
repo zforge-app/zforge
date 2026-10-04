@@ -235,3 +235,9 @@ Gravação de 19:47 mostra cópia de PDF com sufixo depois da extensão. Corrigi
 - **Pedido de 2026-10-03:** reutilizar os ícones aprovados para diretórios internos, retirando o indicador de compressão.
 - **Correção implementada:** composição compartilhada para diretórios locais comuns, nos estados fechado/aberto e vazio/com conteúdo, sem máscaras do selo. Retirados o compositor local antigo e o recurso `ofld`; papel atrás da borda, base e painel traseiro seguem a geometria refinada. Expansão na Lista atualiza linha e preview; drop local conserva a transição. Arquivos/packages continuam com ícones próprios do sistema; a detecção local de conteúdo mantém qualquer filho direto.
 - **Verificação:** renderização e testes registrados em `REGRESSION-COVERAGE.md`; conferência ampla dos modos e interação de drop continua em OR-13.
+
+### D-28 — Clique secundário no espaço vazio não abre o menu de reticências (corrigido; conferência pontual nos quatro modos)
+
+- **Relato:** gravação de 2026-10-03 às 22:18:43, em Ícones, mostra a área vazia sem o menu esperado.
+- **Causa identificada:** ponte nativa instalada somente nas células dos itens; fundos tinham apenas o gesto primário de limpar seleção.
+- **Correção implementada:** menu de ações compartilhado com o botão `•••`; ponte de fundo nas áreas vazias dos quatro modos com prioridade dos menus de item. Evidência executada e limites em `REGRESSION-COVERAGE.md`.

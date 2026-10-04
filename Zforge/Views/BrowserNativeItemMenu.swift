@@ -2,6 +2,28 @@ import AppKit
 import SwiftUI
 
 extension View {
+    func browserContextMenuExcludedArea(state: FileBrowserState) -> some View {
+        background {
+            GeometryReader { geometry in
+                BrowserNativeItemMenu(state: state, item: nil, excludesBackgroundMenu: true)
+                    .frame(width: geometry.size.width, height: geometry.size.height)
+                    .allowsHitTesting(false)
+                    .accessibilityHidden(true)
+            }
+        }
+    }
+
+    func browserBackgroundContextMenu(state: FileBrowserState) -> some View {
+        background {
+            GeometryReader { geometry in
+                BrowserNativeItemMenu(state: state, item: nil)
+                    .frame(width: geometry.size.width, height: geometry.size.height)
+                    .allowsHitTesting(false)
+                    .accessibilityHidden(true)
+            }
+        }
+    }
+
     func browserItemContextMenu(state: FileBrowserState, item: BrowserItem) -> some View {
         background {
             GeometryReader { geometry in
@@ -16,22 +38,25 @@ extension View {
 
 private struct BrowserNativeItemMenu: NSViewRepresentable {
     let state: FileBrowserState
-    let item: BrowserItem
+    let item: BrowserItem?
+    var excludesBackgroundMenu = false
 
-    func makeNSView(context: Context) -> BrowserItemMenuHost { BrowserItemMenuHost(state: state, item: item) }
-    func updateNSView(_ view: BrowserItemMenuHost, context: Context) { view.state = state; view.item = item }
+    func makeNSView(context: Context) -> BrowserItemMenuHost { BrowserItemMenuHost(state: state, item: item, excludesBackgroundMenu: excludesBackgroundMenu) }
+    func updateNSView(_ view: BrowserItemMenuHost, context: Context) { view.state = state; view.item = item; view.excludesBackgroundMenu = excludesBackgroundMenu }
     static func dismantleNSView(_ view: BrowserItemMenuHost, coordinator: ()) { view.stopMonitoring() }
 }
 
 @MainActor
 private final class BrowserItemMenuHost: NSView {
     var state: FileBrowserState
-    var item: BrowserItem
+    var item: BrowserItem?
+    var excludesBackgroundMenu: Bool
     private var eventMonitor: Any?
 
-    init(state: FileBrowserState, item: BrowserItem) {
+    init(state: FileBrowserState, item: BrowserItem?, excludesBackgroundMenu: Bool) {
         self.state = state
         self.item = item
+        self.excludesBackgroundMenu = excludesBackgroundMenu
         super.init(frame: .zero)
     }
     required init?(coder: NSCoder) { nil }
@@ -41,18 +66,33 @@ private final class BrowserItemMenuHost: NSView {
     override func viewDidMoveToWindow() {
         super.viewDidMoveToWindow()
         stopMonitoring()
-        guard window != nil else { return }
+        guard window != nil, !excludesBackgroundMenu else { return }
         eventMonitor = NSEvent.addLocalMonitorForEvents(matching: [.rightMouseDown, .leftMouseDown]) { [weak self] event in
             let consumed = MainActor.assumeIsolated {
-                guard let self, event.window === self.window,
+                guard let self, !self.isHiddenOrHasHiddenAncestor, event.window === self.window,
                       event.type == .rightMouseDown || event.modifierFlags.contains(.control),
                       self.convert(self.visibleRect.intersection(self.bounds), to: nil).contains(event.locationInWindow) else { return false }
-                let menu = BrowserNativeContextMenu.make(state: self.state, item: self.item)
+                // Item menus take priority regardless of local-monitor registration order.
+                if self.item == nil, let root = self.window?.contentView,
+                   self.containsForegroundMenuArea(at: event.locationInWindow, in: root) { return false }
+                let menu = self.item.map { BrowserNativeContextMenu.make(state: self.state, item: $0) }
+                    ?? BrowserActionsMenu.make(state: self.state, showToast: { [state = self.state] in
+                        state.contextualFeedbackMessage = $0
+                    })
                 NSMenu.popUpContextMenu(menu, with: event, for: self)
                 return true
             }
             return consumed ? nil : event
         }
+    }
+
+    private func containsForegroundMenuArea(at point: NSPoint, in view: NSView) -> Bool {
+        if let host = view as? BrowserItemMenuHost, (host.item != nil || host.excludesBackgroundMenu),
+           !host.isHiddenOrHasHiddenAncestor,
+           host.convert(host.visibleRect.intersection(host.bounds), to: nil).contains(point) {
+            return true
+        }
+        return view.subviews.contains { containsForegroundMenuArea(at: point, in: $0) }
     }
 
     func stopMonitoring() {

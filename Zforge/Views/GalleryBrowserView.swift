@@ -17,6 +17,7 @@ struct GalleryBrowserView: View {
                 Color.clear
                     .contentShape(Rectangle())
                     .onTapGesture { state.clearSelection() }
+                    .browserBackgroundContextMenu(state: state)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 SelectionOverview(
@@ -25,6 +26,7 @@ struct GalleryBrowserView: View {
                     presentation: .gallery,
                     scale: scale
                 )
+                .browserContextMenuExcludedArea(state: state)
             }
 
             Divider()
@@ -34,6 +36,7 @@ struct GalleryBrowserView: View {
                     ScrollView(.horizontal, showsIndicators: false) {
                         ZStack(alignment: .leading) {
                             Color.clear.contentShape(Rectangle()).onTapGesture { state.clearSelection() }
+                            .browserBackgroundContextMenu(state: state)
                             LazyHStack(spacing: 8 * scale) {
                                 ForEach(state.sortedItems) { item in
                                     let isSelected = state.selection.contains(item.id)

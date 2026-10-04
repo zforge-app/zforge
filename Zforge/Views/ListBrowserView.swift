@@ -146,6 +146,7 @@ private struct BrowserListRows: View {
             Color.clear
                 .contentShape(Rectangle())
                 .onTapGesture { state.clearSelection() }
+                .browserBackgroundContextMenu(state: state)
 
             LazyVStack(spacing: 0) {
                 ForEach(state.flattenedList()) { entry in

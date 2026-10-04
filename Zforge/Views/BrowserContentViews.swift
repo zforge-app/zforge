@@ -105,6 +105,7 @@ struct BrowserContent: View {
             content()
             if state.previewVisible {
                 BrowserPreviewPane(state: state)
+                    .browserContextMenuExcludedArea(state: state)
             }
         }
     }
@@ -124,6 +125,7 @@ struct BrowserContent: View {
 
             if state.previewVisible {
                 BrowserPreviewPane(state: state)
+                    .browserContextMenuExcludedArea(state: state)
                     .background(.ultraThinMaterial)
                     .zIndex(1)
             }

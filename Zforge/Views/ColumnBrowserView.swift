@@ -171,6 +171,7 @@ struct ColumnBrowserView: View {
                             .frame(maxHeight: .infinity)
                             .accessibilityElement(children: .contain)
                             .accessibilityIdentifier("column-preview")
+                            .browserContextMenuExcludedArea(state: state)
                             .overlay(alignment: .leading) {
                                 Rectangle().fill(.separator).frame(width: 1)
                             }
@@ -191,6 +192,7 @@ struct ColumnBrowserView: View {
                                 }
                                 .frame(width: 20 * scale)
                                 .help("Drag to resize preview")
+                                .browserContextMenuExcludedArea(state: state)
                             }
                             .id("column-terminal-slot")
                         }
@@ -204,6 +206,7 @@ struct ColumnBrowserView: View {
                     )
                     .background {
                         Color.clear.contentShape(Rectangle()).onTapGesture { state.clearSelection() }
+                            .browserBackgroundContextMenu(state: state)
                     }
                 }
                 .onScrollGeometryChange(for: CGFloat.self) { scrollGeometry in
@@ -390,6 +393,7 @@ private struct FinderColumn: View {
                         .frame(height: columnRootDropAreaHeight(in: geometry.size.height))
                         .contentShape(Rectangle())
                         .onTapGesture { state.clearSelection() }
+                        .browserBackgroundContextMenu(state: state)
                         .browserColumnRootDropTarget(
                             state: state,
                             location: component.location,
@@ -417,6 +421,7 @@ private struct FinderColumn: View {
             }
                 .frame(width: 20 * scale)
                 .help("Drag to resize column")
+                .browserContextMenuExcludedArea(state: state)
         }
         .animation(.easeOut(duration: 0.12), value: isRootDropTargeted)
         .onDisappear { isRootDropTargeted = false }

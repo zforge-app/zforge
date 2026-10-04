@@ -35,6 +35,7 @@ Atualizado em **2026-10-03**. Esta lista preserva os pedidos levantados nesta co
 | ZF-29 | Usar pasta nativa com selo circular do Zforge nos diretórios internos de archives | V6 aprovada implementada com máscaras de luz/sombra, cache e posição por tamanho/conteúdo; pastas internas com arquivos usam versão fechada com papel; build e 114 testes unitários aprovados; renderização conferida; matriz visual ampla em OR-13; pasta aberta aplicada a linhas internas expandidas e previews na Lista; material corrigido a partir da pasta fechada após rejeição visual de ofld; linhas traseiras e sobreposição do papel na borda fechada corrigidas; 6 testes de ícones aprovados; seleção rápida falhou na última suíte e passou isolada | D-26; OR-13 |
 | ZF-30 | Implementar drag and drop de itens dentro de archives | Pendente; pedido do usuário após aprovação da pasta aberta; ainda sem implementação | OR-14; não confundir com adição de arquivos locais por drop |
 | ZF-31 | Uniformizar os ícones de diretórios locais com a composição aprovada para archives, sem selo | Implementado nos quatro estados, com expansão na Lista/preview e transição no drop; build e 7 testes de ícones aprovados; renderização 16–190 pt conferida; matriz visual/interação ampla pendente | D-27; OR-13 |
+| ZF-32 | Abrir o menu de reticências com clique secundário no espaço vazio | Implementado; build assinada e 33 testes unitários aprovados; gesto conferido nos quatro modos; executor UI bloqueado ao iniciar automação | D-28 |
 
 ## ZF-01 — Documentação de referência e prevenção de regressões
 
@@ -299,3 +300,9 @@ Em 2026-10-03, o usuário forneceu duas gravações e uma captura do Finder: man
 **Validação final de ZF-27/ZF-28 para commit em 2026-10-03:** build Debug e 122 testes unitários aprovados, com contagem confirmada no xcresult. Contratos atuais sincronizados com o círculo de 8 pt; matriz visual ampla e gesto real final permanecem pendentes.
 
 **Integração na main em 2026-10-03:** ZF-27/ZF-28 mescladas com a edição de tags (ZF-26); comando de pin adaptado ao menu nativo vigente, com teste de coexistência. Build e 130 unitários aprovados. Identificadores da sidebar renumerados para evitar colisão: ZF-27/ZF-28 e D-24/D-25.
+
+## ZF-32 — Menu de ações no espaço vazio
+
+**Pedido em 2026-10-03:** clique secundário no espaço vazio deve abrir o mesmo menu do botão `…` (gravação 22:18:43).
+
+**Implementação:** construtor `BrowserActionsMenu` compartilhado com a toolbar e monitores nativos das áreas vazias dos quatro modos. Conserva a seleção; menus de itens têm prioridade independentemente da ordem dos monitores. Overflow conserva seus acréscimos responsivos. Validação em `REGRESSION-COVERAGE.md`.

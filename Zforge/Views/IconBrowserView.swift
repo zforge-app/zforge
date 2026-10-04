@@ -20,6 +20,7 @@ struct IconBrowserView: View {
                         Color.clear
                             .contentShape(Rectangle())
                             .onTapGesture { state.clearSelection() }
+                            .browserBackgroundContextMenu(state: state)
 
                         LazyVGrid(
                             columns: [GridItem(.adaptive(minimum: itemWidth), spacing: itemSpacing)],

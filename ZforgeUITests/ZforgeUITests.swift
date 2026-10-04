@@ -23,6 +23,45 @@ final class ZforgeUITests: XCTestCase {
     }
 
     @MainActor
+    func testBlankAreaUsesMoreMenuInEveryView() throws {
+        for mode in ["icons", "list", "columns", "gallery"] {
+            let app = XCUIApplication()
+            app.launchArguments = ["--ui-fixtures", "--ui-window-width", "1100", "--ui-view-mode", mode, "-appLanguagePreference", "english"]
+            app.launch()
+            app.activate()
+            let file = app.staticTexts["Welcome.txt"].firstMatch
+            XCTAssertTrue(file.waitForExistence(timeout: 5), mode)
+            let content = app.descendants(matching: .any)["browser-mode-\(mode)"].firstMatch
+            XCTAssertTrue(content.exists, mode)
+            let area = content.frame
+            let window = app.windows.firstMatch
+            let blank = window.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(
+                dx: area.minX - window.frame.minX + area.width * (mode == "gallery" ? 0.95 : 0.2),
+                dy: area.minY - window.frame.minY + area.height * (mode == "gallery" ? 0.97 : 0.8)
+            ))
+            let more = app.buttons["toolbar-more-menu"]
+            XCTAssertTrue(more.exists, mode)
+            for selected in [false, true] {
+                if selected { file.click(); file.click() } else { blank.click() }
+                more.click()
+                XCTAssertTrue(app.menuItems["Open"].waitForExistence(timeout: 2), mode)
+                XCTAssertEqual(app.menuItems["Open"].isEnabled, selected, mode)
+                let expected = app.menuItems.allElementsBoundByIndex.map { "\($0.label):\($0.isEnabled)" }
+                app.typeKey(.escape, modifierFlags: [])
+                blank.rightClick()
+                XCTAssertTrue(app.menuItems["Open"].waitForExistence(timeout: 2), "\(mode), selected: \(selected)")
+                XCTAssertEqual(app.menuItems.allElementsBoundByIndex.map { "\($0.label):\($0.isEnabled)" }, expected, mode)
+                app.typeKey(.escape, modifierFlags: [])
+            }
+            // The blank-area monitor must leave the item-specific menu intact.
+            file.rightClick()
+            XCTAssertTrue(app.menuItems["Open with"].waitForExistence(timeout: 2), mode)
+            app.typeKey(.escape, modifierFlags: [])
+            app.terminate()
+        }
+    }
+
+    @MainActor
     func testTagEditorIsSharedByToolbarAndContextMenu() throws {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-fixtures", "--ui-window-width", "1100", "--ui-view-mode", "list", "-appLanguagePreference", "english"]
