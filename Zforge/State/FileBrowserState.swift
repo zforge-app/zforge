@@ -1068,8 +1068,10 @@ final class FileBrowserState {
         }
     }
 
-    func confirmArchiveAddition() async {
-        guard let request = pendingArchiveAddition, !archiveOperationInProgress else { return }
+    func confirmArchiveAddition(_ request: ArchiveAdditionRequest) async {
+        // Dialog dismissal can clear the presentation binding before this task starts.
+        // Use the request captured by the confirmation action instead of that binding.
+        guard !archiveOperationInProgress else { return }
         pendingArchiveAddition = nil
         let result = await runArchiveOperation(
             description: AppLocalization.string("Adding to archive…", locale: preferences.language.locale)
@@ -1104,14 +1106,31 @@ final class FileBrowserState {
             } else {
                 currentArchiveURL = nil
             }
-            let inlineResults = self.inlineArchiveResults
-            self.inlineArchiveResults.removeAll()
-            self.expandedItems.subtract(inlineResults.keys)
-            for itemID in inlineResults.keys { self.expandedChildren.removeValue(forKey: itemID) }
-            for result in inlineResults.values {
-                if case let .archive(currentAddress) = self.location,
-                   currentAddress.sessionID == result.address.sessionID { continue }
-                await self.archives.closeSession(result.address.sessionID)
+            // Session IDs change after rewriting. Keep disclosure state by internal
+            // path, and invalidate only the archive that was actually updated.
+            let currentExpandedPaths: Set<String>
+            if case let .archive(address) = self.location {
+                currentExpandedPaths = self.expandedArchivePaths(in: address.sessionID)
+            } else {
+                currentExpandedPaths = []
+            }
+            let matchingInlineResults = self.inlineArchiveResults.filter { itemID, _ in
+                self.knownItemsByID[itemID]?.localURL?.standardizedFileURL
+                    == request.archiveURL.standardizedFileURL
+            }
+            var inlineExpandedPaths: [BrowserItemID: Set<String>] = [:]
+            for (itemID, result) in matchingInlineResults {
+                if self.expandedItems.contains(itemID) {
+                    inlineExpandedPaths[itemID] = self.expandedArchivePaths(in: result.address.sessionID)
+                }
+                let hierarchyIDs = self.cachedHierarchyIDs(rootedAt: itemID)
+                let sessions = self.inlineArchiveResults.filter { hierarchyIDs.contains($0.key) }
+                self.purgeCachedHierarchies(rootedAt: [itemID])
+                for session in sessions.values {
+                    if case let .archive(currentAddress) = self.location,
+                       currentAddress.sessionID == session.address.sessionID { continue }
+                    await self.archives.closeSession(session.address.sessionID)
+                }
             }
             let refreshedSessionID: UUID?
             if case let .archive(address) = self.location,
@@ -1160,11 +1179,75 @@ final class FileBrowserState {
             } else {
                 await self.reload()
             }
+            if self.preferences.viewMode == .list {
+                if refreshedSessionID != nil {
+                    await self.restoreArchiveExpansion(
+                        in: self.items, paths: currentExpandedPaths,
+                        destinationPath: request.internalPath, password: password
+                    )
+                }
+                for (itemID, paths) in inlineExpandedPaths {
+                    guard let archiveItem = self.knownItemsByID[itemID] else { continue }
+                    await self.toggleExpansionImpl(archiveItem, password: password)
+                    await self.restoreArchiveExpansion(
+                        in: self.expandedChildren[itemID] ?? [], paths: paths,
+                        destinationPath: request.internalPath, password: password
+                    )
+                }
+                if refreshedSessionID != nil || !inlineExpandedPaths.isEmpty {
+                    let addedPaths = Set(request.sourceURLs.map {
+                        [request.internalPath, $0.lastPathComponent].filter { !$0.isEmpty }.joined(separator: "/")
+                    })
+                    var sessionIDs = Set(inlineExpandedPaths.keys.compactMap {
+                        self.inlineArchiveResults[$0]?.address.sessionID
+                    })
+                    if refreshedSessionID != nil, case let .archive(address) = self.location {
+                        sessionIDs.insert(address.sessionID)
+                    }
+                    let addedItems = self.flattenedItems().filter {
+                        guard case let .archive(address) = $0.location else { return false }
+                        return sessionIDs.contains(address.sessionID) && addedPaths.contains(address.internalPath)
+                    }
+                    for (index, item) in addedItems.enumerated() {
+                        self.select(item, modifiers: index == 0 ? [] : .command, orderedItems: self.flattenedItems())
+                    }
+                }
+            }
             return AppLocalization.string(
                 "Items added to archive successfully.", locale: self.preferences.language.locale
             )
         }
         contextualFeedbackMessage = result
+    }
+
+    private func expandedArchivePaths(in sessionID: UUID) -> Set<String> {
+        Set(knownItems.compactMap { item in
+            guard expandedItems.contains(item.id),
+                  case let .archive(address) = item.location,
+                  address.sessionID == sessionID,
+                  address.nestedArchiveDepth == 0 else { return nil }
+            return address.internalPath
+        })
+    }
+
+    private func restoreArchiveExpansion(
+        in candidates: [BrowserItem], paths: Set<String>,
+        destinationPath: String, password: String?
+    ) async {
+        for item in candidates where item.isDirectory {
+            guard case let .archive(address) = item.location,
+                  address.nestedArchiveDepth == 0 else { continue }
+            let path = address.internalPath
+            let revealsDestination = destinationPath == path || destinationPath.hasPrefix(path + "/")
+            guard paths.contains(path) || revealsDestination else { continue }
+            if !expandedItems.contains(item.id) {
+                await toggleExpansionImpl(item, password: password)
+            }
+            await restoreArchiveExpansion(
+                in: expandedChildren[item.id] ?? [], paths: paths,
+                destinationPath: destinationPath, password: password
+            )
+        }
     }
 
     private func promptForArchiveUpdatePassword() -> String? {

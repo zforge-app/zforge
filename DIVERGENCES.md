@@ -241,3 +241,16 @@ Gravação de 19:47 mostra cópia de PDF com sufixo depois da extensão. Corrigi
 - **Evidência anterior:** `rapidColumnArchiveSelectionPublishesOnlyCurrentArchive` falhou em `firstStarted` na suíte integrada (135 aprovados/1 falha) e passou isolado. Não há regressão funcional comprovada nem causa de agendamento estabelecida.
 - **Correção do teste:** retirada a consulta repetida com pausas de 1 ms; espera por sinal explícito do motor simulado. Primeiro carregamento fica suspenso até cancelamento, sem conclusão automática após 2 s; segundo não usa atraso artificial. Timeout de 10 s detecta travamento real e falha fatal na preparação encerra o cenário. Sinais antecipados são lembrados; continuations e watchdogs são removidos no sinal, cancelamento, timeout ou encerramento.
 - **Escopo:** apenas fixture/testes e cobertura documentada; nenhum handler de produção alterado. Verificação repetida em `REGRESSION-COVERAGE.md`; ZF-32.
+
+### D-29 — Confirmar adição por drop não inicia a atualização do archive
+
+- **Reprodução do usuário em 2026-10-04:** gravação mostra arquivo local solto numa pasta interna expandida de ZIP na Lista; “Modify Archive?” aparece, mas responder Adicionar não produz atualização visível.
+- **Causa no código:** o setter de `archiveAdditionBinding` limpa `pendingArchiveAddition` ao fechar o diálogo. A `Task` criada pelo botão só depois consultava esse estado, encontrava `nil` e retornava sem chamar o motor. O menu/picker compartilhava o mesmo handler.
+- **Correção implementada:** a closure de ações usa o pedido de `presenting` e o passa explicitamente a `confirmArchiveAddition(_:)`. A tarefa não depende do estado de apresentação; preservados o bloqueio de operação concorrente, cancelamento, senha, staging, cópia das origens e refresh de sessões.
+- **Evidência e limite:** suíte unitária aprovada; quatro casos com ZIP/7z reais, raiz/pasta interna, simulam o binding já limpo e conferem conteúdo extraído, origem intacta, cancelamento sem escrita e nova sessão/breadcrumb. Tentativa de UI falhou antes de abrir o diálogo no gesto automatizado, sem validar o clique ou a correção visual. OR-07 continua aberta. Resultados em `REGRESSION-COVERAGE.md`.
+
+### D-30 — Adição bem-sucedida recolhe a hierarquia do archive
+
+- **Refinamento do usuário em 2026-10-04:** confirmou que a adição funciona após D-29, mas o interior que estava sendo visualizado fecha. Pediu reabrir o archive atualizado e expandir a hierarquia para mostrar a adição de forma transparente.
+- **Correção implementada:** na Lista, registrar os caminhos internos expandidos antes de invalidar a sessão; purgar a árvore do archive alterado, reabrir na mesma linha e restaurar disclosures com os novos IDs. Expandir também o caminho até o destino e selecionar todos os itens adicionados. O mesmo restauro/revelação se aplica à raiz aberta. Archives não alterados conservam suas sessões e expansões.
+- **Limites:** o restauro cobre diretórios do archive raiz, sem expandir automaticamente archives aninhados nem todos os descendentes. Nos demais modos, mantém-se o refresh à raiz existente; a nova seleção/revelação da árvore é própria da Lista. Cancelamento/erro de escrita não executam o restauro. Testes e conferência visual pendente em `REGRESSION-COVERAGE.md`/OR-07.

@@ -1252,6 +1252,168 @@ struct ZforgeTests {
         await engine.closeSession(opened.address.sessionID)
     }
 
+    @Test("Archive confirmation survives dialog dismissal and refreshes the open archive",
+          arguments: [ArchiveCompressionFormat.zip, .sevenZip], ["", "Inside"])
+    @MainActor
+    func archiveAdditionAfterDialogDismissal(format: ArchiveCompressionFormat, internalPath: String) async throws {
+        let engine = NativeSevenZipArchiveEngine()
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ZforgeArchiveConfirmation-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let original = root.appendingPathComponent("Original.txt")
+        let addition = root.appendingPathComponent("Added.txt")
+        let archive = root.appendingPathComponent("Target.\(format.fileExtension)")
+        try Data("original".utf8).write(to: original)
+        try Data("added".utf8).write(to: addition)
+        try await engine.createArchive(from: [original], outputURL: archive, format: format, progress: { _ in })
+        let suiteName = "ZforgeArchiveConfirmation-\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let preferences = FileBrowserPreferences(defaults: defaults)
+        preferences.language = .english
+        preferences.viewMode = .list
+        let state = FileBrowserState(
+            preferences: preferences, fileSystem: FileSystemService(),
+            grants: UIFixtureAccessGrantStore(), archives: engine
+        )
+        defer { state.close() }
+        await state.navigateToSidebar(root, name: root.lastPathComponent)
+        let archiveItem = try #require(state.items.first(where: { $0.name == archive.lastPathComponent }))
+        await state.openArchive(archiveItem)
+        guard case let .archive(oldAddress) = state.location else {
+            Issue.record("Archive did not open")
+            return
+        }
+        let before = try Data(contentsOf: archive)
+        state.requestArchiveAddition([addition], to: archive, internalPath: internalPath)
+        state.pendingArchiveAddition = nil // Cancel/dismiss without confirming must not write.
+        #expect(try Data(contentsOf: archive) == before)
+
+        state.requestArchiveAddition([addition], to: archive, internalPath: internalPath)
+        let confirmed = try #require(state.pendingArchiveAddition)
+        // SwiftUI resets isPresented before the Button's async task runs.
+        state.pendingArchiveAddition = nil
+        await state.confirmArchiveAddition(confirmed)
+        #expect(state.error == nil)
+        #expect(state.contextualFeedbackMessage == "Items added to archive successfully.")
+        #expect(!state.archiveOperationInProgress)
+        #expect(state.pendingArchiveAddition == nil)
+        #expect(state.items.contains(where: { $0.name == "Original.txt" }))
+        guard case let .archive(newAddress) = state.location else {
+            Issue.record("Updated archive did not reopen")
+            return
+        }
+        #expect(newAddress.sessionID != oldAddress.sessionID)
+        #expect(newAddress.internalPath.isEmpty)
+        #expect(state.pathComponents.first?.location == .fileSystem(root))
+        let addedItems: [BrowserItem]
+        if internalPath.isEmpty {
+            addedItems = state.items
+        } else {
+            let folder = try #require(state.items.first(where: { $0.name == internalPath }))
+            guard case let .archive(folderAddress) = folder.location else {
+                Issue.record("Internal folder has no archive address")
+                return
+            }
+            addedItems = try await engine.items(at: folderAddress)
+        }
+        let added = try #require(addedItems.first(where: { $0.name == "Added.txt" }))
+        let extracted = try await engine.materialize(item: added, purpose: .preview, automaticLimit: 1024)
+        #expect(try String(contentsOf: extracted, encoding: .utf8) == "added")
+        #expect(try String(contentsOf: addition, encoding: .utf8) == "added")
+        #expect(state.selectedItems.map(\.name) == ["Added.txt"])
+        if !internalPath.isEmpty {
+            let folder = try #require(state.items.first(where: { $0.name == internalPath }))
+            #expect(state.expandedItems.contains(folder.id))
+            #expect(state.flattenedItems().contains(where: { $0.name == "Added.txt" }))
+        }
+    }
+
+    @Test("Updating an inline archive restores disclosures and leaves other archives open",
+          arguments: [ArchiveCompressionFormat.zip, .sevenZip])
+    @MainActor
+    func archiveAdditionPreservesInlineHierarchy(format: ArchiveCompressionFormat) async throws {
+        let engine = NativeSevenZipArchiveEngine()
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ZforgeInlineUpdate-\(UUID().uuidString)", isDirectory: true)
+        let sources = root.appendingPathComponent("Sources", isDirectory: true)
+        let folder = sources.appendingPathComponent("Inside/Deep", isDirectory: true)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        let sibling = sources.appendingPathComponent("Inside/Sibling", isDirectory: true)
+        try FileManager.default.createDirectory(at: sibling, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        try Data("original".utf8).write(to: folder.appendingPathComponent("Original.txt"))
+        try Data("sibling".utf8).write(to: sibling.appendingPathComponent("Untouched.txt"))
+        let addition = sources.appendingPathComponent("Added.txt")
+        let secondAddition = sources.appendingPathComponent("Second.txt")
+        try Data("added".utf8).write(to: addition)
+        try Data("second".utf8).write(to: secondAddition)
+        let archive = root.appendingPathComponent("Target.\(format.fileExtension)")
+        let otherArchive = root.appendingPathComponent("Other.zip")
+        for destination in [archive, otherArchive] {
+            try await engine.createArchive(
+                from: [sources.appendingPathComponent("Inside")], outputURL: destination,
+                format: destination == archive ? format : .zip, progress: { _ in }
+            )
+        }
+        let suiteName = "ZforgeInlineUpdate-\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let preferences = FileBrowserPreferences(defaults: defaults)
+        preferences.viewMode = .list
+        let state = FileBrowserState(
+            preferences: preferences, fileSystem: FileSystemService(),
+            grants: UIFixtureAccessGrantStore(), archives: engine
+        )
+        defer { state.close() }
+        await state.navigateToSidebar(root, name: root.lastPathComponent)
+        let target = try #require(state.items.first(where: { $0.name == archive.lastPathComponent }))
+        let other = try #require(state.items.first(where: { $0.name == "Other.zip" }))
+        await state.toggleExpansion(target)
+        await state.toggleExpansion(other)
+        let otherChildren = try #require(state.expandedChildren[other.id])
+        let inside = try #require(state.expandedChildren[target.id]?.first(where: { $0.name == "Inside" }))
+        await state.toggleExpansion(inside)
+        let oldSibling = try #require(state.expandedChildren[inside.id]?.first(where: { $0.name == "Sibling" }))
+        await state.toggleExpansion(oldSibling)
+        let deep = try #require(state.expandedChildren[inside.id]?.first(where: { $0.name == "Deep" }))
+        // Drop into a collapsed descendant: restoring the destination must open it.
+        guard case let .archive(oldAddress) = deep.location else {
+            Issue.record("Missing virtual folder address")
+            return
+        }
+        await state.requestArchiveAddition([addition, secondAddition], to: oldAddress)
+        let request = try #require(state.pendingArchiveAddition)
+        state.pendingArchiveAddition = nil
+        await state.confirmArchiveAddition(request)
+        #expect(state.error == nil)
+        #expect(state.location == .fileSystem(root))
+        #expect(state.expandedItems.contains(target.id))
+        #expect(state.expandedItems.contains(other.id))
+        #expect(state.expandedChildren[other.id] == otherChildren)
+        let newInside = try #require(state.expandedChildren[target.id]?.first(where: { $0.name == "Inside" }))
+        let newDeep = try #require(state.expandedChildren[newInside.id]?.first(where: { $0.name == "Deep" }))
+        #expect(state.expandedItems.contains(newInside.id))
+        #expect(state.expandedItems.contains(newDeep.id))
+        let newSibling = try #require(state.expandedChildren[newInside.id]?.first(where: { $0.name == "Sibling" }))
+        #expect(state.expandedItems.contains(newSibling.id))
+        #expect(state.expandedChildren[newSibling.id]?.contains(where: { $0.name == "Untouched.txt" }) == true)
+        guard case let .archive(newAddress) = newDeep.location else {
+            Issue.record("Missing refreshed folder address")
+            return
+        }
+        #expect(newAddress.sessionID != oldAddress.sessionID)
+        #expect(state.expandedChildren[inside.id] == nil)
+        #expect(Set(state.selectedItems.map(\.name)) == ["Added.txt", "Second.txt"])
+        #expect(Set(state.flattenedItems().filter { state.selection.contains($0.id) }.map(\.name)) == ["Added.txt", "Second.txt"])
+        #expect(state.expandedChildren[newDeep.id]?.contains(where: { $0.name == "Original.txt" }) == true)
+        let added = try #require(state.expandedChildren[newDeep.id]?.first(where: { $0.name == "Added.txt" }))
+        let extracted = try await engine.materialize(item: added, purpose: .preview, automaticLimit: 1024)
+        #expect(try String(contentsOf: extracted, encoding: .utf8) == "added")
+        #expect(try String(contentsOf: addition, encoding: .utf8) == "added")
+    }
+
     @Test("Archive engine adds files to existing ZIP and 7z, including an internal folder")
     func addsToExistingArchives() async throws {
         let engine = NativeSevenZipArchiveEngine()

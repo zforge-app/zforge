@@ -218,9 +218,9 @@ struct ContentView: View {
             isPresented: archiveAdditionBinding,
             titleVisibility: .visible,
             presenting: browser.pendingArchiveAddition
-        ) { _ in
+        ) { request in
             Button("Add to Archive") {
-                Task { await browser.confirmArchiveAddition() }
+                Task { await browser.confirmArchiveAddition(request) }
                 restoreContentFocus()
             }
             Button("Cancel", role: .cancel) {
