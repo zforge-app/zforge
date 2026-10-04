@@ -161,7 +161,7 @@ private struct BrowserListRows: View {
                         dragSession: dragSession
                     )
                     .id(entry.id)
-                    .contextMenu { BrowserItemActionsMenu(state: state, item: entry.item) }
+                    .browserItemContextMenu(state: state, item: entry.item)
                 }
             }
         }

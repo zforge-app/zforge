@@ -36,4 +36,4 @@ Refinamento v6: recortar o cilindro pela abertura interna e desenhar o contorno 
 
 ## Implementação final autorizada
 
-A v6 foi aprovada e integrada com máscaras neutras de luz e sombra derivadas de uma única referência raster aprovada. Essa técnica preserva sua iluminação e forma diretamente sobre a pasta nativa. O mapa de altura/normais e a iluminação dinâmica descritos acima permaneceram proposta; não são necessários para a composição fixa aprovada e não foram implementados. Regressões e limites em `REGRESSION-COVERAGE.md`, ZF-26 e OR-13.
+A v6 foi aprovada e integrada com máscaras neutras de luz e sombra derivadas de uma única referência raster aprovada. Essa técnica preserva sua iluminação e forma diretamente sobre a pasta nativa. O mapa de altura/normais e a iluminação dinâmica descritos acima permaneceram proposta; não são necessários para a composição fixa aprovada e não foram implementados. Regressões e limites em `REGRESSION-COVERAGE.md`, ZF-29 e OR-13.

@@ -47,7 +47,7 @@ struct IconBrowserView: View {
                                     item: item,
                                     dragSession: dragSession
                                 )
-                                .contextMenu { BrowserItemActionsMenu(state: state, item: item) }
+                                .browserItemContextMenu(state: state, item: item)
                             }
                         }
                         .padding(BrowserMetrics.iconGridPadding * scale)

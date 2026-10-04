@@ -546,6 +546,35 @@ final class FileBrowserState {
     var hasLocalSelection: Bool {
         !selectedItems.isEmpty && selectedItems.allSatisfy { $0.localURL != nil }
     }
+    var tagEditingRequest: TagEditingRequest?
+    var canEditTags: Bool { hasLocalSelection && !archiveOperationInProgress }
+
+    func editTags(items: [BrowserItem]? = nil) {
+        let targets = items ?? selectedItems
+        guard !targets.isEmpty, targets.allSatisfy({ $0.localURL != nil }),
+              !archiveOperationInProgress else { return }
+        tagEditingRequest = TagEditingRequest(items: targets)
+    }
+
+    func applyTags(additions: [String: Int], removals: Set<String>, items targets: [BrowserItem]) async -> String? {
+        var failures: [String] = []
+        var updated: [BrowserItem] = []
+        for item in targets {
+            guard let url = item.localURL else { continue }
+            do {
+                try await Task.detached(priority: .userInitiated) {
+                    try FinderTagWriter.apply(additions: additions, removals: removals, to: url)
+                }.value
+                updated.append(try await fileSystem.item(at: url))
+            } catch {
+                failures.append("\(item.name): \(error.localizedDescription)")
+            }
+        }
+        FinderTagCatalog.shared.observe(updated)
+        await reload()
+        return failures.isEmpty ? nil : failures.joined(separator: "\n")
+    }
+
     var canRenameSelection: Bool {
         selectedItems.count == 1 && selectedItems[0].localURL != nil
     }
@@ -676,6 +705,12 @@ final class FileBrowserState {
 
     func navigateToSidebar(_ url: URL, name: String) async {
         do {
+            if !(await grants.hasGrant(for: url)),
+               let bookmarked = PinnedFolderStore.shared.bookmarkedURL(for: url) {
+                let started = bookmarked.startAccessingSecurityScopedResource()
+                defer { if started { bookmarked.stopAccessingSecurityScopedResource() } }
+                if started { try await grants.storeGrant(for: bookmarked) }
+            }
             if await grants.hasGrant(for: url) {
                 _ = try await grants.activateGrant(for: url)
                 FinderTagCatalog.shared.refresh(searchScopes: await grants.metadataSearchScopes())
@@ -2118,6 +2153,55 @@ final class FileBrowserState {
                 Task { @MainActor in
                     collector.receive(url, error: error, at: index)
                 }
+            }
+        }
+        return true
+    }
+
+    func chooseFoldersForSidebar() {
+        let panel = NSOpenPanel()
+        panel.canChooseDirectories = true
+        panel.canChooseFiles = false
+        panel.allowsMultipleSelection = true
+        panel.prompt = AppLocalization.string("Add to Sidebar")
+        panel.begin { [weak self] response in
+            guard response == .OK else { return }
+            let urls = panel.urls
+            Task { @MainActor in await self?.pinFolders(urls) }
+        }
+    }
+
+    func pinFolders(_ urls: [URL], before anchor: URL? = nil) async {
+        do {
+            try PinnedFolderStore.shared.pin(urls, before: anchor)
+            for source in urls {
+                let url = source.standardizedFileURL.resolvingSymlinksInPath()
+                guard !(await grants.hasGrant(for: url)) else { continue }
+                let started = source.startAccessingSecurityScopedResource()
+                defer { if started { source.stopAccessingSecurityScopedResource() } }
+                try await grants.storeGrant(for: url)
+            }
+        } catch {
+            self.error = mapError(error)
+        }
+    }
+
+    @discardableResult
+    func performPinDrop(providers: [NSItemProvider], before anchor: URL?) -> Bool {
+        guard !providers.isEmpty else { return false }
+        let collector = BrowserDroppedFileURLCollector(count: providers.count) { [weak self] urls, failures in
+            guard let self else { return }
+            guard failures == 0, !urls.isEmpty else {
+                self.error = .unavailable(AppLocalization.string("The dropped file URLs could not be loaded."))
+                return
+            }
+            Task { await self.pinFolders(urls, before: anchor) }
+        }
+        // Start loading in the drop callback while its providers are accessible.
+        for (index, provider) in providers.enumerated() {
+            provider.loadObject(ofClass: NSURL.self) { object, error in
+                let url = (object as? NSURL).map { $0 as URL }
+                Task { @MainActor in collector.receive(url, error: error, at: index) }
             }
         }
         return true

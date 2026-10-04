@@ -145,3 +145,8 @@ Para consultar, leia primeiro este índice e use `rg -n -i '<termos|símbolos>' 
 - [foundation-metadata-query-search-scopes](contexts/foundation-metadata-query-search-scopes.md)
 - [coreservices-file-level-events](contexts/coreservices-file-level-events.md)
 - [coreservices-fseventstreamcreate](contexts/coreservices-fseventstreamcreate.md)
+
+- [Views em itens de menu AppKit](contexts/appkit-menu-item-views.md) — linhas customizadas, eventos de mouse, tracking e limites de teclado; linha rápida de tags do Zforge.
+- [NSTableView.DraggingDestinationFeedbackStyle](contexts/appkit-nstableview-dragging-destination-feedback-style.md) — feedback nativo de arraste na sidebar e desenho próprio.
+
+- [DataRepresentation](contexts/coretransferable-data-representation.md) — representação dos bytes da URL original no drag de arquivos.

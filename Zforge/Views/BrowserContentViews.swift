@@ -65,8 +65,8 @@ struct BrowserContent: View {
         .onModifierKeysChanged(mask: [.option, .command]) { _, modifiers in
             dragSession.modifiers = modifiers
         }
-        .dragContainer(for: URL.self, itemID: \.self) { (draggedURLs: [URL]) in
-            state.prepareDragPayload(draggedURLs)
+        .dragContainer(for: BrowserDraggedFile.self, itemID: \.url) { (draggedURLs: [URL]) in
+            state.prepareDragPayload(draggedURLs).map { BrowserDraggedFile(url: $0) }
         }
         .dragContainerSelection(state.dragSelectionURLs)
         .dragConfiguration(.browserFileOperations)
@@ -288,107 +288,6 @@ private struct BrowserPreviewPane: View {
     }
 }
 
-struct BrowserItemActionsMenu: View {
-    @Bindable var state: FileBrowserState
-    let item: BrowserItem
-
-    private var menuItems: [BrowserItem] {
-        state.selection.contains(item.id) ? state.selectedItems : [item]
-    }
-
-    @ViewBuilder
-    private func applicationChoices(always: Bool) -> some View {
-        ForEach(state.applicationsForOpening(menuItems), id: \.self) { application in
-            Button(FileManager.default.displayName(atPath: application.path)) {
-                state.openWith(menuItems, application: application, always: always)
-            }
-        }
-        Divider()
-        Button("Other…") {
-            state.chooseApplicationForOpening(menuItems, always: always)
-        }
-    }
-
-    var body: some View {
-        ForEach(state.contextualActions(for: menuItems), id: \.self) { action in
-            Button(state.contextualTitle(action, items: menuItems), systemImage: action.systemImage) {
-                let selected = menuItems
-                Task {
-                    state.contextualFeedbackMessage = await state.performContextualAction(action, items: selected)
-                }
-            }
-        }
-        Menu("Open with", systemImage: "arrow.up.right.square") {
-            applicationChoices(always: false)
-        }
-        .disabled(menuItems.isEmpty || menuItems.contains { $0.isContainer })
-        .modifierKeyAlternate(.option) {
-            Menu("Always open with", systemImage: "arrow.up.right.square") {
-                applicationChoices(always: true)
-            }
-            .disabled(menuItems.isEmpty || menuItems.contains { $0.isContainer || $0.localURL == nil })
-        }
-        Divider()
-        Button("Share", systemImage: "square.and.arrow.up") {
-            if !state.selection.contains(item.id) { state.select(item) }
-            state.shareItems()
-        }
-        .disabled(!menuItems.contains { !$0.isContainer })
-        Button("Copy", systemImage: "doc.on.doc") {
-            if !state.selection.contains(item.id) { state.select(item) }
-            state.copySelectionToPasteboard()
-        }
-        .disabled(!menuItems.allSatisfy { $0.localURL != nil })
-        .modifierKeyAlternate(.option) {
-            Button("Copy pathname", systemImage: "document.on.clipboard") {
-                if !state.selection.contains(item.id) { state.select(item) }
-                state.copySelectionPathnamesToPasteboard()
-            }
-            .disabled(!menuItems.allSatisfy { $0.localURL != nil })
-        }
-        Divider()
-        Button("Get Info", systemImage: "info.circle") {
-            if !state.selection.contains(item.id) { state.select(item) }
-            state.showGetInfo()
-        }
-        Button("Quick Look", systemImage: "eye") {
-            if !state.selection.contains(item.id) { state.select(item) }
-            state.openQuickLook()
-        }
-        .modifierKeyAlternate(.option) {
-            Button("Slideshow", systemImage: "play.rectangle") {
-                if !state.selection.contains(item.id) { state.select(item) }
-                state.openQuickLook(slideshow: true)
-            }
-        }
-        if item.localURL != nil {
-            Divider()
-            Button("Rename", systemImage: "pencil") {
-                state.select(item)
-                state.beginRenaming(item)
-            }
-            Button("Duplicate", systemImage: "plus.square.on.square") {
-                if !state.selection.contains(item.id) { state.select(item) }
-                state.duplicateSelectedFiles()
-            }
-            Button("Make Alias", systemImage: "link") {
-                state.select(item)
-                state.makeAliasesForSelection()
-            }
-            Button("Move to Trash", systemImage: "trash", role: .destructive) {
-                state.select(item)
-                state.moveSelectionToTrash()
-            }
-            .modifierKeyAlternate(.option) {
-                Button("Delete Immediately…", systemImage: "trash.slash", role: .destructive) {
-                    state.select(item)
-                    state.requestPermanentDeletion()
-                }
-            }
-        }
-    }
-}
-
 struct BrowserItemNameView: View {
     @Bindable var state: FileBrowserState
     let item: BrowserItem
@@ -524,6 +423,16 @@ nonisolated enum BrowserFileDropProposalResolver {
         // a copy before an explicit copy operation has been requested.
         case .automatic: .move
         }
+    }
+}
+
+/// Export the location, not a promised file whose URL can point to a temporary copy.
+nonisolated struct BrowserDraggedFile: Transferable {
+    let url: URL
+    var fileURLData: Data { Data(url.absoluteString.utf8) }
+
+    static var transferRepresentation: some TransferRepresentation {
+        DataRepresentation(exportedContentType: .fileURL) { item in item.fileURLData }
     }
 }
 

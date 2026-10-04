@@ -23,6 +23,100 @@ final class ZforgeUITests: XCTestCase {
     }
 
     @MainActor
+    func testTagEditorIsSharedByToolbarAndContextMenu() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-fixtures", "--ui-window-width", "1100", "--ui-view-mode", "list", "-appLanguagePreference", "english"]
+        app.launch()
+        app.activate()
+        let file = app.staticTexts["Welcome.txt"].firstMatch
+        XCTAssertTrue(file.waitForExistence(timeout: 5))
+        let rowFrame = file.frame
+        let window = app.windows.firstMatch
+        let rowPoint = window.coordinate(withNormalizedOffset: .zero).withOffset(
+            CGVector(dx: rowFrame.midX - window.frame.minX, dy: rowFrame.midY - window.frame.minY)
+        )
+        file.click()
+        file.click()
+        let tags = app.buttons["edit-tags-action"]
+        XCTAssertTrue(tags.exists)
+        XCTAssertTrue(tags.isEnabled)
+        tags.click()
+        XCTAssertTrue(app.sheets.firstMatch.waitForExistence(timeout: 3))
+        XCTAssertTrue(app.staticTexts["New Tag"].exists)
+        let name = app.textFields["Tag name"]
+        name.click()
+        name.typeText("UI draft tag")
+        app.buttons["Add"].click()
+        XCTAssertTrue(app.buttons["UI draft tag"].exists)
+        let screenshot = XCTAttachment(screenshot: app.screenshot())
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
+        app.typeKey(.escape, modifierFlags: [])
+        let dismissed = NSPredicate(format: "exists == false")
+        expectation(for: dismissed, evaluatedWith: app.sheets.firstMatch)
+        waitForExpectations(timeout: 3)
+        rowPoint.rightClick()
+        let edit = app.menuItems["Edit Tags"]
+        XCTAssertTrue(edit.waitForExistence(timeout: 3))
+        let quickButtons = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "quick-tag-"))
+        XCTAssertEqual(quickButtons.count, 7)
+        let applied = app.buttons["quick-tag-Red"]
+        XCTAssertTrue(applied.exists)
+        let contextCapture = XCTAttachment(screenshot: app.screenshot())
+        contextCapture.name = "Quick tag circles"
+        contextCapture.lifetime = .keepAlways
+        add(contextCapture)
+        XCTAssertEqual(applied.value as? String, "1", app.debugDescription)
+        applied.hover()
+        let hover = XCTAttachment(screenshot: app.screenshot())
+        hover.name = "Applied tag hover"
+        hover.lifetime = .keepAlways
+        add(hover)
+        edit.click()
+        XCTAssertTrue(app.sheets.firstMatch.waitForExistence(timeout: 3))
+        XCTAssertFalse(app.buttons["UI draft tag"].exists)
+        app.buttons["Cancel"].click()
+    }
+
+    @MainActor
+    func testIconModeTagContextMenuPreservesSelection() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-fixtures", "--ui-window-width", "1100", "--ui-view-mode", "icons", "-appLanguagePreference", "english"]
+        app.launch()
+        app.activate()
+        let file = app.staticTexts["Welcome.txt"].firstMatch
+        XCTAssertTrue(file.waitForExistence(timeout: 5))
+        let frame = file.frame
+        let window = app.windows.firstMatch
+        let rowPoint = window.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: frame.midX - window.frame.minX, dy: frame.midY - window.frame.minY))
+        file.click()
+        file.click()
+        XCTAssertTrue(app.buttons["edit-tags-action"].isEnabled)
+        rowPoint.rightClick()
+        XCTAssertTrue(app.menuItems["Edit Tags"].waitForExistence(timeout: 3))
+        XCTAssertEqual(app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "quick-tag-")).count, 7)
+        app.typeKey(.escape, modifierFlags: [])
+        XCTAssertTrue(app.buttons["edit-tags-action"].isEnabled)
+    }
+
+    @MainActor
+    func testTagContextMenuInGalleryAndColumns() throws {
+        for mode in ["gallery", "columns"] {
+            let app = XCUIApplication()
+            app.launchArguments = ["--ui-fixtures", "--ui-window-width", "1100", "--ui-view-mode", mode, "-appLanguagePreference", "english"]
+            app.launch()
+            app.activate()
+            let file = app.staticTexts["Welcome.txt"].firstMatch
+            XCTAssertTrue(file.waitForExistence(timeout: 5), mode)
+            file.rightClick()
+            XCTAssertTrue(app.menuItems["Edit Tags"].waitForExistence(timeout: 3), mode)
+            XCTAssertEqual(app.buttons["quick-tag-Red"].value as? String, "1", mode)
+            app.typeKey(.escape, modifierFlags: [])
+            app.terminate()
+        }
+    }
+
+    @MainActor
     func testExample() throws {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-fixtures"]
@@ -347,6 +441,9 @@ final class ZforgeUITests: XCTestCase {
         app.launch()
         let archive = app.staticTexts["Sample.zip"].firstMatch
         XCTAssertTrue(archive.waitForExistence(timeout: 5))
+        let frame = archive.frame
+        let window = app.windows.firstMatch
+        let rowPoint = window.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: frame.midX - window.frame.minX, dy: frame.midY - window.frame.minY))
         archive.click()
 
         let toolbarMenu = app.buttons["toolbar-more-menu"]
@@ -358,7 +455,7 @@ final class ZforgeUITests: XCTestCase {
         XCTAssertFalse(app.menuItems["Compress"].exists)
         app.typeKey(.escape, modifierFlags: [])
 
-        archive.rightClick()
+        rowPoint.rightClick()
         for title in ["Open", "Extract Here", "Extract to \"Sample\"", "Extract…", "Validate", "Add to Archive…"] {
             XCTAssertTrue(app.menuItems[title].exists, "Missing \(title) from the secondary menu")
         }
@@ -384,7 +481,7 @@ final class ZforgeUITests: XCTestCase {
 
         for title in [
             "View", "Compress Selected", "Share", "Open", "Quick Look",
-            "Get Info", "Add Tag", "Rename", "Duplicate"
+            "Get Info", "Edit Tags", "Rename", "Duplicate"
         ] {
             XCTAssertTrue(app.menuItems[title].exists, "Missing \(title) from the unified toolbar menu")
         }
@@ -444,7 +541,7 @@ final class ZforgeUITests: XCTestCase {
         overflowButton.click()
         XCTAssertFalse(app.menuItems["View"].exists)
         XCTAssertFalse(app.menuItems["Compress Selected"].exists)
-        for title in ["Share", "Open", "Quick Look", "Get Info", "Add Tag", "Rename", "Duplicate"] {
+        for title in ["Share", "Open", "Quick Look", "Get Info", "Edit Tags", "Rename", "Duplicate"] {
             XCTAssertTrue(app.menuItems[title].exists, "Missing \(title) from the partial toolbar overflow")
         }
     }

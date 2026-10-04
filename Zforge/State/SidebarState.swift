@@ -23,13 +23,25 @@ final class SidebarState {
     var serverAddress = "smb://"
     var serverError: String?
 
-    var favorites: [SidebarDestination] {
+    var pinnedFolders = PinnedFolderStore.shared
+
+    private var defaultFavorites: [SidebarDestination] {
         return [
             destination("Desktop", UserDirectoryService.desktopURL, "menubar.dock.rectangle"),
             destination("Documents", UserDirectoryService.documentsURL, "doc.on.doc"),
             destination("Downloads", UserDirectoryService.downloadsURL, "arrow.down.circle"),
             SidebarDestination(name: AppLocalization.string("Applications"), url: URL(fileURLWithPath: "/Applications"), systemImage: "square.grid.2x2", kind: .favorite)
         ]
+    }
+
+    var favorites: [SidebarDestination] {
+        pinnedFolders.urls.map { url in
+            let original = defaultFavorites.first {
+                $0.url.standardizedFileURL.resolvingSymlinksInPath() == url.standardizedFileURL
+            }
+            return SidebarDestination(name: original?.name ?? FileManager.default.displayName(atPath: url.path),
+                                      url: url, systemImage: original?.systemImage ?? "folder", kind: .favorite)
+        }
     }
 
     var userHome: SidebarDestination {

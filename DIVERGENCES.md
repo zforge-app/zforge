@@ -51,7 +51,7 @@ Os identificadores permitem localizar o pedido original no histórico local. O c
 ### D-06 — Botão `•••` da toolbar não oferece as mesmas opções contextuais (resolvido; confirmado pelo usuário)
 
 - **Pedido:** as opções da matriz de D-05 também devem aparecer no botão de reticências mostrado na captura, preservando o comportamento já existente (C-07).
-- **Resolução no código:** [showToolbarActionsMenu](Zforge/ContentView.swift) consome a mesma matriz/handler de D-05, mantendo Quick Look, Informações, Tag desabilitada, Renomear, Duplicar e Compartilhar no overflow aplicável. **Confirmação:** o usuário informou que D-06 está OK. [Task ZF-06](TASKS.md).
+- **Resolução no código:** [showToolbarActionsMenu](Zforge/ContentView.swift) consome a mesma matriz/handler de D-05, mantendo Quick Look, Informações, Tags (habilitada para seleção local desde 2026-10-03), Renomear, Duplicar e Compartilhar no overflow aplicável. **Confirmação:** o usuário informou que D-06 está OK. [Task ZF-06](TASKS.md).
 
 ## Divergências entre documentos antigos e comportamento vigente
 
@@ -177,11 +177,38 @@ Os identificadores permitem localizar o pedido original no histórico local. O c
 
 **Corrigida no projeto em 2026-10-03.** O relato do usuário foi reproduzido no DerivedData padrão do Xcode: `Build SevenZipCore` falhava ao criar `SevenZip/Debug` com `Operation not permitted`. O perfil gerado permitia somente os caminhos literais declarados em `DERIVED_FILE_DIR`, sem autorizar seus descendentes; uma lista explícita de objetos ainda bloqueava os arquivos temporários do `libtool`. A fase agora usa `TARGET_TEMP_DIR/SevenZip`, sob a área de temporários que o perfil autoriza recursivamente, declara a biblioteca final como saída e mantém os caminhos de linkagem sincronizados em Debug/Release. `ENABLE_USER_SCRIPT_SANDBOXING` permanece habilitado; não houve mudança de backend ou de permissões do app. Evidência de build em `REGRESSION-COVERAGE.md`; ZF-21.
 
-### D-23 — Pasta interna com forma e cor diferentes da pasta nativa
+### D-23 — Tags somente para leitura
+
+**Corrigido e confirmado pelo usuário em 2026-10-03; 116 testes unitários e 6 de UI aprovados no refinamento final, matriz visual ampla pendente.** O pedido adiciona definição/criação de tags pelo menu de contexto e ícone entre Share e reticências, além da cor das pastas. A folha compartilhada edita metadados Finder locais, preserva tags não editadas de cada item e atualiza catálogo/filtro. A primeira versão adotava a primeira tag colorida na ordem do nome; o refinamento abaixo usa a cor da frente na pilha invertida. A evidência executada está em `REGRESSION-COVERAGE.md`.
+
+#### Refinamento de D-23 solicitado após teste do usuário
+
+A primeira versão só oferecia o item que abria a folha, empilhava círculos da esquerda para a direita e recoloria a pasta inteira (inclusive papel). O refinamento implementa linha rápida de sete tags, check/hover +/x e Edit Tags com símbolo, pilha da direita para a esquerda e escolha da cor da frente. A recoloração passa a operar apenas no material azul, mantendo papel e detalhes neutros; a rasterização usa 512 px para não ampliar uma representação lógica de 32 pt. Cobertura e limites em `REGRESSION-COVERAGE.md`.
+### D-24 — Feedback de arraste inconstante e ícone substituído na sidebar
+
+Relato de 2026-10-03, com gravações do Zforge e Finder e captura da seleção monocromática. A sidebar alternava entre o fundo nativo da List e o contorno customizado; os destinos trocavam seus símbolos por pasta aberta. Também não representava o diretório atual com destaque próprio.
+
+**Reproduções 18:56 e 19:47:** a primeira revisão retinha highlight e falhava no acabamento/fim de lista; a segunda, com delegate global, regrediu o pin e foi revertida a pedido do usuário. Nesta terceira revisão voltam os handlers por item, com bordas superior/inferior, seleção monocromática, símbolos estáveis e limpeza nativa por owner. Removida somente a entrada visível “Add Folder…”. Pin via menu foi exercitado com referência descartável; pin com o payload real de URL foi executado em teste. A estabilidade do gesto contínuo ainda não foi confirmada por automação; D-24 permanece com conferência visual pendente.
+
+### D-25 — Drag automático na própria pasta cria cópia
+
+Gravação de 19:47 mostra cópia de PDF com sufixo depois da extensão. Corrigido no código: exportar a URL original como `public.file-url`, e verificar a igualdade canônica do diretório pai antes da inferência de operação por volume. Automatic/move para o mesmo pai retornam os originais sem criar arquivos. Option/paste/Duplicate continuam copiando. Teste com arquivo/pasta e URLs alternativas/symlink aprovado; provider de bytes carregado por NSURL e pin no destino original aprovados. O vídeo demonstra a reprodução anterior; não foi tratado como execução da build corrigida.
+
+**Retorno 20:11:** usuário confirma que a parte funcional foi resolvida (pin e regressão de cópia), mas o indicador é recortado. O overlay de cada célula desenhava metade do círculo para fora dos seus limites. Ajustado somente o desenho: camada nativa acima da clip view, ancorada à célula, sem hit testing; handlers por item preservados. Teste da hierarquia nativa e build aprovados; acabamento da nova build durante gesto ainda não conferido por automação.
+
+**Refinamento visual 20:22 (D-24):** vídeo confirma melhoria do recorte, mas highlight da pasta atual ainda cobria parte da linha. Corrigida a composição: backing layer próprio do indicador com zPosition superior às camadas irmãs, inclusive após criação tardia de highlight. Espessura da linha passa a 2 pt por pedido do usuário. Teste da hierarquia/composição aprovado; conferência durante drag real da build nova permanece pendente.
+
+**Refinamento do círculo em 2026-10-03:** usuário confirma melhoria da linha e pede um círculo proporcional. Diâmetro externo aumentado de 5 para 8 pt, contorno de 1 para 2 pt; centro vertical, início à esquerda e extremidade direita preservados. Conferência visual do novo tamanho durante drag pendente.
+
+**Ajuste solicitado em 2026-10-03:** círculo do indicador ampliado para 12 pt de diâmetro externo; contorno e linha mantidos em 2 pt. Centro vertical e limites horizontais preservados.
+
+**Escolha final em 2026-10-03:** por pedido do usuário, círculo retorna a 8 pt de diâmetro externo, com contorno e linha de 2 pt. O estudo de 12 pt é histórico.
+
+### D-26 — Pasta interna com forma e cor diferentes da pasta nativa
 
 - **Relato e decisão do usuário:** diretórios dentro de archives devem continuar distintos, mas preservar a pasta do sistema. A diferença deve ser um carimbo circular do Zforge em relevo, inferior direito em tamanho grande e centralizado quando pequeno.
 - **Correção:** `FileIconView` usa a pasta nativa para diretórios `.archive`, com selo vetorial monocromático da identidade prensa/Z. O limite compacto é 32 pt, aplicado ao tamanho apresentado após zoom. Pastas locais mantêm o cache, a composição de conteúdo e a transição no drop.
-- **Evidência:** build e suíte unitária aprovadas; renderização AppKit isolada conferida entre 16 e 190 pt. A matriz visual no app permanece em OR-13; ZF-26 e `REGRESSION-COVERAGE.md`.
+- **Evidência:** build e suíte unitária aprovadas; renderização AppKit isolada conferida entre 16 e 190 pt. A matriz visual no app permanece em OR-13; ZF-29 e `REGRESSION-COVERAGE.md`.
 - **Refinamento solicitado:** selo mais alto, maior em 48 pt e menor nos previews grandes; base com menos faixas. Implementados no compositor e exportados três estados e selo avulso em `Documentation/Design/ArchiveFolderStamp`. Os estados com arquivos/aberta são estudos para revisão; não alteram a determinação de conteúdo nem o drop de diretórios virtuais.
 - **Decisão posterior:** forma v3 aprovada; o usuário considerou a composição anterior semelhante a uma imagem sobreposta e pediu fisicalidade com luz/sombra e **debossing**, como pasta prensada. Aperfeiçoamento planejado em `Documentation/Design/ArchiveFolderStamp/DEBOSSING-PLAN.md`; ainda não implementado.
 - **Integração autorizada e implementada:** v6 aplicada ao componente compartilhado via `ArchiveFolderRelief`, fonte única de máscaras neutras de luz/sombra. Substitui a geometria simplificada e mantém a pasta nativa. Círculo contínuo recorta a prensa. Build, 110 testes unitários e renderização isolada conferidos; iluminação fixa da referência, sem renderizador de altura/luz dinâmica. Matriz visual ampla permanece em OR-13.
@@ -189,7 +216,7 @@ Os identificadores permitem localizar o pedido original no histórico local. O c
 
 - **Novo estudo solicitado:** pasta aberta durante o recebimento por arraste, seguindo nova referência nativa. Apenas criação visual nesta etapa; o usuário decidirá quando usar. Não reintroduzir automaticamente a antiga versão aberta rejeitada nem substituir o estado fechado com arquivos.
 
-- **Integração posterior autorizada:** proposta aberta v7 aprovada. Aplicar pasta aberta com selo apenas a diretórios internos expandidos na Lista, na linha e no hero do preview. Recolher restaura a pasta fechada; outros modos não herdam a abertura. Implementado sobre o ícone nativo aberto `ofld`, mantendo o selo por máscaras. Drag and drop de itens dentro de archives registrado como pendente em OR-14/ZF-27; adição de arquivos locais existente não substitui esse requisito.
+- **Integração posterior autorizada:** proposta aberta v7 aprovada. Aplicar pasta aberta com selo apenas a diretórios internos expandidos na Lista, na linha e no hero do preview. Recolher restaura a pasta fechada; outros modos não herdam a abertura. Implementado sobre o ícone nativo aberto `ofld`, mantendo o selo por máscaras. Drag and drop de itens dentro de archives registrado como pendente em OR-14/ZF-30; adição de arquivos locais existente não substitui esse requisito.
 
 - **Regressão visual relatada na versão aberta integrada:** `ofld` apresentou textura/cor diferentes, base com faixas e cantos inconsistentes com a pasta fechada. Corrigido para usar o mesmo material da pasta fechada: face arredondada e selo rasterizados juntos e inclinados com amostragem bilinear, painel traseiro preservado, papel condicionado a arquivos e sombra de contato. A regra de expansão não mudou.
 
@@ -203,7 +230,7 @@ Os identificadores permitem localizar o pedido original no histórico local. O c
 
 - **Pasta aberta vazia:** a exportação revelou degrau na borda esquerda e gradiente retangular residual, oculto pelo papel no estado cheio. A amostragem por coluna ainda alcançava a face fechada. Substituída por amostras exclusivamente do material traseiro intacto, com transição suave desde o topo nativo e alfa antialias na borda. Painel vazio contínuo; face/selo/perspectiva preservados.
 
-### D-24 — Diretórios locais usam o design anterior às correções de archives
+### D-27 — Diretórios locais usam o design anterior às correções de archives
 
 - **Pedido de 2026-10-03:** reutilizar os ícones aprovados para diretórios internos, retirando o indicador de compressão.
 - **Correção implementada:** composição compartilhada para diretórios locais comuns, nos estados fechado/aberto e vazio/com conteúdo, sem máscaras do selo. Retirados o compositor local antigo e o recurso `ofld`; papel atrás da borda, base e painel traseiro seguem a geometria refinada. Expansão na Lista atualiza linha e preview; drop local conserva a transição. Arquivos/packages continuam com ícones próprios do sistema; a detecção local de conteúdo mantém qualquer filho direto.

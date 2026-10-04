@@ -1,5 +1,6 @@
 import AppKit
 import SwiftUI
+import UniformTypeIdentifiers
 
 nonisolated enum BrowserSidebarLayout {
     static let minimumWidth: CGFloat = 180
@@ -106,6 +107,7 @@ struct BrowserBreadcrumb: View {
 
 struct BrowserSidebar: View {
     @State private var tagCatalog = FinderTagCatalog.shared
+    @State private var dropFeedback = SidebarDropFeedback()
     @Bindable var browser: FileBrowserState
     @Bindable var sidebar: SidebarState
     let windowWidth: CGFloat
@@ -124,16 +126,45 @@ struct BrowserSidebar: View {
             }
             .buttonStyle(.plain)
 
-            Section("Favorites") {
+            Section {
                 ForEach(sidebar.favorites) { destination in
-                    destinationRow(destination.name, destination.url, destination.systemImage)
+                    destinationRow(destination.name, destination.url, destination.systemImage, canInsert: true,
+                                   nextFavorite: sidebar.favorites.drop(while: { $0.id != destination.id }).dropFirst().first?.url)
+                        .contextMenu {
+                            Button("Remove from Sidebar", systemImage: "pin.slash") {
+                                sidebar.pinnedFolders.remove(destination.url)
+                                restoreContentFocus()
+                            }
+                        }
+                        .accessibilityIdentifier("sidebar-favorite-\(destination.id)")
                 }
+            } header: {
+                Text("Favorites")
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .contentShape(Rectangle())
+                    .background {
+                        SidebarNativeDropFeedback(feedback: dropFeedback, owner: "favorites-header",
+                            insertionEdge: sidebar.favorites.isEmpty && dropFeedback.target == .insertion(nil) ? .bottom : nil,
+                            insertionOffset: 5)
+                    }
+                    .onDrop(of: [UTType.fileURL.identifier], delegate: SidebarFavoriteDropDelegate(
+                        browser: browser, anchor: sidebar.favorites.first?.url,
+                        feedback: dropFeedback, owner: "favorites-header"
+                    ))
             }
-            Section("Locations") {
+            Section {
                 destinationRow(sidebar.userHome.name, sidebar.userHome.url, sidebar.userHome.systemImage)
                 ForEach(sidebar.localVolumes) { volume in
                     destinationRow(volume.name, volume.url, volume.kind == .removable ? "externaldrive" : "internaldrive")
                 }
+            } header: {
+                Text("Locations")
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .contentShape(Rectangle())
+                    .background { SidebarNativeDropFeedback(feedback: dropFeedback, owner: "favorites-end") }
+                    .onDrop(of: [UTType.fileURL.identifier], delegate: SidebarFavoriteDropDelegate(
+                        browser: browser, anchor: nil, feedback: dropFeedback, owner: "favorites-end"
+                    ))
             }
             Section("Shared") {
                 ForEach(sidebar.networkVolumes) { volume in
@@ -188,6 +219,7 @@ struct BrowserSidebar: View {
         .onModifierKeysChanged(mask: [.option, .command]) { _, modifiers in
             dragSession.modifiers = modifiers
         }
+        .onDisappear { dropFeedback.clear() }
         .task { await sidebar.refresh() }
         .task { tagCatalog.start() }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
@@ -195,60 +227,147 @@ struct BrowserSidebar: View {
         }
     }
 
-    private func destinationRow(_ name: String, _ url: URL, _ icon: String) -> some View {
+    private func destinationRow(_ name: String, _ url: URL, _ icon: String, canInsert: Bool = false, nextFavorite: URL? = nil) -> some View {
+        SidebarDestinationRow(browser: browser, feedback: dropFeedback, name: name, url: url,
+                              systemImage: icon, canInsert: canInsert, nextFavorite: nextFavorite,
+                              restoreContentFocus: restoreContentFocus, dragSession: dragSession)
+    }
+}
+
+private struct SidebarDestinationRow: View {
+    @Bindable var browser: FileBrowserState
+    @Bindable var feedback: SidebarDropFeedback
+    let name: String
+    let url: URL
+    let systemImage: String
+    let canInsert: Bool
+    let nextFavorite: URL?
+    let restoreContentFocus: () -> Void
+    let dragSession: BrowserFileDragSession
+    @State private var rowHeight: CGFloat = 32
+
+    private var owner: String { "\(canInsert ? "favorite" : "destination"):\(url.standardizedFileURL.path)" }
+
+    private var isDropTarget: Bool { feedback.owner == owner && feedback.target == .folder(url) }
+    private var isCurrent: Bool {
+        SidebarDropFeedback.isCurrentDirectory(url, current: browser.currentDirectoryURL)
+    }
+
+    var body: some View {
         Button {
             restoreContentFocus()
             Task { await browser.navigateToSidebar(url, name: name) }
         } label: {
             HStack {
-                SidebarDropDestinationLabel(name: name, url: url, systemImage: icon)
+                Label {
+                    Text(name).fontWeight(isCurrent || isDropTarget ? .semibold : .regular)
+                } icon: {
+                    Image(systemName: systemImage)
+                        .resizable().scaledToFit().frame(width: 16, height: 16)
+                        .foregroundStyle(isDropTarget ? Color.white : Color.accentColor)
+                }
                 Spacer()
                 if browser.pendingAuthorizationURL == url {
                     Image(systemName: "lock.fill").font(.caption).foregroundStyle(.secondary)
                 }
             }
-            .contentShape(Rectangle())
             .padding(.horizontal, 4)
-            .padding(.vertical, 4)
+            .padding(.vertical, 8)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .browserFileDropTarget(
-            state: browser,
-            destinationURL: url,
-            dragSession: dragSession
+        .foregroundStyle(isDropTarget ? Color.white : .primary)
+        .accessibilityAddTraits(isCurrent ? .isSelected : [])
+        .listRowBackground(
+            RoundedRectangle(cornerRadius: 8)
+                .fill(isDropTarget ? Color.accentColor : isCurrent
+                      ? Color(nsColor: .unemphasizedSelectedContentBackgroundColor) : .clear)
+                .padding(.horizontal, 10)
         )
-    }
+        .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+        .background {
+            SidebarNativeDropFeedback(feedback: feedback, owner: owner, insertionEdge:
+                canInsert && feedback.target == .insertion(url) ? .top
+                : canInsert && nextFavorite == nil && feedback.target == .insertion(nil) ? .bottom : nil)
+                .allowsHitTesting(false)
+        }
+        .background {
+            GeometryReader { geometry in
+                Color.clear
+                    .onAppear { rowHeight = geometry.size.height }
+                    .onChange(of: geometry.size.height) { _, height in rowHeight = height }
+            }
+        }
+        .onDrop(of: [UTType.fileURL.identifier], delegate: SidebarRowDropDelegate(
+            browser: browser, url: url, canInsert: canInsert, nextFavorite: nextFavorite,
+            rowHeight: rowHeight, feedback: feedback, owner: owner, dragSession: dragSession
+        ))
+        .onDisappear { feedback.leave(owner: owner) }
 
+    }
 }
 
-private struct SidebarDropDestinationLabel: View {
-    @Environment(\.browserDropTargetURL) private var dropTargetURL
-    let name: String
+private struct SidebarRowDropDelegate: DropDelegate {
+    let browser: FileBrowserState
     let url: URL
-    let systemImage: String
+    let canInsert: Bool
+    let nextFavorite: URL?
+    let rowHeight: CGFloat
+    let feedback: SidebarDropFeedback
+    let owner: String
+    let dragSession: BrowserFileDragSession
 
-    private var isOpenDropTarget: Bool {
-        dropTargetURL?.standardizedFileURL == url.standardizedFileURL
+    func validateDrop(info: DropInfo) -> Bool { info.hasItemsConforming(to: [UTType.fileURL.identifier]) }
+    private func target(_ info: DropInfo) -> SidebarDropFeedback.Target {
+        SidebarDropFeedback.rowTarget(url: url, canInsert: canInsert, nextFavorite: nextFavorite,
+                                      height: rowHeight, y: info.location.y)
     }
-
-    var body: some View {
-        Label {
-            Text(name)
-        } icon: {
-            ZStack {
-                Image(systemName: systemImage)
-                    .resizable()
-                    .scaledToFit()
-                    .opacity(isOpenDropTarget ? 0 : 1)
-
-                Image(nsImage: FileIconCache.shared.openFolderIcon(for: url))
-                    .resizable()
-                    .interpolation(.high)
-                    .opacity(isOpenDropTarget ? 1 : 0)
-            }
-            .frame(width: 16, height: 16)
-            .animation(.easeInOut(duration: 0.18), value: isOpenDropTarget)
+    private func update(_ info: DropInfo) {
+        guard validateDrop(info: info) else { feedback.leave(owner: owner); return }
+        feedback.update(owner: owner, target: target(info))
+    }
+    func dropEntered(info: DropInfo) { update(info) }
+    func dropExited(info: DropInfo) { feedback.leave(owner: owner) }
+    func dropUpdated(info: DropInfo) -> DropProposal? {
+        guard validateDrop(info: info) else { feedback.leave(owner: owner); return DropProposal(operation: .cancel) }
+        update(info)
+        if case .insertion = target(info) { return DropProposal(operation: .copy) }
+        return DropProposal(operation: BrowserFileDropProposalResolver.operation(
+            for: BrowserFileDropOperationResolver.operation(for: dragSession.modifiers)
+        ))
+    }
+    func performDrop(info: DropInfo) -> Bool {
+        feedback.leave(owner: owner)
+        guard validateDrop(info: info) else { return false }
+        let providers = info.itemProviders(for: [UTType.fileURL.identifier])
+        switch target(info) {
+        case let .insertion(anchor): return browser.performPinDrop(providers: providers, before: anchor)
+        case let .folder(destination):
+            return browser.performDrop(providers: providers, to: destination,
+                operation: BrowserFileDropOperationResolver.operation(for: dragSession.modifiers))
         }
+    }
+}
+
+private struct SidebarFavoriteDropDelegate: DropDelegate {
+    let browser: FileBrowserState
+    let anchor: URL?
+    let feedback: SidebarDropFeedback
+    let owner: String
+    func validateDrop(info: DropInfo) -> Bool { info.hasItemsConforming(to: [UTType.fileURL.identifier]) }
+    func dropEntered(info: DropInfo) {
+        if validateDrop(info: info) { feedback.update(owner: owner, target: .insertion(anchor)) }
+    }
+    func dropExited(info: DropInfo) { feedback.leave(owner: owner) }
+    func dropUpdated(info: DropInfo) -> DropProposal? {
+        guard validateDrop(info: info) else { feedback.leave(owner: owner); return DropProposal(operation: .cancel) }
+        dropEntered(info: info)
+        return DropProposal(operation: .copy)
+    }
+    func performDrop(info: DropInfo) -> Bool {
+        feedback.leave(owner: owner)
+        guard validateDrop(info: info) else { return false }
+        return browser.performPinDrop(providers: info.itemProviders(for: [UTType.fileURL.identifier]), before: anchor)
     }
 }
 

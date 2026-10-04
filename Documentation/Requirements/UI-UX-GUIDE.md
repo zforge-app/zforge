@@ -58,6 +58,11 @@ A janela usa `NavigationSplitView` com:
 - O diretório real da conta do usuário aparece como a primeira entrada de Locais, identificado pelo nome da pasta (por exemplo, `felipe`) em vez do rótulo genérico “Home”. Não usar como destino o diretório Home redirecionado para o container do App Sandbox.
 - Em “Go to Folder”, `~` e caminhos iniciados por `~/` são expandidos a partir desse mesmo diretório real da conta, nunca pela Home redirecionada do App Sandbox.
 - Os favoritos Desktop, Documents e Downloads apontam para as pastas correspondentes dentro do diretório real da conta do usuário. As APIs de busca redirecionadas pelo App Sandbox não devem fazer essas entradas apontarem para `Library/Containers/.../Data`.
+- Favoritos permite fixar novas pastas reais por “Add to Sidebar” no menu contextual compartilhado pelos quatro modos, ou por drop no cabeçalho, entre as entradas e após o último favorito. A sidebar não exibe “Add Folder…”. O cabeçalho insere no início, os intervalos inserem antes da próxima entrada e o espaço final acrescenta ao fim. Fixar não transfere o conteúdo; o corpo dos destinos conserva cópia/movimentação/alias. “Remove from Sidebar” remove apenas a referência.
+- Fixar aceita seleção múltipla composta apenas por pastas, rejeita arquivos, packages e conteúdo virtual de archives, evita duplicatas e persiste a ordem entre sessões/janelas. “Remove from Sidebar” remove somente a referência. O corpo de cada destino conserva o fluxo de copiar/mover arquivos já implementado. O usuário confirmou o funcionamento em 2026-10-03; os limites da automação permanecem na matriz de regressão.
+- **Refinamento visual escolhido em 2026-10-03 — alternativa B, espessura refinada em 20:22:** linha accent de `2 pt`, círculo vazado de `8 pt` com contorno de `2 pt`, começando `8 pt` à esquerda do conteúdo. Desenhar no limite completo das linhas numa camada visual acima das células nativas, sem recortar o círculo/linha e sem interceptar cliques ou drops; acompanhar scroll. O backing layer do indicador deve permanecer acima das camadas de highlight, inclusive após atualizações nativas. Usar insets verticais nativos zerados e padding equivalente dentro do botão, preservando altura. Os primeiros/últimos `5 pt` de cada favorito representam inserção; o corpo representa transferência. A borda inferior do último favorito e o cabeçalho de Locais permitem acrescentar ao fim. Favoritos vazio aceita pin no cabeçalho. Manter handlers por item; não substituir por um destino global na List.
+- A sidebar mantém os símbolos originais durante drag; nunca os troca por pasta aberta. O alvo de transferência recebe um fundo accent sólido arredondado, com texto e símbolo branco, sem alternância para contorno. A pasta real atual, quando representada na sidebar, recebe fundo monocromático discreto (`unemphasizedSelectedContentBackgroundColor`) e nome semibold, como na captura de referência; arraste tem prioridade e a seleção retorna ao sair. O fundo mantém margem horizontal de 10 pt.
+- O highlight transitório desaparece ao sair do destino ou soltar o drag; a limpeza também acompanha posição/botão nativos do destino ativo. Callbacks de owners anteriores não podem limpar um alvo novo. Desativar somente o feedback nativo da tabela da sidebar, preservando tabelas e handlers de conteúdo.
 - A seção Tags fica ao fim da sidebar e exibe o catálogo global dos arquivos autorizados e favoritos do Finder, independente da pasta atual. Seus círculos medem 12 pt (redução de 4 pt), com cor real ou contorno para tags sem cor. Toda a linha aceita clique e abre o filtro global correspondente, incluindo pastas marcadas. Alterações de tags atualizam a sidebar e o filtro aberto automaticamente; a descoberta inicial é progressiva. Voltar/avançar preserva o filtro.
 - Para localizações do sistema de arquivos, o breadcrumb sempre mostra o caminho completo desde o volume, por exemplo `Macintosh HD > Users > felipe`, mesmo quando a navegação começou por uma entrada intermediária da sidebar. Esses ancestrais visuais não devem criar níveis vazios na visualização em Colunas.
 - A superfície deve continuar visualmente pelo topo da janela, sem corte entre sidebar e titlebar.
@@ -148,18 +153,19 @@ Entre `678` e `899 pt`, o seletor usa uma cápsula compacta própria, com o íco
 
 ### Grupo de ações
 
-Na apresentação expandida, o grupo permanece com três ações:
+Na apresentação expandida, o grupo permanece com quatro ações:
 
 1. ação contextual de archive;
 2. Share;
-3. reticências para ações adicionais.
+3. Tags (`tag`), para editar a seleção local;
+4. reticências para ações adicionais.
 
-As três ações compartilham uma única cápsula nativa, separada da cápsula do seletor de visualização. Cada label preserva uma faixa visual de `25 pt` para manter o padding regular entre os símbolos.
+As quatro ações compartilham uma única cápsula nativa, separada da cápsula do seletor de visualização. Cada label preserva uma faixa visual de `25 pt` para manter o padding regular entre os símbolos.
 Elas devem ser declaradas como itens nativos de um `ToolbarItemGroup`, delimitado do seletor por um `ToolbarSpacer` fixo. Não envolver o conjunto em um `ControlGroup` adaptativo dentro de um único `ToolbarItem`: depois de passar pelo overflow, essa composição pode retornar à toolbar conservando o espaçamento compacto.
 
 Em Recentes, a ação contextual é habilitada conforme a seleção. A extração usa por padrão a pasta real de cada archive, e a compressão conjunta grava o archive na pasta do item ativo. A escolha explícita de destino nos painéis continua disponível.
 
-Quando o grupo de ações não cabe, um botão com duplo chevron reproduz o indicador nativo de overflow da toolbar. Entre `840` e `899 pt`, a ação contextual de archive continua visível em cápsula própria e o menu começa por Share; abaixo de `840 pt`, a ação de archive também entra no menu. Open, Quick Look, Get Info, Add Tag, Rename e Duplicate permanecem sempre expandidos no nível principal desse menu. Diferentemente do Finder, esse conteúdo não vira um submenu `Action`. Abaixo de `678 pt`, o submenu `View` é acrescentado no início. As ações usam os mesmos handlers e estados habilitados da apresentação expandida; não delegar esse comportamento ao overflow automático da `NSToolbar`.
+Quando o grupo de ações não cabe, um botão com duplo chevron reproduz o indicador nativo de overflow da toolbar. Entre `840` e `899 pt`, a ação contextual de archive continua visível em cápsula própria e o menu começa por Share; abaixo de `840 pt`, a ação de archive também entra no menu. Open, Quick Look, Get Info, Edit Tags, Rename e Duplicate permanecem sempre expandidos no nível principal desse menu. Diferentemente do Finder, esse conteúdo não vira um submenu `Action`. Abaixo de `678 pt`, o submenu `View` é acrescentado no início. As ações usam os mesmos handlers e estados habilitados da apresentação expandida; não delegar esse comportamento ao overflow automático da `NSToolbar`.
 
 No clique secundário de um item, oferecer Open with, Share e Copy sem perder a seleção múltipla quando o item já pertence a ela. Open with é um submenu dos apps compatíveis, com Other… para escolha manual; com Option vira Always open with para arquivos locais. Copy vira Copy pathname com Option, copiando texto em vez de referências de arquivo. Quick Look vira Slideshow com Option. No menu File, New tab usa `⌘T` e Open with/Always open with e Quick Look/Slideshow seguem a mesma alternância nativa. Desabilitar ações sem alvo válido e localizar todos os novos rótulos.
 
@@ -169,7 +175,7 @@ O duplo chevron usa cor secundária enquanto o menu está fechado e só assume a
 
 | Largura da janela | Seletor de visualização | Ações |
 | --- | --- | --- |
-| `≥ 900 pt` | completo | três ações |
+| `≥ 900 pt` | completo | quatro ações |
 | `840–899 pt` | cápsula compacta | archive visível; demais no duplo chevron |
 | `678–839 pt` | cápsula compacta | expandidas no menu de duplo chevron |
 | `< 678 pt` | submenu no menu de duplo chevron | expandidas no mesmo menu |
@@ -233,7 +239,8 @@ As quatro visualizações compartilham as mesmas regras fundamentais:
 - `Command + C` publica as `NSURL` originais diretamente no `NSPasteboard`, usando `clearContents()` e `writeObjects(_:)`, não representações materializadas por `NSItemProvider`. Assim, `Option + Command + V` entrega ao `FileManager.moveItem` a origem real, move os itens para o destino e os remove da localização anterior.
 - No menu Editar, Move Items Here é a alternativa nativa de Paste por meio de `modifierKeyAlternate(.option)`. A movimentação valida as URLs do Clipboard ao ser executada e chama a operação `.move` do serviço de arquivos.
 - A origem de drag anuncia suporte a cópia, movimentação e alias dentro e fora da aplicação. Durante o arraste, `Option` força cópia, `Command` força movimentação e `Option + Command` cria alias; a operação é resolvida a partir de um estado de referência atualizado pelo SwiftUI e compartilhado com o `DropDelegate` durante toda a sessão.
-- Pastas nas quatro visualizações e destinos de pasta na sidebar aceitam drops e permanecem destacados enquanto o cursor estiver sobre o alvo válido. O destaque usa a cor semântica de accent do sistema, com preenchimento translúcido e contorno, e desaparece em `dropExited` ou antes de executar o drop. Enquanto uma pasta é o alvo, seu ícone transiciona por `0,18 s` para o ícone nativo de pasta aberta e retorna ao ícone original ao sair. Na sidebar, o conteúdo do destino mantém inset interno de `4 pt` na horizontal e `4 pt` na vertical para separar texto e ícone do contorno.
+- Soltar um item na própria pasta sem modificador não duplica o item, inclusive quando as URLs usam symlinks ou marcação diferente de diretório. O payload de drag deve conservar a localização original. Option continua solicitando cópia; o drop de pin adiciona somente uma referência.
+- Pastas nas quatro visualizações e destinos de pasta na sidebar aceitam drops e permanecem destacados enquanto o cursor estiver sobre o alvo válido. Nas views de conteúdo, o destaque usa a cor semântica de accent do sistema, com preenchimento translúcido e contorno, e desaparece em `dropExited` ou antes de executar o drop. Nas quatro views de conteúdo, enquanto uma pasta é o alvo, seu ícone transiciona por `0,18 s` para o ícone nativo de pasta aberta e retorna ao ícone original ao sair. A sidebar é exceção: mantém seu símbolo e usa o feedback sólido descrito na seção Sidebar. Na sidebar, o conteúdo do destino mantém padding interno de `4 pt` na horizontal e `8 pt` na vertical, com insets verticais nativos zerados para preservar altura e alinhar as zonas de drop.
 - “Add to Archive…” aparece nas ações contextuais de itens locais e abre um painel para escolher o archive. Um archive ZIP ou 7z visível e pastas internas do archive raiz aceitam drops com destaque de destino; a operação dentro do archive é sempre cópia. Antes de modificar o archive escolhido ou o alvo do drop, um diálogo identifica o destino e a quantidade de itens e oferece Adicionar ou Cancelar. Após sucesso dentro de um archive aberto, voltar à raiz atualizada preservando o breadcrumb anterior ao archive.
 - `performDrop(info:)` inicia o carregamento de todos os `NSItemProvider` antes de retornar. As conclusões podem chegar depois e então acionar a transferência assíncrona, mas não se deve adiar a própria chamada de carregamento para uma `Task`, pois o sistema restringe o acesso ao payload ao escopo inicial do drop.
 - Referência local: [modifierKeyAlternate(_:_:)](../SwiftUI/contexts/swiftui-modifier-key-alternate.md).
@@ -533,3 +540,13 @@ Ao surgir uma dúvida de UI/UX:
 6. manter a ponte AppKit pequena, isolada e substituível;
 7. testar a sequência completa de estados, não apenas a aparência estática final;
 8. registrar neste documento a decisão e o motivo.
+
+### Edição de tags — 2026-10-03
+
+O menu de contexto e o ícone entre Share e reticências abrem a mesma folha de edição localizada. Mostrar estado integral/parcial das tags na seleção múltipla, catálogo existente e criação por nome/cor, com Cancelar e Aplicar. Preservar tags não editadas de cada item. A pilha de círculos avança da direita para a esquerda e a primeira tag colorida à esquerda (última colorida nos metadados) define a cor da pasta nos quatro modos, previews e drop; packages e arquivos mantêm seus ícones. Conferir a nova largura do grupo nas transições de toolbar antes de declarar a validação visual completa.
+
+#### Refinamento dos menus e material da pasta — 2026-10-03
+
+A seção de tags em contexto e reticências/overflow tem duas linhas: sete primeiros nomes do catálogo em círculos (sem mostrar os demais), seguidos por Edit Tags com símbolo `tag`. Check indica aplicação em todos os alvos; hover mostra x nos aplicados e + nos não aplicados. Seleção parcial usa traço e hover +, aplicando a todos ao clicar. O clique rápido grava imediatamente; Edit Tags continua abrindo a folha. A linha customizada AppKit mantém tooltips, estado e nomes para acessibilidade; o editor completo continua disponível como item convencional de teclado.
+
+Os círculos de tags na Lista preservam a ordem dos metadados invertida visualmente, com o círculo à esquerda cobrindo parte do vizinho à direita. A pasta adota a primeira cor dessa pilha, ignorando tags sem cor. A recoloração deve substituir apenas a matiz do material azul, preservar luminosidade, sombras, papel branco e detalhes neutros, e renderizar as representações nativas em resolução de preview antes da alteração de pixels. Não aplicar uma camada uniforme sobre a pasta composta. Os ícones de sistema continuam sendo obtidos por APIs públicas, sem recursos privados do Finder.

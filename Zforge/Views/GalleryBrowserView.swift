@@ -67,7 +67,7 @@ struct GalleryBrowserView: View {
                                         item: item,
                                         dragSession: dragSession
                                     )
-                                    .contextMenu { BrowserItemActionsMenu(state: state, item: item) }
+                                    .browserItemContextMenu(state: state, item: item)
                                 }
                             }
                             .padding(10 * scale)

@@ -34,6 +34,83 @@ extension View {
     }
 }
 
+enum FolderTagIconColor {
+    nonisolated static func index(tags: [String], colors: [String: Int]) -> Int? {
+        FinderTagPresentation.folderColor(tags: tags, colors: colors)
+    }
+
+    /// Replace the blue material's hue, retaining neutral paper, badges and shadows.
+    @MainActor
+    static func compose(_ image: NSImage, colorIndex: Int) -> NSImage {
+        guard image.size.width > 0, image.size.height > 0 else { return image }
+        // NSWorkspace images often have a 32 pt logical size with larger native
+        // representations. Draw at preview resolution before changing pixels.
+        let width = 512, height = 512
+        var pixels = [UInt8](repeating: 0, count: width * height * 4)
+        let rendered = pixels.withUnsafeMutableBytes { bytes -> Bool in
+            guard let context = CGContext(data: bytes.baseAddress, width: width, height: height,
+                bitsPerComponent: 8, bytesPerRow: width * 4, space: CGColorSpaceCreateDeviceRGB(),
+                bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return false }
+            NSGraphicsContext.saveGraphicsState()
+            NSGraphicsContext.current = NSGraphicsContext(cgContext: context, flipped: false)
+            image.draw(in: CGRect(x: 0, y: 0, width: width, height: height), from: .zero, operation: .copy, fraction: 1)
+            NSGraphicsContext.restoreGraphicsState()
+            return true
+        }
+        guard rendered else { return image }
+        for offset in stride(from: 0, to: pixels.count, by: 4) {
+            let alpha = Double(pixels[offset + 3]) / 255
+            guard alpha > 0 else { continue }
+            let rgb = recolored(red: Double(pixels[offset]) / 255 / alpha,
+                                green: Double(pixels[offset + 1]) / 255 / alpha,
+                                blue: Double(pixels[offset + 2]) / 255 / alpha, index: colorIndex)
+            pixels[offset] = UInt8(clamping: Int((rgb.0 * alpha * 255).rounded()))
+            pixels[offset + 1] = UInt8(clamping: Int((rgb.1 * alpha * 255).rounded()))
+            pixels[offset + 2] = UInt8(clamping: Int((rgb.2 * alpha * 255).rounded()))
+        }
+        guard let provider = CGDataProvider(data: Data(pixels) as CFData),
+              let output = CGImage(width: width, height: height, bitsPerComponent: 8, bitsPerPixel: 32,
+                bytesPerRow: width * 4, space: CGColorSpaceCreateDeviceRGB(),
+                bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue),
+                provider: provider, decode: nil, shouldInterpolate: true, intent: .defaultIntent) else { return image }
+        return NSImage(cgImage: output, size: image.size)
+    }
+
+    nonisolated static func recolored(red r: Double, green g: Double, blue b: Double, index: Int) -> (Double, Double, Double) {
+        let maximum = max(r, g, b), minimum = min(r, g, b)
+        let chroma = maximum - minimum
+        guard maximum > 0, chroma > 0.06, b > r, b >= g * 0.95 else { return (r, g, b) }
+        // A gradual mask avoids fringes around antialiased material and neutral highlights.
+        let mask = min(1, max(0, (b - r - 0.04) / 0.12))
+        let hue: Double = switch index {
+        case 2: 0.34
+        case 3: 0.79
+        case 4: 0.56
+        case 5: 0.14
+        case 6: 0.0
+        case 7: 0.075
+        default: 0
+        }
+        let saturation = index == 1 ? 0 : min(1, chroma / maximum * 1.35)
+        let value = maximum * (index == 1 ? 0.82 : index == 2 ? 0.9 : 1)
+        let sector = hue * 6
+        let c = value * saturation
+        let x = c * (1 - abs(sector.truncatingRemainder(dividingBy: 2) - 1))
+        let m = value - c
+        let components: (Double, Double, Double) = switch Int(sector) {
+        case 0: (c, x, 0)
+        case 1: (x, c, 0)
+        case 2: (0, c, x)
+        case 3: (0, x, c)
+        case 4: (x, 0, c)
+        default: (c, 0, x)
+        }
+        return (r + (components.0 + m - r) * mask,
+                g + (components.1 + m - g) * mask,
+                b + (components.2 + m - b) * mask)
+    }
+}
+
 @MainActor
 final class FileIconCache {
     static let shared = FileIconCache()
@@ -76,12 +153,13 @@ final class FileIconCache {
             return NSImage(named: NSImage.folderName) ?? NSImage()
         }
 
-        return icon(
+        let base = icon(
             for: url,
             isDirectory: item.isDirectory,
             isPackage: item.isPackage,
             modificationDate: item.modificationDate
         )
+        return coloredFolder(base, item: item)
     }
 
     func icon(for url: URL) -> NSImage {
@@ -130,12 +208,13 @@ final class FileIconCache {
 
     func openFolderIcon(for item: BrowserItem) -> NSImage {
         guard let url = item.localURL else { return localDirectoryIcon(hasContents: false, isOpen: true) }
-        return openFolderIcon(
+        let base = openFolderIcon(
             for: url,
             isDirectory: item.isDirectory,
             isPackage: item.isPackage,
             modificationDate: item.modificationDate
         )
+        return coloredFolder(base, item: item, isOpen: true)
     }
 
     func openFolderIcon(for url: URL) -> NSImage {
@@ -165,6 +244,16 @@ final class FileIconCache {
             cache: &directoryContentsCache
         )
         return localDirectoryIcon(hasContents: hasContents, isOpen: true)
+    }
+
+    private func coloredFolder(_ image: NSImage, item: BrowserItem, isOpen: Bool = false) -> NSImage {
+        guard item.isDirectory, !item.isPackage,
+              let index = FolderTagIconColor.index(tags: item.tags, colors: item.tagColorIndexes) else { return image }
+        let key = "tag|\(item.id)|\(item.modificationDate?.timeIntervalSinceReferenceDate ?? 0)|\(index)|\(isOpen)|\(ObjectIdentifier(image))" as NSString
+        if let cached = cache.object(forKey: key) { return cached }
+        let colored = FolderTagIconColor.compose(image, colorIndex: index)
+        cache.setObject(colored, forKey: key)
+        return colored
     }
 
     private func cacheKey(

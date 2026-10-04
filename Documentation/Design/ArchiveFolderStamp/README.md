@@ -55,7 +55,7 @@ Especificação do prompt: transformar a pasta fechada aprovada em alvo aberto d
 
 ## Integração da pasta expandida
 
-A v7 foi aprovada para a linha de diretório interno expandido na Lista e o respectivo hero do preview (incluindo seleção múltipla). A produção usa `NSWorkspace` com OSType `ofld`, papel condicionado a `archiveDirectoryContainsFiles` e as máscaras v6 do selo; não usa o PNG completo da v7. Cache distingue escala, arquivos e expansão. Os outros modos mantêm pasta fechada. Drag and drop de itens internos não foi implementado e consta em OR-14/ZF-27.
+A v7 foi aprovada para a linha de diretório interno expandido na Lista e o respectivo hero do preview (incluindo seleção múltipla). A produção usa `NSWorkspace` com OSType `ofld`, papel condicionado a `archiveDirectoryContainsFiles` e as máscaras v6 do selo; não usa o PNG completo da v7. Cache distingue escala, arquivos e expansão. Os outros modos mantêm pasta fechada. Drag and drop de itens internos não foi implementado e consta em OR-14/ZF-30.
 
 ## Correção do material da pasta aberta
 
