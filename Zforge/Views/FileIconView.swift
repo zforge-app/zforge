@@ -40,6 +40,13 @@ final class FileIconCache {
 
     private let cache = NSCache<NSString, NSImage>()
     private var directoryContentsCache: [String: FolderContentsCacheEntry] = [:]
+    private lazy var nativeFolderIcon = NSWorkspace.shared.icon(for: .folder)
+    private struct ArchiveFolderKey: Hashable {
+        let scale: ArchiveFolderIconComposer.Scale
+        let containsFiles: Bool
+        let isExpanded: Bool
+    }
+    private var archiveFolderIcons: [ArchiveFolderKey: NSImage] = [:]
     private lazy var cachedOpenFolderIcon: NSImage = {
         let osTypeTag = UTTagClass(rawValue: "com.apple.ostype")
         guard let contentType = UTType(
@@ -56,6 +63,15 @@ final class FileIconCache {
 
     private init() {
         cache.countLimit = 2_048
+    }
+
+    func archiveDirectoryIcon(size: CGFloat, containsFiles: Bool = false, isExpanded: Bool = false) -> NSImage {
+        let scale = ArchiveFolderIconComposer.Scale(size: size)
+        let key = ArchiveFolderKey(scale: scale, containsFiles: containsFiles, isExpanded: isExpanded)
+        if let cached = archiveFolderIcons[key] { return cached }
+        let icon = ArchiveFolderIconComposer.compose(from: nativeFolderIcon, scale: scale, containsFiles: containsFiles, isOpen: isExpanded)
+        archiveFolderIcons[key] = icon
+        return icon
     }
 
     func icon(for item: BrowserItem) -> NSImage {
@@ -280,10 +296,15 @@ struct FileIconView: View {
     @Environment(\.browserDropTargetURL) private var dropTargetURL
     let item: BrowserItem
     var size: CGFloat = 48
+    var isExpanded: Bool = false
 
     var body: some View {
         Group {
-            if item.isDirectory, item.localURL != nil {
+            if item.isDirectory, case .archive = item.location {
+                Image(nsImage: FileIconCache.shared.archiveDirectoryIcon(size: size, containsFiles: item.archiveDirectoryContainsFiles, isExpanded: isExpanded))
+                    .resizable()
+                    .interpolation(.high)
+            } else if item.isDirectory, item.localURL != nil {
                 FolderIconTransition(
                     closedIcon: FileIconCache.shared.icon(for: item),
                     openIcon: FileIconCache.shared.openFolderIcon(for: item),

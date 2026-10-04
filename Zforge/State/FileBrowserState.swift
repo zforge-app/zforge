@@ -214,6 +214,13 @@ final class FileBrowserState {
         return result
     }
 
+    /// Inline expansion is a List presentation state, independent of selection and contents.
+    func usesOpenArchiveFolderIcon(for item: BrowserItem) -> Bool {
+        guard preferences.viewMode == .list, item.isDirectory,
+              case .archive = item.location else { return false }
+        return expandedItems.contains(item.id)
+    }
+
     var primarySelection: BrowserItem? {
         if let focusedItemID,
            selection.contains(focusedItemID),

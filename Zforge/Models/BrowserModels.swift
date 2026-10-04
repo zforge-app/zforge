@@ -327,6 +327,8 @@ nonisolated struct BrowserItem: Identifiable, Hashable, Sendable {
     let checksum: String?
     let compressionMethod: String?
     var extendedMetadata = BrowserExtendedMetadata()
+    /// True when an archive directory has at least one file anywhere below it.
+    var archiveDirectoryContainsFiles = false
 
     var localURL: URL? { location.fileSystemURL }
 

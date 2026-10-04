@@ -502,7 +502,7 @@ private struct SelectionHero: View {
                 }
             } else if let item = items.first {
                 if item.usesStaticIconPreview {
-                    FileIconView(item: item, size: 190 * scale)
+                    FileIconView(item: item, size: 190 * scale, isExpanded: state.usesOpenArchiveFolderIcon(for: item))
                 } else if let previewURL = state.previewURL {
                     if item.usesHTMLDocumentPreview {
                         HTMLPreview(url: previewURL)
@@ -567,7 +567,7 @@ private struct SelectionHeroItem: View {
     var body: some View {
         Group {
             if item.usesStaticIconPreview {
-                FileIconView(item: item, size: width)
+                FileIconView(item: item, size: width, isExpanded: state.usesOpenArchiveFolderIcon(for: item))
                     .frame(width: width, height: height)
             } else if let previewURL = state.previewURL(for: item) {
                 if item.usesTextThumbnailPreview {

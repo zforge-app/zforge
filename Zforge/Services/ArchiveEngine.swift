@@ -177,6 +177,7 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
         let displayName: String
         let parentArchiveID: UUID?
         let entries: [String: Entry]
+        let directoriesContainingFiles: Set<String>
         let isRawStream: Bool
     }
 
@@ -287,7 +288,8 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
                 contentTypeIdentifier: nil,
                 encrypted: entry.encrypted,
                 checksum: entry.checksum,
-                compressionMethod: entry.method
+                compressionMethod: entry.method,
+                archiveDirectoryContainsFiles: entry.isDirectory && archive.directoriesContainingFiles.contains(childPath)
             )
         }
     }
@@ -737,6 +739,7 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
             displayName: displayName,
             parentArchiveID: parentArchiveID,
             entries: entries,
+            directoriesContainingFiles: Entry.directoriesContainingFiles(in: entries),
             isRawStream: isRawStream
         )
     }

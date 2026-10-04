@@ -8,6 +8,38 @@ struct NativeSevenZipTests {
         URL(fileURLWithPath: #filePath).deletingLastPathComponent().appendingPathComponent("Fixtures/sample-root.zip")
     }
 
+    @Test("Archive folder paper reflects files, including zero-byte nested files, not empty directories")
+    func archiveDirectoryContentsState() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        let input = root.appendingPathComponent("Input")
+        defer { try? FileManager.default.removeItem(at: root) }
+        for path in ["Empty", "OnlyEmpty/Nested", "Full/Nested", "FullSibling"] {
+            try FileManager.default.createDirectory(at: input.appendingPathComponent(path), withIntermediateDirectories: true)
+        }
+        try Data().write(to: input.appendingPathComponent("Full/Nested/.zero-byte.txt"))
+        let engine = NativeSevenZipArchiveEngine()
+        for format in [ArchiveCompressionFormat.zip, .sevenZip] {
+            let archive = root.appendingPathComponent("Contents." + format.fileExtension)
+            try await engine.createArchive(from: [input], outputURL: archive,
+                options: CompressionOptions(format: format), password: nil, progress: { _ in })
+            let opened = try await engine.openArchive(at: archive, password: nil)
+            let parent = try #require(try await engine.items(at: opened.address).first { $0.name == "Input" })
+            #expect(parent.archiveDirectoryContainsFiles)
+            guard case let .archive(inputAddress) = parent.location else { throw ArchiveEngineError.itemNotFound }
+            let children = try await engine.items(at: inputAddress)
+            for name in ["Empty", "OnlyEmpty", "FullSibling"] {
+                let empty = try #require(children.first { $0.name == name })
+                #expect(!empty.archiveDirectoryContainsFiles)
+            }
+            let full = try #require(children.first { $0.name == "Full" })
+            #expect(full.archiveDirectoryContainsFiles)
+            guard case let .archive(fullAddress) = full.location else { throw ArchiveEngineError.itemNotFound }
+            let nested = try #require(try await engine.items(at: fullAddress).first { $0.name == "Nested" })
+            #expect(nested.archiveDirectoryContainsFiles)
+            await engine.closeSession(opened.address.sessionID)
+        }
+    }
+
     @Test("Native extraction remains anchored to the authorized output root")
     func outputRootBoundary() async throws {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)

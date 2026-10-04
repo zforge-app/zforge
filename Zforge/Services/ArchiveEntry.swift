@@ -51,3 +51,20 @@ extension ArchiveEntry {
         return entries
     }
 }
+
+
+extension ArchiveEntry {
+    /// Built once per listing. Explicit empty directories do not imply files.
+    nonisolated static func directoriesContainingFiles(in entries: [String: Self]) -> Set<String> {
+        var directories: Set<String> = []
+        for entry in entries.values where !entry.isDirectory {
+            var components = entry.path.split(separator: "/")
+            components.removeLast()
+            while !components.isEmpty {
+                directories.insert(components.joined(separator: "/"))
+                components.removeLast()
+            }
+        }
+        return directories
+    }
+}

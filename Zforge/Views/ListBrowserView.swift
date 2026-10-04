@@ -357,7 +357,7 @@ private struct BrowserListRow: View {
                             contentFocus: contentFocus
                         )
                     } icon: {
-                        FileIconView(item: entry.item, size: BrowserMetrics.iconSize * scale)
+                        FileIconView(item: entry.item, size: BrowserMetrics.iconSize * scale, isExpanded: entry.isExpanded)
                     }
                     .tint(isSelected ? .white : .primary)
                     .lineLimit(1)

@@ -28,6 +28,8 @@ Atualizado em **2026-10-03**. Esta lista preserva os pedidos levantados nesta co
 | ZF-22 | Migrar app e alvos de testes para Swift 6 | Implementado; Debug/Release e 98 testes unitários aprovados; UI bloqueada na inicialização do runner | Isolamento explícito de menus, thumbnails e utilitários |
 | ZF-24 | Comparar RAM total do Zforge e processos 7zz em builds reais | 36 launches concluídos, hashes conferidos; sampler e séries registrados; D-21 corrigida nas duas branches; retenção em OR-11 | UI de fixture; não prova vazamento nem toda a UI |
 | ZF-25 | Investigar e otimizar desempenho e memória dos adapters nativos | Planejada a pedido do usuário; hipóteses registradas, sem profiling ou correção de desempenho | OR-11 e OR-12 |
+| ZF-26 | Usar pasta nativa com selo circular do Zforge nos diretórios internos de archives | V6 aprovada implementada com máscaras de luz/sombra, cache e posição por tamanho/conteúdo; pastas internas com arquivos usam versão fechada com papel; build e 114 testes unitários aprovados; renderização conferida; matriz visual ampla em OR-13; pasta aberta aplicada a linhas internas expandidas e previews na Lista; material corrigido a partir da pasta fechada após rejeição visual de ofld; linhas traseiras e sobreposição do papel na borda fechada corrigidas; 6 testes de ícones aprovados; seleção rápida falhou na última suíte e passou isolada | D-23; OR-13 |
+| ZF-27 | Implementar drag and drop de itens dentro de archives | Pendente; pedido do usuário após aprovação da pasta aberta; ainda sem implementação | OR-14; não confundir com adição de arquivos locais por drop |
 
 ## ZF-01 — Documentação de referência e prevenção de regressões
 
