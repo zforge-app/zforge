@@ -1,23 +1,23 @@
-# 7-Zip estático do Zforge
+# Zforge's static 7-Zip
 
-O snapshot 26.02 em `Vendor/7zip` vem da revisão registrada em `Vendor/7zip-provenance.json`. As fontes upstream não têm patches. O makefile deste diretório adapta o bundle oficial `Format7zF` para um arquivo estático, sem entrypoint de console ou codecs externos. Mantém multithreading, otimização ARM64 do decodificador LZMA e intrinsics de hardware dos codecs.
+The 26.02 snapshot in `Vendor/7zip` comes from the revision recorded in `Vendor/7zip-provenance.json`. The upstream sources are unpatched. This directory's makefile adapts the official `Format7zF` bundle into a static library, without a console entrypoint or external codecs. It retains multithreading, ARM64 optimization of the LZMA decoder, and codec hardware intrinsics.
 
-O app suporta exclusivamente **arm64** e **macOS 26.0 ou superior**. A fase `Build SevenZipCore` usa entradas explícitas em `inputs.xcfilelist`, mantém o sandbox de scripts do Xcode e grava objetos apenas em DerivedData. O linker usa `-force_load` somente na biblioteca para preservar os registros de formatos/codecs. A biblioteca não é copiada ao bundle.
+The app supports only **arm64** and **macOS 26.0 or later**. The `Build SevenZipCore` phase uses explicit inputs in `inputs.xcfilelist`, keeps the Xcode script sandbox enabled, and stores objects only in DerivedData. The linker uses `-force_load` on the library solely to preserve format/codec registrations. The library is not copied into the bundle.
 
-## Recompilar e relinkar
+## Recompile and relink
 
-1. Obter as fontes correspondentes completas do Zforge, incluindo `Vendor/7zip`, este diretório e `Zforge/Native`.
-2. Abrir `Zforge.xcodeproj` com Xcode que inclua SDK macOS 26 ou posterior.
-3. Fazer a alteração desejada nas fontes do motor. Se acrescentar arquivos, incluir os objetos no manifesto e atualizar `inputs.xcfilelist`.
-4. Executar `xcodebuild build -project Zforge.xcodeproj -scheme Zforge -configuration Release -destination 'platform=macOS' -derivedDataPath /private/tmp/ZforgeRelink CODE_SIGNING_ALLOWED=NO`. Também é possível selecionar uma identidade de assinatura própria no Xcode.
-5. A nova biblioteca será compilada e incorporada ao executável gerado em `Build/Products/Release/Zforge.app`. A assinatura do distribuidor não é necessária para recompilar; assinatura local, acesso ao filesystem e execução seguem as políticas do macOS.
+1. Obtain Zforge's complete corresponding source, including `Vendor/7zip`, this directory, and `Zforge/Native`.
+2. Open `Zforge.xcodeproj` with Xcode including the macOS 26 SDK or later.
+3. Make the desired change to the engine sources. If you add files, include their objects in the manifest and update `inputs.xcfilelist`.
+4. Run `xcodebuild build -project Zforge.xcodeproj -scheme Zforge -configuration Release -destination 'platform=macOS' -derivedDataPath /private/tmp/ZforgeRelink CODE_SIGNING_ALLOWED=NO`. You can also select your own signing identity in Xcode.
+5. The new library will be compiled and incorporated into the executable generated in `Build/Products/Release/Zforge.app`. The distributor's signature is not required to recompile; local signing, filesystem access, and execution follow macOS policies.
 
-Para compilar só o motor: `bash BuildSupport/SevenZip/build.sh /private/tmp/SevenZipCore Release`.
+To compile only the engine: `bash BuildSupport/SevenZip/build.sh /private/tmp/SevenZipCore Release`.
 
-## Licenças
+## Licenses
 
-Consultar integralmente `Vendor/7zip/DOC/License.txt`, `copying.txt` e `unRarLicense.txt`. A ponte Objective-C++ do Zforge é disponibilizada sob LGPL-2.1-or-later. Os avisos upstream BSD/public domain e a restrição unRAR são preservados nas fontes e na licença integral distribuída; RAR é somente leitura. Publicar a fonte correspondente de cada release e seus scripts junto aos materiais de distribuição continua sendo requisito de lançamento.
+Read `Vendor/7zip/DOC/License.txt`, `copying.txt`, and `unRarLicense.txt` in full. Zforge's Objective-C++ bridge is provided under LGPL-2.1-or-later. Upstream BSD/public-domain notices and the unRAR restriction are preserved in the sources and the complete distributed license; RAR is read-only. Publishing each release's corresponding source and scripts with the distribution materials remains a release requirement.
 
-## Limites
+## Limitations
 
-Falha ao decodificar headers criptografados após um pedido de senha pode significar senha inválida ou corrupção desses headers; o domínio preserva o fluxo de senha vigente. Erros de dados de itens não são convertidos genericamente em senha inválida. A execução no mesmo processo implica que falhas nativas fatais podem encerrar o aplicativo.
+Failure to decode encrypted headers after a password request can mean an invalid password or corruption of those headers; the domain preserves the current password flow. Item-data errors are not generically converted into invalid-password errors. In-process execution means that fatal native failures can terminate the application.

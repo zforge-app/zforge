@@ -16,20 +16,20 @@ confidence: "primary-source"
 
 # NSPanGestureRecognizer
 
-## Consulta rápida
+## Quick reference
 
-- Módulo: AppKit, macOS. Assinaturas verificadas no SDK macOS 27.0.
-- Classes de gesto disponíveis desde macOS 10.10; delegate de tentativa desde 10.11, conforme SDK.
+- Module: AppKit, macOS. Signatures found in SDK macOS 27.0.
+- classes of gesture available since macOS 10.10; delegate attempt since 10.11, according to SDK.
 
-## Síntese e implicações
+## Summary and implications
 
-Reconhece deslocamento do botão primário. A implementação do Zforge usa um reconhecedor personalizado no host da janela, limitado ao item virtual, para iniciar o drag durante mouseDragged. O target/action de pan foi consultado; sua ação ocorre em outra volta do run loop e não foi adotada para iniciar a sessão.
+Recognises displacement of the primary button. The implementation of Zforge uses a custom recognizator in the window host, limited to the virtual item, to start drag while mouseDragged. The target/action of pan has been consulted; its action occurs in another lap of the run loop and was not adopted to start the session.
 
-## Mapa do conteúdo
+## Content map
 
-- Reconhecimento, configuração, delegate e relações entre gestos.
+- Recognition, configuration, delegate and relationships between gestures.
 
-## Links do segundo nível
+## Second-level links
 
 - [AppKit](https://developer.apple.com/documentation/appkit)
 - [CVarArg](https://developer.apple.com/documentation/swift/cvararg)
@@ -58,9 +58,9 @@ Reconhece deslocamento do botão primário. A implementação do Zforge usa um r
 - [true](https://developer.apple.com/documentation/swift/true)
 - [velocity(in:)](https://developer.apple.com/documentation/appkit/nspangesturerecognizer/velocity(in:))
 
-## Proveniência
+## Provenance
 
-- Fonte: [Apple Developer](https://developer.apple.com/documentation/appkit/nspangesturerecognizer)
-- Captura: `2026-10-04T12:33:54.519715+00:00`
+- Source: [Apple Developer](https://developer.apple.com/documentation/appkit/nspangesturerecognizer)
+- Captured: `2026-10-04T12:33:54.519715+00:00`
 - SHA-256: `34274c2313dc58e2e0524eba2b43b46413282537ce8e3df50a60fd490768745b`
-- Escopo: uma página; links secundários não percorridos.
+- Scope: one page; secondary links not covered.

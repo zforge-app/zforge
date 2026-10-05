@@ -16,50 +16,50 @@ confidence: "primary-source"
 
 # NSFilePromiseProvider
 
-## Consulta rápida
+## Quick reference
 
-- Módulo: AppKit; API nativa de arraste do macOS.
-- Disponibilidade: macOS; assinaturas verificadas no SDK macOS 27.0
-- Declaração: `class   NSFilePromiseProvider`
+- Module: AppKit; Native drag API of macOS.
+- Availability: macOS; signatures found in SDK macOS 27.0
+- Declaration: `class   NSFilePromiseProvider`
 
-## Síntese
+## Summary
 
-Uma promessa representa um arquivo futuro; a identidade auxiliar do item deve ser dado imediato no pasteboard, com writingOptions vazio. O conteúdo permanece uma promessa e seu delegate escreve na URL fornecida ao cumprir a solicitação. O provider deve ter fileType e delegate definidos antes de ser escrito no pasteboard.
+A promise represents a future archive; the auxiliary identity of the item must be given immediately on the pasteboard, with writingOptions empty. The content remains a promise and your delegate writes in the URL provided when complying with the request. The provider must have fileType and delegate set before it is written on the pasteboard.
 
-## Implicações práticas no Zforge
+## Practical implications no Zforge
 
-A origem virtual usa file promises e determina a operação permitida. A regra de produto exige cópia por padrão e movimentação com Option; ignorar a tradução automática de modificadores do AppKit e aplicar a regra explicitamente na origem e no destino interno. Promises escrevem somente na URL fornecida e removem entradas do archive apenas após a publicação bem-sucedida. O SDK macOS 27.0 declara a escrita de promises nonisolated e permite escolher a main operation queue; manter a coordenação de UI no MainActor.
+Virtual origin uses file promises and determines the allowed operation. The product rule requires standard copying and handling with Option; to ignore the automatic translation of AppKit and apply modifiers the rule explicitly in the origin and in the internal destination. Promises write only in the provided URL and remove archive entries only after successful publication. SDK macOS 27.0 declares the writing of nonisolated promises and allows you to choose the main operation queen; maintain coordination of UI in MainActor.
 
-## Mapa do conteúdo
+## Content map
 
-- Declaração, operações/modificadores ou escrita de promises.
-- Referências de tipos e métodos relacionados.
+- Declaration, operations/modifiers or writing of promises.
+- References of related types and methods.
 
-## Links do segundo nível
+## Second-level links
 
-- [AppKit](https://developer.apple.com/documentation/appkit) — Apple Developer; expandir sob demanda.
-- [CVarArg](https://developer.apple.com/documentation/swift/cvararg) — Apple Developer; expandir sob demanda.
-- [CustomDebugStringConvertible](https://developer.apple.com/documentation/swift/customdebugstringconvertible) — Apple Developer; expandir sob demanda.
-- [CustomStringConvertible](https://developer.apple.com/documentation/swift/customstringconvertible) — Apple Developer; expandir sob demanda.
-- [Equatable](https://developer.apple.com/documentation/swift/equatable) — Apple Developer; expandir sob demanda.
-- [Hashable](https://developer.apple.com/documentation/swift/hashable) — Apple Developer; expandir sob demanda.
-- [NSFilePromiseProviderDelegate](https://developer.apple.com/documentation/appkit/nsfilepromiseproviderdelegate) — Apple Developer; expandir sob demanda.
-- [NSFilePromiseReceiver](https://developer.apple.com/documentation/appkit/nsfilepromisereceiver) — Apple Developer; expandir sob demanda.
-- [NSObjectProtocol](https://developer.apple.com/documentation/objectivec/nsobjectprotocol) — Apple Developer; expandir sob demanda.
-- [NSObject](https://developer.apple.com/documentation/objectivec/nsobject-swift.class) — Apple Developer; expandir sob demanda.
-- [NSPasteboardWriting](appkit-nspasteboard-writing.md) — Apple Developer; expandir sob demanda.
-- [Supporting Collection View Drag and Drop Through File Promises](https://developer.apple.com/documentation/appkit/supporting-collection-view-drag-and-drop-through-file-promises) — Apple Developer; expandir sob demanda.
-- [Supporting Drag and Drop Through File Promises](appkit-supporting-file-promises.md) — Apple Developer; expandir sob demanda.
-- [Supporting Table View Drag and Drop Through File Promises](https://developer.apple.com/documentation/appkit/supporting-table-view-drag-and-drop-through-file-promises) — Apple Developer; expandir sob demanda.
-- [Technologies](https://developer.apple.com/documentation/technologies) — Apple Developer; expandir sob demanda.
-- [delegate](https://developer.apple.com/documentation/appkit/nsfilepromiseprovider/delegate) — Apple Developer; expandir sob demanda.
-- [fileType](https://developer.apple.com/documentation/appkit/nsfilepromiseprovider/filetype) — Apple Developer; expandir sob demanda.
-- [init()](https://developer.apple.com/documentation/appkit/nsfilepromiseprovider/init()) — Apple Developer; expandir sob demanda.
-- [init(fileType:delegate:)](https://developer.apple.com/documentation/appkit/nsfilepromiseprovider/init(filetype:delegate:)) — Apple Developer; expandir sob demanda.
-- [userInfo](https://developer.apple.com/documentation/appkit/nsfilepromiseprovider/userinfo) — Apple Developer; expandir sob demanda.
+- [AppKit](https://developer.apple.com/documentation/appkit) — Apple Developer; expand on demand.
+- [CVarArg](https://developer.apple.com/documentation/swift/cvararg) — Apple Developer; expand on demand.
+- [CustomDebugStringConvertible](https://developer.apple.com/documentation/swift/customdebugstringconvertible) — Apple Developer; expand on demand.
+- [CustomStringConvertible](https://developer.apple.com/documentation/swift/customstringconvertible) — Apple Developer; expand on demand.
+- [Equatable](https://developer.apple.com/documentation/swift/equatable) — Apple Developer; expand on demand.
+- [Hashable](https://developer.apple.com/documentation/swift/hashable) — Apple Developer; expand on demand.
+- [NSFilePromiseProviderDelegate](https://developer.apple.com/documentation/appkit/nsfilepromiseproviderdelegate) — Apple Developer; expand on demand.
+- [NSFilePromiseReceiver](https://developer.apple.com/documentation/appkit/nsfilepromisereceiver) — Apple Developer; expand on demand.
+- [NSObjectProtocol](https://developer.apple.com/documentation/objectivec/nsobjectprotocol) — Apple Developer; expand on demand.
+- [NSObject](https://developer.apple.com/documentation/objectivec/nsobject-swift.class) — Apple Developer; expand on demand.
+- [NSPasteboardWriting](appkit-nspasteboard-writing.md) — Apple Developer; expand on demand.
+- [Supporting Collection View Drag and Drop Through File Promises](https://developer.apple.com/documentation/appkit/supporting-collection-view-drag-and-drop-through-file-promises) — Apple Developer; expand on demand.
+- [Supporting Drag and Drop Through File Promises](appkit-supporting-file-promises.md) — Apple Developer; expand on demand.
+- [Supporting Table View Drag and Drop Through File Promises](https://developer.apple.com/documentation/appkit/supporting-table-view-drag-and-drop-through-file-promises) — Apple Developer; expand on demand.
+- [Technologies](https://developer.apple.com/documentation/technologies) — Apple Developer; expand on demand.
+- [delegate](https://developer.apple.com/documentation/appkit/nsfilepromiseprovider/delegate) — Apple Developer; expand on demand.
+- [fileType](https://developer.apple.com/documentation/appkit/nsfilepromiseprovider/filetype) — Apple Developer; expand on demand.
+- [init()](https://developer.apple.com/documentation/appkit/nsfilepromiseprovider/init()) — Apple Developer; expand on demand.
+- [init(fileType:delegate:)](https://developer.apple.com/documentation/appkit/nsfilepromiseprovider/init(filetype:delegate:)) — Apple Developer; expand on demand.
+- [userInfo](https://developer.apple.com/documentation/appkit/nsfilepromiseprovider/userinfo) — Apple Developer; expand on demand.
 
-## Proveniência
+## Provenance
 
-- Fonte: [Apple Developer](https://developer.apple.com/documentation/appkit/nsfilepromiseprovider).
-- Captura: `2026-10-04T13:01:09.738317+00:00`; SHA-256: `b3d86ec60ab7decea9ce9c90d28d9d5681af05d16de9142f657c17f82e6b6d5c`.
-- Escopo: uma página; links secundários não percorridos.
+- Source: [Apple Developer](https://developer.apple.com/documentation/appkit/nsfilepromiseprovider).
+- Captured: `2026-10-04T13:01:09.738317+00:00`; SHA-256: `b3d86ec60ab7decea9ce9c90d28d9d5681af05d16de9142f657c17f82e6b6d5c`.
+- Scope: one page; secondary links not covered.

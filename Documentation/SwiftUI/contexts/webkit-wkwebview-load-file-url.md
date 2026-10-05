@@ -16,60 +16,60 @@ confidence: "primary-source"
 
 # loadFileURL(_:allowingReadAccessTo:)
 
-Contexto normalizado para recuperação rápida. A URL oficial e o hash permitem verificar mudanças; este arquivo não substitui a fonte.
+Context normalized for quick retrieval. The official URL and hash allow changes to be verified; this file does not replace the source.
 
-## Consulta rápida
+## Quick reference
 
-- Papel: método de `WKWebView` para carregar conteúdo web de um arquivo local.
-- Módulo: WebKit.
-- Relevância para Zforge: direta; renderiza o preview de HTML local e seus recursos relativos.
-- Disponibilidade: macOS 10.11+, além de iOS 9+, iPadOS 9+, Mac Catalyst 13.1+ e visionOS 1+.
-- Declaração: `func loadFileURL(_ URL: URL, allowingReadAccessTo readAccessURL: URL) -> WKNavigation?`
+- Roll: `WKWebView` method to load web content from a local file.
+- Module: WebKit.
+- Relevance to Zforge: direta; renders the local HTML preview and its relative features.
+- Availability: macOS 10.11+, in addition to iOS 9+, iPadOS 9+, Mac Catalyst 13.1+ and visionOS 1+.
+- Declaration: `func loadFileURL(_ URL: URL, allowingReadAccessTo readAccessURL: URL) -> WKNavigation?`
 
-## Síntese
+## Summary
 
-O primeiro argumento deve ser uma URL de arquivo com conteúdo web. O segundo deve ser uma URL de arquivo ou diretório não vazia que delimita o que o WebKit pode ler. Usar a própria URL do documento impede leitura de outros arquivos; usar um diretório permite carregar recursos relacionados. O método retorna uma navegação para acompanhar o progresso.
+The first argument must be a file URL with web content. The second must be a non-empty file URL or directory that delimits what WebKit can read. Using the document URL itself prevents reading other files; use a directory lets you load related features. The method returns a navigation to track progress.
 
-## Implicações práticas
+## Practical implications
 
-- Para um HTML com CSS e imagens relativos, conceder somente a pasta que contém o documento, preservando o acesso necessário aos recursos vizinhos.
-- A API delimita a leitura concedida pelo `WKWebView`; a autorização de acesso a arquivos da aplicação continua sendo responsabilidade do Zforge.
-- A assinatura consta no SDK macOS 27.0 local e a build Debug assinada do Zforge compilou usando esta chamada em 2026-09-27.
+- For an HTML with CSS and relative images, grant only the folder containing the document, preserving the necessary access to neighboring resources.
+- The API delimits the reading granted by `WKWebView`; the application file access authorization remains the responsibility of Zforge.
+- The signature is in the SDK macOS 27.0 local and the signed build Debug of the Zforge compiled using this call in 2026-09-27.
 
-## Mapa do conteúdo
+## Content map
 
-- Declaração e disponibilidade por plataforma.
-- Parâmetros do arquivo e do escopo de leitura.
-- Valor retornado e nota sobre atribuição da requisição.
-- Métodos relacionados de carregamento.
+- Declaration and availability by platform.
+- File parameters and read scope.
+- Value returned and note on request assignment.
+- Related loading methods.
 
-## Links do segundo nível
+## Second-level links
 
-### Tipos relacionados
+### Related types
 
-- [NSURL](https://developer.apple.com/documentation/foundation/nsurl) — _Apple Developer; expandir sob demanda_.
-- [URL](https://developer.apple.com/documentation/foundation/url) — _Apple Developer; expandir sob demanda_.
-- [NSURLRequest.Attribution.developer](https://developer.apple.com/documentation/foundation/nsurlrequest/attribution-swift.enum/developer) — _Apple Developer; expandir sob demanda_.
-- [Technologies](https://developer.apple.com/documentation/technologies) — _Apple Developer; expandir sob demanda_.
-- [WebKit](https://developer.apple.com/documentation/webkit) — _Apple Developer; expandir sob demanda_.
-- [WKNavigation](https://developer.apple.com/documentation/webkit/wknavigation) — _Apple Developer; expandir sob demanda_.
-- [WKWebView](https://developer.apple.com/documentation/webkit/wkwebview) — _Apple Developer; expandir sob demanda_.
+- [NSURL](https://developer.apple.com/documentation/foundation/nsurl) — _Apple Developer; expand on demand_.
+- [URL](https://developer.apple.com/documentation/foundation/url) — _Apple Developer; expand on demand_.
+- [NSURLRequest.Attribution.developer](https://developer.apple.com/documentation/foundation/nsurlrequest/attribution-swift.enum/developer) — _Apple Developer; expand on demand_.
+- [Technologies](https://developer.apple.com/documentation/technologies) — _Apple Developer; expand on demand_.
+- [WebKit](https://developer.apple.com/documentation/webkit) — _Apple Developer; expand on demand_.
+- [WKNavigation](https://developer.apple.com/documentation/webkit/wknavigation) — _Apple Developer; expand on demand_.
+- [WKWebView](https://developer.apple.com/documentation/webkit/wkwebview) — _Apple Developer; expand on demand_.
 
-### Carregamento e progresso
+### Loading and progress
 
-- [estimatedProgress](https://developer.apple.com/documentation/webkit/wkwebview/estimatedprogress) — _Apple Developer; expandir sob demanda_.
-- [isLoading](https://developer.apple.com/documentation/webkit/wkwebview/isloading) — _Apple Developer; expandir sob demanda_.
-- [load(_:) — requisição](https://developer.apple.com/documentation/webkit/wkwebview/load(_:)-4xx8m) — _Apple Developer; expandir sob demanda_.
-- [load(_:) — dados](https://developer.apple.com/documentation/webkit/wkwebview/load(_:)-5siv6) — _Apple Developer; expandir sob demanda_.
-- [load(_:mimeType:characterEncodingName:baseURL:)](https://developer.apple.com/documentation/webkit/wkwebview/load(_:mimetype:characterencodingname:baseurl:)) — _Apple Developer; expandir sob demanda_.
-- [loadFileRequest(_:allowingReadAccessTo:)](https://developer.apple.com/documentation/webkit/wkwebview/loadfilerequest(_:allowingreadaccessto:)) — _Apple Developer; expandir sob demanda_.
-- [loadHTMLString(_:baseURL:)](https://developer.apple.com/documentation/webkit/wkwebview/loadhtmlstring(_:baseurl:)) — _Apple Developer; expandir sob demanda_.
-- [loadSimulatedRequest(_:response:responseData:)](https://developer.apple.com/documentation/webkit/wkwebview/loadsimulatedrequest(_:response:responsedata:)) — _Apple Developer; expandir sob demanda_.
-- [loadSimulatedRequest(_:responseHTML:)](https://developer.apple.com/documentation/webkit/wkwebview/loadsimulatedrequest(_:responsehtml:)) — _Apple Developer; expandir sob demanda_.
+- [estimatedProgress](https://developer.apple.com/documentation/webkit/wkwebview/estimatedprogress) — _Apple Developer; expand on demand_.
+- [isLoading](https://developer.apple.com/documentation/webkit/wkwebview/isloading) — _Apple Developer; expand on demand_.
+- [load(_:) — request](https://developer.apple.com/documentation/webkit/wkwebview/load(_:)-4xx8m) — _Apple Developer; expand on demand_.
+- [load(_:) — data](https://developer.apple.com/documentation/webkit/wkwebview/load(_:)-5siv6) — _Apple Developer; expand on demand_.
+- [load(_:mimeType:characterEncodingName:baseURL:)](https://developer.apple.com/documentation/webkit/wkwebview/load(_:mimetype:characterencodingname:baseurl:)) — _Apple Developer; expand on demand_.
+- [loadFileRequest(_:allowingReadAccessTo:)](https://developer.apple.com/documentation/webkit/wkwebview/loadfilerequest(_:allowingreadaccessto:)) — _Apple Developer; expand on demand_.
+- [loadHTMLString(_:baseURL:)](https://developer.apple.com/documentation/webkit/wkwebview/loadhtmlstring(_:baseurl:)) — _Apple Developer; expand on demand_.
+- [loadSimulatedRequest(_:response:responseData:)](https://developer.apple.com/documentation/webkit/wkwebview/loadsimulatedrequest(_:response:responsedata:)) — _Apple Developer; expand on demand_.
+- [loadSimulatedRequest(_:responseHTML:)](https://developer.apple.com/documentation/webkit/wkwebview/loadsimulatedrequest(_:responsehtml:)) — _Apple Developer; expand on demand_.
 
-## Proveniência
+## Provenance
 
-- Fonte: [Apple Developer](https://developer.apple.com/documentation/webkit/wkwebview/loadfileurl(_:allowingreadaccessto:)).
-- Captura: `2026-09-27T12:39:12Z`.
-- SHA-256 do payload: `c99ebd3eafb987060d1ee96ffefd20ab4130c0ee0899cfd6c401353bbaeca8fd`.
-- Escopo: uma página JSON de DocC; os links absolutos acima ainda não foram percorridos.
+- Source: [Apple Developer](https://developer.apple.com/documentation/webkit/wkwebview/loadfileurl(_:allowingreadaccessto:)).
+- Captured: `2026-09-27T12:39:12Z`.
+- Payload SHA-256: `c99ebd3eafb987060d1ee96ffefd20ab4130c0ee0899cfd6c401353bbaeca8fd`.
+- Scope: a DocC JSON page; the above absolute links have not yet been covered.

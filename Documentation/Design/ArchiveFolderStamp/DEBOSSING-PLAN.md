@@ -1,39 +1,39 @@
-# Selo Zforge — plano de debossing
+# Seal Zforge — plan debossing
 
-Decisão de 2026-10-03: o usuário aprovou a forma do estudo `zforge-stamp-v3-original-mono.png`. O tratamento desejado passa de embossing para **debossing**, como material comprimido para dentro da pasta. A referência física é `reference-debossing-paper.png`. Esta decisão é planejada: o compositor atual ainda usa a forma simplificada e duas passadas de cor.
+Decision of 2026-10-03: the user approved the form of study `zforge-stamp-v3-original-mono.png`. The desired treatment goes from embossing to **debossing**, as compressed material into the folder. The physical reference is `reference-debossing-paper.png`. This decision is planned: the current composer still uses the simplified form and two passages of color.
 
-## Técnica atual e limitação
+## Current technique and limitation
 
-`ArchiveFolderIconComposer.compose` desenha a pasta nativa, depois uma cópia clara deslocada e uma cópia azul escura da forma vetorial. É um indício simples de relevo, com preenchimento e cores fixas. Não representa profundidade, bordas internas, oclusão nem continuidade da superfície; não usa o estudo v3 aprovado.
+`ArchiveFolderIconComposer.compose` draws the native folder, then a dislocated light copy and a dark blue copy of the vector form. It is a simple hint of relief, with filling and fixed colors. does not represent depth, internal edges, occlusion or surface continuity; does not use the approved study v3.
 
-## Aperfeiçoamento proposto
+## Proposed improvement
 
-1. Preservar o v3 como referência de forma. Derivar um desenho neutro de geometria/profundidade da prensa, Z e círculo, sem carregar os reflexos de aço nem pintar o material como metal. Uma simples silhueta opaca perderia detalhes internos do pistão e discos; manter contornos estruturais e níveis de profundidade.
-2. Construir uma máscara da área prensada e um mapa de altura suave, com a superfície intacta em zero e a marca abaixo dela. Borda arredondada/chanfrada, fundo raso, profundidade coerente e anel também rebaixado. Representar a forma tridimensional da referência por níveis rasos na impressão, não por uma peça metálica aplicada.
-3. Derivar a direção das superfícies a partir desse mapa e iluminá-las com luz compatível com a pasta, inicialmente superior esquerda. Para a cavidade, a borda interna superior/esquerda tende a escurecer e a inferior/direita a receber luz; isso depende do perfil local. Adicionar sombra interna suave/oclusão nos encontros e cantos, sem sombra externa de objeto flutuante.
-4. Modular a luminosidade dos pixels originais da pasta em vez de cobri-los com azul fixo ou branco. Conservar o gradiente, a cor e a textura existentes; reduzir sutilmente a textura no fundo da marca para sugerir compressão. Todo o efeito é limitado à face frontal.
-5. Parametrizar profundidade, largura de transição, intensidade e direção da luz. Ajustar em pontos/pixels do tamanho final: profundidade visual menor nos previews grandes; bordas mínimas legíveis em 16–32 pt e supressão de textura/faixas finas que causem ruído. Preservar a centralização compacta e as posições aprovadas.
-6. Gerar primeiro uma única prévia grande da impressão na pasta e compará-la à referência física. Após refinamento, conferir os seis tamanhos e os três estados de pasta. Aplicar a mesma transformação de superfície ao selo na pasta aberta; a iluminação não deve ser uma imagem independente colada por cima.
-7. Integrar a composição aprovada com cache por estado/faixa de tamanho/aparência. Verificar Core Image ou renderizador alternativo no app com sandbox, tema claro/escuro, quatro modos, seleção, previews e zoom. Não presumir que uma renderização isolada confirma esses fluxos.
+1. Preserve v3 as a form reference. Derive a neutral drawing of geometry/deepness of the press, Z and circle, without carrying the reflections of steel or painting the material as metal. A simple opaque silhouette would lose internal details of the piston and discs; maintain structural contours and depth levels.
+2. Construct a mask of the pressed area and a soft height map, with the surface intact at zero and the mark below it. Round/chained edge, shallow bottom, coherent depth and also lowered ring. To represent the three-dimensional form of the reference by shallow levels in printing, not by an applied metal part.
+3. Derive the direction of the surfaces from this map and illuminate them with light compatible with the folder, initially upper left. For the cavity, the upper/left inner edge tends to darken and the lower/right edge to receive light; That depends on the local profile. Add soft internal shadow/occlusion in encounters and corners, without external shadow of floating object.
+4. Modify the luminosity of the original folder pixels instead of covering them with fixed or white blue. maintain the existing gradient, colour and texture; subtly reduce the texture at the bottom of the brand to suggest compression. The whole effect is limited to the frontal face.
+5. Parametrizar depth, transition width, intensity and direction of light. Adjust to points/pixels of the final size: smaller visual depth in large previews; minimal edges readable in 16–32 pt and texture suppression/fine bands that cause noise. Preserve compact centralization and approved positions.
+6. First generate a single large preview of the printing in the folder and compare it to the physical reference. After refinement, check the six sizes and the three folder states. apply the same surface transformation to the stamp in the open folder; the lighting must not be an independent image glued on top.
+7. Integrate the approved composition with status/size/appearance cache. Check Core Image or alternate renderer on the app with sandbox, light/dark theme, four modes, selection, previews and zoom. Do not assume that an isolated rendering confirms these flows.
 
-## Critérios visuais
+## Visual criteria
 
-- A forma aprovada permanece reconhecível e não vira uma prensa genérica.
-- O selo parece uma depressão no mesmo material da pasta.
-- Sem placa cinza, brilho metálico independente, preenchimento azul chapado, halo ou sombra externa.
-- Luz e sombra interna são visíveis, com profundidade moderada e sem destruir a legibilidade em 16 pt.
-- Os estudos existentes permanecem preservados; os PNGs de revisão não exigem um arquivo por tamanho no produto.
+- The approved form remains recognizable and does not become a generic press.
+- The stamp looks like a depression in the same material in the briefcase.
+- No gray plate, independent metallic brightness, plated blue filler, halo or outer shadow.
+- Inner light and shadow are visible, with moderate depth and without destroying legibility in 16 pt.
+- The existing studies remain preserved; revision PNGs do not require a file per size on the product.
 
-## Evidência de estudo visual
+## Evidence of study visual
 
-A pedido do usuário, foi gerada a [prévia v4](folder-debossing-v4.png) da pasta grande. É uma referência visual obtida por ImageGen, sem integração nem implementação do renderizador proposto. A primeira geração foi refinada para que a prensa e o Z também fossem cavidades. Próximos passos dependem do refinamento visual desta referência; matriz de tamanhos/estados e validação do compositor continuam pendentes.
+The user's request generated the [v4 preview](folder-debossing-v4.png) of the large folder. It is a visual reference obtained by ImageGen, without integration or implementation of the proposed renderer. The first generation was refined so that the press and the Z were also cavities. Next steps depend on the refinement visual of this reference; matrix of sizes/states and validation of the composer remain pending.
 
-## Refinamento de direção — preferência por volume
+## Driving refinement — volume preference
 
-Após comparar as prévias, o usuário preferiu a composição com maior volume interno, apesar de reconhecer a v4 como debossing mais literal. Para a continuação, preservar a fisicalidade, o azul e a cavidade circular da primeira prévia; não achatar o Z e os discos para impor debossing puro. O cilindro superior deve continuar até a borda interna superior do círculo. [Estudo v5](folder-pressed-relief-v5.png) criado com essa correção; ainda não integrado. A preferência visual mais recente prevalece onde conflitar com os critérios anteriores de rebaixamento de todas as formas.
+After comparing the previous ones, the user preferred the composition with higher internal volume, despite recognizing the v4 as more literal debossing. For the continuation, preserve the physicality, blue and circular cavity of the first preview; not flatten Z and the disks to impose pure debossing. The upper cylinder shall continue to the upper inner edge of the circle. [Study v5](folder-pressed-relief-v5.png) created with this correction; Not yet integrated. The most recent visual preference prevails where to conflict with previous downgrading criteria in all ways.
 
-Refinamento v6: recortar o cilindro pela abertura interna e desenhar o contorno circular completo sobre a prensa. O prolongamento não pode cobrir a faixa nem interromper a linha do círculo. Prévia `folder-pressed-relief-v6.png`; ainda sem integração.
+Refining v6: Cut the cylinder through the inner opening and draw the complete circular contour on the press. The extension may not cover the track or interrupt the circle line. Prior `folder-pressed-relief-v6.png`; Still no integration.
 
-## Implementação final autorizada
+## Authorised final implementation
 
-A v6 foi aprovada e integrada com máscaras neutras de luz e sombra derivadas de uma única referência raster aprovada. Essa técnica preserva sua iluminação e forma diretamente sobre a pasta nativa. O mapa de altura/normais e a iluminação dinâmica descritos acima permaneceram proposta; não são necessários para a composição fixa aprovada e não foram implementados. Regressões e limites em `REGRESSION-COVERAGE.md`, ZF-29 e OR-13.
+The v6 was approved and integrated with light-neutral masks and shadow derived from a single approved raster reference. This technique preserves its illumination and forms directly on the native folder. The height/normal map and dynamic lighting described above remained proposed; they are not necessary for the approved fixed composition and were not implemented. Regressions and limits in `REGRESSION-COVERAGE.md`, ZF-29 and OR-13.

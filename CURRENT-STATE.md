@@ -1,3 +1,3 @@
-# Estado funcional do Zforge
+# State functional Zforge
 
-A fonte de verdade deste documento foi movida para [`Documentation/Requirements/CURRENT-STATE.md`](Documentation/Requirements/CURRENT-STATE.md). Atualize somente o arquivo no diretório de requisitos.
+The source of truth of this document was moved to [`Documentation/Requirements/CURRENT-STATE.md`](Documentation/Requirements/CURRENT-STATE.md). Only update the file in the requirements directory.

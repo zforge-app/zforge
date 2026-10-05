@@ -16,30 +16,30 @@ confidence: "primary-source"
 
 # FocusState
 
-Contexto normalizado para recuperação rápida. A URL oficial e o hash permitem verificar mudanças; este arquivo não substitui a fonte.
+Context normalized for quick retrieval. The official URL and hash allow changes to be verified; this file does not replace the source.
 
-## Consulta rápida
+## Quick reference
 
-- Papel: Structure and property wrapper
-- Módulo: SwiftUI
-- Relevância para Zforge: direta para distinguir o foco persistente da área do navegador do foco temporário do editor de nome.
-- Disponibilidade: macOS 12.0 ou posterior; também disponível nas demais plataformas SwiftUI indicadas pela Apple.
-- Declaração: `@frozen @propertyWrapper struct FocusState<Value> where Value: Hashable`
+- Role: Structure and property wrapper
+- Module: SwiftUI
+- Relevance to Zforge: direct to distinguish the persistent focus of the browser area from the temporary focus of the name editor.
+- Availability: macOS 12.0 or later; also available on the other platforms SwiftUI indicated by Apple.
+- Declaration: `@frozen @propertyWrapper struct FocusState<Value> where Value: Hashable`
 
-## Síntese
+## Summary
 
-`FocusState` mantém um valor que acompanha a posição do foco na cena. Associar views por `focused(_:equals:)` permite representar destinos distintos com um único valor opcional e `Hashable`; atribuir esse valor programaticamente move o foco para a view correspondente.
+`FocusState` maintains a value that accompanies the focus position on the scene. Associate views by `focused(_:equals:)` allows representing distinct destinations with a single optional value and `Hashable`; assign this value programmatically moves the focus to the corresponding view.
 
-A Apple destaca que bindings ambíguos produzem candidatos indistinguíveis. Em hierarquias com um container focável e um campo interno, dois estados booleanos independentes também têm semântica diferente: o Boolean do container pode indicar tanto que ele recebeu foco quanto que contém um descendente focado. Um único estado tipado, com casos separados para container e campo, oferece controle granular e desambigua os destinos.
+Apple points out that ambiguous bindings produce indistinguishable candidates. In hierarchies with a focusable container and an internal field, two independent Boolean states also have different semantics: the container Boolean may indicate both that it received focus and that it contains a focused descendant. A single typed state, with separate cases for container and field, offers granular control and unambiguous destinations.
 
-## Implicações práticas
+## Practical implications
 
-- Modelar a área persistente do navegador e cada editor inline como casos diferentes de um único `FocusState` opcional.
-- Usar `focused(_:equals:)` no container e no `TextField`, atribuindo programaticamente o caso do item que deve ser renomeado.
-- Não reutilizar o mesmo valor de foco em duas views simultaneamente; SwiftUI pode escolher um candidato e emitir aviso em runtime.
-- Usar `nil` para representar ausência total de foco e restaurar explicitamente o caso do conteúdo quando a edição terminar.
+- Model the persistent browser area and each inline editor as different cases from a single optional `FocusState`.
+- Use `focused(_:equals:)` in container and `TextField`, programmatically assigning the case of the item to be renamed.
+- Do not reuse the same focus value in two views simultaneously; SwiftUI can choose a candidate and issue warning in runtime.
+- Use `nil` to represent total absence of focus and explicitly restore the content case when editing is finished.
 
-## Mapa do conteúdo
+## Content map
 
 - Overview
 - Avoid ambiguous focus bindings
@@ -47,16 +47,16 @@ A Apple destaca que bindings ambíguos produzem candidatos indistinguíveis. Em 
 - Creating a focus state
 - Inspecting the focus state
 
-## Links do segundo nível
+## Second-level links
 
-### APIs relacionadas
+### Related APIs
 
-- [focused(_:equals:)](https://developer.apple.com/documentation/swiftui/view/focused(_:equals:)) — associa uma view a um valor específico do estado de foco. _Apple Developer; expandir sob demanda_
-- [focused(_:)](https://developer.apple.com/documentation/swiftui/view/focused(_:)) — associa uma view a um estado booleano que também pode indicar foco contido. _Apple Developer; expandir sob demanda_
+- [focused(_:equals:)](https://developer.apple.com/documentation/swiftui/view/focused(_:equals:)) — associates a view to a specific focus state value. _Apple Developer; expand on demand_
+- [focused(_:)](https://developer.apple.com/documentation/swiftui/view/focused(_:)) — associates a view to a boolean state that may also indicate contained focus. _Apple Developer; expand on demand_
 
-## Proveniência
+## Provenance
 
-- Fonte: [Apple Developer](https://developer.apple.com/documentation/swiftui/focusstate)
-- Captura: `2026-07-19T00:24:22+00:00`
-- SHA-256 do payload: `1c22c2f51ca851696edd2494294a6af7cfb7ff4de6b0ecbb92ad0b94876082d6`
-- Escopo: uma página oficial expandida sob demanda; os links absolutos acima ainda não foram percorridos.
+- Source: [Apple Developer](https://developer.apple.com/documentation/swiftui/focusstate)
+- Captured: `2026-07-19T00:24:22+00:00`
+- Payload SHA-256: `1c22c2f51ca851696edd2494294a6af7cfb7ff4de6b0ecbb92ad0b94876082d6`
+- Scope: an official page expanded on demand; the above absolute links have not yet been covered.

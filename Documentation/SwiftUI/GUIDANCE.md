@@ -5,59 +5,58 @@ scope: "Cross-cutting synthesis of the captured Apple Developer contexts"
 authority: "Derived from primary Apple sources; verify details in linked contexts"
 ---
 
-# Princípios SwiftUI para o Zforge
+# SwiftUI principles for Zforge
 
-Este documento é uma síntese operacional. Os contextos linkados preservam a origem primária, a data e a disponibilidade; eles prevalecem quando for necessário decidir um detalhe de API.
+This document is an operational synthesis. The linked contexts preserve the primary source, date, and availability; they take precedence when an API detail must be decided.
 
-## Modelo mental
+## Mental model
 
-- Declarar o aplicativo como uma composição de `App`, cenas e hierarquias de `View`. Uma view descreve o que deve aparecer para um estado, e o framework reconcilia as partes afetadas quando os dados mudam. Consulte [SwiftUI](contexts/swiftui.md), [App](contexts/swiftui-app.md), [App organization](contexts/swiftui-app-organization.md) e [View fundamentals](contexts/swiftui-view-fundamentals.md).
-- Preferir composição a controle imperativo: combinar views, containers e modificadores; criar views ou modificadores próprios quando um padrão realmente se repete. Consulte [View configuration](contexts/swiftui-view-configuration.md) e [View styles](contexts/swiftui-view-styles.md).
-- Tratar identidade, estado e dependências como parte do desenho da hierarquia. Evitar transformar `body` em um controlador de fluxo ou em local para trabalho pesado.
+- Declare the application as a composition of `App`, scenes, and `View` hierarchies. A view describes what should appear for a given state, and the framework reconciles the affected parts when data changes. See [SwiftUI](contexts/swiftui.md), [App](contexts/swiftui-app.md), [App organization](contexts/swiftui-app-organization.md), and [View fundamentals](contexts/swiftui-view-fundamentals.md).
+- Prefer composition over imperative control: combine views, containers, and modifiers; create custom views or modifiers when a pattern actually repeats. See [View configuration](contexts/swiftui-view-configuration.md) and [View styles](contexts/swiftui-view-styles.md).
+- Treat identity, state, and dependencies as part of hierarchy design. Avoid turning `body` into a flow controller or a place for heavy work.
 
-## Dados e atualização da interface
+## Data and interface updates
 
-- Manter uma única fonte de verdade para cada dado. Usar estado local para UI transitória, bindings para acesso mutável a um valor pertencente a outra fonte, modelos observáveis para estado de domínio e environment para dependências compartilhadas pela hierarquia. Consulte [Model data](contexts/swiftui-model-data.md) e [Environment values](contexts/swiftui-environment-values.md).
-- Escolher a ferramenta de menor alcance que resolva o problema. Estado global ou environment excessivo esconde dependências e amplia atualizações.
-- Deixar a mudança de dados dirigir a atualização visual. Efeitos colaterais devem estar ligados a eventos, tarefas ou ciclos de vida explícitos, com cancelamento e isolamento apropriados.
+- Keep a single source of truth for each piece of data. Use local state for transient UI, bindings for mutable access to a value owned by another source, observable models for domain state, and environment for dependencies shared by the hierarchy. See [Model data](contexts/swiftui-model-data.md) and [Environment values](contexts/swiftui-environment-values.md).
+- Choose the most narrowly scoped tool that solves the problem. Global state or excessive use of environment hides dependencies and broadens updates.
+- Let data changes drive visual updates. Side effects must be linked to explicit events, tasks, or lifecycles, with appropriate cancellation and isolation.
 
-## Composição, layout e navegação
+## Composition, layout, and navigation
 
-- Começar por stacks, grids, listas, tabelas, scroll views e containers de navegação do sistema. Eles respondem a conteúdo e dimensões variáveis; recorrer a ajustes finos e layouts customizados somente depois. Consulte [Layout fundamentals](contexts/swiftui-layout-fundamentals.md), [Layout adjustments](contexts/swiftui-layout-adjustments.md) e [Custom layout](contexts/swiftui-custom-layout.md).
-- No macOS, projetar desde o início para janelas redimensionáveis, teclado, foco, menus, comandos, toolbars, seleção, drag and drop e múltiplas janelas. Consulte [Windows](contexts/swiftui-windows.md), [Navigation](contexts/swiftui-navigation.md), [Toolbars](contexts/swiftui-toolbars.md), [Menus and commands](contexts/swiftui-menus-and-commands.md), [Focus](contexts/swiftui-focus.md) e [Drag and drop](contexts/swiftui-drag-and-drop.md).
-- Usar a adaptação do sistema como padrão. Uma inferência operacional para o Zforge é evitar geometria fixa quando um container nativo já expressa a relação desejada.
+- Start with stacks, grids, lists, tables, scroll views, and system navigation containers. They respond to variable content and dimensions; turn to fine adjustments and custom layouts only afterward. See [Layout fundamentals](contexts/swiftui-layout-fundamentals.md), [Layout adjustments](contexts/swiftui-layout-adjustments.md), and [Custom layout](contexts/swiftui-custom-layout.md).
+- On macOS, design from the outset for resizable windows, keyboard, focus, menus, commands, toolbars, selection, drag and drop, and multiple windows. See [Windows](contexts/swiftui-windows.md), [Navigation](contexts/swiftui-navigation.md), [Toolbars](contexts/swiftui-toolbars.md), [Menus and commands](contexts/swiftui-menus-and-commands.md), [Focus](contexts/swiftui-focus.md), and [Drag and drop](contexts/swiftui-drag-and-drop.md).
+- Use system adaptation by default. An operational inference for Zforge is to avoid fixed geometry when a native container already expresses the desired relationship.
 
-## macOS e integração com AppKit
+## macOS and AppKit integration
 
-- Priorizar componentes SwiftUI nativos disponíveis no macOS e o comportamento definido no `UI-UX-GUIDE.md`. A semântica funcional pode ser multiplataforma, mas a interação final precisa pertencer ao Mac.
-- Usar AppKit como ponte deliberada quando SwiftUI não expuser uma capacidade necessária. `NSViewRepresentable` e `NSViewControllerRepresentable` trazem AppKit para a hierarquia SwiftUI; hosting views e controllers fazem o caminho inverso. Consulte [AppKit integration](contexts/swiftui-appkit-integration.md) e [AppKit](contexts/appkit.md).
-- Não introduzir uma ponte AppKit apenas por familiaridade. Ela acrescenta sincronização de estado, ciclo de vida, sizing e acessibilidade que precisam ser testados.
+- Prioritize native SwiftUI components available on macOS and the behavior defined in `UI-UX-GUIDE.md`. Functional semantics can span platforms, but the final interaction must belong on the Mac.
+- Use AppKit as a deliberate bridge when SwiftUI does not expose a required capability. `NSViewRepresentable` and `NSViewControllerRepresentable` bring AppKit into the SwiftUI hierarchy; hosting views and controllers provide the reverse path. See [AppKit integration](contexts/swiftui-appkit-integration.md) and [AppKit](contexts/appkit.md).
+- Do not introduce an AppKit bridge solely out of familiarity. It adds state synchronization, lifecycle, sizing, and accessibility responsibilities that need testing.
 
-## Liquid Glass e componentes do sistema
+## Liquid Glass and system components
 
-- Primeiro compilar com o Xcode e SDK atuais e observar o aplicativo nos sistemas atuais. Componentes padrão de SwiftUI e AppKit recebem automaticamente grande parte da aparência contemporânea. Consulte [Adopting Liquid Glass](contexts/technologyoverviews-adopting-liquid-glass.md).
-- Tratar o material como uma camada funcional para controles, navegação, menus, toolbars, janelas, modais e busca; não como decoração aplicada indiscriminadamente ao conteúdo.
-- Adicionar efeitos explícitos apenas quando uma view customizada realmente precisar participar desse sistema visual. Preservar legibilidade, contraste, hierarquia, acessibilidade e performance.
-- Para o Zforge, o `UI-UX-GUIDE.md` continua sendo a autoridade da composição visual e restringe efeitos explícitos a situações funcionais apropriadas.
+- First compile with the current Xcode and SDK and observe the application on current systems. Standard SwiftUI and AppKit components automatically receive much of the contemporary appearance. Consult [Adopting Liquid Glass](contexts/technologyoverviews-adopting-liquid-glass.md).
+- Treat the material as a functional layer for controls, navigation, menus, toolbars, windows, modals, and search, rather than decoration applied indiscriminately to content.
+- Add explicit effects only when a custom view actually needs to participate in this visual system. Preserve readability, contrast, hierarchy, accessibility, and performance.
+- For Zforge, `UI-UX-GUIDE.md` remains the authority for visual composition and limits explicit effects to appropriate functional situations.
 
-## Acessibilidade e localização
+## Accessibility and localization
 
-- Considerar acessibilidade como estrutura, não acabamento: semântica, aparência legível, controles acionáveis, descrições úteis e navegação precisam acompanhar a hierarquia desde o início. Consulte [Accessibility fundamentals](contexts/swiftui-accessibility-fundamentals.md) e as coleções locais de aparência, controles, descrições e navegação.
-- Componentes do sistema fornecem uma base melhor, mas não eliminam validação com VoiceOver, teclado, contraste, tamanhos de conteúdo e estados reduzidos de movimento ou transparência.
-- Manter textos visíveis e rótulos acessíveis localizáveis pelo String Catalog, sem concatenar fragmentos que impeçam uma tradução natural.
+- Treat accessibility as part of the structure, not as a finishing touch: semantics, readable appearance, actionable controls, useful descriptions, and navigation must follow the hierarchy from the outset. Consult [Accessibility fundamentals](contexts/swiftui-accessibility-fundamentals.md) and the local appearance, controls, descriptions, and navigation collections.
+- System components provide a better foundation but do not eliminate validation with VoiceOver, keyboard, contrast, content sizes, and reduced-motion or reduced-transparency states.
+- Keep visible text and accessible labels localized through the String Catalog, without concatenating fragments that prevent natural translation.
 
-## Previews, medição e performance
+## Previews, measurement, and performance
 
-- Usar macros de preview para iterar views em estados, tamanhos e contextos representativos; previews aceleram feedback, mas não substituem testes no aplicativo real. Consulte [Previews in Xcode](contexts/swiftui-previews-in-xcode.md).
-- Medir antes de otimizar. Instruments ajuda a localizar hangs, hitches, atualizações longas de `body` e invalidações frequentes. Consulte [Performance analysis](contexts/swiftui-performance-analysis.md).
-- Evitar trabalho síncrono custoso no caminho de renderização e reduzir dependências de estado amplas que invalidem partes desnecessárias da árvore.
+- Use preview macros to iterate on views in representative states, sizes, and contexts; previews accelerate feedback but do not replace tests in the actual application. Consult [Previews in Xcode](contexts/swiftui-previews-in-xcode.md).
+- Measure before optimizing. Instruments helps locate hangs, hitches, long `body` updates, and frequent invalidations. Consult [Performance analysis](contexts/swiftui-performance-analysis.md).
+- Avoid expensive synchronous work on the rendering path and reduce broad state dependencies that unnecessarily invalidate parts of the tree.
 
-## Hierarquia de evidência
+## Evidence hierarchy
 
-1. Contexto local capturado, quando recente e aplicável à plataforma alvo.
-2. Página oficial Apple Developer incorporada ao corpus pelo protocolo incremental.
-3. SDK e Xcode locais para assinatura, disponibilidade e comportamento de compilação.
-4. Experimento mínimo ou teste no Zforge para comportamento que a documentação não determine completamente.
+1. Captured local context, when recent and applicable to the target platform.
+2. Official Apple Developer page incorporated into the corpus through the incremental protocol.
+3. Local SDK and Xcode for signatures, availability, and compilation behavior.
+4. Minimal experiment or test in Zforge for behavior not fully determined by documentation.
 
-Quando essas evidências divergirem, registrar a versão, a plataforma e a incerteza em vez de generalizar.
-
+When this evidence diverges, record the version, platform, and uncertainty rather than generalizing.

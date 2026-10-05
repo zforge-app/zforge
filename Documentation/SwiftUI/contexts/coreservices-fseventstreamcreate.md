@@ -16,21 +16,21 @@ confidence: "primary-source"
 
 # FSEventStreamCreate(_:_:_:_:_:_:_:)
 
-## Consulta rápida
+## Quick reference
 
-- Plataforma: macOS; assinaturas conferidas com o SDK macOS 27.0 do Xcode local.
-- Declaração: `func FSEventStreamCreate(CFAllocator?, FSEventStreamCallback, UnsafeMutablePointer<FSEventStreamContext>?, CFArray, FSEventStreamEventId, CFTimeInterval, FSEventStreamCreateFlags) -> FSEventStreamRef?`.
-- Uso no Zforge: catálogo global de tags, consulta e monitoramento de arquivos autorizados.
+- Plataforma: macOS; signatures with the SDK macOS 27.0 of the local Xcode.
+- Declaration: `func FSEventStreamCreate(CFAllocator?, FSEventStreamCallback, UnsafeMutablePointer<FSEventStreamContext>?, CFArray, FSEventStreamEventId, CFTimeInterval, FSEventStreamCreateFlags) -> FSEventStreamRef?`.
+- Use in Zforge: Global catalog of tags, query and monitoring of authorized files.
 
-## Síntese
+## Summary
 
 Create a stream with watched paths, callback, copied context and a starting event ID. Use the since-now constant for a new live watcher. Schedule, start, stop, invalidate and release the stream explicitly.
 
-## Mapa do conteúdo
+## Content map
 
 
 
-## Links do segundo nível
+## Second-level links
 
 - [CFAllocator](https://developer.apple.com/documentation/corefoundation/cfallocator)
 - [CFArray](https://developer.apple.com/documentation/corefoundation/cfarray)
@@ -45,6 +45,6 @@ Create a stream with watched paths, callback, copied context and a starting even
 - [UnsafeMutablePointer](https://developer.apple.com/documentation/swift/unsafemutablepointer)
 - [Technologies](https://developer.apple.com/documentation/technologies)
 
-## Proveniência
+## Provenance
 
-Fonte oficial: [FSEventStreamCreate(_:_:_:_:_:_:_:)](https://developer.apple.com/documentation/coreservices/1443980-fseventstreamcreate). Payload DocC capturado em 2026-10-02T23:16:46.165601+00:00; SHA-256 `d9f910e072c348dc4c2676cff66e2acf8f68eb9004ae46ca349b786a4446f95a`.
+Official source: [FSEventStreamCreate(_:_:_:_:_:_:_:)](https://developer.apple.com/documentation/coreservices/1443980-fseventstreamcreate). Payload DocC captured in 2026-10-02T23:16:46.165601+00:00; SHA-256 `d9f910e072c348dc4c2676cff66e2acf8f68eb9004ae46ca349b786a4446f95a`.

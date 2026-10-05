@@ -1,35 +1,35 @@
-# Zforge — índice de Documentation
+# Zforge — Documentation Index
 
-Este diretório reúne os requisitos versionados do Zforge e a documentação técnica local usada para implementá-los. As instruções gerais para o agente estão em [`../AGENTS.md`](../AGENTS.md).
+This directory combines the versioned requirements of Zforge and the local technical documentation used to implement them. General instructions for the agent are [`../AGENTS.md`](../AGENTS.md).
 
-## Requisitos do projeto
+## Project requirements
 
-1. [`Requirements/AGENTS.md`](Requirements/AGENTS.md) — índice dos documentos de requisito, precedência e rotina de manutenção. Ler primeiro ao trabalhar em requisitos ou funcionalidade.
-2. [`Requirements/CURRENT-STATE.md`](Requirements/CURRENT-STATE.md) — contratos observáveis já implementados, pontos de código e limites de evidência; fonte de verdade do comportamento vigente.
-3. [`Requirements/UI-UX-GUIDE.md`](Requirements/UI-UX-GUIDE.md) — especificação de interface, interação, responsividade e acessibilidade; notas de protótipo são subordinadas ao estado vigente.
-4. [`Requirements/PRODUCT-REQUIREMENTS.md`](Requirements/PRODUCT-REQUIREMENTS.md) — visão de produto, plataforma, 7-Zip, segurança, licenciamento, distribuição e requisitos do marco inicial, com status explicitado no próprio documento.
-5. [`Requirements/OPEN-REQUIREMENTS.md`](Requirements/OPEN-REQUIREMENTS.md) — requisitos e decisões ainda abertos, separados do comportamento implementado.
-6. [`Requirements/DOCUMENTATION-REQUIREMENTS.md`](Requirements/DOCUMENTATION-REQUIREMENTS.md) — requisitos da fonte local de documentação SwiftUI e macOS.
-7. [`Requirements/SEVENZIP-STATIC-INTEGRATION-PLAN.md`](Requirements/SEVENZIP-STATIC-INTEGRATION-PLAN.md) — plano da ZF-21 para integração estática nativa do 7-Zip, com implementação registrada, fases e verificações pendentes.
+1. [`Requirements/AGENTS.md`](Requirements/AGENTS.md) — index of required documents, precedence and maintenance routine. Read first when working on requirements or functionality.
+2. [`Requirements/CURRENT-STATE.md`](Requirements/CURRENT-STATE.md) — observable contracts already implemented, code points and limits of evidence; source of truth of current behavior.
+3. [`Requirements/UI-UX-GUIDE.md`](Requirements/UI-UX-GUIDE.md) — specification of interface, interaction, responsiveness and accessibility; prototype notes are subordinated to the current state.
+4. [`Requirements/PRODUCT-REQUIREMENTS.md`](Requirements/PRODUCT-REQUIREMENTS.md) — product vision, platform, 7-Zip, security, licensing, distribution and requirements of the initial milestone, with explicit status in the document itself.
+5. [`Requirements/OPEN-REQUIREMENTS.md`](Requirements/OPEN-REQUIREMENTS.md) — requirements and decisions still open, separate from the implemented behavior.
+6. [`Requirements/DOCUMENTATION-REQUIREMENTS.md`](Requirements/DOCUMENTATION-REQUIREMENTS.md) — local documentation source requirements SwiftUI and macOS.
+7. [`Requirements/SEVENZIP-STATIC-INTEGRATION-PLAN.md`](Requirements/SEVENZIP-STATIC-INTEGRATION-PLAN.md) — plan of ZF-21 for native static integration of 7-Zip, with registered implementation, pending phases and verifications.
 
-8. [`Requirements/ARCHIVE-DRAG-DROP-PLAN.md`](Requirements/ARCHIVE-DRAG-DROP-PLAN.md) — plano vigente da ZF-30 para saída e reorganização de itens internos, com confirmação e paridade visual.
+8. [`Requirements/ARCHIVE-DRAG-DROP-PLAN.md`](Requirements/ARCHIVE-DRAG-DROP-PLAN.md) — plan in force from ZF-30 for exit and reorganization of internal items, with confirmation and visual parity.
 
-## Documentação técnica SwiftUI
+## Technical documentation SwiftUI
 
-- [`SwiftUI/AGENTS.md`](SwiftUI/AGENTS.md) — regras próprias de consulta, atualização incremental e proveniência do corpus Apple.
-- [`SwiftUI/INDEX.md`](SwiftUI/INDEX.md) — mapa dos contextos locais; [`SwiftUI/GUIDANCE.md`](SwiftUI/GUIDANCE.md) sintetiza decisões amplas.
-- [`SwiftUI/README.md`](SwiftUI/README.md) — estrutura do corpus; `SwiftUI/contexts/` contém contextos primários, `SwiftUI/metadata/` registra capturas, assets e blocos de código, e `SwiftUI/tools/` guarda ferramentas de manutenção.
+- [`SwiftUI/AGENTS.md`](SwiftUI/AGENTS.md) — own rules of query, incremental update and provenance of the Apple corpus.
+- [`SwiftUI/INDEX.md`](SwiftUI/INDEX.md) — map of local contexts; [`SwiftUI/GUIDANCE.md`](SwiftUI/GUIDANCE.md) synthesizes broad decisions.
+- [`SwiftUI/README.md`](SwiftUI/README.md) — corpus structure; `SwiftUI/contexts/` contains primary contexts, `SwiftUI/metadata/` records captures, asset and code blocks, and `SwiftUI/tools/` stores maintenance tools.
 
-## Rastreamento relacionado fora de Documentation
+## Related tracking outside Documentation
 
-- [`../TASKS.md`](../TASKS.md) — atividades e decisões pendentes.
-- [`../DIVERGENCES.md`](../DIVERGENCES.md) — diferenças entre pedidos, documentos e comportamento observado.
-- [`../REGRESSION-COVERAGE.md`](../REGRESSION-COVERAGE.md) — matriz de contratos, testes e verificações manuais.
+- [`../TASKS.md`](../TASKS.md) — pending activities and decisions.
+- [`../DIVERGENCES.md`](../DIVERGENCES.md) — differences between requests, documents and observed behaviour.
+- [`../REGRESSION-COVERAGE.md`](../REGRESSION-COVERAGE.md) — matrix of contracts, tests and manual checks.
 
-Em cada interação, consultar os requisitos afetados e atualizar seus contratos quando houver informação nova. Mudanças de estado das atividades e divergências devem ser refletidas nos documentos de rastreamento correspondentes na mesma interação.
+In each interaction, consult the affected requirements and update your contracts when there is new information. Changes in activity status and divergences must be reflected in the corresponding tracking documents in the same interaction.
 
-## Comparações de implementação
+## Implementation Comparisons
 
-- [Benchmarks/7zip-linking.md](Benchmarks/7zip-linking.md) — comparação executada de CLI oficial, integração estática e dinâmica, com scripts reproduzíveis e medições individuais.
+- [Benchmarks/7zip-linking.md](Benchmarks/7zip-linking.md) — comparison performed of official CLI, static and dynamic integration, with reproducible scripts and individual measurements.
 
-- [Benchmarks/7zip-ram.md](Benchmarks/7zip-ram.md) — RAM total do Zforge e motores, teste real com séries temporais, baseline e pós-limpeza.
+- [Benchmarks/7zip-ram.md](Benchmarks/7zip-ram.md) — RAM total Zforge and engines, real test with time series, baseline and post-cleaning.

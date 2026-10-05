@@ -16,20 +16,20 @@ confidence: "primary-source"
 
 # NSGestureRecognizer
 
-## Consulta rápida
+## Quick reference
 
-- Módulo: AppKit, macOS. Assinaturas verificadas no SDK macOS 27.0.
-- Classes de gesto disponíveis desde macOS 10.10; delegate de tentativa desde 10.11, conforme SDK.
+- Module: AppKit, macOS. Signatures found in SDK macOS 27.0.
+- classes of gesture available since macOS 10.10; delegate attempt since 10.11, according to SDK.
 
-## Síntese e implicações
+## Summary and implications
 
-Reconhecedores acompanham os eventos da view e de seus descendentes. O Zforge usa uma subclasse personalizada de NSGestureRecognizer no host da janela, sem atrasar os eventos primários de mouse.
+Recognizers follow the events of the view and its descendants. Zforge uses a custom subclass of NSGestureRecognizer in the window host, without delaying primary mouse events.
 
-## Mapa do conteúdo
+## Content map
 
-- Reconhecimento, configuração, delegate e relações entre gestos.
+- Recognition, configuration, delegate and relationships between gestures.
 
-## Links do segundo nível
+## Second-level links
 
 - [AppKit](https://developer.apple.com/documentation/appkit)
 - [CVarArg](https://developer.apple.com/documentation/swift/cvararg)
@@ -104,13 +104,13 @@ Reconhecedores acompanham os eventos da view e de seus descendentes. O Zforge us
 - [touchesMoved(with:)](https://developer.apple.com/documentation/appkit/nsgesturerecognizer/touchesmoved(with:))
 - [view](https://developer.apple.com/documentation/appkit/nsgesturerecognizer/view)
 
-## Proveniência
+## Provenance
 
-- Fonte: [Apple Developer](https://developer.apple.com/documentation/appkit/nsgesturerecognizer)
-- Captura: `2026-10-04T12:33:54.519715+00:00`
+- Source: [Apple Developer](https://developer.apple.com/documentation/appkit/nsgesturerecognizer)
+- Captured: `2026-10-04T12:33:54.519715+00:00`
 - SHA-256: `0554343ffe93d00c3f4482b5f78c70b467879cfec37fedc09c2e9ca85e8e2515`
-- Escopo: uma página; links secundários não percorridos.
+- Scope: one page; secondary links not covered.
 
-### Sessão associada ao gesto no SDK local
+### Session associated with gesture no SDK site
 
-O SDK macOS 27.0 acrescenta `NSView.beginDraggingSession(items:gesture:source:) -> NSDraggingSession?`, disponível desde macOS 27.0. Essa associação foi experimentada na ZF-30. A implementação final usa `beginDraggingSession(with:event:source:)` durante o despacho de mouseDragged no macOS 26/27, compartilhada com arquivos locais; a associação ao reconhecedor não é o caminho vigente. Esta assinatura foi consultada em `AppKit.framework/Headers/NSView.h` do Xcode local; não é uma nova captura web.
+SDK macOS 27.0 adds `NSView.beginDraggingSession(items:gesture:source:) -> NSDraggingSession?`, available since macOS 27.0. This association was experienced in ZF-30. The final implementation uses `beginDraggingSession(with:event:source:)` while dispatching mouseDragged in macOS 26/27, shared with local files; the association with the recognizer is not the current path. This signature was consulted in `AppKit.framework/Headers/NSView.h` of the local Xcode; It's not a new web capture.

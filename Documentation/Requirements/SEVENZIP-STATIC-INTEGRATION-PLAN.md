@@ -1,133 +1,133 @@
-# ZF-21 — plano de integração estática do 7-Zip
+# ZF-21 — plan static integration of 7-Zip
 
-Data: **2026-10-02**. Estado: **backend e build implementados em 2026-10-03; validação externa e distribuição pendentes**. A linkagem estática foi escolhida pelo usuário. O usuário refinou o escopo para arm64 exclusivamente e macOS mínimo 26.0; x86_64 fica fora do suporte. Este plano adota execução no processo do app para a primeira implementação. O estado vigente continua em [CURRENT-STATE.md](CURRENT-STATE.md), §6; o rastreamento está em [TASKS.md](../../TASKS.md#zf-21--motor-nativo-do-7-zip-compilado-com-o-zforge) e [OR-10](OPEN-REQUIREMENTS.md).
+Data: **2026-10-02**. State: **backend and build implemented in 2026-10-03; external validation and outstanding distribution**. Static linkage was chosen by the user. The user refined the scope for arm64 exclusively and macOS minimum 26.0; x86_64 stays out of support. This plan adopts execution in the app process for the first implementation. The current state continues at [CURRENT-STATE.md](CURRENT-STATE.md), §6; the screening is [TASKS.md](../../TASKS.md#zf-21--native-7-zip-engine-compiled-with-zforge) and [OR-10](OPEN-REQUIREMENTS.md).
 
-## Resultado esperado
+## Expected result
 
-A build do Zforge compila o código-fonte oficial do 7-Zip para arm64 e incorpora o motor ao executável principal. O produto final realiza as operações por chamadas nativas, sem `7zz`, parsing de saída textual ou biblioteca dinâmica do motor. O código incorporado fica coberto pela assinatura do executável Zforge. Serviço XPC poderá ser avaliado em uma mudança futura; ele não faz parte desta implementação.
+The Zforge build compiles the official source code from 7-Zip to arm64 and incorporates the engine to the main executable. The final product performs operations by native calls, without `7zz`, textual output parsing or dynamic engine library. The embedded code is covered by the signature of the executable Zforge. XPC service can be evaluated in a future change; It is not part of this implementation.
 
 ```mermaid
 flowchart LR
     UI[UI e FileBrowserState] --> Contract[ArchiveServing]
     Contract --> Engine[NativeSevenZipArchiveEngine]
     Engine --> Bridge[SevenZipBridge — Objective-C++]
-    Bridge --> Core[SevenZipCore — C/C++ estático]
+    Bridge --> Core[SevenZipCore — static C/C++]
 ```
 
-Todos esses componentes executam no processo do Zforge. Chamadas síncronas do motor ficam em workers fora da thread principal. O isolamento lógico do motor permanece em módulos e contratos; o processo do app também assume o impacto de falhas nativas fatais.
+All these components perform in the Zforge process. Synchronous engine calls stay in workers outside the main thread. the logical isolation of the engine remains in modules and contracts; the app process also assumes the impact of failures native fatals.
 
-## Organização proposta
+## Proposed organisation
 
-| Local | Responsabilidade |
+| Local | Liability |
 | --- | --- |
-| `Vendor/7zip/` | Snapshot das fontes oficiais e licenças, sem arquivos locais do checkout irmão. |
-| `Vendor/7zip-provenance.json` | Versão, revisão completa, origem, checksum do snapshot e configuração de build. |
-| `Vendor/7zip-patches/` | Patches mínimos separados, com motivo e instrução de aplicação. |
-| `BuildSupport/SevenZip/` | Manifesto de fontes, configuração e scripts incrementais de compilação. |
-| Target `SevenZipCore` | Biblioteca estática C/C++, com formatos e codecs multiformato. |
-| `Zforge/Native/SevenZipBridge.h` e `.mm` | Interface Objective-C compatível com Swift; ownership, conversões e callbacks ficam no adaptador. |
-| `Zforge/Services/NativeSevenZipArchiveEngine.swift` | Implementação de `ArchiveServing`, integração de sessões/políticas, execução e cancelamento. |
-| `ZforgeTests/Fixtures/Archives/` | Fixtures pequenas versionadas e geradores reproduzíveis para cenários maiores. |
+| `Vendor/7zip/` | Snapshot of official sources and licenses, no local brother checkout files. |
+| `Vendor/7zip-provenance.json` | Full version, revision, origin, snapshot checksum and build configuration. |
+| `Vendor/7zip-patches/` | Minimal patches separated, with motive and application instruction. |
+| `BuildSupport/SevenZip/` | Source manifest, configuration, and incremental build scripts. |
+| Target `SevenZipCore` | C/C++ static library with multiformat formats and codecs. |
+| `Zforge/Native/SevenZipBridge.h` and `.mm` | Swift-compatible Objective-C interface; Ownership, conversions and callbacks stay in the adapter. |
+| `Zforge/Services/NativeSevenZipArchiveEngine.swift` | Implementation of `ArchiveServing`, integration of sessions/policies, execution and cancellation. |
+| `ZforgeTests/Fixtures/Archives/` | Small versioned fixtures and reproducible generators for larger scenarios. |
 
-Os nomes acima foram propostos no plano. A implementação usa a fase `Build SevenZipCore`, `ArchiveEntry.swift`, `NativeSevenZipBackend.swift` e `NativeSevenZipArchiveEngine` em `ArchiveEngine.swift`. `libSevenZipCore.a` é um produto intermediário da build e não é copiado para o `.app`. Objetos, dependências e arquivos temporários do motor ficam em `$(TARGET_TEMP_DIR)/SevenZip`; a fase declara a biblioteca final como saída e Debug/Release vinculam esse mesmo caminho. O sandbox de scripts do Xcode permanece habilitado. Headers públicos do adaptador não expõem tipos C++, ponteiros de interfaces do 7-Zip ou sintaxe CLI à UI.
+The above names were proposed in plan. The implementation uses the `Build SevenZipCore`, `ArchiveEntry.swift`, `NativeSevenZipBackend.swift` and `NativeSevenZipArchiveEngine` phase in `ArchiveEngine.swift`. `libSevenZipCore.a` is an intermediate build product and is not copied to `.app`. Engine objects, dependencies and temporary files are `$(TARGET_TEMP_DIR)/SevenZip`; the phase declares the final library as output and Debug/Release link that same path. The Xcode script sandbox remains enabled. Public adapter heads do not expose C++ types, 7-Zip interface pointers or CLI syntax to UI.
 
-## 1. Caracterizar o backend atual e preparar a migração
+## 1. Characterize the current backend and prepare migration
 
-- Inventariar todas as operações de `ArchiveServing`, os campos de `BrowserItem`, o ciclo das sessões e os contratos de §6 de `CURRENT-STATE.md`.
-- Registrar os testes existentes que realmente executam `SevenZipArchiveEngine`, distinguindo-os de fixtures de UI e testes do parser textual.
-- Extrair apenas as partes necessárias para compartilhar sessões, políticas de navegação/materialização e conflitos entre backends. Desacoplar a estrutura `Entry` de `SevenZipListingParser` e separar normalização de caminhos da leitura da CLI.
-- Separar `CompressionOptions` e perfis persistidos da tradução `commandArguments`: o backend CLI conserva seu tradutor; o nativo ganha um tradutor de propriedades.
-- Manter o backend CLI como referência explícita de testes durante a migração. Nenhum fallback automático em produção deve esconder uma operação ainda não portada ou repetir uma operação de escrita após falha.
+- Invent all operations of `ArchiveServing`, fields of `BrowserItem`, session cycle and contracts of §6 of `CURRENT-STATE.md`.
+- Register existing tests that actually run `SevenZipArchiveEngine`, distinguishing them from fixtures of UI and textual parser tests.
+- Extract only the parts needed to share sessions, navigation/materialization policies and conflicts between backends. Decouple `Entry` structure of `SevenZipListingParser` and separate normalization of CLI reading paths.
+- Separate `CompressionOptions` and persistent profiles of translation `commandArguments`: CLI backend keeps its translator; native wins a property translator.
+- Keep CLI backend as explicit test reference during migration. No automatic fallback in production shall hide an operation not yet ported or repeat a writing operation after failure.
 
-**Saída verificável:** matriz `operação → contrato → teste → lacuna`, com suíte atual executada e contagem registrada. Refatorações preliminares precisam passar nos testes existentes antes de receber o motor nativo.
+**Verifiable output:** matrix `operation → contract → test → gap`, with current suite executed and count recorded. Refactorings preliminary tests must be passed before receiving the native engine.
 
-## 2. Incorporar as fontes e construir a biblioteca estática
+## 2. Embed the sources and build the static library
 
-- Usar inicialmente a versão local **26.02**, revisão `f9d78aff31a5f2521ae7ddbdc97c4a8855808959`, para comparar com a versão do motor em uso. Atualização de versão será uma decisão rastreada, evitando misturar mudança de backend com mudança de comportamento upstream.
-- Vendorizar fontes correspondentes e licenças; a build deve funcionar a partir de um clone do Zforge sem `../7zip`, sem instalação externa e sem download durante a build.
-- Derivar o manifesto multiformato de `CPP/7zip/Bundles/Format7zF/Arc_gcc.mak`, incluindo codecs, handlers e dependências C/C++ necessários. A receita oficial é compartilhada: a adaptação para arquivo `.a` faz parte desta etapa.
-- Excluir entrypoints de console e descoberta de plugins externos. Auditar configurações, registro de codecs, inicializadores e alterações de estado global antes de incorporar fontes ao processo do app.
-- Gerar produtos separados por arquitetura/configuração em diretórios de build; alinhar deployment target e SDK com o app. Preservar multithreading e usar implementações C/assembly compatíveis com cada arquitetura.
-- Integrar dependências, inputs e outputs no Xcode para uma build incremental reproduzível, sem gerar objetos dentro das fontes do fornecedor.
-- Garantir que o linker inclua os objetos que registram formatos/codecs por inicializadores. Avaliar `-force_load` restrito à biblioteca do motor ou uma estratégia explícita de retenção; não aplicar `-all_load` globalmente sem necessidade.
+- Initially use the local version **26.02**, review `f9d78aff31a5f2521ae7ddbdc97c4a8855808959`, to compare with the engine version in use. Version update will be a tracked decision, avoiding mixing backend change with upstream behavior change.
+- sell corresponding sources and licenses; build must work from a clone of Zforge without `../7zip`, without external installation and without download during build.
+- Derive the multiformat manifest from `CPP/7zip/Bundles/Format7zF/Arc_gcc.mak`, including the required codecs, handlers, and C/C++ dependencies. The official recipe is shared: adaptation to `.a` file is part of this step.
+- Delete console entrypoints and discover external plugins. Audit settings, codec logging, booters, and global state changes before incorporating sources into the app process.
+- Generate products separated by architecture/configuration in build directories; to align deployment target and SDK with the app. Preserve multithreading and use C/assembly implementations compatible with each architecture.
+- Integrate dependencies, inputs and outputs in Xcode for a reproducible incremental build without generating objects within the supplier's sources.
+- Ensure that the linker includes objects that record formats/codecs by booters. assess `-force_load` restricted to the engine library or an explicit retention strategy; not apply `-all_load` globally without need.
 
-**Saída verificável:** biblioteca e executável mínimo ligados estaticamente em Debug e Release, com inventário de formatos/leitura/escrita esperado. Conferir o resultado com dead stripping habilitado. O único destino suportado é Apple Silicon (arm64), com macOS mínimo 26.0.
+**Verifiable output:** library and minimum executable linked statically in Debug and Release, with format inventory/reading/writing expected. Check the result with dead stripping enabled. The only supported destination is Apple Silicon (arm64), with macOS minimum 26.0.
 
 ## 3. Implementar a fronteira Swift / Objective-C++ / 7-Zip
 
-- Expor abertura/fechamento, propriedades, extração seletiva, teste, criação e atualização com resultados tipados, handles controlados e IDs por operação/entrada.
-- Implementar streams de entrada/saída, callbacks de abertura/volumes, `IArchiveExtractCallback`, `IArchiveUpdateCallback`, `IProgress`, `ICryptoGetTextPassword` e `ICryptoGetTextPassword2`, conforme a operação.
-- Conter exceções C++ no adaptador; gerenciar interfaces com RAII e balancear referências, buffers e strings. Não permitir exceções ou ponteiros sem ownership atravessando a fronteira Swift.
-- Traduzir `HRESULT` e resultados por entrada para erros/avisos do domínio. Sucesso da chamada geral não comprova sucesso de todos os itens. Distinguir senha ausente, senha inválida e corrupção quando o handler fornece evidência; não inferir senha errada de qualquer erro criptografado.
-- Manter senha somente em memória pelo tempo autorizado da sessão/operação, sem logs, perfis ou persistência; liberar cópias temporárias controladas pelo adaptador.
-- Serializar uso de cada instância `IInArchive`, conforme a restrição do código oficial. Adotar worker por sessão/operação e token de cancelamento thread-safe, inclusive em callbacks de streams/progresso. Um actor Swift sozinho não transforma a chamada C++ em cancelável.
-- Evitar bloqueios da thread principal e ciclos de espera entre callbacks nativos e resolutores assíncronos. Preferir resolver conflitos na camada Swift antes da escrita e entregar ao adaptador um plano de destinos.
-- Limitar frequência de notificações de progresso sem bloquear os callbacks que verificam cancelamento; fechar uma sessão durante trabalho em andamento deve cancelar/aguardar com segurança antes de liberar seus handles.
+- Expose opening/closing, properties, selective extraction, testing, creation and updating with typed results, controlled handles and IDs per operation/entry.
+- Implement input/output streams, opening/volume callbacks, `IArchiveExtractCallback`, `IArchiveUpdateCallback`, `IProgress`, `ICryptoGetTextPassword` and `ICryptoGetTextPassword2`, depending on the operation.
+- Contain C++ exceptions in the adapter; manage interfaces with RII and balance references, buffers and strings. Do not allow exceptions or pointers without Ownership crossing the Swift border.
+- Translate `HRESULT` and results per entry for domain errors/notices. Success of the general call does not prove success of all items. Distinguishing missing password, invalid password and corruption when handler provides evidence; do not infer wrong password from any encrypted error.
+- Keep password only in memory by session/operation authorized time, without logs, profiles or persistence; release temporary copies controlled by the adapter.
+- Serialize use of each instance `IInArchive`, according to the restriction of the official code. Adopt worker by session/operation and token of thread-safe cancellation, including in stream/progress callbacks. A single Swift actor doesn't turn the C++ call into a cancelable.
+- Avoid main thread blockages and waiting cycles between native callbacks and asynchronous resolvers. Choose to resolve conflicts in the Swift layer before writing and deliver a plan of destinations to the adapter.
+- Limit frequency of progress notifications without blocking callbacks that check cancellation; close a session during work in progress must cancel/wait safely before releasing your handsles.
 
-**Saída verificável:** prova pequena de listagem, extração e teste de ZIP/7z reais, incluindo senha, cancelamento, falha por entrada e fechamento. Conferir ownership com ferramentas de diagnóstico de memória em casos dirigidos.
+**Verifiable output:** Small proof of listing, extraction and test of ZIP/7z real, including password, cancellation, failure per entry and closing. Check ownership with memory diagnostic tools in directed cases.
 
-## 4. Portar leitura, navegação, extração e validação
+## 4. Port reading, navigation, extraction and validation
 
-- Implementar reconhecimento por assinatura/propriedades e abertura de volumes relacionados, não apenas por extensão. Fixtures devem cobrir ZIP/7z, RAR somente leitura, TAR, streams e amostras dos demais grupos reconhecidos.
-- Converter propriedades diretamente para os modelos vigentes, sintetizar diretórios virtuais e preservar nomes Unicode, datas, tamanhos desconhecidos e a correspondência entre caminho visível e índice do motor. Caracterizar nomes duplicados e nomes com separadores/novas linhas antes de definir sua projeção.
-- Implementar teste com `IInArchive::Extract` em modo de teste e agregar resultados por item. Validar seleção múltipla sequencial conforme o contrato vigente.
-- Portar extração completa/seletiva e materialização para preview, abertura externa e aninhamento. Seleção em archive sólido pode exigir decodificar dados anteriores; não prometer custo proporcional apenas ao item selecionado.
-- Aplicar validação de caminhos e contenção real no destino, incluindo links e componentes que poderiam redirecionar a escrita para fora da pasta autorizada. Reaproveitar decisões de conflito e limites de bytes efetivamente produzidos.
-- Preservar limites de profundidade/tamanho, limpeza de sessão, materialização somente leitura, quarentena e proteção contra publicação de resultados obsoletos nas quatro visualizações.
-- Inicialmente conservar staging/cache da sessão para manter os contratos atuais enquanto se valida o backend. Remover cópias da origem por motivo de I/O exige etapa própria, pois muda a relação entre sessão e alterações externas do archive.
+- Implement signature/property recognition and opening of related volumes, not only by extension. Fixtures must cover ZIP/7z, RAR read-only, TAR, streams and samples from other recognized groups.
+- Convert properties directly to current models, synthesize virtual directories and preserve Unicode names, dates, unknown sizes and match between visible path and engine index. Characterize duplicate names and names with separators/new lines before defining their projection.
+- Implement test with `IInArchive::Extract` in test mode and aggregate results per item. Validate sequential multiple selection according to the current contract.
+- Port complete/selective extraction and materialization for preview, external opening and nesting. Selecting archive solid may require decoding previous data; do not promise cost proportional only to the selected item.
+- Apply path validation and real containment in the destination, including links and components that could redirect writing out of the authorized folder. Reuse conflict decisions and byte limits effectively produced.
+- Preserve depth/size limits, session cleaning, materialization read-only, quarantine and protection against publishing obsolete results in the four views.
+- Initially keep session staging/cache to maintain current contracts while validating the backend. Removing copies of the source due to I/O requires a proper step, because it changes the relationship between session and external changes of archive.
 
-**Saída verificável:** testes de leitura, extração, senha, aninhamento, limites, volumes e conflitos executados contra o backend nativo. Comparar conteúdo e metadados com a referência CLI quando aplicável.
+**Verifiable output:** reading, extraction, password, nesting, limits, volumes and conflicts performed against the backend native. Compare content and metadata with the CLI reference when applicable.
 
-## 5. Portar criação e atualização
+## 5. Port creation and update
 
-- Mapear formato, método, nível, dicionário, bytes rápidos, sólido, threads e criptografia para `ISetProperties` e callbacks nativos. Validar as propriedades aceitas por cada handler; não transpor switches da CLI sem verificar seu significado na API.
-- Implementar criação de 7z, ZIP, TAR, XZ, BZIP2, GZIP e WIM. Preservar a camada TAR quando streams recebem múltiplas entradas/pastas, nomes livres de saída, tags e os perfis já persistidos.
-- Implementar `UpdateItems` para adicionar a ZIP/7z de volume único: combinar entradas existentes e novas, ler streams autorizados e escrever uma saída temporária. Atualização de archive não implica escrita no original em lugar.
-- Preservar confirmação, rejeição de auto inclusão/volumes/aninhados, validação da saída, substituição do original apenas após êxito e refresh da sessão aberta.
-- Cancelamento, senha errada, falta de espaço e falhas de entrada/saída devem preservar o archive original e limpar temporários de forma verificável. A autorização deve permanecer ativa durante toda a operação e a substituição.
+- Map format, method, level, dictionary, quick bytes, solid, threads and encryption for `ISetProperties` and native callbacks. Validate the properties accepted by each handler; do not transpose CLI switches without checking their meaning in the API.
+- Implement creation of 7z, ZIP, TAR, XZ, BZIP2, GZIP and WIM. Preserve the TAR layer when streams receive multiple entries/folders, free output names, tags, and already persisted profiles.
+- Implement `UpdateItems` to add ZIP/7z single volume: combine existing and new inputs, read authorized streams and write a temporary output. Update archive does not imply writing in the original instead.
+- Preserve confirmation, rejection of self-inclusion/volumes/tailed, output validation, replacement of the original only after success and refresh of the open session.
+- Cancellation, wrong password, lack of space and failures input/output must preserve the original archive and clear temporarys verifiably. The authorisation shall remain active throughout the operation and the replacement.
 
-**Saída verificável:** round trips de todos os formatos de saída; criptografia ZIP/7z; atualização com entradas antigas preservadas, inclusive em pasta interna; original preservado byte a byte nos cenários de falha e cancelamento.
+**Verifiable output:** round trips of all output formats; criptografia ZIP/7z; update with preserved old entries, including internal folder; original preserved byte a byte in failure scenarios and cancellation.
 
-## 6. Integrar e validar no app
+## 6. Integrate and validate in the app
 
-- Selecionar o backend nativo na composição de produção depois de completar a paridade. Migrar os testes de integração para que executem esse backend, com fixtures versionadas; o binário CLI pode ser usado apenas como ferramenta de referência de desenvolvimento enquanto necessário.
-- Remover do bundle a fase de cópia de `Vendor/7zz`, a descoberta de helper e overrides de ambiente do backend de produção. Remover runner/parser/tradutores CLI quando nenhum fluxo de produção depender deles; reaproveitar seus testes de segurança nos componentes independentes.
-- Validar em build assinada o fluxo real de permissões, fontes/destinos em pastas diferentes, volumes relacionados e reinício com bookmarks. Acesso no mesmo processo exige autorização ativa; não concede acesso geral ao filesystem.
-- Conferir Ícones, Lista, Colunas, Galeria, seleção múltipla, menus/toolbar/teclado, Finder, Recentes, preview, atualização por drop e diálogos de senha/conflito/cancelamento.
-- Medir abertura/listagem, extração e compressão com arquivos grandes e muitos pequenos: tempo, memória máxima, espaço temporário, cancelamento e responsividade. Registrar hardware, build Release, opções, cache frio/quente e staging para interpretar a comparação; não exigir arquivos compactados byte a byte idênticos quando metadados diferirem.
+- Select the backend native in the production composition after completing parity. Migrate integration tests so that they run this backend, with versioned fixtures; CLI binary can be used only as a development reference tool as long as necessary.
+- Remove from the bundle the copy phase of `Vendor/7zz`, the discovery of helper and environment overrides of the production backend. Remove runner/parser/CLI translators when no production flow depends on them; Reuse your safety tests on the independent components.
+- Validate in signed build the actual stream of permissions, sources/destinations in different folders, related volumes and restart with bookmarks. Access to the same process requires active authorisation; does not grant general access to the filesystem.
+- Check Icons, List, Columns, Gallery, multiple selection, menus/toolbar/keyboard, Finder, Recents, preview, drop update and password/conflict/cancellation dialogues.
+- Measure opening/listing, extraction and compression with large and many small files: time, maximum memory, temporary space, cancellation and responsiveness. Register hardware, build Release, options, cold/hot cache and staging to interpret comparison; do not require identical byte to byte compressed files when metadata differ.
 
-**Saída verificável:** funcionalidades operam na build assinada com o motor nativo e contagem real de testes registrada. `otool -L`, inventário do bundle e mapa/símbolos de linkagem confirmam a ausência de dependência dinâmica do 7-Zip e a presença do motor no executável. Comparações de desempenho são evidência medida, não condição presumida da linkagem estática.
+**Verifiable output:** Features operate on the built signed with the native engine and actual test count recorded. `otool -L`, inventory of bundle and map/linking symbols confirm the absence of dynamic dependency of 7-Zip and the presence of the engine in the executable. Performance comparisons are measured evidence, not presumed condition of static linkage.
 
-## 7. Preparar a distribuição e concluir os contratos
+## 7. Prepare distribution and conclude contracts
 
-- Executar build Release arm64, validar assinatura/Hardened Runtime e preparar fonte correspondente, patches, licenças e instruções de recompilação/relinkagem. Conferir a reprodução em checkout limpo e que uma modificação do motor pode ser incorporada em uma build local.
-- Verificar a distribuição do site com Developer ID, notarização e ticket quando houver identidade/acesso de lançamento autorizados. Executar em Apple Silicon; o deployment target mínimo do app e do motor é macOS 26.0.
-- Preparar a variante Mac App Store conforme os requisitos existentes, incluindo Sandbox e revisão das condições LGPL/unRAR. Build local e notarização do site não comprovam aceitação na loja.
-- Atualizar `CURRENT-STATE.md` após implementação, refletir a evidência real em `REGRESSION-COVERAGE.md`, concluir ZF-21 somente para o escopo validado e manter pendências de distribuição em OR-10. Registrar divergências concretas em `DIVERGENCES.md` se surgirem.
+- Run build Release arm64, validate signature/Hardened Runtime and prepare corresponding source, patches, licenses, and reprint/relink instructions. Check reproduction in clean checkout and that an engine modification can be incorporated into a local build.
+- Check the distribution of the site with Developer ID, notation and ticket when there is authorized release identity/access. Run in Apple Silicon; the minimum deployment target of the app and engine is macOS 26.0.
+- Prepare the Mac App Store variant as required, including Sandbox and review of LGPL/unRAR conditions. Local build and site notation do not confirm acceptance in the store.
+- Update `CURRENT-STATE.md` after implementation, reflect the actual evidence in `REGRESSION-COVERAGE.md`, complete ZF-21 only for the validated scope and keep distribution pending in OR-10. Record concrete divergences in `DIVERGENCES.md` if they arise.
 
-**Saída verificável:** o app entregue contém o motor estático e opera sem executável/biblioteca externa do 7-Zip. Gates dependentes de credenciais, revisão ou hardware indisponíveis ficam explicitamente pendentes; não se registra distribuição concluída apenas porque a build local passou.
+**Verifiable output:** the delivered app contains the static engine and operates without executable/external library of 7-Zip. Gates dependent on unavailable credentials, revision or hardware are explicitly pending; no distribution is registered completed only because the local build passed.
 
-## Marcos para revisão
+## Marks for revision
 
-1. **Build estática comprovada:** fontes reproduzíveis, handlers preservados em Release e ponte mínima funcionando.
-2. **Leitura completa:** navegar, extrair, testar e materializar com senha, cancelamento e limites.
-3. **Escrita completa:** criar todos os formatos suportados e atualizar ZIP/7z com preservação do original.
-4. **Backend de produção:** integração real no app, regressões verificadas e retirada do `7zz` do bundle.
-5. **Distribuição:** assinatura e materiais de licença/relinkagem verificados; canais externos somente com suas evidências específicas.
+1. **Proven static build:** reproducible sources, handlers preserved in Release and minimal bridge functioning.
+2. **Full reading:** navigate, extract, test and materialize with password, cancellation and limits.
+3. **Complete writing:** create all supported formats and update ZIP/7z with preservation of the original.
+4. **Production backup:** real integration into the app, verified regressions and withdrawal of `7zz` from bundle.
+5. **Distribution:** signature and verified license/relinking materials; external channels only with their specific evidence.
 
-Cada marco deve resultar em uma alteração revisável de responsabilidade coerente. O primeiro trabalho de implementação é a etapa 1 seguida da prova estática da etapa 2; os riscos de linker/registro e da ponte são resolvidos antes de portar toda a superfície funcional.
+Each milestone must result in a reviewable change of consistent responsibility. The first implementation work is the step 1 followed by the static test of the step 2; the risks linker/recorder and bridge are solved before carrying the entire functional surface.
 
-## Evidência inicial do planejamento em 2026-10-02
+## Initial evidence of planning in 2026-10-02
 
-- Inspeção do workspace em 2026-10-02: `ArchiveServing`, `SevenZipArchiveEngine`, `SevenZipProcessRunner`, `SevenZipListingParser`, `CompressionOptions`, `AccessGrantStore`, testes de archives e configuração de embedding do Xcode.
-- Fontes oficiais locais 26.02: `Format7zF/Arc_gcc.mak`, `Common/RegisterArc.h`, `Common/RegisterCodec.h`, `Archive/IArchive.h` e `IPassword.h`. As macros de registro usam inicializadores; `IArchive.h` proíbe chamadas simultâneas na mesma instância de `IInArchive`.
-- A etapa inicial produziu um plano e decisões documentais. Ela não executou build, benchmarks, testes de operação nativa, notarização ou validação da ponte.
+- Workspace inspection in 2026-10-02: `ArchiveServing`, `SevenZipArchiveEngine`, `SevenZipProcessRunner`, `SevenZipListingParser`, `CompressionOptions`, `AccessGrantStore`, archives tests and Xcode embedding configuration.
+- Sources local officers 26.02: `Format7zF/Arc_gcc.mak`, `Common/RegisterArc.h`, `Common/RegisterCodec.h`, `Archive/IArchive.h` and `IPassword.h`. Record macros use booters; `IArchive.h` prohibits simultaneous calls in the same instance of `IInArchive`.
+- The initial stage produced a plan and documentary decisions. She did not perform build, benchmarks, native operation tests, notation or validation of the bridge.
 
-## Execução em 2026-10-03
+## Execution in 2026-10-03
 
-- Fontes oficiais vendorizadas sem patches; `.a` arm64 incorporada por `-force_load` restrito. MacOS mínimo 26.0; nenhuma dependência x86_64.
-- Ponte tipada, workers, cancelamento, propriedades, resultados por item, streams de volumes, escrita/atualização e permissões/links implementados. UI conserva `ArchiveServing` e suas políticas.
-- Referência CLI: 98 testes aprovados. Testes passaram contra o backend nativo; contagem final e artefatos estão em `REGRESSION-COVERAGE.md`.
-- Runner/parser/tradutor CLI removidos; helper não é copiado ao app. `Vendor/7zz` permanece somente como referência de desenvolvimento para gerar/comparar fixtures, sem uso pelo produto.
-- Recompilação e relinkagem de cópia modificada do motor comprovadas; instruções em `BuildSupport/SevenZip/README.md`.
-- Testes de UI não conseguiram ativar o app (Running Background). Runtime macOS 26.0, acesso externo/bookmarks, matriz ampliada de leitura e canais de distribuição permanecem em OR-10. Não publicar nem marcar notarização/loja concluídas com base nessa build local.
+- Official vendored sources without patches; `.a` arm64 incorporated by `-force_load` restricted. minimum macOS 26.0; no x86_64 dependency.
+- Tipped bridge, workers, cancellation, properties, results per item, volume streams, writing/update and implemented permissions/links. UI preserves `ArchiveServing` and its policies.
+- Reference CLI: 98 approved tests. Tests passed against the backend native; Final count and artifacts are `REGRESSION-COVERAGE.md`.
+- Runner/parser/CLI translator removed; helper is not copied to the app. `Vendor/7zz` remains only as a development reference to generate/compare fixtures, without use by the product.
+- Recompilation and relinking of modified copy of proven engine; instructions in `BuildSupport/SevenZip/README.md`.
+- Tests of UI failed to activate the application (Running Background). Runtime macOS 26.0, external access/bookmarks, expanded reading matrix and distribution channels remain in OR-10. Do not publish or mark notation/store completed on the basis of this local build.

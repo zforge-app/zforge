@@ -16,36 +16,36 @@ confidence: "primary-source"
 
 # DataRepresentation
 
-## Consulta rápida
+## Quick reference
 
-- `struct DataRepresentation<Item> where Item: Transferable` declara uma representação de bytes identificada por um UTType.
-- A variante `init(exportedContentType:exporting:)` oferece somente exportação; o closure assíncrono retorna `Data`.
-- API compilada contra o SDK macOS 27.0; disponível desde macOS 13.
+- `struct DataRepresentation<Item> where Item: Transferable` declares a byte representation identified by a UTType.
+- The `init(exportedContentType:exporting:)` variant offers export only; asynchronous closure returns `Data`.
+- API compiled against SDK macOS 27.0; available since macOS 13.
 
-## Aplicação no Zforge
+## Application in Zforge
 
-O drag de arquivos exporta `public.file-url` como bytes da URL absoluta original. O destino lê a localização usando `NSURL`/`NSItemProvider`, sem transformar a URL em um arquivo prometido. Essa escolha de formato é do app; a página descreve a API genérica, não prova a causa de uma regressão específica. Conferir a URL decodificada com o provider real e os gestos no app.
+The file drag exports `public.file-url` as bytes of the original absolute URL. Destination reads the location using `NSURL`/`NSItemProvider`, without turning the URL into a promised file. This format choice is from the app; the page describes the generic API, does not prove the cause of a specific regression. Check the URL decoded with the real provider and gestures in the app.
 
 ## Mapa
 
-- Overview: bytes como formato interoperável; combinação de representações.
-- Initializers: importação/exportação, exportação apenas e importação apenas.
+- Overview: bytes as interoperable format; combination of representations.
+- Initializers: import/export, export and import only.
 
-## Links secundários
+## Secondary links
 
-- [Choosing a transfer representation for a model type](https://developer.apple.com/documentation/coretransferable/choosing-a-transfer-representation-for-a-model-type) — não consultado nesta captura.
-- [CodableRepresentation](https://developer.apple.com/documentation/coretransferable/codablerepresentation) — não consultado nesta captura.
-- [Core Transferable](https://developer.apple.com/documentation/coretransferable) — não consultado nesta captura.
-- [DataRepresentation](https://developer.apple.com/documentation/coretransferable/datarepresentation) — não consultado nesta captura.
-- [Sendable](https://developer.apple.com/documentation/swift/sendable) — não consultado nesta captura.
-- [SendableMetatype](https://developer.apple.com/documentation/swift/sendablemetatype) — não consultado nesta captura.
-- [Technologies](https://developer.apple.com/documentation/technologies) — não consultado nesta captura.
-- [TransferRepresentation](https://developer.apple.com/documentation/coretransferable/transferrepresentation) — não consultado nesta captura.
-- [Transferable](https://developer.apple.com/documentation/coretransferable/transferable) — não consultado nesta captura.
-- [init(contentType:exporting:importing:)](https://developer.apple.com/documentation/coretransferable/datarepresentation/init(contenttype:exporting:importing:)) — não consultado nesta captura.
-- [init(exportedContentType:exporting:)](https://developer.apple.com/documentation/coretransferable/datarepresentation/init(exportedcontenttype:exporting:)) — não consultado nesta captura.
-- [init(importedContentType:importing:)](https://developer.apple.com/documentation/coretransferable/datarepresentation/init(importedcontenttype:importing:)) — não consultado nesta captura.
+- [Choosing a transfer representation for a model type](https://developer.apple.com/documentation/coretransferable/choosing-a-transfer-representation-for-a-model-type) — not consulted in this catch.
+- [CodableRepresentation](https://developer.apple.com/documentation/coretransferable/codablerepresentation) — not consulted in this catch.
+- [Core Transferable](https://developer.apple.com/documentation/coretransferable) — not consulted in this catch.
+- [DataRepresentation](https://developer.apple.com/documentation/coretransferable/datarepresentation) — not consulted in this catch.
+- [Sendable](https://developer.apple.com/documentation/swift/sendable) — not consulted in this catch.
+- [SendableMetatype](https://developer.apple.com/documentation/swift/sendablemetatype) — not consulted in this catch.
+- [Technologies](https://developer.apple.com/documentation/technologies) — not consulted in this catch.
+- [TransferRepresentation](https://developer.apple.com/documentation/coretransferable/transferrepresentation) — not consulted in this catch.
+- [Transferable](https://developer.apple.com/documentation/coretransferable/transferable) — not consulted in this catch.
+- [init(contentType:exporting:importing:)](https://developer.apple.com/documentation/coretransferable/datarepresentation/init(contenttype:exporting:importing:)) — not consulted in this catch.
+- [init(exportedContentType:exporting:)](https://developer.apple.com/documentation/coretransferable/datarepresentation/init(exportedcontenttype:exporting:)) — not consulted in this catch.
+- [init(importedContentType:importing:)](https://developer.apple.com/documentation/coretransferable/datarepresentation/init(importedcontenttype:importing:)) — not consulted in this catch.
 
-## Proveniência
+## Provenance
 
-- Captura de uma página Apple; SHA-256 `6ddeba931f6c773c91010a27a3f1e6106dc38e31cd728eb3754c0f414f35290a`; `2026-10-03T22:58:36.198078+00:00`.
+- Capture of an Apple page; SHA-256 `6ddeba931f6c773c91010a27a3f1e6106dc38e31cd728eb3754c0f414f35290a`; `2026-10-03T22:58:36.198078+00:00`.

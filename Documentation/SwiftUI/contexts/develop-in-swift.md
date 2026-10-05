@@ -16,28 +16,28 @@ confidence: "primary-source"
 
 # Develop in Swift
 
-Contexto normalizado para recuperação rápida. A URL oficial e o hash permitem verificar mudanças; este arquivo não substitui a fonte.
+Context normalized for quick retrieval. The official URL and hash allow changes to be verified; this file does not replace the source.
 
-## Consulta rápida
+## Quick reference
 
-- Papel: overview
-- Módulo: Não informado
-- Relevância para Zforge: Direct as SwiftUI guidance; confirm macOS availability before adopting an API in Zforge.
+- Role: overview
+- Module: Not specified
+- Relevance to Zforge: Direct as SwiftUI guidance; confirm macOS availability before adopting an API in Zforge.
 
-## Síntese
+## Summary
 
-A página funciona principalmente como índice de APIs, exemplos e referências relacionadas.
+The page works mainly as index of APIs, examples and related references.
 
-## Links do segundo nível
+## Second-level links
 
 ### Article and tutorial references
 
-- [Welcome to Develop in Swift Tutorials](https://developer.apple.com/tutorials/develop-in-swift/welcome-to-develop-in-swift-tutorials) — Develop in Swift Tutorials introduce app development with Swift and Xcode to anyone learning to build apps for Apple platforms. Build great-looking apps with… _(Apple Developer; expandir sob demanda)_
-- [Download Xcode from the Mac App Store](https://apps.apple.com/us/app/xcode/id497799835?mt=12) — _Apple Developer; expandir sob demanda_
+- [Welcome to Develop in Swift Tutorials](https://developer.apple.com/tutorials/develop-in-swift/welcome-to-develop-in-swift-tutorials) — Develop in Swift Tutorials introduce app development with Swift and Xcode to anyone learning to build apps for Apple platforms. Build great-looking apps with… _(Apple Developer; expand on demand)_
+- [Download Xcode from the Mac App Store](https://apps.apple.com/us/app/xcode/id497799835?mt=12) — _Apple Developer; expand on demand_
 
-## Proveniência
+## Provenance
 
-- Fonte: [Apple Developer](https://developer.apple.com/tutorials/Develop-in-Swift#explore-xcode)
-- Captura: `2026-07-16T23:52:09+00:00`
-- SHA-256 do payload: `4de8a884c8a0dcfed92ff2d803ddc6f49c5150f558a29831d0686e799645a94e`
-- Escopo: primeiro nível a partir da home SwiftUI; links absolutos acima ainda não foram percorridos.
+- Source: [Apple Developer](https://developer.apple.com/tutorials/Develop-in-Swift#explore-xcode)
+- Captured: `2026-07-16T23:52:09+00:00`
+- Payload SHA-256: `4de8a884c8a0dcfed92ff2d803ddc6f49c5150f558a29831d0686e799645a94e`
+- Scope: first level from home SwiftUI; absolute links above have not yet been covered.

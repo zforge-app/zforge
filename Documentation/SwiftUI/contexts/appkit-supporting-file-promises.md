@@ -16,21 +16,21 @@ confidence: "primary-source"
 
 # Supporting Drag and Drop Through File Promises
 
-## Síntese
+## Summary
 
-Exemplo oficial macOS 10.15+/Xcode 13.3+: exportar conteúdo ainda não materializado por NSFilePromiseProvider; receber promises antes de URLs. O receptor registra NSFilePromiseReceiver.readableDraggedTypes, solicita receivePromisedFiles na pasta escolhida e processa a URL entregue no callback. O provider informa nome, fila e escreve na URL exata solicitada, concluindo só após a escrita. A fila de background evita bloquear UI.
+Official example macOS 10.15+/Xcode 13.3+: export content not yet materialized by NSFilePromiseProvider; receive promises before URLs. The receiver records NSFilePromiseReceiver.readableDraggedTypes, requests receivePromisedFiles in the chosen folder and processes the URL delivered to callback. The provider informs name, queue and writes in the exact URL requested, concluding only after writing. The background queue avoids blocking UI.
 
-## Implicações no Zforge
+## Implications at Zforge
 
-Não deduzir destino do ponto final na tela. Destinos internos recebem a identidade virtual e chamam a extração com a pasta explícita; destinos externos recebem a promessa e escolhem a URL. Remover do archive apenas após exportações bem-sucedidas e aceite de movimento. Validar com drop real e existência/conteúdo no destino, além dos testes diretos dos delegates.
+Do not deduce destination from the end point on the screen. Internal destinations receive virtual identity and call extraction with explicit folder; external destinations receive the promise and choose the URL. Remove from archive only after successful exports and accepted movement. Validate with actual drop and existence/content at destination, in addition to direct tests of the delegates.
 
 ## Mapa
 
-- Configuração do exemplo de imagens.
-- Importação de promises e URLs.
-- Exportação com os três métodos do delegate.
+- Image example configuration.
+- Import of promises and URLs.
+- Export with the three methods of the delegate.
 
-## Links do segundo nível
+## Second-level links
 
 - [AppKit](https://developer.apple.com/documentation/appkit)
 - [NSFilePromiseProvider](https://developer.apple.com/documentation/appkit/nsfilepromiseprovider)
@@ -42,6 +42,6 @@ Não deduzir destino do ponto final na tela. Destinos internos recebem a identid
 - [Supporting Table View Drag and Drop Through File Promises](https://developer.apple.com/documentation/appkit/supporting-table-view-drag-and-drop-through-file-promises)
 - [Technologies](https://developer.apple.com/documentation/technologies)
 
-## Proveniência
+## Provenance
 
-Fonte: [Apple Developer](https://developer.apple.com/documentation/appkit/supporting-drag-and-drop-through-file-promises); captura 2026-10-04T21:06:22.124690+00:00, SHA-256 `ad5aea4873ea3fd5f914db6321f2c20104c4ee73964d5eddf097ed08f76a76d5`. Uma página; links secundários não percorridos.
+Source: [Apple Developer](https://developer.apple.com/documentation/appkit/supporting-drag-and-drop-through-file-promises); captura 2026-10-04T21:06:22.124690+00:00, SHA-256 `ad5aea4873ea3fd5f914db6321f2c20104c4ee73964d5eddf097ed08f76a76d5`. One page; secondary links not covered.

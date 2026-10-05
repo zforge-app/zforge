@@ -16,45 +16,45 @@ confidence: "primary-source"
 
 # performDrop(info:)
 
-Contexto normalizado para recuperação rápida. A URL oficial e o hash permitem verificar mudanças; este arquivo não substitui a fonte.
+Context normalized for quick retrieval. The official URL and hash allow changes to be verified; this file does not replace the source.
 
-## Consulta rápida
+## Quick reference
 
-- Papel: método obrigatório de `DropDelegate`
-- Módulo: SwiftUI
-- Relevância para Zforge: direta para consumir URLs e executar cópia, movimentação ou criação de alias após um drop
-- Disponibilidade: macOS 10.15+
-- Declaração: `func performDrop(info: DropInfo) -> Bool`
+- Roll: mandatory method of `DropDelegate`
+- Module: SwiftUI
+- Relevance to Zforge: direct to consume URLs and perform copying, moving or creating aliases after a drop
+- Availability: macOS 10.15+
+- Declaration: `func performDrop(info: DropInfo) -> Bool`
 
-## Síntese
+## Summary
 
-O método informa que o delegate pode solicitar os dados dos item providers presentes em `DropInfo` e deve retornar se aceitou o drop. A incorporação dos dados ao modelo da aplicação é responsabilidade do delegate.
+The method informs that the delegate can request the data of the item providers present in `DropInfo` and must return if accepted the drop. The incorporation of the data into the application model is the responsibility of the delegate.
 
-A Apple exige que o carregamento dos `NSItemProvider` seja iniciado dentro do escopo de `performDrop(info:)`. A conclusão pode ocorrer depois, mas transferir a própria chamada de carregamento para outra `Task` ou actor é tarde demais: por segurança, o receptor pode perder acesso ao payload quando o método retorna.
+Apple requires loading `NSItemProvider` within the scope of `performDrop(info:)`. The conclusion may occur later, but transferring the load call itself to another `Task` or actor is too late: for safety, the receiver may lose access to payload when the method returns.
 
-## Implicações práticas
+## Practical implications
 
-- Chamar `loadObject`, `loadDataRepresentation` ou API equivalente antes de `performDrop(info:)` retornar.
-- Somente o tratamento da conclusão e a operação de arquivos subsequente devem ser assíncronos.
-- Retornar `true` apenas quando o drop foi aceito e as cargas foram iniciadas.
+- Call `loadObject`, `loadDataRepresentation` or equivalent API before `performDrop(info:)` returns.
+- Only the completion treatment and subsequent file operation must be asynchronous.
+- Return `true` only when the drop has been accepted and the loads have been initiated.
 
-## Mapa do conteúdo
+## Content map
 
 - Declaration
 - Return value
 - Discussion
 
-## Links do segundo nível
+## Second-level links
 
-### Tipos relacionados
+### Related types
 
-- [DropInfo](https://developer.apple.com/documentation/swiftui/dropinfo) — estado atual do drop e seus item providers. _Apple Developer; expandir sob demanda_
-- [DropDelegate](https://developer.apple.com/documentation/swiftui/dropdelegate) — protocolo completo de destino de drop. _Apple Developer; expandir sob demanda_
-- [NSItemProvider](foundation-nsitemprovider.md) — transporte das URLs e representações de arquivo. _(contexto local)_
+- [DropInfo](https://developer.apple.com/documentation/swiftui/dropinfo) — current drop status and its providers item. _Apple Developer; expand on demand_
+- [DropDelegate](https://developer.apple.com/documentation/swiftui/dropdelegate) — complete drop destination protocol. _Apple Developer; expand on demand_
+- [NSItemProvider](foundation-nsitemprovider.md) — transport of URLs and file representations. _(local context)_
 
-## Proveniência
+## Provenance
 
-- Fonte: [Apple Developer](https://developer.apple.com/documentation/swiftui/dropdelegate/performdrop(info:))
-- Captura: `2026-07-20T02:07:43Z`
-- SHA-256 do payload: `3db5711d2cafc098fb699efb050de5cb7f70d84885882445646c97fa52361934`
-- Escopo: uma página; os links absolutos acima ainda não foram percorridos.
+- Source: [Apple Developer](https://developer.apple.com/documentation/swiftui/dropdelegate/performdrop(info:))
+- Captured: `2026-07-20T02:07:43Z`
+- Payload SHA-256: `3db5711d2cafc098fb699efb050de5cb7f70d84885882445646c97fa52361934`
+- Scope: one page; the above absolute links have not yet been covered.

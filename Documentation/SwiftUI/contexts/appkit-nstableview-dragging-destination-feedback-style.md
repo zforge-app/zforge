@@ -16,71 +16,71 @@ confidence: "primary-source"
 
 # NSTableView.DraggingDestinationFeedbackStyle
 
-## Consulta rápida
+## Quick reference
 
-- Enumeração AppKit usada por `NSTableView.draggingDestinationFeedbackStyle`.
-- Declaração: `enum DraggingDestinationFeedbackStyle`.
-- Disponibilidade: macOS; validada contra o SDK macOS 27.0 do Xcode local.
+- Enumeration AppKit used by `NSTableView.draggingDestinationFeedbackStyle`.
+- Declaration: `enum DraggingDestinationFeedbackStyle`.
+- Availability: macOS; validated against the SDK macOS 27.0 of the local Xcode.
 
-## Síntese
+## Summary
 
-Controla o feedback visual nativo do destino de drag na tabela. `none` desativa esse feedback para permitir desenho próprio; `regular` usa fundo arredondado e marcador de inserção; `sourceList` é o estilo associado às listas de origem; `gap` abre espaço para inserção em tabelas baseadas em views.
+Controls the visual feedback native of the drag destination in the table. `none` disables this feedback to allow own drawing; `regular` uses rounded background and insertion marker; `sourceList` is the style associated with the source lists; `gap` opens space for insertion into views-based tables.
 
-## Implicações práticas para Zforge
+## Practical implications for Zforge
 
-- Na sidebar, aplicar `.none` somente à tabela que contém a linha evita sobrepor feedback nativo ao desenho SwiftUI próprio.
-- Preservar o comportamento das tabelas de conteúdo e os handlers de transferência.
-- Esta API não controla o ícone da linha, a seleção atual ou a validade da operação; esses estados precisam de coordenação própria.
-- Validar a montagem da tabela real e a transição entre alvos na interface; compilar não comprova o gesto.
+- In the sidebar, apply `.none` only the table containing the line avoids overlaying feedback native to the drawing SwiftUI itself.
+- Preserve the behavior of content tables and transfer handlers.
+- This API does not control the line icon, current selection or operation validity; these states need their own coordination.
+- Validate the actual table assembly and transition between targets in the interface; compile does not prove gesture.
 
-## Mapa do conteúdo
+## Content map
 
-- Declaração
+- Declaration
 - Constants: none, regular, sourceList, gap
-- Tipos relacionados de NSTableView
+- Related types of NSTableView
 
-## Links do segundo nível
+## Second-level links
 
-- [AppKit](https://developer.apple.com/documentation/appkit) — Apple Developer; expandir sob demanda.
-- [BitwiseCopyable](https://developer.apple.com/documentation/swift/bitwisecopyable) — Apple Developer; expandir sob demanda.
-- [Equatable](https://developer.apple.com/documentation/swift/equatable) — Apple Developer; expandir sob demanda.
-- [Hashable](https://developer.apple.com/documentation/swift/hashable) — Apple Developer; expandir sob demanda.
-- [NSInteger](https://developer.apple.com/documentation/objectivec/nsinteger) — Apple Developer; expandir sob demanda.
-- [NSTableCellView](https://developer.apple.com/documentation/appkit/nstablecellview) — Apple Developer; expandir sob demanda.
-- [NSTableView](https://developer.apple.com/documentation/appkit/nstableview) — Apple Developer; expandir sob demanda.
-- [NSTableView.AnimationOptions](https://developer.apple.com/documentation/appkit/nstableview/animationoptions) — Apple Developer; expandir sob demanda.
-- [NSTableView.ColumnAutoresizingStyle](https://developer.apple.com/documentation/appkit/nstableview/columnautoresizingstyle-swift.enum) — Apple Developer; expandir sob demanda.
-- [NSTableView.DraggingDestinationFeedbackStyle](https://developer.apple.com/documentation/appkit/nstableview/draggingdestinationfeedbackstyle-swift.enum) — Apple Developer; expandir sob demanda.
-- [NSTableView.DraggingDestinationFeedbackStyle.gap](https://developer.apple.com/documentation/appkit/nstableview/draggingdestinationfeedbackstyle-swift.enum/gap) — Apple Developer; expandir sob demanda.
-- [NSTableView.DraggingDestinationFeedbackStyle.none](https://developer.apple.com/documentation/appkit/nstableview/draggingdestinationfeedbackstyle-swift.enum/none) — Apple Developer; expandir sob demanda.
-- [NSTableView.DraggingDestinationFeedbackStyle.regular](https://developer.apple.com/documentation/appkit/nstableview/draggingdestinationfeedbackstyle-swift.enum/regular) — Apple Developer; expandir sob demanda.
-- [NSTableView.DraggingDestinationFeedbackStyle.sourceList](https://developer.apple.com/documentation/appkit/nstableview/draggingdestinationfeedbackstyle-swift.enum/sourcelist) — Apple Developer; expandir sob demanda.
-- [NSTableView.DropOperation](https://developer.apple.com/documentation/appkit/nstableview/dropoperation) — Apple Developer; expandir sob demanda.
-- [NSTableView.GridLineStyle](https://developer.apple.com/documentation/appkit/nstableview/gridlinestyle) — Apple Developer; expandir sob demanda.
-- [NSTableView.RowActionEdge](https://developer.apple.com/documentation/appkit/nstableview/rowactionedge) — Apple Developer; expandir sob demanda.
-- [NSTableView.RowSizeStyle](https://developer.apple.com/documentation/appkit/nstableview/rowsizestyle-swift.enum) — Apple Developer; expandir sob demanda.
-- [NSTableView.SelectionHighlightStyle](https://developer.apple.com/documentation/appkit/nstableview/selectionhighlightstyle-swift.enum) — Apple Developer; expandir sob demanda.
-- [NSTableViewGridNone](https://developer.apple.com/documentation/appkit/nstableviewgridlinestyle/nstableviewgridnone) — Apple Developer; expandir sob demanda.
-- [NSView](https://developer.apple.com/documentation/appkit/nsview) — Apple Developer; expandir sob demanda.
-- [RawRepresentable](https://developer.apple.com/documentation/swift/rawrepresentable) — Apple Developer; expandir sob demanda.
-- [Sendable](https://developer.apple.com/documentation/swift/sendable) — Apple Developer; expandir sob demanda.
-- [SendableMetatype](https://developer.apple.com/documentation/swift/sendablemetatype) — Apple Developer; expandir sob demanda.
-- [Specifying a Custom Row View in a Nib File](https://developer.apple.com/documentation/appkit/specifying-a-custom-row-view-in-a-nib-file) — Apple Developer; expandir sob demanda.
-- [Technologies](https://developer.apple.com/documentation/technologies) — Apple Developer; expandir sob demanda.
-- [columnAutoresizingStyle](https://developer.apple.com/documentation/appkit/nstableview/columnautoresizingstyle-swift.property) — Apple Developer; expandir sob demanda.
-- [draggingDestinationFeedbackStyle](https://developer.apple.com/documentation/appkit/nstableview/draggingdestinationfeedbackstyle-swift.property) — Apple Developer; expandir sob demanda.
-- [effectiveRowSizeStyle](https://developer.apple.com/documentation/appkit/nstableview/effectiverowsizestyle) — Apple Developer; expandir sob demanda.
-- [gridStyleMask](https://developer.apple.com/documentation/appkit/nstableview/gridstylemask) — Apple Developer; expandir sob demanda.
-- [init(rawValue:)](https://developer.apple.com/documentation/appkit/nstableview/draggingdestinationfeedbackstyle-swift.enum/init(rawvalue:)) — Apple Developer; expandir sob demanda.
-- [rowSizeStyle](https://developer.apple.com/documentation/appkit/nstablecellview/rowsizestyle) — Apple Developer; expandir sob demanda.
-- [rowSizeStyle](https://developer.apple.com/documentation/appkit/nstableview/rowsizestyle-swift.property) — Apple Developer; expandir sob demanda.
-- [selectionHighlightStyle](https://developer.apple.com/documentation/appkit/nstableview/selectionhighlightstyle-swift.property) — Apple Developer; expandir sob demanda.
-- [tableView(_:draggingSession:willBeginAt:forRowIndexes:)](https://developer.apple.com/documentation/appkit/nstableviewdatasource/tableview(_:draggingsession:willbeginat:forrowindexes:)) — Apple Developer; expandir sob demanda.
-- [unhideRows(at:withAnimation:)](https://developer.apple.com/documentation/appkit/nstableview/unhiderows(at:withanimation:)) — Apple Developer; expandir sob demanda.
+- [AppKit](https://developer.apple.com/documentation/appkit) — Apple Developer; expand on demand.
+- [BitwiseCopyable](https://developer.apple.com/documentation/swift/bitwisecopyable) — Apple Developer; expand on demand.
+- [Equatable](https://developer.apple.com/documentation/swift/equatable) — Apple Developer; expand on demand.
+- [Hashable](https://developer.apple.com/documentation/swift/hashable) — Apple Developer; expand on demand.
+- [NSInteger](https://developer.apple.com/documentation/objectivec/nsinteger) — Apple Developer; expand on demand.
+- [NSTableCellView](https://developer.apple.com/documentation/appkit/nstablecellview) — Apple Developer; expand on demand.
+- [NSTableView](https://developer.apple.com/documentation/appkit/nstableview) — Apple Developer; expand on demand.
+- [NSTableView.AnimationOptions](https://developer.apple.com/documentation/appkit/nstableview/animationoptions) — Apple Developer; expand on demand.
+- [NSTableView.ColumnAutoresizingStyle](https://developer.apple.com/documentation/appkit/nstableview/columnautoresizingstyle-swift.enum) — Apple Developer; expand on demand.
+- [NSTableView.DraggingDestinationFeedbackStyle](https://developer.apple.com/documentation/appkit/nstableview/draggingdestinationfeedbackstyle-swift.enum) — Apple Developer; expand on demand.
+- [NSTableView.DraggingDestinationFeedbackStyle.gap](https://developer.apple.com/documentation/appkit/nstableview/draggingdestinationfeedbackstyle-swift.enum/gap) — Apple Developer; expand on demand.
+- [NSTableView.DraggingDestinationFeedbackStyle.none](https://developer.apple.com/documentation/appkit/nstableview/draggingdestinationfeedbackstyle-swift.enum/none) — Apple Developer; expand on demand.
+- [NSTableView.DraggingDestinationFeedbackStyle.regular](https://developer.apple.com/documentation/appkit/nstableview/draggingdestinationfeedbackstyle-swift.enum/regular) — Apple Developer; expand on demand.
+- [NSTableView.DraggingDestinationFeedbackStyle.sourceList](https://developer.apple.com/documentation/appkit/nstableview/draggingdestinationfeedbackstyle-swift.enum/sourcelist) — Apple Developer; expand on demand.
+- [NSTableView.DropOperation](https://developer.apple.com/documentation/appkit/nstableview/dropoperation) — Apple Developer; expand on demand.
+- [NSTableView.GridLineStyle](https://developer.apple.com/documentation/appkit/nstableview/gridlinestyle) — Apple Developer; expand on demand.
+- [NSTableView.RowActionEdge](https://developer.apple.com/documentation/appkit/nstableview/rowactionedge) — Apple Developer; expand on demand.
+- [NSTableView.RowSizeStyle](https://developer.apple.com/documentation/appkit/nstableview/rowsizestyle-swift.enum) — Apple Developer; expand on demand.
+- [NSTableView.SelectionHighlightStyle](https://developer.apple.com/documentation/appkit/nstableview/selectionhighlightstyle-swift.enum) — Apple Developer; expand on demand.
+- [NSTableViewGridNone](https://developer.apple.com/documentation/appkit/nstableviewgridlinestyle/nstableviewgridnone) — Apple Developer; expand on demand.
+- [NSView](https://developer.apple.com/documentation/appkit/nsview) — Apple Developer; expand on demand.
+- [RawRepresentable](https://developer.apple.com/documentation/swift/rawrepresentable) — Apple Developer; expand on demand.
+- [Sendable](https://developer.apple.com/documentation/swift/sendable) — Apple Developer; expand on demand.
+- [SendableMetatype](https://developer.apple.com/documentation/swift/sendablemetatype) — Apple Developer; expand on demand.
+- [Specifying a Custom Row View in a Nib File](https://developer.apple.com/documentation/appkit/specifying-a-custom-row-view-in-a-nib-file) — Apple Developer; expand on demand.
+- [Technologies](https://developer.apple.com/documentation/technologies) — Apple Developer; expand on demand.
+- [columnAutoresizingStyle](https://developer.apple.com/documentation/appkit/nstableview/columnautoresizingstyle-swift.property) — Apple Developer; expand on demand.
+- [draggingDestinationFeedbackStyle](https://developer.apple.com/documentation/appkit/nstableview/draggingdestinationfeedbackstyle-swift.property) — Apple Developer; expand on demand.
+- [effectiveRowSizeStyle](https://developer.apple.com/documentation/appkit/nstableview/effectiverowsizestyle) — Apple Developer; expand on demand.
+- [gridStyleMask](https://developer.apple.com/documentation/appkit/nstableview/gridstylemask) — Apple Developer; expand on demand.
+- [init(rawValue:)](https://developer.apple.com/documentation/appkit/nstableview/draggingdestinationfeedbackstyle-swift.enum/init(rawvalue:)) — Apple Developer; expand on demand.
+- [rowSizeStyle](https://developer.apple.com/documentation/appkit/nstablecellview/rowsizestyle) — Apple Developer; expand on demand.
+- [rowSizeStyle](https://developer.apple.com/documentation/appkit/nstableview/rowsizestyle-swift.property) — Apple Developer; expand on demand.
+- [selectionHighlightStyle](https://developer.apple.com/documentation/appkit/nstableview/selectionhighlightstyle-swift.property) — Apple Developer; expand on demand.
+- [tableView(_:draggingSession:willBeginAt:forRowIndexes:)](https://developer.apple.com/documentation/appkit/nstableviewdatasource/tableview(_:draggingsession:willbeginat:forrowindexes:)) — Apple Developer; expand on demand.
+- [unhideRows(at:withAnimation:)](https://developer.apple.com/documentation/appkit/nstableview/unhiderows(at:withanimation:)) — Apple Developer; expand on demand.
 
-## Proveniência
+## Provenance
 
-- Fonte: [Apple Developer](https://developer.apple.com/documentation/appkit/nstableview/draggingdestinationfeedbackstyle-swift.enum)
-- Captura: `2026-10-03T21:50:10.394140+00:00`
+- Source: [Apple Developer](https://developer.apple.com/documentation/appkit/nstableview/draggingdestinationfeedbackstyle-swift.enum)
+- Captured: `2026-10-03T21:50:10.394140+00:00`
 - SHA-256: `6242a5f60dba545a480582eb149cda90a3c71cf9c0c398efc9f6160fcf34ddcb`
-- Escopo: uma página; links secundários não consultados.
+- Scope: one page; secondary links not consulted.

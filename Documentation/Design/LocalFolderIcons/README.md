@@ -1,5 +1,5 @@
-# Diretórios locais sem selo
+# Local directories without stamp
 
-A composição usa `ArchiveFolderIconComposer` com `showsArchiveStamp: false`, preservando as correções aprovadas de papel, material, base e perspectiva. Não há novo recurso raster em produção: os PNGs são exportações de revisão da composição real.
+The composition uses `ArchiveFolderIconComposer` with `showsArchiveStamp: false`, preserving the approved corrections of paper, material, base and perspective. There is no new raster resource in production: PNGs are exports of revision of the actual composition.
 
-`folder-states-v2.png` compara os quatro estados em 16–190 pt. `Render.swift` compila junto ao compositor e exporta a prancha e versões de 1024 px. Arquivos e packages usam seus ícones próprios; o conteúdo local continua sendo qualquer filho direto.
+`folder-states-v2.png` compares the four states in 16–190 pt. `Render.swift` compiles with the composer and exports comparison sheet and versions of 1024 px. Files and packages use their own icons; local content remains any direct child.

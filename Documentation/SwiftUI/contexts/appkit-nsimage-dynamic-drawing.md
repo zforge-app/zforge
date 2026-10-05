@@ -16,46 +16,46 @@ confidence: "primary-source"
 
 # init(size:flipped:drawingHandler:)
 
-Contexto normalizado para recuperação rápida. A URL oficial e o hash permitem verificar mudanças; este arquivo não substitui a fonte.
+Context normalized for quick retrieval. The official URL and hash allow changes to be verified; this file does not replace the source.
 
-## Consulta rápida
+## Quick reference
 
-- Papel: inicializador de `NSImage` cuja representação redesenha o conteúdo sob demanda.
-- Módulo: AppKit.
-- Relevância para Zforge: direta; permite compor o indicador de pasta não vazia sem rasterizá-lo em resolução fixa.
-- Disponibilidade: macOS.
-- Declaração: `convenience init(size: NSSize, flipped: Bool, drawingHandler: @escaping (NSRect) -> Bool)`
+- Role: `NSImage` initializer whose representation redraws the content on demand.
+- Module: AppKit.
+- Relevance to Zforge: direta; allows composing the non-empty folder indicator without rasterizing it in fixed resolution.
+- Availability: macOS.
+- Declaration: `convenience init(size: NSSize, flipped: Bool, drawingHandler: @escaping (NSRect) -> Bool)`
 
-## Síntese
+## Summary
 
-A Apple orienta usar esse inicializador para gerar imagens corretas em qualquer resolução. O `NSImage` mantém um `NSCustomImageRep` com o bloco de desenho e o executa apenas quando a imagem precisa ser desenhada. Se a densidade de pixels ou o espaço de cor do contexto de destino mudar, o AppKit descarta o cache correspondente e executa novamente o bloco; uma transição de tela padrão para Retina é o exemplo explícito da documentação.
+Apple guides use this boot to generate correct images in any resolution. The `NSImage` keeps a `NSCustomImageRep` with the drawing block and executes it only when the image needs to be drawn. If the pixel density or color space of the destination context changes, AppKit discards the corresponding cache and executes the block again; a standard screen transition to Retina is the explicit example of the documentation.
 
-O retângulo fornecido ao bloco é medido em pontos. O bloco pode ser executado na thread que desenhar a imagem, portanto o estado capturado precisa admitir esse uso.
+The rectangle provided to the block is measured in points. The block can be executed in the thread that draws the image, so the captured state needs to admit this use.
 
-## Implicações práticas
+## Practical implications
 
-- Não usar `lockFocus()` para produzir a composição, pois ele cria uma rasterização dependente da resolução do contexto naquele momento.
-- Descrever folha, recorte e nova aplicação da face da pasta dentro do `drawingHandler`, usando o retângulo de destino recebido.
-- Manter o `NSImage` retornado pelo `NSWorkspace` como camada base; o AppKit seleciona a representação adequada ao contexto de destino quando o bloco é executado.
+- Not use `lockFocus()` to produce the composition, because it creates a rasterization dependent on the resolution of the context at that time.
+- Describe sheet, clipping and new application of the folder face within `drawingHandler`, using the destination rectangle received.
+- Keep `NSImage` returned by `NSWorkspace` as base layer; the AppKit selects the appropriate representation to the destination context when the block is executed.
 
-## Mapa do conteúdo
+## Content map
 
-- Assinatura, tamanho em pontos e orientação do contexto.
-- Execução tardia e requisitos do bloco.
-- Cache por densidade de pixels e espaço de cor.
-- Uso recomendado com conteúdo vetorial e imagens rasterizadas.
+- Signature, point size and context orientation.
+- Late execution and block requirements.
+- Cache by pixel density and color space.
+- Recommended use with vector content and rasterized images.
 
-## Links do segundo nível
+## Second-level links
 
-### Representação e cache
+### Representation and cache
 
-- [NSCustomImageRep](https://developer.apple.com/documentation/appkit/nscustomimagerep) — _Apple Developer; expandir sob demanda_
-- [NSImage.cacheMode](https://developer.apple.com/documentation/appkit/nsimage/cachemode-swift.property) — _Apple Developer; expandir sob demanda_
-- [NSImage](https://developer.apple.com/documentation/appkit/nsimage) — _Apple Developer; expandir sob demanda_
+- [NSCustomImageRep](https://developer.apple.com/documentation/appkit/nscustomimagerep) — _Apple Developer; expand on demand_
+- [NSImage.cacheMode](https://developer.apple.com/documentation/appkit/nsimage/cachemode-swift.property) — _Apple Developer; expand on demand_
+- [NSImage](https://developer.apple.com/documentation/appkit/nsimage) — _Apple Developer; expand on demand_
 
-## Proveniência
+## Provenance
 
-- Fonte: [Apple Developer](https://developer.apple.com/documentation/appkit/nsimage/init(size:flipped:drawinghandler:))
-- Captura: `2026-07-22T23:47:15Z`
-- SHA-256 do payload: `bedbe97d1088e42fbec356508312ac39e036285757dc0a3c46d5f728b23f58a5`
-- Escopo: uma página; os links absolutos acima ainda não foram percorridos.
+- Source: [Apple Developer](https://developer.apple.com/documentation/appkit/nsimage/init(size:flipped:drawinghandler:))
+- Captured: `2026-07-22T23:47:15Z`
+- Payload SHA-256: `bedbe97d1088e42fbec356508312ac39e036285757dc0a3c46d5f728b23f58a5`
+- Scope: one page; the above absolute links have not yet been covered.

@@ -16,46 +16,46 @@ confidence: "primary-source"
 
 # Creating your app icon using Icon Composer
 
-Contexto normalizado da orientação oficial do Xcode para arquivos `.icon` produzidos pelo Icon Composer.
+Standard context of official Xcode orientation for `.icon` files produced by Icon Composer.
 
-## Consulta rápida
+## Quick reference
 
-- Papel: artigo de integração e criação de ícones em camadas.
-- Módulo: Xcode / Icon Composer.
-- Relevância para Zforge: direta, porque o alvo macOS passa a usar um arquivo `.icon` exportado pelo usuário.
-- Disponibilidade: Xcode com suporte a Icon Composer; a página descreve iOS, iPadOS, macOS, watchOS e versões anteriores com arte derivada pelo Xcode.
-- Declaração: não há API de código; a integração usa o arquivo `.icon` no projeto e o nome do ícone no alvo.
+- Roll: integration article and layer icon creation.
+- Module: Xcode / Icon Composer.
+- Relevance to Zforge: direct, because target macOS passes to use a file `.icon` exported by the user.
+- Availability: Xcode with suporte a Icon Composer; the page describes iOS, iPadOS, macOS, watchOS and previous versions with art derived by Xcode.
+- Declaration: there is no code API; the integration uses the `.icon` file in the project and the icon name in target.
 
-## Síntese
+## Summary
 
-Um arquivo do Icon Composer reúne camadas e variantes de aparência. Para usá-lo, adicioná-lo ao projeto e selecionar como App Icon do alvo o nome do arquivo sem a extensão. O Xcode compila as versões apropriadas para as plataformas, aparências e tamanhos. No Xcode atual, esse arquivo substitui o catálogo de ícone anterior como fonte do ícone principal. A Apple recomenda exportar camadas com nomes ordenados, remover efeitos que o Icon Composer aplica e não exportar uma máscara de recorte.
+An Icon Composer file brings together layers and appearance variants. To use it, add it to the project and select as the target Icon App the filename without the extension. Xcode compiles the appropriate versions for platforms, appearances and sizes. In the current Xcode, this file replaces the previous icon catalog as the source of the main icon. Apple recommends exporting layers with ordered names, removing effects that Icon Composer applies, and not exporting a clipping mask.
 
-## Implicações práticas
+## Practical implications
 
-- `Zforge/zforge_icon.icon` deve pertencer ao alvo e `ASSETCATALOG_COMPILER_APPICON_NAME` deve ser `zforge_icon` nas configurações usadas.
-- O app não deve reatribuir o ícone antigo em tempo de execução, pois isso substitui o ícone fornecido pelo bundle.
-- Conferir o bundle compilado (`zforge_icon.icns`, `Assets.car` e `CFBundleIconName`) e a aparência visual em Finder/Dock. Uma build confirma compilação, não todas as variantes visuais.
+- `Zforge/zforge_icon.icon` must belong to target and `ASSETCATALOG_COMPILER_APPICON_NAME` must be `zforge_icon` in the settings used.
+- The app must not reassign the old icon at runtime, as this replaces the icon provided by the bundle.
+- Check the compiled bundle (`zforge_icon.icns`, `Assets.car` and `CFBundleIconName`) and the visual appearance in Finder/Dock. A build confirms compilation, not all visual variants.
 
-## Mapa do conteúdo
+## Content map
 
-- Preparação e exportação das camadas.
-- Criação do documento no Icon Composer e personalização das aparências.
-- Inclusão do arquivo `.icon` no projeto e seleção do nome no alvo.
-- Testes em dispositivos e aparências.
+- Preparation and export of layers.
+- Creating the document in Icon Composer and customizing appearances.
+- File inclusion `.icon` in project and name selection in target.
+- Tests on devices and appearances.
 
-## Links do segundo nível
+## Second-level links
 
-### Xcode e design
+### Xcode and design
 
-- [Configuring your app icon using an asset catalog](https://developer.apple.com/documentation/xcode/configuring-your-app-icon) — _Apple Developer; expandir sob demanda_.
-- [App icons](https://developer.apple.com/design/human-interface-guidelines/app-icons) — _Apple Developer; expandir sob demanda_.
-- [Adopting Liquid Glass](https://developer.apple.com/documentation/technologyoverviews/adopting-liquid-glass) — _Apple Developer; expandir sob demanda_.
-- [Apple Design Resources](https://developer.apple.com/design/resources/) — _Apple Developer; expandir sob demanda_.
-- [Icon Composer](https://developer.apple.com/icon-composer) — _Apple Developer; expandir sob demanda_.
+- [Configuring your app icon using an asset catalog](https://developer.apple.com/documentation/xcode/configuring-your-app-icon) — _Apple Developer; expand on demand_.
+- [App icons](https://developer.apple.com/design/human-interface-guidelines/app-icons) — _Apple Developer; expand on demand_.
+- [Adopting Liquid Glass](https://developer.apple.com/documentation/technologyoverviews/adopting-liquid-glass) — _Apple Developer; expand on demand_.
+- [Apple Design Resources](https://developer.apple.com/design/resources/) — _Apple Developer; expand on demand_.
+- [Icon Composer](https://developer.apple.com/icon-composer) — _Apple Developer; expand on demand_.
 
-## Proveniência
+## Provenance
 
-- Fonte: [Apple Developer](https://developer.apple.com/documentation/xcode/creating-your-app-icon-using-icon-composer).
-- Captura: `2026-10-02T01:13:11+00:00`.
-- SHA-256 do payload: `3458352b0e40d4488d5e31d413d47ece2b150bcddf4ab9b406f34865d73f728e`.
-- Escopo: uma página em JSON; os links absolutos acima ainda não foram percorridos.
+- Source: [Apple Developer](https://developer.apple.com/documentation/xcode/creating-your-app-icon-using-icon-composer).
+- Captured: `2026-10-02T01:13:11+00:00`.
+- Payload SHA-256: `3458352b0e40d4488d5e31d413d47ece2b150bcddf4ab9b406f34865d73f728e`.
+- Scope: a page in JSON; the above absolute links have not yet been covered.

@@ -16,46 +16,46 @@ confidence: "primary-source"
 
 # navigationSplitViewColumnWidth(min:ideal:max:)
 
-Contexto normalizado para recuperação rápida. A URL oficial e o hash permitem verificar mudanças; este arquivo não substitui a fonte.
+Context normalized for quick retrieval. The official URL and hash allow changes to be verified; this file does not replace the source.
 
-## Consulta rápida
+## Quick reference
 
-- Papel: modificador de `View`
-- Módulo: SwiftUI
-- Relevância para Zforge: direta; expressa as preferências flexíveis de largura da sidebar do `NavigationSplitView`.
-- Disponibilidade: macOS 13.0+; demais plataformas conforme a página oficial.
-- Declaração: `nonisolated func navigationSplitViewColumnWidth(min: CGFloat? = nil, ideal: CGFloat, max: CGFloat? = nil) -> some View`
+- Roll: `View` modifier
+- Module: SwiftUI
+- Relevance to Zforge: direta; expresses the flexible sidebar width preferences of `NavigationSplitView`.
+- Availability: macOS 13.0+; other platforms according to the official page.
+- Declaration: `nonisolated func navigationSplitViewColumnWidth(min: CGFloat? = nil, ideal: CGFloat, max: CGFloat? = nil) -> some View`
 
-## Síntese
+## Summary
 
-Configura uma largura flexível preferida para a coluna que contém a view. `min`, `ideal` e `max` são preferências do container, e SwiftUI pode usar outra largura quando o ambiente de apresentação não suporta o valor solicitado. O modificador não oferece um binding para a largura efetiva nem define qual painel absorve mudanças no tamanho da janela.
+Set a preferred flexible width for the column containing the view. `min`, `ideal` and `max` are container preferences, and SwiftUI may use another width when the display environment does not support the requested value. The modifier does not offer binding for effective width nor defines which panel absorbs changes in window size.
 
-## Implicações práticas
+## Practical implications
 
-- Manter este modificador para comunicar as métricas da coluna ao layout SwiftUI.
-- Não tratá-lo como fonte de estado para a posição atual do divisor.
-- Quando o macOS exigir controle sobre a distribuição automática de espaço, complementar a configuração no `NSSplitViewItem` subjacente por uma ponte AppKit deliberada.
-- Assinatura e disponibilidade confirmadas também no SDK macOS 26.5 do Xcode local.
+- Keep this modifier to communicate column metrics to layout SwiftUI.
+- Do not treat it as a state source for the current position of the splitter.
+- When the macOS requires control over the automatic space distribution, complement the configuration in the `NSSplitViewItem` underlying by a deliberate AppKit bridge.
+- Signature and availability confirmed also in SDK macOS 26.5 of the local Xcode.
 
-## Mapa do conteúdo
+## Content map
 
-- Declaração
-- Parâmetros
-- Discussão e exemplo
-- Plataformas que permitem redimensionamento de colunas
+- Declaration
+- Parameters
+- Discussion and example
+- Platforms that allow column resizing
 
-## Links do segundo nível
+## Second-level links
 
-### Navegação em colunas
+### Column navigation
 
-- [NavigationSplitView](https://developer.apple.com/documentation/swiftui/navigationsplitview) — _Apple Developer; expandir sob demanda_
-- [navigationSplitViewColumnWidth(_:)](https://developer.apple.com/documentation/swiftui/view/navigationsplitviewcolumnwidth(_:)) — _Apple Developer; expandir sob demanda_
-- [navigationSplitViewStyle(_:)](https://developer.apple.com/documentation/swiftui/view/navigationsplitviewstyle(_:)) — _Apple Developer; expandir sob demanda_
-- [NavigationSplitViewVisibility](https://developer.apple.com/documentation/swiftui/navigationsplitviewvisibility) — _Apple Developer; expandir sob demanda_
+- [NavigationSplitView](https://developer.apple.com/documentation/swiftui/navigationsplitview) — _Apple Developer; expand on demand_
+- [navigationSplitViewColumnWidth(_:)](https://developer.apple.com/documentation/swiftui/view/navigationsplitviewcolumnwidth(_:)) — _Apple Developer; expand on demand_
+- [navigationSplitViewStyle(_:)](https://developer.apple.com/documentation/swiftui/view/navigationsplitviewstyle(_:)) — _Apple Developer; expand on demand_
+- [NavigationSplitViewVisibility](https://developer.apple.com/documentation/swiftui/navigationsplitviewvisibility) — _Apple Developer; expand on demand_
 
-## Proveniência
+## Provenance
 
-- Fonte: [Apple Developer](https://developer.apple.com/documentation/swiftui/view/navigationsplitviewcolumnwidth(min:ideal:max:))
-- Captura: `2026-07-18T02:53:50Z`
-- SHA-256 do payload: `6aaf33d60f84d9af6927fcbfb752f2fb5c7a1537b0afea85eeddfea23473d3b3`
-- Escopo: uma página; os links absolutos acima ainda não foram percorridos.
+- Source: [Apple Developer](https://developer.apple.com/documentation/swiftui/view/navigationsplitviewcolumnwidth(min:ideal:max:))
+- Captured: `2026-07-18T02:53:50Z`
+- Payload SHA-256: `6aaf33d60f84d9af6927fcbfb752f2fb5c7a1537b0afea85eeddfea23473d3b3`
+- Scope: one page; the above absolute links have not yet been covered.

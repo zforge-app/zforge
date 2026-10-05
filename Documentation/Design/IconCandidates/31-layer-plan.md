@@ -1,17 +1,17 @@
-# Separação em camadas do candidato 30
+# Separation into layers of candidate 30
 
-Este plano registra a tentativa anterior de separar o PNG do candidato 30. O usuário exportou depois [zforge_icon.icon](../../../Zforge/zforge_icon.icon/icon.json) com camadas próprias, já selecionado como ícone do app.
+This plan records the previous attempt to separate PNG from candidate 30. The user then exported [zforge_icon.icon](../../../Zforge/zforge_icon.icon/icon.json) with own layers, already selected as the app icon.
 
-Fonte: [`30-simplified-press-z-distant.png`](30-simplified-press-z-distant.png), PNG transparente de 1254 × 1254 px.
+Source: [`30-simplified-press-z-distant.png`](30-simplified-press-z-distant.png), transparent PNG of 1254 × 1254 px.
 
-## Ordem de empilhamento
+## Stack order
 
-1. **Base inferior — fundo.** Disco circular de aço; sua face superior recebe a sombra e o contato da peça. A parede cilíndrica continua até a borda inferior.
-2. **Z metálico — meio.** Uma única peça contínua, com relevo e brilho laranja concentrado nas linhas de contato superior e inferior. Ela precisa preservar a escala e a posição da composição de origem.
-3. **Cabeçote da prensa — frente.** Cilindro amarelo e preto, pistão e disco móvel de aço; o cilindro segue até a borda superior. O disco deve ocultar o encontro com a face superior do Z.
+1. **Bottom base — bottom.** Circular disc of steel; his upper face receives the shadow and contact of the piece. The cylindrical wall continues to the lower edge.
+2. **Metallic Z — medium.** A single continuous piece, with orange relief and shine concentrated on the upper and lower contact lines. It needs to preserve the scale and position of the origin composition.
+3. **Press head — front.** Yellow and black cylinder, piston and movable steel disc; the cylinder goes to the top edge. The disc must hide the encounter with the top face of the Z.
 
-Cada camada deve ser um PNG RGBA com o mesmo canvas de 1254 × 1254 px e origem comum em (0, 0). O fundo colorido e o recorte arredondado vistos na prévia do Icon Composer não integram nenhuma das três camadas.
+Each layer shall be a PNG RGBA with the same canvas of 1254 × 1254 px and common origin at (0, 0). The coloured background and rounded cutout seen in the previous Icon Composer do not integrate any of the three layers.
 
-## Estado da extração
+## State of extraction
 
-As tentativas de isolar as peças com ImageGen alteraram a escala e a posição delas, mesmo usando o candidato 30 como referência. Essas saídas não foram registradas como camadas utilizáveis. Falta extrair as peças preservando os pixels e conferir a sobreposição antes de entregar os PNGs.
+The attempts to isolate the pieces with ImageGen changed their scale and position, even using candidate 30 as a reference. These outputs were not registered as usable layers. The parts need to be extracted by preserving the pixels and checking the overlap before delivering the PNGs.

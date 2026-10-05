@@ -1,3 +1,3 @@
-# Guia de UI/UX do Zforge
+# UI/UX guide of Zforge
 
-O guia foi movido para [`Documentation/Requirements/UI-UX-GUIDE.md`](Documentation/Requirements/UI-UX-GUIDE.md). Atualize somente o arquivo no diretório de requisitos.
+The guide was moved to [`Documentation/Requirements/UI-UX-GUIDE.md`](Documentation/Requirements/UI-UX-GUIDE.md). Only update the file in the requirements directory.

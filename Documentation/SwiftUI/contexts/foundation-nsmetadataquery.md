@@ -16,17 +16,17 @@ confidence: "primary-source"
 
 # NSMetadataQuery
 
-## Consulta rápida
+## Quick reference
 
-- Plataforma: macOS; assinaturas conferidas com o SDK macOS 27.0 do Xcode local.
-- Declaração: `class NSMetadataQuery`.
-- Uso no Zforge: catálogo global de tags, consulta e monitoramento de arquivos autorizados.
+- Plataforma: macOS; signatures with the SDK macOS 27.0 of the local Xcode.
+- Declaration: `class NSMetadataQuery`.
+- Use in Zforge: Global catalog of tags, query and monitoring of authorized files.
 
-## Síntese
+## Summary
 
 NSMetadataQuery wraps Spotlight queries. Set a predicate before starting, configure search scopes, and use gathering and update notifications. Spotlight results are not proof that every authorized file was indexed.
 
-## Mapa do conteúdo
+## Content map
 
 - Configuring queries
 - Running queries
@@ -35,7 +35,7 @@ NSMetadataQuery wraps Spotlight queries. Set a predicate before starting, config
 - Working with notification messages
 - Constants
 
-## Links do segundo nível
+## Second-level links
 
 - [MDQuery](https://developer.apple.com/documentation/coreservices/file_metadata/mdquery)
 - [Foundation](https://developer.apple.com/documentation/foundation)
@@ -87,6 +87,6 @@ NSMetadataQuery wraps Spotlight queries. Set a predicate before starting, config
 - [Hashable](https://developer.apple.com/documentation/swift/hashable)
 - [Technologies](https://developer.apple.com/documentation/technologies)
 
-## Proveniência
+## Provenance
 
-Fonte oficial: [NSMetadataQuery](https://developer.apple.com/documentation/foundation/nsmetadataquery). Payload DocC capturado em 2026-10-02T23:16:46.165601+00:00; SHA-256 `b36d9c2b3e4fae89fb6e5c6b14394b86eee3eb30b99db5c0b1c17c93c523bef5`.
+Official source: [NSMetadataQuery](https://developer.apple.com/documentation/foundation/nsmetadataquery). Payload DocC captured in 2026-10-02T23:16:46.165601+00:00; SHA-256 `b36d9c2b3e4fae89fb6e5c6b14394b86eee3eb30b99db5c0b1c17c93c523bef5`.

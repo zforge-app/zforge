@@ -16,13 +16,13 @@ confidence: "primary-source"
 
 # NSDraggingDestination
 
-## Síntese e aplicação
+## Summary and application
 
-Protocolo macOS para destinos de arraste: draggingEntered/draggingUpdated negociam a operação, draggingExited limpa feedback, prepareForDragOperation confirma disponibilidade e performDragOperation aceita o conteúdo. NSView declara estes callbacks; assinaturas conferidas no SDK macOS 27.0. Registrar tipos desejados e ler identidade diretamente de draggingPasteboard. O destino fornece a pasta real da extração e devolve copy/move compatível com a máscara da origem.
+Protocol macOS for drag destinations: draggingEntered/draggingUpdated negotiate operation, draggingExited clean feedback, prepareForDragOperation confirms availability and performDragOperation accepts content. NSView declares these callbacks; signatures given in SDK macOS 27.0. Register desired types and read identity directly from draggingPasteboard. Destination provides the actual extraction folder and returns copy/move compatible with the source mask.
 
-No Zforge, o receptor participa do hit testing apenas durante uma transferência virtual ativa; cliques, menus e arraste local conservam os handlers anteriores. A operação assíncrona fica retida após o aceite. Gesto/roteamento exige validação separada dos testes do callback.
+In Zforge, the receiver participates in the hit testing only during an active virtual transfer; clicks, menus and local drag save the previous handlers. The asynchronous operation is retained after acceptance. Gesture/routing requires separate validation of callback tests.
 
-## Links do segundo nível
+## Second-level links
 
 - [AppKit](https://developer.apple.com/documentation/appkit)
 - [NSBackgroundExtensionView](https://developer.apple.com/documentation/appkit/nsbackgroundextensionview)
@@ -96,6 +96,6 @@ No Zforge, o receptor participa do hit testing apenas durante uma transferência
 - [NSObjectProtocol](https://developer.apple.com/documentation/objectivec/nsobjectprotocol)
 - [Technologies](https://developer.apple.com/documentation/technologies)
 
-## Proveniência
+## Provenance
 
-[Apple Developer](https://developer.apple.com/documentation/appkit/nsdraggingdestination); captura 2026-10-04T21:12:06.603314+00:00; SHA-256 `1d78a1e7eecfb0a84370b67c1d6656b1bb65e2e595cda46f61c289a61f23e3f0`. Uma página.
+[Apple Developer](https://developer.apple.com/documentation/appkit/nsdraggingdestination); captura 2026-10-04T21:12:06.603314+00:00; SHA-256 `1d78a1e7eecfb0a84370b67c1d6656b1bb65e2e595cda46f61c289a61f23e3f0`. A page.

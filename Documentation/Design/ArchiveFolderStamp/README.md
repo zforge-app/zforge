@@ -1,82 +1,82 @@
-# Selo de diretórios internos do Zforge
+# Zforge internal directory seal
 
-Refinamento v2, 2026-10-03. Os PNGs separados têm fundo transparente. `folder-states-v2.png` compara pasta comum, com arquivos e aberta com arquivos nos seis tamanhos; `zforge-stamp-v2.png` é o selo sozinho para revisão. Os estados com arquivos/aberta são estudos e não mudam a identificação de conteúdo de pastas internas no navegador. O ícone principal do app permanece o arquivo Icon Composer existente.
+Refinamento v2, 2026-10-03. Separate PNGs have transparent background. `folder-states-v2.png` compares common folder, with files and open with files in six sizes; `zforge-stamp-v2.png` is the stamp itself for review. The states with files/open are studies and do not change the identification of internal folder contents in the browser. The main icon of the app remains the existing Icon Composer file.
 
-Renderização reproduzível, a partir da raiz do projeto, com serviços gráficos macOS disponíveis:
+Reproducible rendering from the project root with macOS graphics services available:
 
 ```sh
 swiftc -module-cache-path /private/tmp/zforge-stamp-module-cache Zforge/Views/ArchiveFolderIconComposer.swift Documentation/Design/ArchiveFolderStamp/Render.swift -o /private/tmp/zforge-stamp-v2
 /private/tmp/zforge-stamp-v2 Documentation/Design/ArchiveFolderStamp
 ```
 
-## Estudo v3 — forma baseada no original mono
+## Study v3 — form based on the original mono
 
-O usuário pediu separar o estudo da pasta e do embossing e aproximar o selo do ícone original na aparência mono. [Referência fornecida](reference-original-mono.png) e [novo estudo avulso](zforge-stamp-v3-original-mono.png). A nova forma preserva cilindro com faixas diagonais, pistão estreito, discos cilíndricos largos e Z espesso chanfrado, dentro de um círculo. O estudo raster apresenta relevo metálico mais pronunciado; não foi aplicado ao compositor vetorial nem ao app. A versão v2 e os arquivos de pasta foram preservados.
+The user asked to separate study from folder and embossesing and to approximate the stamp from the original icon in mono appearance. [Reference provided](reference-original-mono.png) and [novo study avulso](zforge-stamp-v3-original-mono.png). The new shape preserves cylinder with diagonal strips, narrow piston, wide cylindrical discs and thick Z, inside a circle. The study raster has more pronounced metallic relief; it was not applied to the vector composer or the app. Version v2 and folder files have been preserved.
 
-A forma v3 foi aprovada pelo usuário. O tratamento seguinte deve simular **debossing**, com depressão, luz e sombras internas no material da pasta. [Plano técnico e critérios](DEBOSSING-PLAN.md); [referência física](reference-debossing-paper.png). O compositor implementado ainda não recebeu essa técnica.
+The form v3 was approved by the user. The following treatment must simulate **debossing**, with depression, light and shadows inside the folder material. [Technical plan and criteria](DEBOSSING-PLAN.md); [physical reference](reference-debossing-paper.png). The composer implemented has not yet received this technique.
 
-## Prévia v4 — debossing na pasta
+## Previa v4 — debossing in folder
 
-[Prévia grande](folder-debossing-v4.png) gerada com ImageGen a partir da pasta v2, forma v3 aprovada e referência de papel prensado. A primeira geração ainda apresentava partes elevadas; o refinamento rebaixou Z e componentes da prensa, com sombras internas e luz nas bordas inferiores. Esta é uma proposta visual raster para revisão, não a saída do compositor do app nem prova de implementação do mapa de altura. Ainda sem conferência em tamanhos pequenos, estados com arquivos/aberta ou interface real. As versões anteriores permanecem preservadas.
+[Long preview](folder-debossing-v4.png) generated with ImageGen from the v2 folder, approved v3 form and pressed paper reference. The first generation still had high parts; the refinement lowered Z and press components, with internal shadows and light on the lower edges. This is a visual raster proposal for review, not the output of the app composer or proof of implementation of the height map. Still no check in small sizes, states with files/open or real interface. The previous versions remain preserved.
 
-## Refinamento v5 — volume preferido e cilindro até o círculo
+## Refining v5 — preferred volume and cylinder up to circle
 
-O usuário preferiu visualmente a primeira composição volumétrica na pasta (`folder-preferred-volume-reference.png`), embora a v4 representasse debossing mais literal. A nova direção preserva esse volume, luz e sombra, com a cavidade circular integrada à pasta. [Estudo v5](folder-pressed-relief-v5.png): o cilindro superior com faixas foi prolongado até a borda interna superior do círculo, sem espaço vazio acima e sem ultrapassar a marca. Essa preferência prevalece sobre a leitura estritamente rebaixada de todos os componentes da v4. Estudo raster ainda sem integração; referências e versões anteriores preservadas.
+The user visually preferred the first volumetric composition in the folder (`folder-preferred-volume-reference.png`), although the v4 represented more literal debossing. The new direction preserves this volume, light and shadow, with the circular cavity integrated into the folder. [Study v5](folder-pressed-relief-v5.png): the upper cylinder with strips was extended to the upper inner edge of the circle, without empty space above and without exceeding the mark. This preference prevails over the strictly downgraded reading of all components of v4. Raster study not yet integrated; previous references and versions preserved.
 
-## Refinamento v6 — círculo contínuo sobre a prensa
+## Refining v6 — Continuous circle on the press
 
-O usuário corrigiu o encontro superior: o círculo deve recortar a prensa e manter toda sua linha visível. [Estudo v6](folder-pressed-relief-v6.png) restaura o arco interno contínuo sobre o cilindro. O cilindro alcança a abertura, mas fica recortado dentro dela, sem cobrir a faixa do círculo. Estudo raster para revisão, sem integração; v5 preservada.
+The user corrected the superior encounter: the circle must cut the press and keep its entire line visible. [Study v6](folder-pressed-relief-v6.png) restores the continuous internal arc on the cylinder. The cylinder reaches the opening, but is cut into it, without covering the strip of the circle. Raster study for review, without integration; v5 preservada.
 
-## Integração autorizada — v6
+## Authorised integration — v6
 
-O usuário aprovou a v6 e pediu a implementação. Fonte de produção: `Zforge/Assets.xcassets/ArchiveFolderRelief.imageset/approved-relief.png`. `ArchiveFolderIconComposer.Relief` isola o selo e deriva máscaras neutras de luz/sombra comparando sua luminosidade ao gradiente intacto nas laterais. Isso conserva a forma e iluminação aprovadas sobre o material nativo, sem pintar o fundo azul nem manter um PNG por tamanho. O cálculo ocorre uma vez e a composição é cacheada por faixa. Iluminação fixa da referência; não há mapa de altura/luz dinâmica.
+The user approved the v6 and asked for implementation. Source production: `Zforge/Assets.xcassets/ArchiveFolderRelief.imageset/approved-relief.png`. `ArchiveFolderIconComposer.Relief` isolates the stamp and derives light/shadow neutral masks by comparing their luminosity to the intact gradient on the sides. This preserves the approved form and illumination on the material native, without painting the blue background or maintaining a PNG by size. The calculation occurs once and the composition is curtailed by track. Fixed reference lighting; There is no dynamic height/light map.
 
-[Renderização da implementação](implemented-relief-states.png) conferida nos seis tamanhos e três estados. Para reproduzir fora do bundle, passar o caminho da referência como segundo argumento do renderizador:
+[Rendering of implementation](implemented-relief-states.png) checked in the six sizes and three states. To reproduce outside the bundle, pass the reference path as the renderer's second argument:
 
 ```sh
 /private/tmp/zforge-stamp-implemented /private/tmp/ZforgeApprovedReliefPreview Zforge/Assets.xcassets/ArchiveFolderRelief.imageset/approved-relief.png
 ```
 
-Os estudos anteriores e o ícone principal do app foram preservados.
+The previous studies and the main icon of the app have been preserved.
 
-## Pasta fechada com arquivos — implementação
+## File closed folder — implementation
 
-O usuário rejeitou a versão aberta de estudo. O compositor agora apresenta apenas estados fechados: [com arquivos](closed-folder-with-files-implemented.png) e [comparação com/sem arquivos nos seis tamanhos](closed-folders-implemented-states.png). A faixa de papel segue a referência de pasta fechada, atrás da face nativa, com o selo v6 preservado. `Render.swift` foi atualizado para esses dois estados; o arquivo `implemented-relief-states.png` e as pranchas anteriores permanecem registros históricos, incluindo a versão aberta rejeitada.
+The user rejected the open version of study. The composer now has only closed states: [with files](closed-folder-with-files-implemented.png) and [comparison with/without files in six sizes](closed-folders-implemented-states.png). The paper strip follows the closed folder reference, behind the native face, with the v6 stamp preserved. `Render.swift` was updated for these two states; the file `implemented-relief-states.png` and the previous comparison sheets remain historical records, including the rejected open version.
 
-`archiveDirectoryContainsFiles` é fornecido pela listagem do motor para todas as views e previews; a classificação inclui qualquer arquivo descendente, inclusive oculto/zero bytes, mas não subpastas vazias sozinhas. Não há extração para determinar o ícone.
+`archiveDirectoryContainsFiles` is provided by the engine listing for all views and previews; the classification includes any descending file, including hidden/zero bytes, but not empty subfolders alone. There is no extraction to determine the icon.
 
-## Novo estudo de pasta aberta no arraste
+## New study folder opened in drag
 
-Pedido de 2026-10-03: criar somente o ícone da pasta aberta como alvo de recebimento durante o arraste, com o material azul e selo aprovado. A referência nativa mostra a face dianteira inclinada para frente e papel no interior. Este estudo é separado da pasta fechada com arquivos já integrada e da antiga proposta aberta rejeitada. Aplicação e momento de uso dependem de instrução posterior do usuário.
+Request 2026-10-03: create only the folder icon opened as target receiving during drag, with blue material and approved seal. The native reference shows the front face tilted forward and paper inside. This study is separated from the closed folder with already integrated files and the old rejected open proposal. Application and moment of use depend on later instruction from the user.
 
-[Proposta v7](open-folder-drop-study-v7.png), gerada com ImageGen integrado: imagem única com transparência, face dianteira inclinada e alargada no topo, documentos visíveis, sombras internas e selo circular prensa/Z na face inferior direita. Conferida visualmente como estudo; sem integração, mudanças no compositor, build ou novos testes.
+[Proposal v7](open-folder-drop-study-v7.png), generated with ImageGen integrated: single image with transparency, inclined front and enlarged at the top, visible documents, internal shadows and circular press/Z stamp on the lower right face. visually checked as study; without integration, changes in the composer, build or new tests.
 
-Especificação do prompt: transformar a pasta fechada aprovada em alvo aberto de recebimento por arraste, usando a referência nativa; preservar azul/material, forma do selo e círculo contínuo, inclinar a face dianteira sutilmente, mostrar papel e sombra no interior, aplicar perspectiva coerente ao selo, gradientes suaves, fundo transparente, sem texto/UI ou variantes na mesma imagem.
+Prompt specification: transform the approved closed folder to target open by drag receipt using the native reference; preserve blue/material, seal shape and continuous circle, tilt the front face subtly, show paper and shadow inside, apply coherent perspective to the seal, smooth gradients, transparent bottom, without text/UI or variants in the same image.
 
-## Integração da pasta expandida
+## Expanded folder integration
 
-A v7 foi aprovada para a linha de diretório interno expandido na Lista e o respectivo hero do preview (incluindo seleção múltipla). A produção usa `NSWorkspace` com OSType `ofld`, papel condicionado a `archiveDirectoryContainsFiles` e as máscaras v6 do selo; não usa o PNG completo da v7. Cache distingue escala, arquivos e expansão. Os outros modos mantêm pasta fechada. Drag and drop de itens internos não foi implementado e consta em OR-14/ZF-30.
+The v7 was approved for the internal directory line expanded in List and the respective preview hero (including multiple selection). Production uses `NSWorkspace` with OSType `ofld`, paper conditioning at `archiveDirectoryContainsFiles` and stamp v6 masks; does not use full v7 PNG. Cache distinguishes scale, files and expansion. The other modes keep folder closed. Drag and drop of internal items was not implemented and is included in OR-14/ZF-30.
 
-## Correção do material da pasta aberta
+## Correction of open folder material
 
-O usuário rejeitou a implementação `ofld` por textura/cor, base e cantos inconsistentes. A versão corrigida usa exclusivamente a mesma pasta nativa fechada; recorta sua face arredondada, aplica o selo e inclina os dois juntos por reamostragem bilinear em 1024 px, com sombras de contato. Não usa o PNG de estudo como ícone inteiro. O antigo render está preservado como `open-folder-ofld-historical.png`; [novo render](open-folder-implemented.png) e [comparação](folder-expanded-implemented-states.png).
+The user rejected the implementation `ofld` by texture/color, base and inconsistent corners. The corrected version uses only the same closed native folder; cut its rounded face, apply the stamp and tilt the two together by bilinear resampling at 1024 px, with contact shadows. Do not use the PNG of study as an entire icon. The old render is preserved as `open-folder-ofld-historical.png`; [novo render](open-folder-implemented.png) and [comparison](folder-expanded-implemented-states.png).
 
-Refinamento posterior: removidas as duas sobras da face fechada ao lado do papel. A camada traseira usa somente o topo nativo e uma extensão da faixa intacta do painel traseiro. A exportação anterior foi preservada como `open-folder-before-side-cleanup.png`; o caminho `open-folder-implemented.png` contém a exportação atual.
+Later refinement: the two leftovers of the closed face are removed next to the paper. The rear layer uses only the top native and an extension of the intact track of the rear panel. Previous export was preserved as `open-folder-before-side-cleanup.png`; the `open-folder-implemented.png` path contains the current export.
 
-## Perspectiva com base preservada e papel sem contorno
+## Prospect with preserved base and non-continuous paper
 
-Refinamento do usuário: remover as linhas ao lado do papel, sem recortar o painel traseiro. A edição ImageGen que fez vazados não foi integrada. O compositor remove o stroke do papel na versão aberta e mantém a base na largura da pasta original; apenas o topo da face avança para fora. Exportação anterior preservada em `open-folder-before-perspective-fix.png`; `open-folder-implemented.png` é a saída atual do compositor.
+User refinement: remove the lines next to the paper without cutting the rear panel. The ImageGen edition that leaked was not integrated. The composer removes the stroke from the paper in the open version and keeps the base at the width of the original folder; only the top of the face moves out. Previous export preserved in `open-folder-before-perspective-fix.png`; `open-folder-implemented.png` is the composer's current output.
 
-## Linhas no painel traseiro
+## Lines on the rear panel
 
-O usuário confirmou a perspectiva, mas ainda apontou linhas no azul ao lado do papel. A extensão de uma faixa de bitmap foi substituída por um gradiente contínuo rasterizado com as cores nativas, preservando alfa e canto arredondado e excluindo a sombra externa da amostragem de cor. `open-folder-before-rear-lines-fix.png` preserva o render anterior; exportação atual em `open-folder-implemented.png`.
+The user confirmed the perspective, but still pointed out lines in the blue next to the paper. The extension of a bitmap band was replaced by a continuous gradient rasterized with native colors, preserving alpha and rounded corner and excluding the external shade of the color sampling. `open-folder-before-rear-lines-fix.png` preserves the previous surrender; current export in `open-folder-implemented.png`.
 
-## Pasta fechada: papel atrás da borda
+## Closed folder: paper behind the edge
 
-Após aprovação do refinamento aberto, o usuário apontou que o papel cobria a borda superior da pasta fechada cheia. O recorte horizontal abaixo da borda foi substituído pelo recorte arredondado da face nativa completa. A nova exportação em `closed-folder-with-files-implemented.png` conserva a faixa de papel atrás da borda e o selo. Render anterior preservado em `closed-folder-before-lip-fix.png`.
+After approval of the refinement open, the user pointed out that the paper covered the top edge of the closed folder full. The horizontal cut below the border was replaced by the rounded cut of the full native face. The new export in `closed-folder-with-files-implemented.png` keeps the paper band behind the edge and the stamp. Previous yield preserved in `closed-folder-before-lip-fix.png`.
 
-## Pasta aberta vazia — exportação separada
+## Empty open folder — separate export
 
-A pedido do usuário, [versão aberta sem papel](open-empty-folder-implemented.png) exportada pelo mesmo compositor (`isOpen: true`, `containsFiles: false`), preservando perspectiva, material, sombra e selo. Esse estado já existia no compositor/cache e nos testes; nesta etapa foi criada somente a exportação separada para revisão, sem mudar o comportamento do app. `Render.swift` passa a exportar esse arquivo adicional.
+The user's request, [open version without paper](open-empty-folder-implemented.png) exported by the same composer (`isOpen: true`, `containsFiles: false`), preserving perspective, material, shadow and seal. This state already existed in the composer/cache and in the tests; at this stage was created only the separate export for review, without changing the behavior of the app. `Render.swift` starts exporting that additional file.
 
-Refinamento da pasta aberta vazia: removido degrau esquerdo e gradiente retangular residual. O painel usa cores do material traseiro acima da face fechada, interpolação contínua e transição suave com o topo nativo. Exportação anterior preservada em `open-empty-folder-before-panel-fix.png`; `open-empty-folder-implemented.png` contém a versão corrigida. O painel é compartilhado com a pasta aberta cheia.
+Empty open folder refinement: removed left step and residual rectangular gradient. The panel uses colors of the rear material above the closed face, continuous interpolation and smooth transition with the top native. Previous export preserved in `open-empty-folder-before-panel-fix.png`; `open-empty-folder-implemented.png` contains the corrected version. The panel is shared with the full open folder.

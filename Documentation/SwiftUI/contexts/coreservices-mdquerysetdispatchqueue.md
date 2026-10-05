@@ -16,21 +16,21 @@ confidence: "primary-source"
 
 # MDQuerySetDispatchQueue(_:_:)
 
-## Consulta rápida
+## Quick reference
 
-- Plataforma: macOS; assinaturas conferidas com o SDK macOS 27.0 do Xcode local.
-- Declaração: `func MDQuerySetDispatchQueue(MDQuery!, dispatch_queue_t!)`.
-- Uso no Zforge: catálogo global de tags, consulta e monitoramento de arquivos autorizados.
+- Plataforma: macOS; signatures with the SDK macOS 27.0 of the local Xcode.
+- Declaration: `func MDQuerySetDispatchQueue(MDQuery!, dispatch_queue_t!)`.
+- Use in Zforge: Global catalog of tags, query and monitoring of authorized files.
 
-## Síntese
+## Summary
 
 Choose the dispatch queue before executing a query. A synchronous query does not use the dispatch queue setting. Zforge delivers metadata updates on the main queue.
 
-## Mapa do conteúdo
+## Content map
 
 
 
-## Links do segundo nível
+## Second-level links
 
 - [Core Services](https://developer.apple.com/documentation/coreservices)
 - [MDQuerySetDispatchQueue(_:_:)](https://developer.apple.com/documentation/coreservices/1413019-mdquerysetdispatchqueue)
@@ -45,6 +45,6 @@ Choose the dispatch queue before executing a query. A synchronous query does not
 - [dispatch_queue_t](https://developer.apple.com/documentation/dispatch/dispatch_queue_t)
 - [Technologies](https://developer.apple.com/documentation/technologies)
 
-## Proveniência
+## Provenance
 
-Fonte oficial: [MDQuerySetDispatchQueue(_:_:)](https://developer.apple.com/documentation/coreservices/1413019-mdquerysetdispatchqueue). Payload DocC capturado em 2026-10-02T23:16:46.165601+00:00; SHA-256 `a5be85a0ceb331866f230722e99637c830cefadc7cb71e2ffb00c17b0b669033`.
+Official source: [MDQuerySetDispatchQueue(_:_:)](https://developer.apple.com/documentation/coreservices/1413019-mdquerysetdispatchqueue). Payload DocC captured in 2026-10-02T23:16:46.165601+00:00; SHA-256 `a5be85a0ceb331866f230722e99637c830cefadc7cb71e2ffb00c17b0b669033`.

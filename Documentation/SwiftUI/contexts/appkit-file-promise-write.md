@@ -16,51 +16,51 @@ confidence: "primary-source"
 
 # filePromiseProvider(_:writePromiseTo:completionHandler:)
 
-## Consulta rápida
+## Quick reference
 
-- Módulo: AppKit; API nativa de arraste do macOS.
-- Disponibilidade: macOS 10.12+
-- Declaração: `nonisolated   func   filePromiseProvider ( _   filePromiseProvider :  NSFilePromiseProvider ,  writePromiseTo   url :  URL ,  completionHandler :  @escaping  @Sendable  ((any  Error )?) ->  Void ) nonisolated   func   filePromiseProvider ( _   filePromiseProvider :  NSFilePromiseProvider ,  writePromiseTo   url :  URL )  async   throws`
+- Module: AppKit; Native drag API of macOS.
+- Availability: macOS 10.12+
+- Declaration: `nonisolated   func   filePromiseProvider ( _   filePromiseProvider :  NSFilePromiseProvider ,  writePromiseTo   url :  URL ,  completionHandler :  @escaping  @Sendable  ((any  Error )?) ->  Void ) nonisolated   func   filePromiseProvider ( _   filePromiseProvider :  NSFilePromiseProvider ,  writePromiseTo   url :  URL )  async   throws`
 
-## Síntese
+## Summary
 
-O delegate de file promise recebe a URL exata em que deve publicar o conteúdo quando o sistema solicita cumprir a promessa. A escrita roda na operation queue indicada pelo delegate; a conclusão deve ser chamada após a escrita. A coordenação de arquivos deve acompanhar a publicação.
+The file compromise delegate receives the exact URL in which to publish the content when the system requests to keep the promise. Writing runs in the operation which is indicated by the delegate; the conclusion must be called after writing. The coordination of archives shall accompany the publication.
 
-## Implicações práticas no Zforge
+## Practical implications no Zforge
 
-A origem virtual usa file promises e determina a operação permitida. A regra de produto exige cópia por padrão e movimentação com Option; ignorar a tradução automática de modificadores do AppKit e aplicar a regra explicitamente na origem e no destino interno. Promises escrevem somente na URL fornecida e removem entradas do archive apenas após a publicação bem-sucedida. O SDK macOS 27.0 declara a escrita de promises nonisolated e permite escolher a main operation queue; manter a coordenação de UI no MainActor.
+Virtual origin uses file promises and determines the allowed operation. The product rule requires standard copying and handling with Option; to ignore the automatic translation of AppKit and apply modifiers the rule explicitly in the origin and in the internal destination. Promises write only in the provided URL and remove archive entries only after successful publication. SDK macOS 27.0 declares the writing of nonisolated promises and allows you to choose the main operation queen; maintain coordination of UI in MainActor.
 
-## Mapa do conteúdo
+## Content map
 
-- Declaração, operações/modificadores ou escrita de promises.
-- Referências de tipos e métodos relacionados.
+- Declaration, operations/modifiers or writing of promises.
+- References of related types and methods.
 
-## Links do segundo nível
+## Second-level links
 
-- [AppKit](https://developer.apple.com/documentation/appkit) — Apple Developer; expandir sob demanda.
-- [Error](https://developer.apple.com/documentation/swift/error) — Apple Developer; expandir sob demanda.
-- [NSError](https://developer.apple.com/documentation/foundation/nserror) — Apple Developer; expandir sob demanda.
-- [NSFileCoordinator](https://developer.apple.com/documentation/foundation/nsfilecoordinator) — Apple Developer; expandir sob demanda.
-- [NSFilePromiseProviderDelegate](https://developer.apple.com/documentation/appkit/nsfilepromiseproviderdelegate) — Apple Developer; expandir sob demanda.
-- [NSFilePromiseProvider](appkit-nsfile-promise-provider.md) — Apple Developer; expandir sob demanda.
-- [NSURL](https://developer.apple.com/documentation/foundation/nsurl) — Apple Developer; expandir sob demanda.
-- [OperationQueue](https://developer.apple.com/documentation/foundation/operationqueue) — Apple Developer; expandir sob demanda.
-- [Technologies](https://developer.apple.com/documentation/technologies) — Apple Developer; expandir sob demanda.
-- [URL](https://developer.apple.com/documentation/foundation/url) — Apple Developer; expandir sob demanda.
-- [Void](https://developer.apple.com/documentation/swift/void) — Apple Developer; expandir sob demanda.
-- [filePromiseProvider(_:fileNameForType:)](https://developer.apple.com/documentation/appkit/nsfilepromiseproviderdelegate/filepromiseprovider(_:filenamefortype:)) — Apple Developer; expandir sob demanda.
-- [operationQueue(for:)](https://developer.apple.com/documentation/appkit/nsfilepromiseproviderdelegate/operationqueue(for:)) — Apple Developer; expandir sob demanda.
+- [AppKit](https://developer.apple.com/documentation/appkit) — Apple Developer; expand on demand.
+- [Error](https://developer.apple.com/documentation/swift/error) — Apple Developer; expand on demand.
+- [NSError](https://developer.apple.com/documentation/foundation/nserror) — Apple Developer; expand on demand.
+- [NSFileCoordinator](https://developer.apple.com/documentation/foundation/nsfilecoordinator) — Apple Developer; expand on demand.
+- [NSFilePromiseProviderDelegate](https://developer.apple.com/documentation/appkit/nsfilepromiseproviderdelegate) — Apple Developer; expand on demand.
+- [NSFilePromiseProvider](appkit-nsfile-promise-provider.md) — Apple Developer; expand on demand.
+- [NSURL](https://developer.apple.com/documentation/foundation/nsurl) — Apple Developer; expand on demand.
+- [OperationQueue](https://developer.apple.com/documentation/foundation/operationqueue) — Apple Developer; expand on demand.
+- [Technologies](https://developer.apple.com/documentation/technologies) — Apple Developer; expand on demand.
+- [URL](https://developer.apple.com/documentation/foundation/url) — Apple Developer; expand on demand.
+- [Void](https://developer.apple.com/documentation/swift/void) — Apple Developer; expand on demand.
+- [filePromiseProvider(_:fileNameForType:)](https://developer.apple.com/documentation/appkit/nsfilepromiseproviderdelegate/filepromiseprovider(_:filenamefortype:)) — Apple Developer; expand on demand.
+- [operationQueue(for:)](https://developer.apple.com/documentation/appkit/nsfilepromiseproviderdelegate/operationqueue(for:)) — Apple Developer; expand on demand.
 
-## Proveniência
+## Provenance
 
-- Fonte: [Apple Developer](https://developer.apple.com/documentation/appkit/nsfilepromiseproviderdelegate/filepromiseprovider(_:writepromiseto:completionhandler:)).
-- Captura: `2026-10-04T10:57:06.062330+00:00`; SHA-256: `c5770fc257a31b7d790669c9af7bec260632eaf52264f5df47a337839bd130d6`.
-- Escopo: uma página; links secundários não percorridos.
+- Source: [Apple Developer](https://developer.apple.com/documentation/appkit/nsfilepromiseproviderdelegate/filepromiseprovider(_:writepromiseto:completionhandler:)).
+- Captured: `2026-10-04T10:57:06.062330+00:00`; SHA-256: `c5770fc257a31b7d790669c9af7bec260632eaf52264f5df47a337839bd130d6`.
+- Scope: one page; secondary links not covered.
 
-### Coordenação no Zforge
+### Coordination in Zforge
 
-A publicação de uma promessa não espera o callback final da origem. Receptores podem solicitar arquivos em sequência; completar cada escrita antes de atender a próxima. A remoção das origens espera todas as publicações e a operação final de movimento. O token adicional é dado imediato, com opções de escrita vazias; o conteúdo mantém a política de promessa do AppKit.
+The publication of a promise does not await the final callback of the origin. Receivers may request files in sequence; complete each writing before attending the next. The removal of origins awaits all publications and the final movement operation. The additional token is given immediately, with empty writing options; the content maintains the promise policy of AppKit.
 
-Movimentos externos confirmam a alteração do original antes da primeira publicação. Cancelar rejeita todas as promises sem gravar. Escritas são serializadas; a conclusão de cada uma não aguarda ended, mas a remoção exige confirmação, aceitação final de movimento e sucesso de todas. Testes congelam também cancelamento após cumprir promises e falha parcial.
+External movements confirm the change of the original before the first publication. Cancel rejects all promises without recording. Writings are serialized; the completion of each one does not await ended, but removal requires confirmation, final acceptance of movement and success of all. Tests also freeze after fulfilling partial promises and failure.
 
-A URL da promise pode carregar autorização de sandbox apenas para o arquivo final. Criar sibling staging ao lado dela falhou com NSCocoaErrorDomain 513 na integração real com Finder. Extrair/validar no staging do app e publicar na URL autorizada; não inferir acesso à pasta pai. Destinos internos já autorizados mantêm publicação por staging/rename vizinho.
+The URL of the promise can only upload sandbox authorization to the final file. Creating sibling staging next to her failed with NSCocoaErrorDomain 513 in real integration with Finder. Extract/validate in app staging and publish in authorized URL; do not infer access to the parent folder. Already authorized internal destinations maintain publication by neighboring staging/rename.

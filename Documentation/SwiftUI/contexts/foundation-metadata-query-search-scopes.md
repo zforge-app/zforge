@@ -16,21 +16,21 @@ confidence: "primary-source"
 
 # Metadata Query Search Scopes
 
-## Consulta rápida
+## Quick reference
 
-- Plataforma: macOS; assinaturas conferidas com o SDK macOS 27.0 do Xcode local.
-- Declaração: `NSMetadataQueryUserHomeScope; NSMetadataQueryLocalComputerScope; NSMetadataQueryNetworkScope`.
-- Uso no Zforge: catálogo global de tags, consulta e monitoramento de arquivos autorizados.
+- Plataforma: macOS; signatures with the SDK macOS 27.0 of the local Xcode.
+- Declaration: `NSMetadataQueryUserHomeScope; NSMetadataQueryLocalComputerScope; NSMetadataQueryNetworkScope`.
+- Use in Zforge: Global catalog of tags, query and monitoring of authorized files.
 
-## Síntese
+## Summary
 
 User Home, local indexed volumes and user-mounted network volumes have distinct scopes. Scope does not grant filesystem permission; Zforge keeps its existing security-scoped authorizations.
 
-## Mapa do conteúdo
+## Content map
 
 - Constants
 
-## Links do segundo nível
+## Second-level links
 
 - [Foundation](https://developer.apple.com/documentation/foundation)
 - [Content Relevance](https://developer.apple.com/documentation/foundation/content-relevance)
@@ -52,6 +52,6 @@ User Home, local indexed volumes and user-mounted network volumes have distinct 
 - [Spotlight](https://developer.apple.com/documentation/foundation/spotlight)
 - [Technologies](https://developer.apple.com/documentation/technologies)
 
-## Proveniência
+## Provenance
 
-Fonte oficial: [Metadata Query Search Scopes](https://developer.apple.com/documentation/foundation/metadata-query-search-scopes). Payload DocC capturado em 2026-10-02T23:16:46.165601+00:00; SHA-256 `c46d9961da4810b3dfe901077ee2ae59bb55142abd6f252d5b7f980ee7a8d705`.
+Official source: [Metadata Query Search Scopes](https://developer.apple.com/documentation/foundation/metadata-query-search-scopes). Payload DocC captured in 2026-10-02T23:16:46.165601+00:00; SHA-256 `c46d9961da4810b3dfe901077ee2ae59bb55142abd6f252d5b7f980ee7a8d705`.

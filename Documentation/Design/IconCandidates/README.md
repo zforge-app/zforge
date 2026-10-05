@@ -1,72 +1,72 @@
-# Ícones individuais — Zforge
+# Icons individual — Zforge
 
-Cada alternativa abaixo é uma imagem PNG independente de 1254 × 1254 px. São estudos de identidade baseados no Z, em arquivos compactados e em metalurgia. O usuário exportou posteriormente [zforge_icon.icon](../../../Zforge/zforge_icon.icon/icon.json) no Icon Composer; esse arquivo, com camadas próprias, é agora a fonte selecionada para o ícone do aplicativo.
+Each alternative below is a PNG image independent of 1254 × 1254 px. They are studies identity based on Z, compressed files and metallurgy. The user subsequently exported [zforge_icon.icon](../../../Zforge/zforge_icon.icon/icon.json) in Icon Composer; this file, with its own layers, is now the source selected for the application icon.
 
-| Nº | Alternativa | Direção |
+| Nº | Alternativa | Direction |
 | --- | --- | --- |
-| 01 | [Bigorna, martelo e zíper](01-forged-anvil-zipper.png) | Z de aço sobre arquivos, bigorna e martelo. |
-| 02 | [Z rebitado](02-riveted-z-clamp.png) | Grampo de aço rebitado e zíper lateral. |
-| 03 | [Z vazado na bigorna](03-anvil-z-cutout.png) | Arquivos dentro do Z, com fundo claro. |
-| 04 | [Bigorna e prensa](04-anvil-press-fusion.png) | Estrutura em C com base de bigorna. |
-| 05 | [Prensa circular](05-round-press.png) | Platôs redondos e linha de compressão laranja. |
-| 06 | [Prensa aberta](06-open-c-frame-press.png) | Prensa em C sobre fundo claro. |
-| 07 | [Prensa de parafuso](07-screw-press-cyan.png) | Z ciano e arquivos em tons de aço e teal. |
-| 08 | [Prensa escura](08-black-press-orange-seam.png) | Estrutura grafite e linha laranja inferior. |
-| 09 | [Emblema claro](09-flat-white-hammer-anvil.png) | Z teal, martelo laranja e bigorna gráfica. |
-| 10 | [Emblema escuro](10-dark-graphic-emblem.png) | Z branco sobre azul noturno. |
-| 11 | [Hexágono laranja](11-orange-hex-forge.png) | Arquivos e ferramentas em selo industrial. |
-| 12 | [Hexágono contornado](12-outlined-hex-orange-z.png) | Z laranja e contorno fino sobre grafite. |
-| 13 | [Prensa gráfica em C](13-graphic-c-press.png) | Z laranja e arquivos entre os braços da prensa. |
-| 14 | [Selo com prensa](14-hexagonal-press-badge.png) | Prensa e arquivo dentro de moldura hexagonal. |
-| 15 | [Z prateado claro](15-silver-z-light-anvil.png) | Bigorna, martelo e zíper em paleta clara. |
-| 16 | [Z ciano sobre bigorna](16-cyan-z-anvil-press.png) | Prensa superior e Z luminoso. |
-| 17 | [Prensa hidráulica e pastas](17-hydraulic-press-folders-z.png) | Prensa em H com pistão, dois platôs alinhados e pastas coloridas deitadas entre eles; Z no travessão superior. |
-| 18 | [Cilindro hidráulico e pastas](18-hydraulic-cylinder-folders-z.png) | Cilindro amarelo com faixas de segurança, pistão e discos circulares comprimindo pastas; Z pintado no cilindro. |
-| 19 | [Prensa cilíndrica estilizada](19-stylized-hydraulic-cylinder-folders-z.png) | Simplificação do candidato 18 para ícone: formas mais limpas, Z de alto contraste, pistão e discos circulares alinhados às pastas. |
-| 20 | [Prensa até as bordas e Z em relevo](20-press-edge-to-edge-raised-z.png) | Cilindro recortado pela borda superior, base prolongada até a borda inferior, Z tridimensional e fundo transparente. |
-| 21 | [Pastas de cartão e aço usinado](21-cardstock-folders-machined-steel.png) | Corrige as pastas para folhas dobradas com abas e bordas de papel; dá material de aço usinado ao pistão e aos dois discos. |
-| 22 | [Pastas com referências adicionais](22-folder-reference-refinement.png) | Ajuste individual das abas e capas usando duas novas imagens de pastas de escritório como referência. |
-| 23 | [Prensa e armário de arquivos](23-hydraulic-press-filing-cabinet.png) | Substitui as pastas por um armário azul de duas gavetas, com puxadores e porta-etiquetas, entre os discos da prensa. |
-| 24 | [Armário alto e Z no platô](24-tall-filing-cabinet-z-on-platen.png) | Armário de três gavetas, conjunto superior da prensa elevado e Z em relevo na face do platô móvel. |
-| 25 | [Z metálico prensado](25-pressed-metal-z.png) | Retoma um único Z como peça metálica comprimida entre os dois discos da prensa, sem armário. |
-| 26 | [Z prensado com margem para Icon Composer](26-pressed-z-icon-composer-framing.png) | Enquadramento mais afastado, prensa inteira e margens transparentes para reduzir corte no Icon Composer. |
-| 27 | [Z prensado com base até a borda](27-pressed-z-extended-base.png) | Usa a versão intermediária de enquadramento apontada pelo usuário e prolonga a base metálica inferior até o limite do PNG. |
-| 28 | [Prensa e Z simplificados, cor](28-simplified-press-z-color.png) · [mono](28-simplified-press-z-mono.png) · [SVG mono](28-simplified-press-z-mono.svg) | Reduz os detalhes para preservar a leitura do Z em tamanhos pequenos; o mono usa uma silhueta plana branca. |
-| 29 | [Prensa simplificada com topo e base até as bordas](29-simplified-press-z-edge-crop.png) | Refina o candidato colorido 28: elimina a tampa lisa, prolonga as listras até o topo, prolonga a base até o fundo e sobe o Z. |
-| 30 | [Prensa e Z vistos de mais longe](30-simplified-press-z-distant.png) | Reduz a escala aparente da composição colorida e abre margens laterais; topo listrado e base metálica continuam até as bordas verticais. |
+| 01 | [Mouth, hammer and zipper](01-forged-anvil-zipper.png) | Z steel over files, anvil and hammer. |
+| 02 | [Ripped Z](02-riveted-z-clamp.png) | Riveted steel clip and side zipper. |
+| 03 | [Z leaked in the anvil](03-anvil-z-cutout.png) | Files inside the Z, with clear background. |
+| 04 | [Mouth and press](04-anvil-press-fusion.png) | C structure based on anvil. |
+| 05 | [Press circular](05-round-press.png) | Round plateaus and orange compression line. |
+| 06 | [Press aberta](06-open-c-frame-press.png) | Press C on clear background. |
+| 07 | [Screw press](07-screw-press-cyan.png) | Z cyan and files in steel and loom tones. |
+| 08 | [Dark press](08-black-press-orange-seam.png) | Graphite structure and lower orange line. |
+| 09 | [Emblema claro](09-flat-white-hammer-anvil.png) | Z teal, orange hammer and graphic anvil. |
+| 10 | [Dark emblem](10-dark-graphic-emblem.png) | White Z on night blue. |
+| 11 | [Orange hexagon](11-orange-hex-forge.png) | Files and tools in industrial seal. |
+| 12 | [Hexagon bypassed](12-outlined-hex-orange-z.png) | Orange Z and fine contour on graphite. |
+| 13 | [C Graphic Press](13-graphic-c-press.png) | Orange Z and files between the press arms. |
+| 14 | [Seal with press](14-hexagonal-press-badge.png) | Press and file inside hexagonal frame. |
+| 15 | [Light silver Z](15-silver-z-light-anvil.png) | Bigmouth, hammer and zipper in light palette. |
+| 16 | [Z cyan on anvil](16-cyan-z-anvil-press.png) | Top press and light Z. |
+| 17 | [Hydraulic press and folders](17-hydraulic-press-folders-z.png) | H press with piston, two aligned platens and colored folders lying between them; Z in the upper indent. |
+| 18 | [Hydraulic cylinder and folders](18-hydraulic-cylinder-folders-z.png) | Yellow cylinder with safety bands, piston and circular discs compressing folders; Z painted on the cylinder. |
+| 19 | [Cylindrical stylised press](19-stylized-hydraulic-cylinder-folders-z.png) | Simplification of candidate 18 for icon: cleaner shapes, high-contrast Z, piston and circular discs aligned to folders. |
+| 20 | [Press up to the edges and Z in relief](20-press-edge-to-edge-raised-z.png) | Cylinder cut through the upper edge, extended base to the lower edge, three-dimensional Z and transparent bottom. |
+| 21 | [Cardboard folders and machined steel](21-cardstock-folders-machined-steel.png) | Fix folders for folded sheets with tabs and paper edges; Gives steel material machined to the piston and the two discs. |
+| 22 | [Folders with additional references](22-folder-reference-refinement.png) | Individual adjustment of the tabs and covers using two new images of office folders as reference. |
+| 23 | [Press and file cabinet](23-hydraulic-press-filing-cabinet.png) | Replaces the folders with a blue two drawer cabinet, with handles and stickers, between the press discs. |
+| 24 | [High closet and Z on the platen](24-tall-filing-cabinet-z-on-platen.png) | Three drawer cabinet, upper set of the high press and Z in relief on the face of the mobile platen. |
+| 25 | [Pressed metal z](25-pressed-metal-z.png) | Retakes a single Z as a compressed metal piece between the two press discs, no cabinet. |
+| 26 | [Z pressed with margin for Icon Composer](26-pressed-z-icon-composer-framing.png) | More remote framework, whole press and transparent margins to reduce cutting on the Icon Composer. |
+| 27 | [Z pressed based to the edge](27-pressed-z-extended-base.png) | It uses the intermediate frame version pointed by the user and prolongs the lower metallic base up to the limit of the PNG. |
+| 28 | [Simplified press and Z, colour](28-simplified-press-z-color.png) · [mono](28-simplified-press-z-mono.png) · [SVG mono](28-simplified-press-z-mono.svg) | Reduces the details to preserve Z reading in small sizes; the mono uses a white flat silhouette. |
+| 29 | [Simplified press with top and base to the edges](29-simplified-press-z-edge-crop.png) | Refine the color candidate 28: eliminates the smooth cap, prolongs the stripes to the top, extends the base to the bottom and climbs the Z. |
+| 30 | [Press and Z viewed from further away](30-simplified-press-z-distant.png) | Reduces the apparent scale of the color composition and opens side margins; top striped and metal base continue to the vertical edges. |
 
-A primeira versão cromática do candidato 07 foi preservada em [`Drafts/07-screw-press-cyan-v1.png`](Drafts/07-screw-press-cyan-v1.png); a versão listada acima substitui roxo e verde por tons de aço e teal.
+The first chromatic version of candidate 07 was preserved in [`Drafts/07-screw-press-cyan-v1.png`](Drafts/07-screw-press-cyan-v1.png); the version listed above replaces purple and green with steel and web tones.
 
-Na avaliação mais recente, o usuário indicou **02, 10, 09, 11 e 12** como alternativas com potencial, mas ainda não aprovou o resultado geral nem escolheu um ícone final.
+In the most recent evaluation, the user indicated **02, 10, 09, 11 and 12** as alternatives with potential, but has not yet approved the overall result nor chosen a final icon.
 
-O candidato 17 usou as imagens anexadas de uma prensa hidráulica real e de pastas multicoloridas como referências, mas o usuário rejeitou a estrutura em H, por não corresponder ao estilo da prensa fotografada. O candidato 18 foi gerado individualmente para seguir a forma cilíndrica, os discos circulares e a pintura amarela e preta da referência. Ainda é um rascunho rasterizado, sem camadas para Icon Composer nem aprovação final. A exploração segue com **uma imagem por vez**.
+The candidate 17 used the attached images of a real hydraulic press and multicolored folders as references, but the user rejected the structure in H because it did not match the style of the photographed press. The candidate 18 was generated individually to follow the cylindrical shape, circular discs and the yellow and black painting of the reference. It's still a rasterized draft, no layers for Icon Composer or final approval. The exploration follows with **one image at a time**.
 
-O usuário confirmou que o candidato 18 segue a direção desejada e pediu sua estilização para uso como ícone de aplicação. O candidato 19 foi gerado a partir dessa imagem, individualmente, com superfícies simplificadas e contraste reforçado. A decisão de integrá-lo ao aplicativo ainda não foi tomada.
+The user confirmed that candidate 18 follows the desired direction and requested its stylization for use as an application icon. The candidate 19 was generated from this image, individually, with simplified surfaces and reinforced contrast. The decision to integrate it into the application has not yet been made.
 
-Sobre o candidato 19, o usuário pediu quatro correções localizadas: prolongar o topo do cilindro e a base metálica até as bordas da imagem, dar volume ao Z para antecipar sua futura separação como camada, e substituir o fundo verde. O candidato 20 aplica esses ajustes em uma única imagem PNG com canal alfa; suas partes ainda não são camadas separadas do Icon Composer.
+About candidate 19, the user asked for four localized corrections: extend the top of the cylinder and the metal base to the edges of the image, give volume to the Z to anticipate its future separation as a layer, and replace the green background. candidate 20 applies these adjustments to a single PNG image with alpha channel; its parts are not yet separate layers of the Icon Composer.
 
-No candidato 20, o usuário observou que as pastas pareciam de borracha e não tinham forma correta na perspectiva, e que o metal dos discos superior e inferior parecia pouco realista. O candidato 21 preserva a composição e introduz capas de cartão dobrado com abas e bordas de papel, além de aço usinado nos discos e pistão. A avaliação final continua aberta.
+In candidate 20, the user observed that the folders looked like rubber and had no correct shape from the perspective, and that the metal of the upper and lower discs seemed unrealistic. The candidate 21 preserves the composition and introduces folded card covers with tabs and paper edges, as well as machined steel on the discs and piston. The final evaluation is still open.
 
-O usuário forneceu duas novas imagens de pastas coloridas, sem instrução textual adicional. Elas foram interpretadas como referências de forma, abas escalonadas e material de papel para o candidato 22. As pastas permanecem deitadas entre os discos para preservar a geometria física da prensa; essa direção foi substituída pelo pedido posterior de um armário de documentos.
+The user provided two new images of color folders without additional textual instruction. They were interpreted as form references, staggered tabs and paper material for candidate 22. The folders remain between the discs to preserve the physical geometry of the press; this direction was replaced by the subsequent request of a document cabinet.
 
-Depois de examinar ícones existentes de aplicativos de compactação, o usuário pediu um armário de documentos no lugar das pastas. O candidato 23 usa um armário de arquivos compacto com duas gavetas fechadas entre os discos, mantendo cilindro, Z, aço e transparência. O usuário posteriormente pediu que o armário fosse mais alto; não há camadas de Icon Composer.
+After examining existing compaction application icons, the user asked for a document cabinet instead of folders. The candidate 23 uses a compact file cabinet with two drawers closed between the disks, maintaining cylinder, Z, steel and transparency. The user later asked for the cabinet to be higher; There are no layers of Icon Composer.
 
-No candidato 23, o usuário pediu um armário mais alto. Isso exige subir o conjunto superior da prensa e mover o Z, pois o cilindro amarelo fica quase todo fora do enquadramento. O candidato 24 usa três gavetas e posiciona o Z na face frontal do platô superior. Ainda é um rascunho PNG único, sem camadas separadas nem aprovação final.
+In the candidate 23, the user asked for a higher cabinet. This requires climbing the upper set of the press and moving the Z, as the yellow cylinder is almost entirely outside the frame. The candidate 24 uses three drawers and positions the Z on the front face of the upper platen. It's still a unique PNG draft, no separate layers or final approval.
 
-O pedido seguinte voltou ao Z como objeto prensado. O candidato 25 troca o armário por um Z metálico em contato com ambos os discos; mantém a prensa cilíndrica e o fundo transparente. Ainda é um rascunho PNG único, sem camadas separadas nem aprovação final.
+The following request returned to Z as a pressed object. The candidate 25 replaces the cabinet with a metallic Z in contact with both discs; keeps the cylindrical press and transparent bottom. It's still a unique PNG draft, no separate layers or final approval.
 
-A prévia do candidato 25 no Icon Composer mostrou corte excessivo. O candidato 26 reduz o conjunto e a altura da parte superior para melhorar o encaixe e recentralizar o Z. O arquivo continua sendo uma imagem raster única, sem conferência do novo encaixe no Icon Composer.
+The previous candidate 25 in Icon Composer showed excessive cut. The candidate 26 reduces the assembly and height of the top to improve the fitting and recentralize the Z. The file remains a unique raster image, without check of the new fit in Icon Composer.
 
-O candidato 27 parte da versão intermediária indicada pelo usuário e elimina a faixa transparente abaixo da base, prolongando apenas o disco inferior. O topo e o Z mantêm o enquadramento dessa referência. Ainda não há conferência no Icon Composer.
+The candidate 27 part of the intermediate version indicated by the user and eliminates the transparent track below the base, prolonging only the lower disk. The top and the Z maintain the framework of that reference. There's still no check at the Icon Composer.
 
-Uma cópia do candidato 27 está em [`Zforge/Assets.xcassets/AppIcon.appiconset/27-pressed-z-extended-base.png`](../../../Zforge/Assets.xcassets/AppIcon.appiconset/27-pressed-z-extended-base.png), conforme pedido do usuário. Ela ainda não consta no `Contents.json` do asset catalog, portanto os tamanhos do ícone instalado não foram substituídos.
+A copy of the candidate 27 is [`Zforge/Assets.xcassets/AppIcon.appiconset/27-pressed-z-extended-base.png`](../../../Zforge/Assets.xcassets/AppIcon.appiconset/27-pressed-z-extended-base.png), according to request of the user. It is not yet in the `Contents.json` asset catalog, so the sizes of the installed icon have not been replaced.
 
-As capturas seguintes do Icon Composer mostraram a versão detalhada nos modos claro, escuro e mono. O candidato 28 preserva a prensa cilíndrica, a faixa de segurança e o Z prensado, mas elimina faíscas e simplifica as superfícies. A versão mono foi desenhada como silhueta branca sobre transparência para manter bordas limpas. Os dois PNGs foram conferidos em miniaturas de 64 px e copiados para `Zforge/Assets.xcassets/AppIcon.appiconset/` como arquivos não referenciados; `Contents.json` e o ícone instalado permanecem inalterados. A aparência dentro do Icon Composer ainda precisa ser conferida.
+The following captures of Icon Composer showed the detailed version in light, dark and mono modes. The candidate 28 preserves the cylindrical press, the safety strip and the Z pressed, but eliminates sparks and simplifies surfaces. The mono version was designed as a white silhouette about transparency to keep edges clean. The two PNGs were checked in thumbnails of 64 px and copied to `Zforge/Assets.xcassets/AppIcon.appiconset/` as non-referenced files; `Contents.json` and the installed icon remains unchanged. The appearance within the Icon Composer still needs to be checked.
 
-O candidato 29 responde às quatro marcações do usuário sobre a versão colorida do 28: remove a tampa lisa, deixa a pintura listrada seguir até a borda superior, estende a base até a borda inferior e eleva a zona do Z. Uma cópia está em `Zforge/Assets.xcassets/AppIcon.appiconset/29-simplified-press-z-edge-crop.png`, ainda sem referência no `Contents.json`. O mono do 28 não foi modificado; novo encaixe no Icon Composer pendente.
+The candidate 29 responds to the user's four markings on the color version of the 28: removes the smooth lid, lets the striped paint follow to the upper edge, extends the base to the lower edge and elevates the Z zone. A copy is `Zforge/Assets.xcassets/AppIcon.appiconset/29-simplified-press-z-edge-crop.png`, still no reference in `Contents.json`. The mono of 28 has not been modified; new fitting on Icon Composer pending.
 
-O candidato 30 afasta a vista do candidato 29, mantendo a identidade da prensa, mas dando mais espaço lateral ao Z e aos discos. Há uma cópia em `Zforge/Assets.xcassets/AppIcon.appiconset/30-simplified-press-z-distant.png`, não referenciada pelo `Contents.json`. A versão mono segue no candidato 28; conferência no Icon Composer pendente.
+The candidate 30 removes the view from the candidate 29, maintaining the identity of the press, but giving more lateral space to the Z and the discs. There is a copy in `Zforge/Assets.xcassets/AppIcon.appiconset/30-simplified-press-z-distant.png`, not referenced by `Contents.json`. The mono version follows in candidate 28; check at the Icon Composer pending.
 
-O pedido seguinte é separar o candidato 30 em camadas. O [plano de três camadas](31-layer-plan.md) define base, Z e cabeçote da prensa. A primeira tentativa de extração por ImageGen alterou a escala das peças; ainda não há PNGs de camadas alinhados para uso.
+The following request is to separate candidate 30 into layers. The [plan of three layers](31-layer-plan.md) defines base, Z and press head. The first extraction attempt by ImageGen changed the scale of the parts; there are still no layers PNGs lined up for use.
 
-Posteriormente, o usuário exportou `zforge_icon.icon` com três imagens em dois grupos no Icon Composer e pediu sua integração. Ele já está selecionado para as configurações Debug e Release; o plano de extração acima permanece apenas como registro do estudo anterior.
+Later, the user exported `zforge_icon.icon` with three images in two groups in Icon Composer and asked for its integration. It is already selected for Debug and Release settings; the above extraction plan remains only as record of the previous study.

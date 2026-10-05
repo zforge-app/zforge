@@ -16,49 +16,49 @@ confidence: "primary-source"
 
 # WatchKit integration
 
-Contexto normalizado para recuperação rápida. A URL oficial e o hash permitem verificar mudanças; este arquivo não substitui a fonte.
+Context normalized for quick retrieval. The official URL and hash allow changes to be verified; this file does not replace the source.
 
-## Consulta rápida
+## Quick reference
 
-- Papel: API Collection
-- Módulo: SwiftUI
-- Relevância para Zforge: Contextual. Preserve the cross-platform concept, but prefer the native macOS/AppKit behavior for Zforge.
+- Role: API Collection
+- Module: SwiftUI
+- Relevance to Zforge: Contextual. Preserve the cross-platform concept, but prefer the native macOS/AppKit behavior for Zforge.
 
-## Síntese
+## Summary
 
-**Resumo oficial:** Add WatchKit views to your SwiftUI app, or use SwiftUI views in your WatchKit app.
+**Official summary:** Add WatchKit views to your SwiftUI app, or use SwiftUI views in your WatchKit app.
 
 Integrate SwiftUI with your app’s existing content using hosting controllers to add SwiftUI views into WatchKit interfaces. A hosting controller wraps a set of SwiftUI views in a form that you can then add to your storyboard-based app. You can also add WatchKit views and view controllers to your SwiftUI interfaces. A representable object wraps the designated view or view controller, and facilitates communication between the wrapped object and your SwiftUI views. For design guidance, see Designing for watchOS in the Human Interface Guidelines.
 
-## Mapa do conteúdo
+## Content map
 
 - Overview
 
-## Links do segundo nível
+## Second-level links
 
 ### Overview and featured references
 
-- [Designing for watchOS](https://developer.apple.com/design/Human-Interface-Guidelines/designing-for-watchos) — When people glance at their Apple Watch, they know they can access essential information and perform simple, timely tasks whether they’re stationary or in… _(Apple Developer; expandir sob demanda)_
+- [Designing for watchOS](https://developer.apple.com/design/Human-Interface-Guidelines/designing-for-watchos) — When people glance at their Apple Watch, they know they can access essential information and perform simple, timely tasks whether they’re stationary or in… _(Apple Developer; expand on demand)_
 
 ### Displaying SwiftUI views in WatchKit
 
-- [WKHostingController](https://developer.apple.com/documentation/swiftui/wkhostingcontroller) — A WatchKit interface controller that hosts a SwiftUI view hierarchy. _(Apple Developer; expandir sob demanda)_
-- [WKUserNotificationHostingController](https://developer.apple.com/documentation/swiftui/wkusernotificationhostingcontroller) — A WatchKit user notification interface controller that hosts a SwiftUI view hierarchy. _(Apple Developer; expandir sob demanda)_
+- [WKHostingController](https://developer.apple.com/documentation/swiftui/wkhostingcontroller) — A WatchKit interface controller that hosts a SwiftUI view hierarchy. _(Apple Developer; expand on demand)_
+- [WKUserNotificationHostingController](https://developer.apple.com/documentation/swiftui/wkusernotificationhostingcontroller) — A WatchKit user notification interface controller that hosts a SwiftUI view hierarchy. _(Apple Developer; expand on demand)_
 
 ### Adding WatchKit views to SwiftUI view hierarchies
 
-- [WKInterfaceObjectRepresentable](https://developer.apple.com/documentation/swiftui/wkinterfaceobjectrepresentable) — A view that represents a WatchKit interface object. _(Apple Developer; expandir sob demanda)_
-- [WKInterfaceObjectRepresentableContext](https://developer.apple.com/documentation/swiftui/wkinterfaceobjectrepresentablecontext) — Contextual information about the state of the system that you use to create and update your WatchKit interface object. _(Apple Developer; expandir sob demanda)_
+- [WKInterfaceObjectRepresentable](https://developer.apple.com/documentation/swiftui/wkinterfaceobjectrepresentable) — A view that represents a WatchKit interface object. _(Apple Developer; expand on demand)_
+- [WKInterfaceObjectRepresentableContext](https://developer.apple.com/documentation/swiftui/wkinterfaceobjectrepresentablecontext) — Contextual information about the state of the system that you use to create and update your WatchKit interface object. _(Apple Developer; expand on demand)_
 
 ### Framework integration
 
-- [AppKit integration](swiftui-appkit-integration.md) — Add AppKit views to your SwiftUI app, or use SwiftUI views in your AppKit app. _(contexto local)_
-- [UIKit integration](swiftui-uikit-integration.md) — Add UIKit views to your SwiftUI app, or use SwiftUI views in your UIKit app. _(contexto local)_
-- [Technology-specific views](swiftui-technology-specific-views.md) — Use SwiftUI views that other Apple frameworks provide. _(contexto local)_
+- [AppKit integration](swiftui-appkit-integration.md) — Add AppKit views to your SwiftUI app, or use SwiftUI views in your AppKit app. _(local context)_
+- [UIKit integration](swiftui-uikit-integration.md) — Add UIKit views to your SwiftUI app, or use SwiftUI views in your UIKit app. _(local context)_
+- [Technology-specific views](swiftui-technology-specific-views.md) — Use SwiftUI views that other Apple frameworks provide. _(local context)_
 
-## Proveniência
+## Provenance
 
-- Fonte: [Apple Developer](https://developer.apple.com/documentation/swiftui/watchkit-integration)
-- Captura: `2026-07-16T23:52:09+00:00`
-- SHA-256 do payload: `30c45bf63867123b0907b507b1c60ee5cbda5b2b110bad4472c7da8a50b2f575`
-- Escopo: primeiro nível a partir da home SwiftUI; links absolutos acima ainda não foram percorridos.
+- Source: [Apple Developer](https://developer.apple.com/documentation/swiftui/watchkit-integration)
+- Captured: `2026-07-16T23:52:09+00:00`
+- Payload SHA-256: `30c45bf63867123b0907b507b1c60ee5cbda5b2b110bad4472c7da8a50b2f575`
+- Scope: first level from home SwiftUI; absolute links above have not yet been covered.

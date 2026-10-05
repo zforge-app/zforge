@@ -1,36 +1,36 @@
-# Fonte local de conhecimento SwiftUI
+# Source site of knowledge SwiftUI
 
-Este diretório é a camada local, versionável e pesquisável da documentação oficial usada pelo Zforge. A captura inicial cobre a home de SwiftUI e todos os 64 destinos únicos expostos diretamente por Overview, Featured samples e Topics em 16 de julho de 2026.
+This directory is the local, versionable and searchable layer of official documentation used by Zforge. The initial capture covers the home of SwiftUI and all 64 unique destinations directly exposed by Overview, Featured samples and Topics in 16 July 2026.
 
-O conteúdo é normalizado para recuperação por agente: cada contexto registra resumo, papel, módulo, disponibilidade, declaração quando aplicável, mapa da página, links do segundo nível e proveniência. Não é um espelho integral da documentação da Apple.
+The content is normalized for recovery by agent: each context records summary, paper, module, availability, declaration when applicable, page map, second level links and provenance. It's not an integral mirror of Apple documentation.
 
-## Como consultar
+## How to consult this source
 
-Comece por [`INDEX.md`](INDEX.md). Para uma busca direta:
+Start with [`INDEX.md`](INDEX.md). For a direct search:
 
 ```sh
 rg -n -i 'NavigationSplitView|toolbar|focus|accessibility' Documentation/SwiftUI/contexts
 ```
 
-Leia depois somente os contextos relevantes. Links relativos apontam para páginas já ingeridas; links absolutos são fronteiras pendentes e seguem o protocolo obrigatório de expansão definido em [`AGENTS.md`](AGENTS.md).
+Then read only the relevant contexts. Relative links point to pages already ingested; absolute links are pending borders and follow the mandatory expansion protocol defined in [`AGENTS.md`](AGENTS.md).
 
-## Estrutura
+## Structure
 
-- `INDEX.md`: roteador temático e inventário humano.
-- `GUIDANCE.md`: síntese transversal das práticas e do modelo mental relevantes ao Zforge.
-- `contexts/`: 65 documentos Markdown da captura inicial e futuras expansões.
-- `metadata/captures.json`: cobertura, URL de coleta, hash, ETag, tamanho, profundidade e falhas.
-- `metadata/assets.json`: referências visuais encontradas, separadas do texto normalizado.
-- `metadata/code-blocks.json`: hashes e metadados dos blocos de código encontrados.
-- `tools/bootstrap.py`: crawler reprodutível do recorte inicial, baseado em endpoints DocC e na página HTML SwiftUI Pathway.
-- `CONTEXT-TEMPLATE.md`: contrato para novos contextos incrementais.
+- `INDEX.md`: theme router and human inventory.
+- `GUIDANCE.md`: cross-sectional synthesis of practices and mental model relevant to Zforge.
+- `contexts/`: 65 Markdown documents of initial capture and future expansions.
+- `metadata/captures.json`: coverage, collection URL, hash, ETag, size, depth and failures.
+- `metadata/assets.json`: visual references found, separated from the normalized text.
+- `metadata/code-blocks.json`: hashes and metadata of the code blocks found.
+- `tools/bootstrap.py`: reproducible clipping crawler based on DocC endpoints and the HTML page SwiftUI Pathway.
+- `CONTEXT-TEMPLATE.md`: contract for new incremental contexts.
 
-## Atualização completa
+## Full update
 
-Uma recaptura do primeiro nível requer acesso de rede ao Apple Developer:
+A first level recapture requires network access to Apple Developer:
 
 ```sh
 python3 Documentation/SwiftUI/tools/bootstrap.py --workers 4
 ```
 
-O crawler mantém os payloads somente em memória e persiste hashes e metadados. Ele sobrescreve os documentos gerados e o índice; portanto, uma atualização completa deve ser revisada e reconciliada com expansões posteriores.
+The crawler keeps the payloads only in memory and persists hashes and metadata. It overwrites the documents generated and the index; therefore, a complete update must be reviewed and reconciled with later expansions.

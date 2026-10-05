@@ -16,44 +16,44 @@ confidence: "primary-source"
 
 # icon(forFile:)
 
-Contexto normalizado para recuperação rápida. A URL oficial e o hash permitem verificar mudanças; este arquivo não substitui a fonte.
+Context normalized for quick retrieval. The official URL and hash allow changes to be verified; this file does not replace the source.
 
-## Consulta rápida
+## Quick reference
 
-- Papel: método de `NSWorkspace` que retorna o ícone associado a um caminho existente.
-- Módulo: AppKit.
-- Relevância para Zforge: direta; é a fonte pública para ícones de arquivos e diretórios locais.
-- Disponibilidade: macOS.
-- Declaração: `func icon(forFile fullPath: String) -> NSImage`
+- Scroll: `NSWorkspace` method that returns the icon associated with an existing path.
+- Module: AppKit.
+- Relevance to Zforge: direta; is the public source for local file icons and directories.
+- Availability: macOS.
+- Declaration: `func icon(forFile fullPath: String) -> NSImage`
 
-## Síntese
+## Summary
 
-O método recebe somente o caminho completo e retorna o `NSImage` associado ao arquivo. A imagem retornada começa com tamanho lógico de 32 por 32 e a chamada pode ser feita com segurança em qualquer thread. A API não oferece opção, parâmetro ou tipo público para solicitar variantes visuais baseadas no conteúdo de um diretório, como o estado de pasta cheia usado internamente pelo Finder.
+The method only receives the full path and returns the `NSImage` associated with the file. The returned image starts with a logical size of 32 by 32 and the call can be made safely in any thread. The API does not offer a public option, parameter or type to request visual variants based on the contents of a directory, such as the full folder state used internally by Finder.
 
-## Implicações práticas
+## Practical implications
 
-- Usar `NSWorkspace.shared.icon(forFile:)` como base preserva o ícone, customizações e tipo reconhecidos pelo sistema.
-- O estado visual de pasta não vazia não pode ser solicitado por esta API; `icon(for:)` retorna o ícone genérico de um `UTType`, não uma variante baseada no conteúdo do caminho.
-- Qualquer indicador adicional do Zforge deve preservar as representações de alta resolução do `NSImage` original e não substituir o ícone do arquivo no sistema com `setIcon`.
+- Using `NSWorkspace.shared.icon(forFile:)` as a base preserves the icon, customizations and type recognized by the system.
+- Unempted folder visual status cannot be requested by this API; `icon(for:)` returns the generic icon of a `UTType`, not a variant based on path content.
+- Any additional Zforge indicator shall preserve the original `NSImage` high resolution representations and not replace the system file icon with `setIcon`.
 
-## Mapa do conteúdo
+## Content map
 
-- Declaração e parâmetro do caminho completo.
-- Valor retornado.
-- Tamanho inicial e segurança entre threads.
+- Declaration and parameter of the complete path.
+- Value returned.
+- Initial size and security between threads.
 
-## Links do segundo nível
+## Second-level links
 
-### Ícones e imagens
+### Icons and images
 
-- [NSImage](https://developer.apple.com/documentation/appkit/nsimage) — _Apple Developer; expandir sob demanda_
-- [icon(for:)](https://developer.apple.com/documentation/appkit/nsworkspace/icon(for:)) — _Apple Developer; expandir sob demanda_
-- [icon(forFiles:)](https://developer.apple.com/documentation/appkit/nsworkspace/icon(forfiles:)) — _Apple Developer; expandir sob demanda_
-- [setIcon(_:forFile:options:)](https://developer.apple.com/documentation/appkit/nsworkspace/seticon(_:forfile:options:)) — _Apple Developer; expandir sob demanda_
+- [NSImage](https://developer.apple.com/documentation/appkit/nsimage) — _Apple Developer; expand on demand_
+- [icon(for:)](https://developer.apple.com/documentation/appkit/nsworkspace/icon(for:)) — _Apple Developer; expand on demand_
+- [icon(forFiles:)](https://developer.apple.com/documentation/appkit/nsworkspace/icon(forfiles:)) — _Apple Developer; expand on demand_
+- [setIcon(_:forFile:options:)](https://developer.apple.com/documentation/appkit/nsworkspace/seticon(_:forfile:options:)) — _Apple Developer; expand on demand_
 
-## Proveniência
+## Provenance
 
-- Fonte: [Apple Developer](https://developer.apple.com/documentation/appkit/nsworkspace/icon(forfile:))
-- Captura: `2026-07-22T23:47:15Z`
-- SHA-256 do payload: `20e1ae982edde88c9efefb3288a5a7dedc4360f692cf32fde6d9c03279e299f4`
-- Escopo: uma página; os links absolutos acima ainda não foram percorridos.
+- Source: [Apple Developer](https://developer.apple.com/documentation/appkit/nsworkspace/icon(forfile:))
+- Captured: `2026-07-22T23:47:15Z`
+- Payload SHA-256: `20e1ae982edde88c9efefb3288a5a7dedc4360f692cf32fde6d9c03279e299f4`
+- Scope: one page; the above absolute links have not yet been covered.

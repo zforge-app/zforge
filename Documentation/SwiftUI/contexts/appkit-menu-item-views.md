@@ -16,15 +16,15 @@ confidence: "primary-source"
 
 # Views in Menu Items
 
-## Síntese
+## Summary
 
-`NSMenuItem.view` permite uma linha customizada em menus AppKit. O menu delega o desenho à view, incluindo título e estado. Eventos de mouse chegam à view; teclado não é encaminhado automaticamente. O tamanho parte do frame da view, e `.width` permite preencher a largura do menu. A view entra/sai da janela ao abrir/fechar o menu; tracking deve acompanhar esse ciclo. Mudanças de tamanho durante tracking não são suportadas. Eventos com botão mantido podem chegar como `mouseDragged`.
+`NSMenuItem.view` allows a custom line in menus AppKit. The menu delegates the drawing to the view, including title and status. Mouse events reach the view; keyboard is not automatically routed. The size part of the view frame, and `.width` allows you to fill in the menu width. The view comes in/out of the window when opening/closing the menu; Tracking must follow that cycle. Size changes during tracking are not supported. Events with a maintained button can reach as `mouseDragged`.
 
-## Aplicação no Zforge
+## Application in Zforge
 
-A linha rápida de tags usa sete `NSButton`s com círculos, tracking de hover e acessibilidade. A segunda linha permanece um `NSMenuItem` convencional, com símbolo `tag`, preservando navegação de teclado para o editor completo. O clique rápido encerra o tracking antes de alterar metadados. As APIs foram verificadas no SDK macOS 27.0; não usam APIs privadas do Finder.
+The fast line of tags uses seven `NSButton`s with circles, hover tracking and accessibility. The second line remains a conventional `NSMenuItem`, with symbol `tag`, preserving keyboard navigation for the full editor. Quick click closes tracking before changing metadata. APIs were checked at SDK macOS 27.0; They don't use Finder's private APIs.
 
-## Links secundários
+## Secondary links
 
 - https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/MenuList/index.html
 - https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/MenuList/RevisionHistory.html
@@ -40,8 +40,8 @@ A linha rápida de tags usa sete `NSButton`s com círculos, tracking de hover e 
 - https://developer.apple.com/bugreporter/
 - http://www.apple.com/legal/policies/ideas.html
 
-## Proveniência
+## Provenance
 
-Página Apple arquivada, atualizada em 2014-07-15, capturada pelo URL acima; hash do HTML integral no front matter. As regras ainda foram conferidas na compilação com o SDK atual.
+Apple page archived, updated in 2014-07-15, captured by the URL above; hash do HTML integral no front matter. The rules were still checked in the compilation with the current SDK.
 
-Nota do SDK macOS 27.0 (`NSMenuItem.h`): imagens de menu podem ser ocultadas por padrão. O item Edit Tags define `preferredImageVisibility = .visible`, com disponibilidade protegida para macOS 27, para manter o símbolo solicitado; macOS 26 mantém o comportamento anterior.
+Note SDK macOS 27.0 (`NSMenuItem.h`): Menu images can be hidden by default. The Edit Tags item defines `preferredImageVisibility = .visible`, with a protected availability for macOS 27, to keep the symbol requested; macOS 26 maintains previous behavior.

@@ -1,588 +1,588 @@
-# Guia de UI/UX do gerenciador de arquivos para macOS
+# File manager UI/UX guide for macOS
 
-Este documento define a hierarquia visual, as interações e a responsividade do Zforge. Decisões aproveitadas de `UIDemo` foram incorporadas como regras da aplicação. Para o comportamento implementado vigente, prevalece [`CURRENT-STATE.md`](CURRENT-STATE.md); conflitos conhecidos estão em [`../../DIVERGENCES.md`](../../DIVERGENCES.md).
+This document defines the visual hierarchy, interactions and responsiveness of Zforge. Decisions taken of `UIDemo` were incorporated as rules of application. For the current implemented behavior, [`CURRENT-STATE.md`](CURRENT-STATE.md) prevails; known conflicts are in [`../../DIVERGENCES.md`](../../DIVERGENCES.md).
 
-Antes de implementar ou corrigir uma interface, consulte este guia. Quando uma decisão mudar intencionalmente, atualize o documento junto com o código.
+Before implementing or correcting an interface, see this guide. When a decision changes intentionally, update the document along with the code.
 
-## 1. Direção do produto
+## 1. Product direction
 
-- A aplicação deve parecer nativa do macOS, sem tentar reproduzir o Finder pixel a pixel.
-- O Finder é a principal referência para navegação, seleção, teclado, visualizações e densidade da interface.
-- APIs atuais do SwiftUI e do macOS devem ser preferidas.
-- AppKit pode ser usado de forma isolada quando o SwiftUI não oferece controle suficiente ou altera comportamentos essenciais.
-- Liquid Glass deve reforçar hierarquia e agrupamento, principalmente em toolbar e superfícies de navegação. Não deve ser aplicado como ornamento em toda a interface.
-- Legibilidade, previsibilidade, acessibilidade e comportamento nativo têm prioridade sobre efeitos visuais.
-- Cores e ícones do sistema devem ser usados sempre que possível para respeitar tema, contraste e preferências do usuário.
+- The application must appear native to macOS without trying to reproduce the Finder pixel by pixel.
+- Finder is the main reference for navigation, selection, keyboard, views and density of the interface.
+- Current SwiftUI and macOS APIs must be preferred.
+- AppKit can be used alone when SwiftUI does not offer sufficient control or alter essential behaviors.
+- Liquid Glass must strengthen hierarchy and grouping, mainly in toolbar and navigation surfaces. It must not be applied as an ornament throughout the interface.
+- Legibility, predictability, accessibility and behavior native have priority over visual effects.
+- System colors and icons must be used whenever possible to respect user's theme, contrast and preferences.
 
-### Polimento obrigatório da experiência
+### Compulsory polishing of experience
 
-Diretriz de 2026-10-04, vinculada aos [requisitos RNF-Q01 a RNF-Q06](PRODUCT-REQUIREMENTS.md#qualidade-polimento-e-prevenção-de-regressões): buscar um **“Wow effect”** pela qualidade do uso. **“Design is how it works”** exige avaliar o fluxo inteiro; a diretriz não é uma declaração de que todas as superfícies atuais já receberam essa validação.
+Guideline of 2026-10-04, linked to [requirements RNF-Q01 to RNF-Q06](PRODUCT-REQUIREMENTS.md#quality-polishing-and-regression-prevention): seek a **“Wow effect”** for the quality of use. **“Design is how it works”** exige avaliar o fluxo inteiro; the guideline is not a statement that all current surfaces have already received this validation.
 
-- Ícones, cores e formas devem comunicar ação, tipo e estado com coerência entre modos, menus, toolbar e preview. Nomenclatura e traduções devem ser claras, naturais e consistentes, incluindo tooltips, erros e labels de acessibilidade no String Catalog.
-- Posicionamento, ordenação, tamanhos e espaçamentos devem seguir a hierarquia da tarefa, com alinhamento estável, áreas de interação adequadas e legibilidade nas larguras e escalas suportadas. Conferir textos longos, idiomas suportados, temas claro/escuro, contraste aumentado e cor de destaque.
-- Gestos, mouse e teclado devem produzir os resultados especificados e feedback inequívoco, preservando seleção e foco conforme o contrato. Revisar estados normal, hover, selecionado, desabilitado, carregamento, erro e cancelamento quando aplicáveis.
-- Animações e transições devem explicar a mudança de estado, manter continuidade e responder a ações rápidas ou interrompidas. Não admitir saltos indevidos, recortes, cintilação nem retorno de conteúdo obsoleto. Respeitar redução de movimento e evitar efeitos que atrasem a ação ou prejudiquem acessibilidade.
-- Verificar sequência, geometria e comportamento por testes representativos e conferir o acabamento na interface em execução. Registrar condições, resultado e limites; aprovação de uma geometria final não comprova fluidez durante a transição. Aplicar o checklist de regressão deste guia às superfícies e aos fluxos adjacentes afetados.
+- Icons, colors and shapes must communicate action, type and state with consistency between modes, menus, toolbar and preview. Nomenclature and translations must be clear, natural and consistent, including tooltips, errors and accessibility labels in String Catalog.
+- Positioning, sorting, sizes and spacings must follow the task hierarchy, with stable alignment, adequate interaction areas and legibility in the supported widths and scales. Check long texts, supported languages, light/dark themes, enhanced contrast and highlight color.
+- Gestures, mouse and keyboard must produce the specified results and unequivocal feedback, preserving selection and focus according to the contract. Review normal, hover, selected, disabled, loading, error and cancellation states when applicable.
+- Animations and transitions must explain the state change, maintain continuity and respond to quick or interrupted actions. Do not admit undue jumps, clippings, flicker or obsolete content return. Respect reduction of movement and avoid effects that delay action or harm accessibility.
+- Check sequence, geometry and behavior by representative tests and check the finish on the running interface. record conditions, result and limits; approval of a final geometry does not prove fluidity during the transition. Apply the regression checklist of this guide to the affected surfaces and adjacent flows.
 
-### Ícone da aplicação
+### Application icon
 
-O arquivo [zforge_icon.icon](../../Zforge/zforge_icon.icon/icon.json), exportado pelo usuário no Icon Composer, é a fonte atualmente selecionada para o app. Os estudos abaixo registram a evolução da direção visual; referências a integração ou aprovação pendente descrevem o estado de cada rodada, antes da exportação atual. A legibilidade e as variantes de aparência ainda precisam de conferência no app instalado.
+The [zforge_icon.icon](../../Zforge/zforge_icon.icon/icon.json) file, exported by the user in Icon Composer, is the currently selected source for the app. The studies below record the evolution of the visual direction; references to pending integration or approval describe the state of each round, before the current export. Legibility and appearance variants still need to be checked on the app installed.
 
-- A identidade atual reúne um **Z legível** sendo comprimido por uma prensa hidráulica, relacionando archives e metalurgia. O Z e a ação da prensa devem continuar legíveis em tamanho reduzido.
-- A composição deve funcionar na linguagem de ícones do macOS 27 e nas aparências do Icon Composer. A prancha em [`../Design/Zforge-icon-concepts-16-metallurgy.png`](../Design/Zforge-icon-concepts-16-metallurgy.png) foi um estudo inicial, não a fonte selecionada.
-- Da prancha de metalurgia, o usuário apontou elementos aproveitáveis em **02, 03, 04, 06, 07, 12 e 15**; incluiu **16** como referência adicional para o zíper. Refinamentos solicitados: [16 estudos de bigorna e martelo](../Design/Zforge-icon-concepts-anvil-hammer-16.png) a partir de 03/12; [16 estudos de zíper diagonal com acentos laranja](../Design/Zforge-icon-concepts-diagonal-zipper-16.png) a partir de 02/06/16; e [um estudo com prensa](../Design/Zforge-icon-concept-press-07.png) a partir de 07. São alternativas conceituais; a seleção final segue aberta.
-- Na rodada seguinte, o usuário selecionou **02/04/08 da [primeira prancha exibida](../Design/Zforge-icon-source-anvil-first-16.png)**, **01/03/12/14/16 da [segunda](../Design/Zforge-icon-source-zipper-second-16.png)**, **o estudo da prensa** e **03/04/10 da [quarta prancha exibida](../Design/Zforge-icon-source-graphic-fourth-16.png)** (a de tratamento gráfico plano e emblema industrial). Foram geradas quatro novas pranchas de 16 variações cada: [bigorna e martelo](../Design/Zforge-icon-refinement-anvil-02-04-08.png), [zíper diagonal](../Design/Zforge-icon-refinement-zipper-01-03-12-14-16.png), [prensa](../Design/Zforge-icon-refinement-press-16.png) e [emblemas gráficos](../Design/Zforge-icon-refinement-graphic-03-04-10.png). Nenhum desses estudos define ainda o ícone final.
-- Seleção mais recente: **02 da prancha de bigorna/martelo**, **07/09/15 da prancha da prensa** e **01/02/09/12 da prancha de emblemas gráficos**. As características foram combinadas em duas novas pranchas de 16: [síntese próxima às referências](../Design/Zforge-icon-synthesis-selected-close-16.png) e [síntese com arranjos novos](../Design/Zforge-icon-synthesis-selected-hybrid-16.png). Ambas são estudos para escolha e refinamento posteriores.
-- O usuário refinou o método de exploração: **gerar cada alternativa como imagem individual**, pois as pranchas reduzem a qualidade percebida. Foram criados [16 candidatos independentes](../Design/IconCandidates/README.md) a partir das características selecionadas, sem montar uma nova prancha. A escolha final permanece aberta.
-- Entre os candidatos individuais, o usuário apontou **02, 10, 09, 11 e 12** como opções com potencial, mas declarou insatisfação com os resultados em geral. Esses números são referências para uma eventual próxima etapa, não uma escolha final.
-- Na exploração seguinte, usar como referência visual uma prensa hidráulica real e pastas de escritório de várias cores. A arte deve incluir **prensa hidráulica, pastas multicoloridas e Z** e preservar uma relação física inteligível entre cilindro, pistão, platô móvel, pastas e base. O usuário rejeitou a estrutura em H do [candidato 17](../Design/IconCandidates/17-hydraulic-press-folders-z.png): a direção correta é a prensa **cilíndrica**, com discos metálicos circulares e pintura de segurança amarela e preta, como na fotografia fornecida. Gerar **uma imagem por vez** e concentrar a qualidade nela. O [candidato 18](../Design/IconCandidates/18-hydraulic-cylinder-folders-z.png) explora essa correção; a escolha final permanece aberta.
-- O usuário confirmou a direção do candidato 18 e solicitou uma versão estilizada que funcione como ícone de aplicação. O [candidato 19](../Design/IconCandidates/19-stylized-hydraulic-cylinder-folders-z.png) mantém o arranjo físico e simplifica superfícies e contornos para leitura em tamanho reduzido. A aprovação final e a integração ao app continuam pendentes.
-- No refinamento do candidato 19, o usuário pediu que o topo do cilindro alcance a borda superior, a base alcance a borda inferior, o Z apresente volume como futura camada independente e o fundo verde seja substituído. O [candidato 20](../Design/IconCandidates/20-press-edge-to-edge-raised-z.png) usa recorte nas bordas, Z em relevo e fundo transparente; ainda é uma imagem raster única para avaliação.
-- No refinamento seguinte, as pastas devem mostrar material de **cartão/papel dobrado** e forma coerente com a perspectiva, incluindo capas finas, vincos, abas e bordas de folhas; não devem parecer borracha ou blocos maciços. Pistão e discos circulares devem parecer **aço usinado** com espessura e reflexos convincentes. O [candidato 21](../Design/IconCandidates/21-cardstock-folders-machined-steel.png) explora esses ajustes; permanece pendente de avaliação.
-- Duas imagens adicionais fornecidas pelo usuário mostram pastas de escritório coloridas com abas escalonadas, capas planas e papéis internos. O [candidato 22](../Design/IconCandidates/22-folder-reference-refinement.png) usa essas características como referência visual, mantendo as pastas deitadas entre os discos da prensa. Essa direção foi substituída pelo pedido posterior de um armário de documentos.
-- Após avaliar referências de outros aplicativos de archives, o usuário pediu **um armário de documentos no lugar das pastas**. O [candidato 23](../Design/IconCandidates/23-hydraulic-press-filing-cabinet.png) explora um armário compacto de duas gavetas entre os discos, preservando a prensa cilíndrica e o Z. A escolha final continua aberta.
-- Para o próximo refinamento, o usuário pediu **armário mais alto**, com o conjunto superior da prensa deslocado para cima e o Z transferido para outro local porque o cilindro perde espaço. O [candidato 24](../Design/IconCandidates/24-tall-filing-cabinet-z-on-platen.png) apresenta três gavetas e Z em relevo no platô móvel; a escolha final permanece aberta.
-- O usuário voltou à ideia do **Z sendo prensado**, sem armário. O [candidato 25](../Design/IconCandidates/25-pressed-metal-z.png) coloca um único Z metálico entre os discos da prensa cilíndrica, em contato com ambos; permanece um estudo raster, sem aprovação final.
-- A prévia do candidato 25 no Icon Composer cortou demais a composição. O [candidato 26](../Design/IconCandidates/26-pressed-z-icon-composer-framing.png) afasta o enquadramento, reduz a altura da parte superior e deixa margens transparentes para manter prensa e Z dentro da área útil; o encaixe no Icon Composer ainda precisa ser conferido pelo usuário.
-- Para o [candidato 27](../Design/IconCandidates/27-pressed-z-extended-base.png), o usuário apontou a margem vazia sob a base em uma versão intermediária do enquadramento. A base metálica inferior agora se prolonga até a borda da imagem, mantendo o Z entre os platôs; continua pendente a avaliação no Icon Composer.
-- As prévias do Icon Composer mostraram excesso de detalhes e perda de legibilidade do Z, especialmente em tamanhos pequenos e na apresentação mono. O [candidato 28 colorido](../Design/IconCandidates/28-simplified-press-z-color.png) reduz a composição a cilindro curto com pintura de segurança, dois platôs e Z dominante, sem faíscas. A [versão mono](../Design/IconCandidates/28-simplified-press-z-mono.png) usa silhueta branca plana correspondente, com [fonte SVG](../Design/IconCandidates/28-simplified-press-z-mono.svg). A avaliação no Icon Composer continua pendente.
-- No refinamento da versão colorida, o usuário pediu que o cilindro listrado avance até a borda superior, que a base metálica alcance a borda inferior e que o conjunto suba para centralizar verticalmente o Z. O [candidato 29](../Design/IconCandidates/29-simplified-press-z-edge-crop.png) aplica esses recortes e deslocamento; a versão mono do candidato 28 permanece sem alteração nesta rodada.
-- O usuário pediu uma versão colorida mais afastada da câmera. O [candidato 30](../Design/IconCandidates/30-simplified-press-z-distant.png) reduz a escala aparente do Z e dos platôs, deixando mais espaço lateral, enquanto o cilindro listrado continua pela borda superior e a base metálica pela borda inferior. A versão mono permanece a do candidato 28; o encaixe no Icon Composer continua pendente.
-- O usuário pediu separar o candidato 30 em duas ou três camadas coerentes para o Icon Composer. O [plano de três camadas](../Design/IconCandidates/31-layer-plan.md) define base ao fundo, Z no meio e cabeçote da prensa à frente, todos no mesmo canvas e sem incluir o fundo arredondado da prévia. As tentativas de isolamento por geração alteraram escala e posição; ainda não há camadas alinhadas entregues.
-- Posteriormente, o usuário exportou seu próprio `zforge_icon.icon` no Icon Composer, com três imagens em dois grupos e variantes de aparência, e pediu seu uso no aplicativo. O arquivo exportado agora é a fonte do ícone em Debug e Release; a comparação visual com as prévias do Composer permanece pendente.
+- The current identity combines a **readable Z** compressed by a hydraulic press, connecting archives with metallurgy. The Z and the press action must remain readable in reduced size.
+- The composition must work in the icon language of macOS 27 and in the appearances of Icon Composer. The comparison sheet in [`../Design/Zforge-icon-concepts-16-metallurgy.png`](../Design/Zforge-icon-concepts-16-metallurgy.png) was an initial study, not the selected source.
+- From the metallurgy comparison sheet, the user pointed usable elements in **02, 03, 04, 06, 07, 12 and 15**; included **16** as additional reference for the zipper. Requested refinements: [16 studies of anvil and hammer](../Design/Zforge-icon-concepts-anvil-hammer-16.png) from 03/12; [16 studies of diagonal zipper with orange accents](../Design/Zforge-icon-concepts-diagonal-zipper-16.png) from 02/06/16; and [a study with press](../Design/Zforge-icon-concept-press-07.png) from 07. They are conceptual alternatives; the final selection is still open.
+- In the next round, the user selected **02/04/08 from [first comparison sheet displayed](../Design/Zforge-icon-source-anvil-first-16.png)**, **01/03/12/14/16 from [second comparison sheet](../Design/Zforge-icon-source-zipper-second-16.png)**, **the study from the press** and **03/04/10 from [fourth comparison sheet displayed](../Design/Zforge-icon-source-graphic-fourth-16.png)** (a graphic treatment plan and industrial emblem). Four new comparison sheets of 16 variations were generated each: [anvil and hammer](../Design/Zforge-icon-refinement-anvil-02-04-08.png), [Diagonal zipper](../Design/Zforge-icon-refinement-zipper-01-03-12-14-16.png), [press](../Design/Zforge-icon-refinement-press-16.png) and [graphic emblems](../Design/Zforge-icon-refinement-graphic-03-04-10.png). None of these studies still defines the final icon.
+- Most recent selection: **02 of the comparison sheet of anvil/ hammer**, **07/09/15 of the comparison sheet of the press** and **01/02/09/12 of the comparison sheet of graphic emblem**. The characteristics were combined in two new comparison sheets 16: [summary close to references](../Design/Zforge-icon-synthesis-selected-close-16.png) and [synthesis with new arrangements](../Design/Zforge-icon-synthesis-selected-hybrid-16.png). Both are studies for choice and refinement later.
+- The user refined the method of exploration: **to generate each alternative as an individual image**, because the comparison sheets reduce the perceived quality. They were created [16 independent candidates](../Design/IconCandidates/README.md) from the selected characteristics, without mounting a new comparison sheet. The final choice remains open.
+- Among the individual candidates, the user indicated **02, 10, 09, 11 and 12** as options with potential, but declared dissatisfaction with the results in general. These numbers are references to a possible next step, not a final choice.
+- In the following operation, use as a visual reference a real hydraulic press and office folders of various colors. The art must include **hydraulic press, multicolored folders and Z** and preserve an intelligible physical relationship between cylinder, piston, mobile platen, folders and base. The user rejected the H-shaped structure of [candidate 17](../Design/IconCandidates/17-hydraulic-press-folders-z.png): the correct direction is a **cylindrical** press, with circular metal discs and yellow-and-black safety paint, as in the supplied photograph. Generate **one image at a time** and focus quality on it. The [candidate 18](../Design/IconCandidates/18-hydraulic-cylinder-folders-z.png) exploits this correction; the final choice remains open.
+- The user confirmed the direction of candidate 18 and requested a stylized version that works as an application icon. The [candidate 19](../Design/IconCandidates/19-stylized-hydraulic-cylinder-folders-z.png) maintains the physical arrangement and simplifies surfaces and contours for reading in reduced size. Final approval and app integration remain pending.
+- In the refinement of candidate 19, the user asked that the top of the cylinder reach the upper edge, the base reach the lower edge, the Z present volume as the future independent layer and the green background be replaced. The [candidate 20](../Design/IconCandidates/20-press-edge-to-edge-raised-z.png) uses cutting on the edges, Z in relief and transparent background; it's still a unique raster image for evaluation.
+- In the following refinement, folders shall show folded **card/paper** material and shape consistent with the perspective, including thin covers, creases, tabs and leaf edges; must not look like rubber or solid blocks. The piston and circular discs must look like **machined steel**, with convincing thickness and reflections. [candidate 21](../Design/IconCandidates/21-cardstock-folders-machined-steel.png) explores these adjustments; remains pending evaluation.
+- Two additional images provided by the user show colored office folders with staggered tabs, flat covers and internal papers. The [candidate 22](../Design/IconCandidates/22-folder-reference-refinement.png) uses these characteristics as a visual reference, keeping the folders lying between the press discs. This direction was replaced by the subsequent request of a filing cabinet.
+- After evaluating references from other applications of archives, the user asked **a file cabinet instead of folders**. The [candidate 23](../Design/IconCandidates/23-hydraulic-press-filing-cabinet.png) explores a compact cabinet of two drawers between the discs, preserving the cylindrical press and the Z. The final choice remains open.
+- For the next refinement, the user asked for**higher cabinet**, with the top set of the press moved up and the Z transferred to another location because the cylinder loses space. The [candidate 24](../Design/IconCandidates/24-tall-filing-cabinet-z-on-platen.png) has three drawers and Z in relief on the mobile platen; the final choice remains open.
+- The user returned to the idea of **Z being pressed**, without closet. The [candidate 25](../Design/IconCandidates/25-pressed-metal-z.png) places a single metallic Z between the cylindrical press discs, in contact with both; remains a study raster, without final approval.
+- The previous candidate 25 in the Icon Composer overcut the composition. The [candidate 26](../Design/IconCandidates/26-pressed-z-icon-composer-framing.png) removes the frame, reduces the height of the top and leaves transparent margins to keep press and Z within the useful area; the fitting in Icon Composer still needs to be checked by the user.
+- For [candidate 27](../Design/IconCandidates/27-pressed-z-extended-base.png), the user pointed the empty margin under the base in an intermediate version of the frame. The lower metal base now extends to the edge of the image, keeping the Z between the platens; the evaluation in Icon Composer remains pending.
+- Priors of Icon Composer showed excess details and loss of Z legibility, especially in small sizes and mono presentation. The [candidate 28 colorido](../Design/IconCandidates/28-simplified-press-z-color.png) reduces short cylinder composition with safety paint, two platens and dominant Z, without sparks. The [mono version](../Design/IconCandidates/28-simplified-press-z-mono.png) uses a corresponding flat white silhouette, with [SVG source](../Design/IconCandidates/28-simplified-press-z-mono.svg). The evaluation on Icon Composer is still pending.
+- In the refinement color version, the user asked the striped cylinder to advance to the upper edge, that the metal base reach the lower edge and that the assembly rises to center vertically the Z. The [candidate 29](../Design/IconCandidates/29-simplified-press-z-edge-crop.png) applies these clippings and displacement; the mono version of candidate 28 remains unchanged in this round.
+- The user requested a color version further away from the camera. The [candidate 30](../Design/IconCandidates/30-simplified-press-z-distant.png) reduces the apparent scale of the Z and platens, leaving more lateral space, while the striped cylinder continues at the upper edge and the metallic base at the lower edge. The mono version remains that of candidate 28; Icon Composer docking is still pending.
+- The user asked to separate candidate 30 into two or three coherent layers for the Icon Composer. The [plan of three layers](../Design/IconCandidates/31-layer-plan.md) defines base at the bottom, Z in the middle and head of the press in front, all in the same canvas and without including the rounded background of the front. Insulation attempts per generation changed scale and position; There are still no layers lined up delivered.
+- Later, the user exported his/her own `zforge_icon.icon` in Icon Composer, with three images in two groups and appearance variants, and requested its use in the application. The exported file is now the source of the Debug and Release icon; the visual comparison with the previous Composer remains pending.
 
-## 2. Estrutura principal da janela
+## 2. Main window structure
 
-A janela usa `NavigationSplitView` com:
+The window uses `NavigationSplitView` with:
 
-- sidebar à esquerda;
-- conteúdo principal à direita;
-- toolbar integrada ao título da janela;
-- barra de caminho no rodapé do conteúdo.
+- sidebar to the left;
+- main content on the right;
+- toolbar integrated into the window title;
+- path bar in the footer of the content.
 
 ### Sidebar
 
-- Usar `List` com `.listStyle(.sidebar)`.
-- Manter Recentes como a primeira linha, sem seção ou cabeçalho de categoria, usando o símbolo `clock` e abrindo a lista virtual correspondente no navegador.
-- Cada janela comum abre inicialmente em Recentes. Quando ainda não houver bookmark para a Home, solicitar essa autorização na abertura porque ela delimita o escopo da consulta do Spotlight; o cancelamento mantém a explicação e a ação para tentar novamente.
-- O diretório real da conta do usuário aparece como a primeira entrada de Locais, identificado pelo nome da pasta (por exemplo, `felipe`) em vez do rótulo genérico “Home”. Não usar como destino o diretório Home redirecionado para o container do App Sandbox.
-- Em “Go to Folder”, `~` e caminhos iniciados por `~/` são expandidos a partir desse mesmo diretório real da conta, nunca pela Home redirecionada do App Sandbox.
-- Os favoritos Desktop, Documents e Downloads apontam para as pastas correspondentes dentro do diretório real da conta do usuário. As APIs de busca redirecionadas pelo App Sandbox não devem fazer essas entradas apontarem para `Library/Containers/.../Data`.
-- Favoritos permite fixar novas pastas reais por “Add to Sidebar” no menu contextual compartilhado pelos quatro modos, ou por drop no cabeçalho, entre as entradas e após o último favorito. A sidebar não exibe “Add Folder…”. O cabeçalho insere no início, os intervalos inserem antes da próxima entrada e o espaço final acrescenta ao fim. Fixar não transfere o conteúdo; o corpo dos destinos conserva cópia/movimentação/alias. “Remove from Sidebar” remove apenas a referência.
-- Fixar aceita seleção múltipla composta apenas por pastas, rejeita arquivos, packages e conteúdo virtual de archives, evita duplicatas e persiste a ordem entre sessões/janelas. “Remove from Sidebar” remove somente a referência. O corpo de cada destino conserva o fluxo de copiar/mover arquivos já implementado. O usuário confirmou o funcionamento em 2026-10-03; os limites da automação permanecem na matriz de regressão.
-- **Refinamento visual escolhido em 2026-10-03 — alternativa B, espessura refinada em 20:22:** linha accent de `2 pt`, círculo vazado de `8 pt` com contorno de `2 pt`, começando `8 pt` à esquerda do conteúdo. Desenhar no limite completo das linhas numa camada visual acima das células nativas, sem recortar o círculo/linha e sem interceptar cliques ou drops; acompanhar scroll. O backing layer do indicador deve permanecer acima das camadas de highlight, inclusive após atualizações nativas. Usar insets verticais nativos zerados e padding equivalente dentro do botão, preservando altura. Os primeiros/últimos `5 pt` de cada favorito representam inserção; o corpo representa transferência. A borda inferior do último favorito e o cabeçalho de Locais permitem acrescentar ao fim. Favoritos vazio aceita pin no cabeçalho. Manter handlers por item; não substituir por um destino global na List.
-- A sidebar mantém os símbolos originais durante drag; nunca os troca por pasta aberta. O alvo de transferência recebe um fundo accent sólido arredondado, com texto e símbolo branco, sem alternância para contorno. A pasta real atual, quando representada na sidebar, recebe fundo monocromático discreto (`unemphasizedSelectedContentBackgroundColor`) e nome semibold, como na captura de referência; arraste tem prioridade e a seleção retorna ao sair. O fundo mantém margem horizontal de 10 pt.
-- O highlight transitório desaparece ao sair do destino ou soltar o drag; a limpeza também acompanha posição/botão nativos do destino ativo. Callbacks de owners anteriores não podem limpar um alvo novo. Desativar somente o feedback nativo da tabela da sidebar, preservando tabelas e handlers de conteúdo.
-- A seção Tags fica ao fim da sidebar e exibe o catálogo global dos arquivos autorizados e favoritos do Finder, independente da pasta atual. Seus círculos medem 12 pt (redução de 4 pt), com cor real ou contorno para tags sem cor. Toda a linha aceita clique e abre o filtro global correspondente, incluindo pastas marcadas. Alterações de tags atualizam a sidebar e o filtro aberto automaticamente; a descoberta inicial é progressiva. Voltar/avançar preserva o filtro.
-- Para localizações do sistema de arquivos, o breadcrumb sempre mostra o caminho completo desde o volume, por exemplo `Macintosh HD > Users > felipe`, mesmo quando a navegação começou por uma entrada intermediária da sidebar. Esses ancestrais visuais não devem criar níveis vazios na visualização em Colunas.
-- A superfície deve continuar visualmente pelo topo da janela, sem corte entre sidebar e titlebar.
-- Usar material do sistema, atualmente `.ultraThinMaterial`, respeitando as safe areas.
-- Largura mínima: `180 pt`.
+- Use `List` with `.listStyle(.sidebar)`.
+- Keep Recents as the first line, without section or category header, using the `clock` symbol and opening the corresponding virtual list in the browser.
+- Each common window opens initially at Recents. When there is no bookmark for Home yet, request this authorization at the opening because it limits the scope of the Spotlight query; cancellation keeps the explanation and action to try again.
+- The actual directory of the user account appears as the first entry of Locations, identified by the folder name (e.g. `felipe`) instead of the generic label “Home”. Not use as destination the Home directory redirected to the Sandbox App container.
+- In “Go to Folder”, `~` and paths started by `~/` are expanded from this same actual directory of the account, never by Home redirected from the Sandbox App.
+- Bookmarks Desktop, Documents and Downloads point to the corresponding folders within the actual directory of the user account. The search APIs redirected by the Sandbox App must not make these entries point to `Library/Containers/.../Data`.
+- Favorites lets you fix new real folders by “Add to Sidebar” in the contextual menu shared by the four modes, or by drop in the header, between the entries and after the last favorite. The sidebar does not display “Add Folder...”. The header inserts at the beginning, the ranges enter before the next entry and the final space adds to the end. Fixing does not transfer content; the destination body keeps copy/movement/alias. “Remove from Sidebar” removes only the reference.
+- Fix accepts multiple selection consisting only of folders, rejects files, packages and virtual content of archives, avoids duplicates and persists the order between sessions/windows. “Remove from Sidebar” removes only the reference. The body of each destination keeps the flow of copying/moving already implemented files. The user confirmed the operation in 2026-10-03; the limits of automation remain in the regression matrix.
+- **Visual refinement chosen in 2026-10-03 — alternative B, thickness refined in 20:22:** line accent of `2 pt`, circle leaked of `8 pt` with contour of `2 pt`, starting `8 pt` to the left of the content. Draw at the full limit of the lines in a visual layer above the native cells, without cutting the circle/line and without intercepting clicks or drops; follow scroll. The indicator backing layer must remain above the highlight layers, including after native updates. Use zeroed native vertical inserts and equivalent padding inside the button, preserving height. The first/last `5 pt` of each favorite represents insertion; The body represents transference. The bottom edge of the last bookmark and the Locations header allow you to add to the end. Empty bookmarks accept pin in header. Keep handlers per item; do not replace with a global destination in List.
+- The sidebar maintains the original symbols during drag; Never trade them for open folder. The transfer target receives a rounded solid accent background, with text and white symbol, without switching to contour. The current real folder, when represented in the sidebar, receives discrete monochrome background (`unemphasizedSelectedContentBackgroundColor`) and semibold name, as in the reference capture; drag has priority and the selection returns on exit. The bottom maintains horizontal margin of 10 pt.
+- The transient highlight disappears when leaving the destination or release the drag; cleaning also accompanies native position/button of active destination. Callbacks from previous owners cannot clean a new target. Disable only the native sidebar table feedback, preserving tables and content handlers.
+- The Tag section is at the end of the sidebar and displays the global catalog of the authorized files and bookmarks of Finder, regardless of the current folder. Its circles measure 12 pt ( 4 pt reduction), with real color or contour for colorless tags. The entire line accepts click and opens the corresponding global filter, including marked folders. Tag changes update the sidebar and the filter automatically opened; the initial discovery is progressive. Back/advance preserves the filter.
+- For file system locations, breadcrumb always shows the complete path from volume, for example `Macintosh HD > Users > felipe`, even when browsing started with an intermediate sidebar input. These visual ancestors must not create empty levels in the visualization at Columns.
+- The surface shall continue visually at the top of the window, without cutting between sidebar and titlebar.
+- Use system material, currently `.ultraThinMaterial`, respecting safe areas.
+- Minimum width: `180 pt`.
 - Largura ideal: `220 pt`.
-- Largura máxima: largura atual da janela menos `360 pt`, preservando sempre essa largura mínima para o conteúdo principal.
-- `navigationSplitViewColumnWidth(min:ideal:max:)` expressa larguras preferidas e, isoladamente, não impede que o divisor ultrapasse o máximo no macOS. Manter esse modificador para o layout SwiftUI e aplicar o mesmo teto em `NSSplitViewItem.maximumThickness`, que restringe também o redimensionamento manual.
-- Redimensionar a janela não altera a largura escolhida para a sidebar. Quando a janela fica estreita demais, limitar a sidebar apenas enquanto necessário e restaurar sua largura anterior assim que houver espaço novamente.
-- Se a sidebar for ocultada automaticamente, deve reaparecer quando houver espaço.
-- Se o usuário a ocultar manualmente, essa escolha deve ser preservada.
+- Maximum width: current window width minus `360 pt`, always preserving this minimum width for the main content.
+- `navigationSplitViewColumnWidth(min:ideal:max:)` expresses preferred widths and, in isolation, does not prevent the divider from exceeding the maximum in macOS. Keep this modifier for layout SwiftUI and apply the same ceiling at `NSSplitViewItem.maximumThickness`, which also restricts manual resizing.
+- Resizing the window does not change the width chosen for the sidebar. When the window gets too narrow, limit sidebar only as long as necessary and restore its previous width as soon as there is space again.
+- If the sidebar is automatically hidden, it must reappear when there is space.
+- If the user hides it manually, this choice must be preserved.
 
-### Superfície principal
+### Main surface
 
-- Usar a mesma cor em todas as visualizações.
-- A referência atual é `NSColor.underPageBackgroundColor`.
-- Toolbar, lista, colunas, ícones e galeria não devem apresentar mudanças arbitrárias de tonalidade.
-- Manter oculto o background automático da `windowToolbar`, impedindo que o efeito de scroll edge altere sua tonalidade ao trocar de visualização ou redimensionar a janela.
-- Separadores devem ser discretos e usados apenas quando esclarecem a estrutura.
+- Use the same color for all views.
+- The current reference is `NSColor.underPageBackgroundColor`.
+- Toolbar, list, columns, icons and gallery must not display arbitrary hue changes.
+- Keep the automatic background of `windowToolbar` hidden, preventing the scroll edge effect from changing its tonality by switching views or resizing the window.
+- Separaters must be discreet and used only when clarifying the structure.
 
-## 3. Responsividade da janela
+## 3. Window responsiveness
 
-Os limites atuais são baseados nas dimensões reais da grade em zoom de 100%.
+Current limits are based on actual grid dimensions at 100% zoom.
 
-| Decisão | Valor atual |
+| Decision | Current value |
 | --- | ---: |
-| Largura da célula da grade | `110 pt` |
-| Espaçamento entre células | `24 pt` |
-| Padding lateral da grade | `16 pt` |
-| Largura mínima da janela | `544 pt` |
-| Ocultação automática da sidebar | `678 pt` |
+| Grid cell width | `110 pt` |
+| Cell spacing | `24 pt` |
+| Side grid padding | `16 pt` |
+| Minimum Window Width | `544 pt` |
+| Automatic sidebar concealment | `678 pt` |
 
-A largura mínima equivale a quatro células:
+The minimum width equals four cells:
 
 ```text
 4 × 110 + 3 × 24 + 2 × 16 = 544 pt
 ```
 
-A janela usa `.windowResizability(.contentMinSize)` para fazer o macOS respeitar o tamanho mínimo do conteúdo.
+The window uses `.windowResizability(.contentMinSize)` to make macOS respect the minimum content size.
 
 ### Regras
 
-- Na largura mínima, quatro ícones devem caber com a sidebar oculta e zoom em 100%.
-- A decisão de ocultar a sidebar considera a largura total da janela, não apenas a área de conteúdo.
-- Mudanças responsivas devem acontecer em etapas, aproveitando o espaço liberado por cada compactação.
-- Evitar compactar vários grupos simultaneamente se a primeira compactação já liberar espaço suficiente.
+- At minimum width, four icons must fit with the hidden sidebar and zoom in 100%.
+- The decision to hide the sidebar considers the full width of the window, not just the content area.
+- Responsive changes must take place in stages, taking advantage of the space released by each compaction.
+- Avoid compacting multiple groups simultaneously if the first compression already releases enough space.
 
 ## 4. Toolbar
 
-O modo de visualização é individual por janela/aba. Os seletores completo, compacto e de overflow, os menus e os atalhos `⌘1`–`⌘4` atuam somente na janela correspondente. Cada nova janela inicia no modo definido por “Default View” em Settings (Ícones na ausência de preferência); mudar esse padrão não altera janelas existentes, e trocar o modo de uma janela não modifica o padrão.
+The display mode is individual by window/tab. The complete, compact and overflow selectors, menus and shortcuts `⌘1`–`⌘4` act only in the corresponding window. Each new window starts in “Default View” mode in Settings (Icons in the absence of preference); changing this pattern does not change existing windows, and changing the mode of a window does not change the pattern.
 
-### Estrutura
+### Structure
 
-A toolbar deve conter:
+The toolbar shall contain:
 
-1. botão para alternar a sidebar;
-2. botões de voltar e avançar;
-3. título nativo com o nome do diretório atual;
-4. seletor do tipo de visualização;
-5. grupo de ações de archive, compartilhamento e menu adicional;
-6. menu de ações adicionais.
+1. button to switch sidebar;
+2. back and forward buttons;
+3. title native with the current directory name;
+4. display type selector;
+5. group shares of archive, share and additional menu;
+6. additional action menu.
 
-O breadcrumb não deve ocupar a toolbar. A tentativa de usá-lo como `ToolbarItem` prejudicou o cálculo de overflow, a responsividade e a leitura do título.
+Breadcrumb must not occupy the toolbar. The attempt to use it as `ToolbarItem` damaged the calculation of overflow, responsiveness, and reading of the title.
 
-### Voltar, avançar e título
+### Back, forward and title
 
-- As setas mantêm um histórico real de caminhos.
-- Voltar e avançar devem ser desabilitados quando não houver destino.
-- O título usa `navigationTitle`, com apresentação inline, e mostra apenas o nome do diretório atual.
-- A ordem visual à esquerda é sempre: botão da sidebar, cápsula de voltar/avançar e título. No macOS, itens `.navigation` independentes podem ser reordenados pelo sistema; para preservar essa sequência, remover o `.sidebarToggle` automático e reunir o botão equivalente e o `ControlGroup` das setas, nessa ordem, dentro de um único `ToolbarItem` aplicado à coluna da sidebar. O botão envia `NSSplitViewController.toggleSidebar(_:)` pela responder chain, reproduzindo a ação nativa sem observar geometria.
-- O título e os itens à direita pertencem à toolbar da coluna de detalhe. Essa separação impede que o `NavigationSplitView` mova as setas para a seção das ações enquanto preserva o `navigationTitle` nativo.
-- Navegação histórica e seleção de arquivos são estados diferentes.
+- The arrows maintain a real history of paths.
+- Back and forward must be disabled when there is no destination.
+- The title uses `navigationTitle`, with inline presentation, and only shows the name of the current directory.
+- The visual order on the left is always: sidebar button, back/forward capsule and title. In macOS, independent items `.navigation` can be reordered by the system; to preserve this sequence, remove the automatic `.sidebarToggle` and gather the equivalent button and the `ControlGroup` of the arrows, in this order, within a single `ToolbarItem` applied to the sidebar column. The button sends `NSSplitViewController.toggleSidebar(_:)` by responding to the chain, reproducing the native action without observing geometry.
+- The title and items on the right belong to the detail column toolbar. This separation prevents the `NavigationSplitView` from moving the arrows to the action section while preserving `navigationTitle` native.
+- Historical navigation and selection of files are different states.
 
-### Seletor de visualização
+### View Selector
 
-O seletor tem três apresentações:
+The selector has three presentations:
 
-- completa: quatro segmentos com ícones;
-- compacta: ícone do modo atual acompanhado de chevrons verticais;
-- overflow: submenu `View` dentro do menu do duplo chevron.
+- complete: four segments with icons;
+- compact: current mode icon accompanied by vertical chevrons;
+- overflow: submenu `View` inside the double chevron menu.
 
-No menu de overflow:
+In the overflow menu:
 
-- `View` abre um submenu nativo;
-- o submenu mostra ícone e nome de cada visualização;
-- marcar a visualização atual;
-- permitir escolher ícones, lista, colunas ou galeria.
+- `View` opens a submenu native;
+- the submenu shows icon and name of each view;
+- mark the current view;
+- allow you to choose icons, list, columns or gallery.
 
-Entre `678` e `899 pt`, o seletor usa uma cápsula compacta própria, com o ícone do modo atual e chevrons verticais. Abaixo de `678 pt`, o seletor entra no overflow e passa a ser o submenu `View`. Ao reduzir a janela a partir da apresentação completa, compactar o seletor antes de ocultar a ação contextual de archive e não voltar à apresentação segmentada em larguras menores.
+Between `678` and `899 pt`, the selector uses its own compact capsule, with the current mode icon and vertical chevrons. Below `678 pt`, the selector enters the overflow and becomes the submenu `View`. By reducing the window from the full presentation, compact the selector before hiding the contextual action of archive and do not return to the segmented presentation in smaller widths.
 
-### Grupo de ações
+### Action group
 
-Na apresentação expandida, o grupo permanece com quatro ações:
+In the expanded presentation, group remains with four actions:
 
-1. ação contextual de archive;
+1. contextual action of archive;
 2. Share;
-3. Tags (`tag`), para editar a seleção local;
-4. reticências para ações adicionais.
+3. Tags (`tag`), to edit local selection;
+4. ellipsis for additional actions.
 
-As quatro ações compartilham uma única cápsula nativa, separada da cápsula do seletor de visualização. Cada label preserva uma faixa visual de `25 pt` para manter o padding regular entre os símbolos.
-Elas devem ser declaradas como itens nativos de um `ToolbarItemGroup`, delimitado do seletor por um `ToolbarSpacer` fixo. Não envolver o conjunto em um `ControlGroup` adaptativo dentro de um único `ToolbarItem`: depois de passar pelo overflow, essa composição pode retornar à toolbar conservando o espaçamento compacto.
+The four actions share a single native capsule, separated from the display selector capsule. Each label preserves a visual range of `25 pt` to keep the padding regular between the symbols.
+They must be declared as native items of a `ToolbarItemGroup`, delimited from the selector by a fixed `ToolbarSpacer`. Do not involve the set in an adaptive `ControlGroup` within a single `ToolbarItem`: after going through the overflow, this composition can return to the toolbar while preserving the compact spacing.
 
-Em Recentes, a ação contextual é habilitada conforme a seleção. A extração usa por padrão a pasta real de cada archive, e a compressão conjunta grava o archive na pasta do item ativo. A escolha explícita de destino nos painéis continua disponível.
+In Recents, contextual action is enabled according to selection. The extraction uses by default the actual folder of each archive, and the joint compression saves the archive in the folder of the active item. The explicit choice of destination in the panels remains available.
 
-Quando o grupo de ações não cabe, um botão com duplo chevron reproduz o indicador nativo de overflow da toolbar. Entre `840` e `899 pt`, a ação contextual de archive continua visível em cápsula própria e o menu começa por Share; abaixo de `840 pt`, a ação de archive também entra no menu. Open, Quick Look, Get Info, Edit Tags, Rename e Duplicate permanecem sempre expandidos no nível principal desse menu. Diferentemente do Finder, esse conteúdo não vira um submenu `Action`. Abaixo de `678 pt`, o submenu `View` é acrescentado no início. As ações usam os mesmos handlers e estados habilitados da apresentação expandida; não delegar esse comportamento ao overflow automático da `NSToolbar`.
+When the group of actions does not fit, a double chevron button reproduces the native overflow indicator of the toolbar. Between `840` and `899 pt`, the contextual action of archive remains visible in its own capsule and the menu begins with Share; below `840 pt`, the archive action also enters the menu. Open, Quick Look, Get Info, Edit Tags, Rename and Duplicate remain always expanded at the main level of this menu. Unlike Finder, this content does not become a submenu `Action`. Below `678 pt`, the submenu `View` is added at the beginning. The actions use the same handlers and enabled states of the expanded presentation; do not delegate this behavior to the automatic overflow of `NSToolbar`.
 
-No espaço vazio da área de itens, o clique secundário e Control-clique abrem o menu do botão `•••` expandido, conservando a seleção atual e os estados habilitados. Sem seleção, manter as ações visíveis e desabilitadas. Aplicar aos quatro modos; o menu próprio da célula tem prioridade. Preservar o clique primário que limpa a seleção, os previews e os controles de layout.
+In the empty space of the item area, the secondary click and Control-click open the menu of the `•••` expanded button, preserving the current selection and the enabled states. Without selection, keep actions visible and disabled. Apply to the four modes; the cell's own menu has priority. Preserve the primary click that cleans selection, previews and layout controls.
 
-No clique secundário de um item, oferecer Open with, Share e Copy sem perder a seleção múltipla quando o item já pertence a ela. Open with é um submenu dos apps compatíveis, com Other… para escolha manual; com Option vira Always open with para arquivos locais. Copy vira Copy pathname com Option, copiando texto em vez de referências de arquivo. Quick Look vira Slideshow com Option. No menu File, New tab usa `⌘T` e Open with/Always open with e Quick Look/Slideshow seguem a mesma alternância nativa. Desabilitar ações sem alvo válido e localizar todos os novos rótulos.
+In the secondary click of an item, offer Open with, Share and Copy without losing multiple selection when the item already belongs to it. Open with is a submenu of compatible apps, with Other... for manual choice; with Option vira Always open with for arquivos locais. Copy turns Copy pathname with Option, copying text instead of file references. Quick Look vira Slideshow with Option. In the File menu, New tab uses `⌘T` and Open with/Always open with and Quick Look/Slideshow follow the same native alternation. Disable actions without target valid and locate all new labels.
 
-O duplo chevron usa cor secundária enquanto o menu está fechado e só assume a cor primária durante o ciclo real de apresentação do `NSMenu`, retornando ao estado secundário em `menuDidClose`. Quando archive ou overflow aparecem como botões isolados, seus labels usam uma área quadrada de `18 pt` e símbolos menores que os do grupo expandido, preservando um background circular em vez de oval.
+The double chevron uses secondary color while the menu is closed and only assumes the primary color during the actual presentation cycle of `NSMenu`, returning to the secondary state at `menuDidClose`. When archive or overflow appear as isolated buttons, their labels use a square area of `18 pt` and smaller symbols than the expanded group, preserving a circular background instead of oval.
 
-### Breakpoints da toolbar
+### Breakpoints from toolbar
 
-| Largura da janela | Seletor de visualização | Ações |
+| Window width | View Selector | Actions |
 | --- | --- | --- |
-| `≥ 900 pt` | completo | quatro ações |
-| `840–899 pt` | cápsula compacta | archive visível; demais no duplo chevron |
-| `678–839 pt` | cápsula compacta | expandidas no menu de duplo chevron |
-| `< 678 pt` | submenu no menu de duplo chevron | expandidas no mesmo menu |
+| `≥ 900 pt` | completo | four actions |
+| `840–899 pt` | compact capsule | archive visible; too much on double chevron |
+| `678–839 pt` | compact capsule | expanded in the double chevron menu |
+| `< 678 pt` | submenu in double chevron menu | expanded in the same menu |
 
-Esses valores são parâmetros de calibração. Caso tamanhos de ícones, título ou ações mudem, medir novamente antes de alterá-los.
+These values are calibration parameters. If icon sizes, title or actions change, measure again before changing them.
 
-## 5. Lições sobre toolbar no SwiftUI
+## 5. Lessons on toolbar in SwiftUI
 
-Estas restrições devem ser consideradas antes de tentar corrigir a toolbar:
+These restrictions must be considered before attempting to correct the toolbar:
 
-- A `NSToolbar` pode enviar um `ToolbarItem` ao overflow sem antes propor uma largura menor ao conteúdo. Por isso, `ViewThatFits` dentro da toolbar pode nunca receber a oportunidade de compactar.
-- Um `Menu` colocado diretamente na toolbar pode normalizar o label para um único ícone, descartando padding, HStacks e símbolos adicionais.
-- `.secondaryAction` não significa “overflow apenas”. O macOS pode promover essas ações de volta para a toolbar quando houver espaço.
-- Um `ControlGroup` adaptativo dentro de um único `ToolbarItem` pode conservar sua aparência compacta depois de sair do overflow.
-- Para responsividade determinística, preferir breakpoints explícitos baseados na largura da janela e trocar a hierarquia do controle antes do overflow.
-- Para botões compactos com composição visual própria, usar um `Button` SwiftUI comum.
-- Apresentações condicionais da toolbar usam identificadores próprios por estágio; não reutilizar o mesmo `ToolbarItem` entre hierarquias diferentes, pois o AppKit pode conservar a cápsula nativa enquanto descarta temporariamente seu conteúdo SwiftUI durante o redimensionamento.
-- Para menus que precisam de ícones, estados marcados, seções ou conteúdo plano previsível, uma ponte pequena para `NSMenu` é aceitável.
-- Não usar `.id(windowWidth)` para forçar reconstrução durante cada pixel de redimensionamento; isso mascara o problema e causa trabalho excessivo de layout.
+- The `NSToolbar` can send a `ToolbarItem` to the overflow without first proposing a smaller width to the content. Therefore, `ViewThatFits` inside the toolbar may never receive the opportunity to compact.
+- A `Menu` placed directly into the toolbar can normalize the label to a single icon, discarding padding, HStacks and additional symbols.
+- `.secondaryAction` does not mean “overflow only”. The macOS can promote these actions back to the toolbar when there is space.
+- An adaptive `ControlGroup` inside a single `ToolbarItem` can conserve its compact appearance after exiting the overflow.
+- For deterministic responsiveness, prefer explicit breakpoints based on window width and change the control hierarchy before overflow.
+- For compact buttons with their own visual composition, use a `Button` SwiftUI common.
+- Conditional presentations of toolbar use their own identifiers per stage; do not reuse the same `ToolbarItem` between different hierarchies, because AppKit can conserve the native capsule while temporarily discarding its SwiftUI content during resizing.
+- For menus that need icons, marked states, sections or plan predictable content, a small bridge to `NSMenu` is acceptable.
+- Not use `.id(windowWidth)` to force reconstruction during each resizing pixel; this masks the problem and causes excessive layout work.
 
-### Abas de janela
+### Window tabs
 
-- Usar o sistema nativo de abas do `NSWindow`, compartilhando um `tabbingIdentifier` entre as janelas comuns do navegador e mantendo `tabbingMode = .automatic`.
-- O menu View usa apenas o comando nativo Show Tab Bar/Hide Tab Bar do macOS, com `Shift + Command + T`; não acrescentar um segundo comando para a mesma ação.
-- A barra de abas pertence à moldura da janela, não ao conteúdo SwiftUI. Portanto, atravessa toda a largura da janela acima da sidebar, do conteúdo e do preview; não deve ser recortada pelo split interno do inspector.
-- A URL do diretório atual deve ser atribuída a `representedURL`, permitindo que o AppKit apresente a hierarquia de pastas ao clicar no título da janela com Command.
-- Referência local: [NSWindow](../SwiftUI/contexts/appkit-nswindow.md).
+- Use the native system of `NSWindow` tabs, sharing a `tabbingIdentifier` between common browser windows and keeping `tabbingMode = .automatic`.
+- The View menu uses only the native Show Tab Bar/Hide Tab Bar command of macOS, with `Shift + Command + T`; do not add a second command to the same action.
+- The tab bar belongs to the window frame, not to the SwiftUI content. Therefore, it crosses the entire width of the window above the sidebar, content and preview; must not be cut by the inspector's internal split.
+- The URL of the current directory must be assigned to `representedURL`, allowing AppKit to display the directory hierarchy by clicking on the title of the Command window.
+- Local reference: [NSWindow](../SwiftUI/contexts/appkit-nswindow.md).
 
-## 6. Barra de caminho no rodapé
+## 6. Pathbar on footer
 
-O breadcrumb fica no canto inferior do conteúdo, em uma barra persistente com separador superior discreto.
+Breadcrumb is in the bottom corner of the content, in a persistent bar with discrete top separator.
 
 ### Regras
 
-- Exibir no máximo os três últimos níveis da hierarquia.
-- Se houver níveis anteriores, começar com `… ›`.
-- Nomes de diretórios ancestrais com mais de 10 caracteres exibem os sete primeiros caracteres mais `...`.
-- O diretório atual mantém o nome completo enquanto houver espaço.
-- Cada componente é clicável e navega diretamente para aquele diretório.
-- Quando nem a apresentação reduzida couber, mostrar apenas o diretório atual como menu.
-- O menu compacto deve listar o caminho completo e permitir navegar para qualquer ancestral.
-- Usar ícones reais de diretório em cada componente.
+- Show at most the last three levels of the hierarchy.
+- If there are previous levels, start with `… ›`.
+- Names of ancestral directories with more than 10 characters display the first seven characters plus `...`.
+- The current directory keeps the full name as long as there is space.
+- Each component is clickable and navigates directly to that directory.
+- When not even the reduced presentation fits, show only the current directory as a menu.
+- The compact menu must list the full path and allow you to navigate to any ancestor.
+- Use real directory icons for each component.
 
-## 7. Modelo de interação comum
+## 7. Model of common interaction
 
-As quatro visualizações compartilham as mesmas regras fundamentais:
+The four views share the same fundamental rules:
 
-- clique simples seleciona;
-- clique duplo abre;
-- clique secundário seleciona o item e abre o menu de contexto;
-- clicar em uma área vazia desfaz toda a seleção;
-- a área clicável deve cobrir toda a célula ou linha, usando `contentShape` quando necessário;
-- botões internos, como disclosure arrows, executam sua ação sem depender do clique no texto ou ícone;
-- trocar o tipo de visualização não deve deixar o foco preso na toolbar;
-- a seleção atual deve continuar coerente ao trocar de visualização sempre que o item ainda for válido.
-- Quando arquivos ocultos estiverem visíveis, atenuar ícone, nome e metadados para `55%` de opacidade nas quatro visualizações. Para um oculto selecionado, usar `72%` para preservar a legibilidade; o fundo de seleção permanece com opacidade integral.
-- `Return` inicia a renomeação inline quando houver exatamente um item local selecionado; `Return` confirma e `Escape` cancela enquanto o campo estiver ativo.
-- Uma pasta criada por `Shift + Command + N` é selecionada e entra imediatamente no mesmo modo de renomeação inline.
-- `Command + Z` usa o `UndoManager` da janela ativa para desfazer a última operação de arquivo concluída. Criar pasta, renomear, copiar, mover, criar alias, duplicar e mover para o Lixo registram sua inversa somente após sucesso; navegação e seleção não entram nesse histórico.
-- Itens do navegador não usam `Command + X`: `Command + C` é a única ação que os coloca no Clipboard, `Command + V` sempre os copia e `Option + Command + V` os move.
-- `Command + C` publica as `NSURL` originais diretamente no `NSPasteboard`, usando `clearContents()` e `writeObjects(_:)`, não representações materializadas por `NSItemProvider`. Assim, `Option + Command + V` entrega ao `FileManager.moveItem` a origem real, move os itens para o destino e os remove da localização anterior.
-- No menu Editar, Move Items Here é a alternativa nativa de Paste por meio de `modifierKeyAlternate(.option)`. A movimentação valida as URLs do Clipboard ao ser executada e chama a operação `.move` do serviço de arquivos.
-- A origem de drag de arquivos locais anuncia suporte a cópia, movimentação e alias dentro e fora da aplicação. Durante o arraste, `Option` força cópia, `Command` força movimentação e `Option + Command` cria alias; a operação é resolvida a partir de um estado de referência atualizado pelo SwiftUI e compartilhado com o `DropDelegate` durante toda a sessão.
-- Soltar um item na própria pasta sem modificador não duplica o item, inclusive quando as URLs usam symlinks ou marcação diferente de diretório. O payload de drag deve conservar a localização original. Option continua solicitando cópia; o drop de pin adiciona somente uma referência.
-- Pastas nas quatro visualizações e destinos de pasta na sidebar aceitam drops e permanecem destacados enquanto o cursor estiver sobre o alvo válido. Nas views de conteúdo, o destaque usa a cor semântica de accent do sistema, com preenchimento translúcido e contorno, e desaparece em `dropExited` ou antes de executar o drop. Nas quatro views de conteúdo, enquanto uma pasta é o alvo, seu ícone transiciona por `0,18 s` para o ícone nativo de pasta aberta e retorna ao ícone original ao sair. A sidebar é exceção: mantém seu símbolo e usa o feedback sólido descrito na seção Sidebar. Na sidebar, o conteúdo do destino mantém padding interno de `4 pt` na horizontal e `8 pt` na vertical, com insets verticais nativos zerados para preservar altura e alinhar as zonas de drop.
-- “Add to Archive…” aparece nas ações contextuais de itens locais e abre um painel para escolher o archive. Um archive ZIP ou 7z visível e pastas internas do archive raiz aceitam drops com destaque de destino; nesse fluxo de adição de itens locais, a operação é sempre cópia. Antes de modificar o archive escolhido ou o alvo do drop, um diálogo identifica o destino e a quantidade de itens e oferece Adicionar ou Cancelar. Adicionar deve executar o pedido confirmado mesmo quando o fechamento do diálogo limpa o estado de apresentação antes da tarefa assíncrona; Cancelar/dispensar não modifica o archive. Após sucesso dentro de um archive aberto, conservar a pasta atual sobrevivente e o breadcrumb anterior ao archive. Renovar o histórico de Voltar/Avançar sem saltar níveis nem sair prematuramente do archive; repopular todas as colunas ancestrais e suas seleções com os endereços da nova sessão. Na Lista, reabrir o archive que estava expandido inline, restaurar seus diretórios expandidos por caminho interno e abrir os ancestrais do destino; selecionar os novos itens para mostrar o resultado sem exigir expansão manual. Preservar as árvores e sessões dos demais archives.
-- **Itens internos para fora:** sem modificador, extrair copiando e mostrar indicador nativo de cópia; Option extrai e remove do archive, usando `.move` sem o indicador. Ignorar a tradução automática de modificadores do AppKit na origem virtual e aplicar a política explicitamente. Destinos internos consultam os modificadores atuais no update/drop; arquivos locais mantêm Option = cópia.
-- A origem virtual inicia a sessão no despacho de `mouseDragged`, conservando cliques e menus SwiftUI. O token interno é dado imediato no pasteboard; somente o conteúdo é uma promessa. Cada promessa pode ser cumprida antes do callback final da origem e antes de o receptor solicitar o próximo arquivo. A remoção depende de todas as publicações bem-sucedidas e da operação final `.move`; cancelamento preserva o archive.
-- File promises escrevem na URL fornecida, sem recriar os ancestrais internos. Todas as exportações devem terminar antes da remoção; falha, cancelamento ou conflito mantido conserva origens. Escrita somente no ZIP/7z raiz de volume único; formatos de leitura/conteúdo aninhado permitem copiar. Renovar a sessão/árvore alterada, conservando árvores de outros archives.
-- “Remove from Archive…” na matriz contextual/overflow, menu File e `⌘Delete` para seleção interna compatível usa confirmação de remoção permanente, sem Lixo/undo. Cancelar não modifica o archive; pastas incluem descendentes e remover o último item mantém um archive vazio navegável.
-- `performDrop(info:)` inicia o carregamento de todos os `NSItemProvider` antes de retornar. As conclusões podem chegar depois e então acionar a transferência assíncrona, mas não se deve adiar a própria chamada de carregamento para uma `Task`, pois o sistema restringe o acesso ao payload ao escopo inicial do drop.
-- Referência local: [modifierKeyAlternate(_:_:)](../SwiftUI/contexts/swiftui-modifier-key-alternate.md).
+- simple click selects;
+- double click opens;
+- secondary click selects the item and opens the context menu;
+- clicking on an empty area undoes the entire selection;
+- the clickable area shall cover the entire cell or line, using `contentShape` when necessary;
+- internal buttons, such as disclosure arrows, perform their action without depending on the click on text or icon;
+- changing the display type must not leave the focus stuck in the toolbar;
+- the current selection must remain consistent when exchanging visualization whenever the item is still valid.
+- When hidden files are visible, mitigate icon, name and metadata for `55%` opacity in the four views. For a selected occult, use `72%` to preserve legibility; the selection background remains with full opacity.
+- `Return` starts inline renaming when there is exactly one local item selected; `Return` confirms and `Escape` cancels while field is active.
+- A folder created by `Shift + Command + N` is selected and immediately enters the same inline renaming mode.
+- `Command + Z` uses the `UndoManager` of the active window to undo the last completed file operation. Create folder, rename, copy, move, create aliases, duplicate and move to Trash record its inverse only after success; navigation and selection do not enter this history.
+- Browser items do not use `Command + X`: `Command + C` is the only action that puts them on the Clipboard, `Command + V` always copies them and `Option + Command + V` moves them.
+- `Command + C` publishes the original `NSURL` directly in `NSPasteboard`, using `clearContents()` and `writeObjects(_:)`, not representations materialized by `NSItemProvider`. Thus, `Option + Command + V` delivers to `FileManager.moveItem` the actual origin, moves the items to the destination and removes them from the previous location.
+- In the Edit menu, Move Items Here is the native Paste alternative using `modifierKeyAlternate(.option)`. The drive validates Clipboard URLs when running and calls the `.move` file service operation.
+- The source of drag from local files announces support for copying, moving and aliases inside and outside the application. During drag, `Option` copy force, `Command` movement force and `Option + Command` creates aliases; the operation is resolved from a reference state updated by SwiftUI and shared with `DropDelegate` throughout the session.
+- Drop an item in the folder itself without modifier does not duplicate the item, even when URLs use symlinks or different directory marking. The drag payload must store the original location. Option continues requesting copy; the pin drop adds only one reference.
+- Folders in the four views and folder destinations in the sidebar accept drops and remain highlighted while the cursor is on the target valid. In the content views, the highlight uses the semantic color of accent of the system, with translucent filling and contour, and disappears in `dropExited` or before running the drop. In the four content views, while a folder is target, its icon transitions by `0,18 s` to the native open folder icon and returns to the original icon on exit. The sidebar is an exception: it maintains its symbol and uses the solid feedback described in the Sidebar section. In the sidebar, the content of the destination maintains internal padding of `4 pt` horizontally and `8 pt` vertically, with neutral native vertical inserts to preserve height and align drop zones.
+- “Add to Archive...” appears in the contextual actions of local items and opens a panel to choose archive. A archive ZIP or 7z visible and internal folders of the archive root accept drops with destination highlighting; in this flow of addition of local items, the operation is always copying. Before modifying the archive chosen or target drop, a dialog identifies the destination and quantity of items and offers Add or Cancel. Add must perform the request confirmed even when closing the dialog clears the presentation state before the asynchronous task; Cancel/dispensing does not change archive. After success within an open archive, save the current surviving folder and the previous breadcrumb to archive. Renew the Back/Next history without jumping levels or leaving archive prematurely; repopulate all ancestral columns and their selections with the addresses of the new session. In List, reopen the archive that was expanded inline, restore its expanded directories by internal path and open the ancestors of the destination; select the new items to show the result without requiring manual expansion. Preserve the trees and sessions of the others archives.
+- **Internal items out:** without modifier, extract by copying and display native copy indicator; Option extracts and removes from archive, using `.move` without the indicator. Ignore automatic translation of AppKit modifiers in virtual origin and apply policy explicitly. Internal destinations refer to current modifiers in update/drop; Local files keep Option = copy.
+- The virtual source starts the session in the `mouseDragged` dispatch, keeping clicks and menus SwiftUI. The internal token is given immediately on the pasteboard; only the content is a promise. Each promise can be fulfilled before the final callback of the source and before the receiver requests the next file. The removal depends on all successful publications and the final operation `.move`; cancellation preserves archive.
+- File promises write in the provided URL without recreating the internal ancestors. All exports shall be terminated before removal; failure, cancellation or sustained conflict preserves origins. Written only in ZIP/7z single volume root; nested read/content formats allow copying. Renew the session/tree changed, keeping trees from others archives.
+- “Remove from Archive...” in the contextual/overflow matrix, File menu and `⌘Delete` for compatible internal selection uses permanent removal confirmation, without Trash/Undo. Cancel does not change archive; folders include descendants and remove the last item keeps a archive empty navigable.
+- `performDrop(info:)` starts loading all `NSItemProvider` before returning. The conclusions may arrive later and then trigger the asynchronous transfer, but the actual loading call must not be postponed to a `Task`, because the system restricts access to payload to the initial drop scope.
+- Local reference: [modifierKeyAlternate(_:_:)](../SwiftUI/contexts/swiftui-modifier-key-alternate.md).
 
-### Seleção múltipla
+### Multiple selection
 
-- Clique comum substitui a seleção.
-- `Command` + clique adiciona ou remove um item individualmente.
-- `Shift` + clique seleciona o intervalo entre a âncora e o novo item.
-- `Shift` + setas amplia a seleção pelo teclado.
-- A aplicação mantém separadamente:
-  - item ativo;
-  - conjunto de itens selecionados;
-  - âncora da seleção por intervalo.
+- Common click replaces selection.
+- `Command` + click add or remove an item individually.
+- `Shift` + click selects the interval between anchor and new item.
+- `Shift` + arrows expands the selection by keyboard.
+- The application keeps separately:
+  - active item;
+  - set of selected items;
+  - anchor of the selection by interval.
 
-### Cor da seleção
+### Selection color
 
-- Usar `NSColor.selectedContentBackgroundColor` como referência.
-- Não fixar um azul customizado excessivamente saturado.
-- A seleção deve respeitar tema e cor de destaque do usuário.
-- Na visão de ícones, seguir o Finder: destaque discreto no ícone e azul concentrado no rótulo, evitando um grande bloco azul na célula inteira.
-- Na visão de colunas, a seleção da coluna ativa usa a cor de seleção; a hierarquia aberta em colunas anteriores usa cinza discreto.
+- Use `NSColor.selectedContentBackgroundColor` as a reference.
+- Do not fix an overly saturated custom blue.
+- The selection must respect the theme and highlight color of the user.
+- In the icon view, follow Finder: discreet highlight on the icon and blue concentrated on the label, avoiding a large blue block in the whole cell.
+- In column view, the selection of the active column uses the selection color; the hierarchy opened in previous columns uses discrete gray.
 
-## 8. Visualização de ícones
+## 8. Icon preview
 
 - Usar `LazyVGrid` adaptativa.
-- Célula base: `110 pt`.
-- Espaçamento base: `24 pt`.
+- Base cell: `110 pt`.
+- Base spacing: `24 pt`.
 - Padding externo: `16 pt`.
-- Ícone base: `64 pt`, dentro de uma área visual de `84 × 72 pt`.
-- Nome em até duas linhas, centralizado.
-- A célula inteira é a hitbox.
-- A navegação por teclado acompanha o número real de colunas visíveis.
-- Ao selecionar pelo teclado, rolar automaticamente para manter o item visível.
+- Base icon: `64 pt`, within a visual area of `84 × 72 pt`.
+- Name up to two lines, centralized.
+- The whole cell is the hitbox.
+- Keyboard navigation follows the actual number of visible columns.
+- When selecting by keyboard, scroll automatically to keep the item visible.
 
-## 9. Visualização de lista
+## 9. List View
 
-### Estrutura
+### Structure
 
-Colunas exibidas inicialmente:
+Columns initially displayed:
 
 - Nome;
-- Data de modificação;
-- Tamanho;
+- date of modification;
+- Size;
 - Tipo.
 
-Clique secundário em qualquer header abre as opções de colunas do Finder. Nome fica fixo; Data de Criação, Última Abertura, Data de Adição, Versão, Comentários e Tags podem ser ativadas. Modificado por e Compartilhado por ficam indisponíveis sem dados de colaboração. Arrastar os demais headers altera a ordem por diretório. Settings controla a visibilidade e a ordem globais; o menu local termina com uma linha horizontal e **Restore defaults** (**Restaurar padrão**), removendo a substituição da pasta. O padrão inicial de quatro colunas é preservado. Os círculos de tags medem 8 pt em 100% e ficam à direita do nome independentemente da coluna Tags.
+Secondary click on any header opens Finder column options. Nome fica fixo; Date of Creation, Last Opening, Adding Date, Version, Comments and Tags can be activated. Modified by and Shared by are unavailable without collaboration data. Dragging the other headers changes the order by directory. Settings controls global visibility and order; the local menu ends with a horizontal line and **Restore defaults**(**Restore default**), removing the folder replacement. The initial pattern of four columns is preserved. Tag circles measure 8 pt at 100% and are to the right of the name regardless of the Tag column.
 
-Os headers são clicáveis:
+Headers are clickable:
 
-- primeiro clique ordena de forma ascendente;
-- novo clique no mesmo campo inverte a direção;
-- o campo ativo mostra chevron para cima ou para baixo.
+- first click orders upward;
+- new click on the same field reverses the direction;
+- the field active shows chevron up or down.
 
 ### Linhas
 
-| Métrica | Valor base |
+| Metric | Valor base |
 | --- | ---: |
-| Altura da linha | `24 pt` |
-| Ícone | `16 pt` |
-| Inset horizontal da área | `8 pt` |
-| Inset interno da linha | `4 pt` |
-| Área da disclosure arrow | `18 pt` |
+| Line height | `24 pt` |
+| Icon | `16 pt` |
+| Horizontal Area Inset | `8 pt` |
+| Internal Line Inset | `4 pt` |
+| Area of disclosure arrow | `18 pt` |
 | Corner radius | `7 pt` |
-| Largura mínima da coluna Nome | `168 pt` |
-| Largura mínima da tabela | `612 pt` |
+| Minimum width of column Name | `168 pt` |
+| Minimum table width | `612 pt` |
 
-- Não usar linhas divisórias entre itens.
-- Alternar fundos para facilitar leitura: uma linha transparente e outra com `Color.primary.opacity(0.06)`.
-- As faixas claras e escuras devem ter exatamente a mesma altura.
-- A zebra deve preencher a hitbox, sem intervalos verticais.
-- O nome deve começar na mesma posição independentemente da largura visual do símbolo.
-- Cabeçalho e linhas formam uma única superfície horizontal e preservam exatamente o mesmo alinhamento durante a rolagem.
-- O cabeçalho mantém uma borda inferior visível separando-o dos arquivos e divisores verticais entre suas células. Todos os títulos usam inset interno de `6 pt` em relação aos divisores. Em Data de Modificação, Tamanho e Tipo, os valores usam o mesmo inset e permanecem alinhados aos respectivos títulos; o conteúdo das linhas da primeira coluna mantém seu alinhamento original. Os divisores não alteram as larguras das colunas nem restringem a área clicável usada para ordenação.
-- A tabela nunca deve reduzir a coluna Nome abaixo de `168 pt` para tentar caber na janela. Abaixo da largura mínima de `612 pt` em escala de 100%, ela conserva as larguras das colunas e passa a rolar horizontalmente.
-- Sem preview, a superfície da Lista ocupa toda a área principal e o conteúdo excedente continua à direita, acessível por rolagem horizontal.
-- Com preview, a largura útil da tabela é a largura da área principal menos a largura ajustável do painel à direita (padrão `300 pt`). Enquanto essa largura útil for menor que os `612 pt` mínimos, a tabela conserva suas colunas, transborda por trás do painel translúcido e a área rolável inclui uma folga final igual à largura do preview.
-- Assim que a tabela mínima couber inteira ao lado do preview, nenhuma coluna permanece encoberta. A coluna Nome só começa a crescer além de `168 pt` usando o espaço que sobrar depois de acomodar todas as outras colunas e o painel.
-- Enquanto a tabela exigir rolagem horizontal, os fundos alternados e de seleção das linhas ficam sem margem lateral e sem cantos arredondados, para que a borda visível não pareça diferente da borda encoberta. O conteúdo textual mantém o mesmo alinhamento com o cabeçalho. Quando a tabela voltar a caber inteira, retornam a margem de `8 pt` e o corner radius de `7 pt`.
-- Largura mínima da tabela, larguras das colunas e folga do preview acompanham a escala visual da janela.
+- No use dividing lines between items.
+- Toggle funds for easy reading: one transparent line and another with `Color.primary.opacity(0.06)`.
+- The light and dark bands must be exactly the same height.
+- The zebra must fill in the hitbox without vertical intervals.
+- The name shall start at the same position regardless of the visual width of the symbol.
+- Header and lines form a single horizontal surface and preserve exactly the same alignment during scrolling.
+- The header keeps a visible bottom edge separating it from the vertical files and splitters between your cells. All titles use internal inset of `6 pt` in relation to dividers. In Change Date, Size and Type, the values use the same insert and remain aligned to the respective titles; the content of the first column lines maintains its original alignment. The splitters do not change the widths of the columns or restrict the clickable area used for sorting.
+- The table must never reduce the Name column below `168 pt` to try to fit in the window. Below the minimum width of `612 pt` on a scale of 100%, it conserves the widths of the columns and starts rolling horizontally.
+- Without preview, the surface of List occupies the entire main area and the excess content continues to the right, accessible by scrolling horizontal.
+- With preview, the useful width of the table is the width of the main area minus the adjustable width of the panel to the right (default `300 pt`). As long as this useful width is smaller than the minimum `612 pt`, the table preserves its columns, overflows behind the translucent panel and the scrolling area includes a final clearance equal to the preview width.
+- As soon as the minimum table covers whole next to the preview, no column remains hidden. The Name column only begins to grow beyond `168 pt` using the space that remains after accommodating all the other columns and the panel.
+- As long as the table requires scrolling horizontal, the alternate and selection backgrounds of the lines are left without side margin and without rounded corners, so that the visible edge does not appear different from the covered edge. Textual content maintains the same alignment with header. When the table fits back whole, they return the `8 pt` margin and the `7 pt` radius corner.
+- Minimum table width, column widths, and preview clearance follow the visual scale of the window.
 
 ### Hierarquia
 
-- Pastas exibem chevron à direita quando recolhidas e para baixo quando expandidas.
-- Clicar diretamente no chevron expande ou recolhe.
-- `Option` + clique no chevron alterna toda a hierarquia: expande recursivamente quando o item raiz está recolhido e, quando ele já está expandido, recolhe o item raiz e todos os descendentes expandidos.
-- Filhos usam indentação de `20 pt` por nível.
-- Expandir não deve abrir a pasta como diretório atual.
-- Comandos de criação, cópia, movimentação e alias usam como destino o diretório que contém a linha ativa. Uma linha no nível raiz pertence ao diretório atual; uma linha filha visível pertence à pasta expandida imediatamente acima dela. A pasta selecionada nunca passa a ser o destino apenas por estar selecionada.
-- Pastas expandidas observam alterações no próprio diretório e atualizam seus filhos sem exigir recolher, navegar para outro local ou reabrir a pasta.
-- Quando o item ativo deixa de existir durante uma atualização, o cursor ocupa a mesma posição na ordem achatada, selecionando assim o próximo item; se não houver item nessa posição, seleciona o último item restante.
-- Com muitos itens, ordenação, projeção achatada da hierarquia e consulta de ícones devem ser reutilizadas enquanto suas entradas não mudarem. Atualizações de seleção e layout não podem repetir ordenações `O(n log n)` nem novas consultas ao `NSWorkspace` para cada linha visível.
+- Folders display chevron on the right when collected and down when expanded.
+- Click directly on chevron expands or collects.
+- `Option` + click the chevron alternates the entire hierarchy: expand recursively when the root item is collected and, when it is already expanded, collects the root item and all expanded descendants.
+- Children use indentation of `20 pt` per level.
+- Expand must not open the folder as current directory.
+- Create, copy, move, and alias commands use the directory containing the active line as a destination. A line at the root level belongs to the current directory; a visible child line belongs to the expanded folder immediately above it. The selected folder never becomes the destination just because it is selected.
+- Expanded folders observe changes in their own directory and update their children without requiring to collect, navigate to another location or reopen the folder.
+- When the active item ceases to exist during an update, the cursor occupies the same position in the flattened order, thus selecting the next item; if there is no item in this position, select the last remaining item.
+- With many items, sorting, flattening of the hierarchy and querying icons must be reused as long as their entries do not change. Selection and layout updates cannot repeat `O(n log n)` orders or new queries to `NSWorkspace` for each visible line.
 
-## 10. Visualização de colunas
+## 10. Column view
 
-- Cada coluna tem largura base de `260 pt`.
-- A primeira coluna começa na borda esquerda da área de conteúdo e conserva a largura base; a sobra à direita pertence ao espaço disponível para um preview que venha a ser carregado.
-- Linhas usam as mesmas métricas da visualização de lista.
-- Colunas têm separadores verticais discretos.
-- Selecionar uma pasta cria a próxima coluna.
-- Durante o carregamento da próxima coluna, preservar as linhas/seleção da coluna de origem e exibir apenas dados pertencentes à localização de destino. Sem dados próprios carregados, a nova coluna permanece sem linhas; nunca usar a lista global anterior como fallback nem duplicá-la por um quadro. A regra vale para pastas reais, archives e alternância de ramo.
-- Selecionar um item em uma coluna anterior elimina todas as colunas posteriores que não fazem mais parte do caminho.
-- O item selecionado na coluna ativa permanece azul mesmo depois que uma pasta abre a coluna seguinte; o carregamento dos filhos não pode limpar essa seleção nem rebaixá-la para cinza.
-- Seleções preservadas em colunas inativas recebem destaque cinza.
-- Ao sair de Colunas para Ícones, Lista ou Galeria, se o item ativo tiver aberto uma coluna filha, a nova visualização retorna para a localização da coluna ativa e mantém esse item selecionado. A troca não entra no item nem cria uma entrada no histórico.
-- Ao adicionar uma coluna ou preview além da largura visível, rolar horizontalmente até o fim.
-- Antes de expandir uma pasta/archive naquele ramo, cada preview carregado usa a largura livre à direita das colunas visíveis, respeitando o mínimo de 240 pt. Uma alteração manual do divisor vale apenas para o preview atual.
-- Ao expandir uma pasta/archive, exibir por inteiro a nova coluna à direita. Ela preenche o espaço restante, respeitando ao menos a largura base e 240 pt quando o preview está visível. Enquanto a visão segue alinhada à direita, o preview de arquivo na coluna anterior substitui essa coluna na mesma posição e largura.
-- Se o usuário rolar horizontalmente à esquerda, conservar a largura do preview atual mesmo quando parte dele ficar fora da janela. Ao selecionar outro arquivo, recalcular a largura do novo preview pela sobra à direita da coluna visível e preservar a posição de rolagem à esquerda; ao abrir uma pasta/archive, voltar a exibir a coluna terminal por inteiro e alinhar à direita.
-- Ao voltar para uma coluna anterior com o teclado, a pasta que originou a próxima coluna deve estar selecionada.
-- Selecionar um arquivo cria um painel de preview, não uma coluna de diretório vazia.
+- Each column has a base width of `260 pt`.
+- The first column begins at the left edge of the content area and retains the base width; the leftover to the right belongs to the space available for a preview that will be loaded.
+- Lines use the same metrics as the list view.
+- Columns have discrete vertical separators.
+- Selecting a folder creates the next column.
+- During loading the next column, preserve the lines/selection of the source column and display only data belonging to the destination location. Without own data loaded, the new column remains without rows; never use the previous global list as fallback or duplicate it by a frame. The rule applies to real folders, archives and branch alternation.
+- Selecting an item in a previous column eliminates all later columns that are no longer part of the path.
+- The item selected in the active column remains blue even after a folder opens the next column; the loading of children cannot clean this selection or lower it to gray.
+- Selections preserved in inactive columns receive gray highlight.
+- When leaving Columns to Icons, List or Gallery, if the active item has opened a child column, the new view returns to the location of the active column and keeps this item selected. The change does not enter the item or create an entry in the history.
+- When adding a column or preview beyond the visible width, scroll horizontally to the end.
+- Before expanding a folder/archive in that branch, each loaded preview uses the free width to the right of the visible columns, respecting the minimum of 240 pt. A manual splitter change is only valid for the current preview.
+- When expanding a folder/archive, fully display the new column on the right. It fills the remaining space, respecting at least the base width and 240 pt when the preview is visible. While the view is aligned to the right, the file preview in the previous column replaces this column in the same position and width.
+- If the user scrolls horizontally to the left, save the width of the current preview even when part of it is outside the window. When selecting another file, recalculate the width of the new preview by the left to the right of the visible column and preserve the position of scrolling to the left; when opening a folder/archive, re-show the terminal column whole and align to the right.
+- When returning to a previous column with the keyboard, the folder that originated the next column must be selected.
+- Selecting a file creates a preview panel, not an empty directory column.
 
-### Preview em colunas
+### Column preview
 
-- Largura inicial antes da expansão do ramo, ou após rolagem manual à esquerda: espaço disponível à direita das colunas abertas no momento do carregamento, com mínimo de `240 pt` e sem máximo. Após a expansão, previews seguintes naquele nível ocupam a faixa da coluna terminal enquanto a navegação permanecer alinhada à direita. O divisor permite ajuste manual apenas do preview atual.
-- Exibir preview do arquivo, nome, tipo, tamanho, datas e etiquetas.
-- Para múltiplos itens, exibir resumo agregado.
-- Usar Quick Look para conteúdo real quando disponível.
-- Avisos de extensões internas do Quick Look que não impedem o preview não devem ser confundidos com erros da aplicação.
+- Initial width before branch expansion, or after scrolling manual to the left: space available to the right of the open columns at the time of loading, with a minimum of `240 pt` and no maximum. After expansion, next previews at that level occupy the range of the terminal column while navigation remains aligned to the right. The splitter allows manual adjustment only of the current preview.
+- Display file preview, name, type, size, dates and tags.
+- For multiple items, display aggregated summary.
+- Use Quick Look for real content when available.
+- Warnings of internal Quick Look extensions that do not prevent preview must not be confused with application errors.
 
-## 11. Visualização de galeria
+## 11. Gallery view
 
-- Área principal dedicada ao preview.
-- Faixa horizontal de itens no rodapé, com altura base de `96 pt`.
-- Cada miniatura ocupa aproximadamente `96 × 72 pt`.
-- A miniatura selecionada recebe destaque discreto.
-- Clicar no espaço vazio da área principal ou da faixa inferior desfaz a seleção.
-- Quando não há seleção, deixar a área principal vazia; não mostrar “Pasta vazia”.
-- Metadados ficam em um inspector à direita, com largura inicial de `300 pt`, ajustável pelo divisor com o mouse e compartilhada com os previews de Ícones e Lista.
-- O inspector deve existir tanto para seleção simples quanto múltipla.
+- Main area dedicated to preview.
+- Horizontal range of items in the footer, with base height `96 pt`.
+- Each thumbnail occupies approximately `96 × 72 pt`.
+- The selected thumbnail gets discrete highlight.
+- Clicking on the empty space of the main area or the bottom range undoes the selection.
+- When there is no selection, leave the main area empty; do not show “empty folder”.
+- Metadata is in an inspector on the right, with an initial width of `300 pt`, adjustable by the splitter with the mouse and shared with the previews of Icons and List.
+- The inspector must exist for both simple and multiple selection.
 
-## 12. Preview e seleção múltipla
+## 12. Preview and multiple selection
 
-- A visibilidade do preview é persistida de forma independente para Ícones, Lista, Colunas e Galeria. Ao trocar de modo ou reabrir a aplicação, restaurar o último estado usado naquele modo sem sobrescrever os demais.
+- Preview visibility is independently persisted for Icons, List, Columns and Gallery. By changing mode or reopening the application, restore the last state used in that mode without overwriting the others.
 
-### Seleção simples
+### Simple Selection
 
-- Pasta: usar ícone real do sistema em tamanho grande.
-- Arquivo: usar Quick Look quando possível.
-- Para `.html` e `.htm`, renderizar o documento local no preview com o layout, CSS e recursos estáticos relativos ao arquivo, como no Finder; a troca de seleção descarta a página anterior. O conteúdo local estático aparece sem esperar recursos remotos. Imagens, CSS e fontes remotos referenciados pelo arquivo podem ser requisitados, como no Finder; não executar JavaScript do documento.
-- Exibir nome, tipo, tamanho, datas e etiquetas.
+- Folder: use real system icon in large size.
+- File: use Quick Look when possible.
+- For `.html` and `.htm`, render the local document in the preview with the layout, CSS and static features related to the file, as in Finder; the selection exchange discards the previous page. Static local content appears without waiting for remote features. Images, CSS and remote sources referenced by the file can be requested, as in Finder; do not execute JavaScript of document.
+- Display name, type, size, dates and tags.
 
-### Seleção múltipla
+### Multiple selection
 
-- Mostrar até cinco ícones no hero.
-- Tamanho base dos ícones: `200 pt`.
-- Criar uma pilha informal, com pequenas rotações e offsets.
-- Ordenar a pilha pela recência da seleção: o último item selecionado aparece sempre no topo.
-- O efeito deve lembrar papéis soltos, sem ângulos extremos.
-- Usar sombra discreta para separar as camadas.
-- Mostrar quantidade de itens, composição entre documentos e pastas, tamanho total, intervalo de datas e etiquetas agregadas.
-- No inspector compacto, usar no máximo três ícones pequenos empilhados.
+- Show up to five icons in hero.
+- Base icon size: `200 pt`.
+- Create an informal stack with small rotations and offsets.
+- Sort the stack by selection's recency: the last selected item always appears at the top.
+- The effect must remember loose papers, no extreme angles.
+- Use discrete shadow to separate layers.
+- Show amount of items, composition between documents and folders, total size, date range and aggregate tags.
+- In the compact inspector, use at most three small icons stacked.
 
-## 13. Navegação por teclado
+## 13. Keyboard navigation
 
-### Comandos globais
+### Global commands
 
-- `Command + ↑`: voltar para o diretório pai.
-- `Command + ↓`: abrir o item selecionado.
-- `Command + +` ou `Command + =`: aumentar escala.
+- `Command + ↑`: return to parent directory.
+- `Command + ↓`: open the selected item.
+- `Command + +` or `Command + =`: increase scale.
 - `Command + -`: diminuir escala.
-- `Command + 0`: restaurar escala para 100%.
+- `Command + 0`: restore scale to 100%.
 
-A escala atual varia de 70% a 160%, em passos de 10%.
+The current scale ranges from 70% to 160%, in steps of 10%.
 
-### Ícones
+### Icons
 
-- Esquerda/direita: item anterior ou seguinte na linha.
-- Cima/baixo: mesma coluna visual na linha anterior ou seguinte.
-- O cálculo deve usar a quantidade real de colunas da grade.
+- Left/right: previous or next item on the line.
+- Up/down: same visual column on the previous line or next.
+- The calculation shall be use the actual amount of columns in the grid.
 
-### Lista
+### List
 
-- Cima/baixo: mover entre linhas visíveis.
-- Direita: expandir a pasta selecionada.
-- Esquerda: recolher pasta expandida; se já estiver recolhida, selecionar o pai visível. No nível raiz, não há ação.
+- Up/down: move between visible lines.
+- Right: expand the selected folder.
+- Left: collect expanded folder; if already collected, select the visible parent. At the root level, there's no action.
 
-### Colunas
+### Columns
 
-- Cima/baixo: mover entre itens da coluna ativa.
-- Esquerda/direita: mover entre colunas.
-- Direita sobre pasta: abrir próxima coluna.
-- Esquerda: voltar mantendo selecionada a pasta que originou a coluna seguinte.
+- Up/down: move between active column items.
+- Left/right: move between columns.
+- Right on folder: open next column.
+- Left: return by keeping selected the folder that originated the next column.
 
-### Galeria
+### Gallery
 
-- Esquerda/direita percorrem a faixa de itens.
-- A miniatura selecionada deve rolar para a área visível.
+- Left/right run the item range.
+- The selected thumbnail must scroll to the visible area.
 
-## 14. Ícones e dados reais
+## 14. Icons and real data
 
-- Usar `NSWorkspace.shared.icon(forFile:)` para obter os mesmos ícones do sistema.
-- Não pintar pastas e documentos com um azul arbitrário quando houver ícone real disponível.
-- Diretórios dentro de archives preservam a pasta nativa e recebem o selo da **v6 aprovada**, com cavidade circular e volume interno da prensa/Z. A faixa e toda a linha do círculo são contínuas sobre o cilindro, que alcança a abertura sem ultrapassá-la. A forma, luz e sombra usam a referência aprovada, por máscaras neutras que modulam o material da pasta; não copiar o fundo azul nem substituir a pasta por uma imagem completa. A iluminação atual é fixa; mapa de altura/luz dinâmica era uma proposta anterior, não a técnica implementada.
-- Até 32 pt inclusive, centralizar o selo na face; acima disso, usar a face inferior direita. Ajustar pelo tamanho após zoom: 48% de diâmetro no compacto, 38% até 48 pt, 34% abaixo de 128 pt e 30% nos previews grandes, com posicionamento mais alto aprovado. Um único recurso alimenta todas as escalas.
-- Pastas locais comuns reutilizam a composição nativa refinada das pastas internas, removendo somente o selo de compressão. Manter os quatro estados (aberta/fechada, vazia/com conteúdo), material, borda sobre o papel e perspectiva aprovados; usar a composição compartilhada nos quatro modos, previews e Informações. Na Lista, expansão abre linha e preview; recolhimento fecha. Outros modos não herdam expansão anterior. Preservar a transição aberta no drop local e a detecção de qualquer filho direto (incluindo ocultos e subpastas). Arquivos e packages mantêm seus ícones específicos do sistema.
-- Pastas internas com arquivos usam uma pasta **fechada**, com faixa de papel larga e cantos arredondados atrás da face nativa, conforme a referência do usuário. O papel deve ficar atrás de toda a borda superior arredondada da face: restaurar o recorte completo da face nativa acima do papel, sem interrompê-la com corte horizontal abaixo da borda. O selo aprovado permanece na face. Detectar arquivos pelos metadados reais do archive, inclusive descendentes, ocultos e zero bytes; não inferir pelo tamanho agregado. Pastas vazias ou apenas com subpastas vazias mantêm a versão sem papel. A antiga versão aberta de estudo foi rejeitada e retirada do compositor; a regra abaixo define a nova pasta aberta aprovada. Aplicar o mesmo estado em Lista, Colunas, Ícones, Galeria e previews. Histórico, referências e [plano](../Design/ArchiveFolderStamp/DEBOSSING-PLAN.md) preservados em `../Design/ArchiveFolderStamp`; a v6 foi autorizada e integrada.
-- **Pasta aberta aprovada e integrada:** na Lista, a expansão de um diretório interno troca seu ícone e o hero do preview pela versão aberta da mesma pasta nativa com selo aprovado; aplicar também aos heros de seleção múltipla. Recolher restaura a pasta fechada, com papel apenas quando há arquivos. Seleção não equivale a expansão. A composição deve preservar cor, gradiente e cantos arredondados da pasta fechada, inclinar face e selo juntos e ter sombra de contato; a área atrás do papel deve mostrar somente o painel traseiro, sem sobras arredondadas da face fechada nas duas laterais e sem linhas/faixas horizontais junto ao papel; usar gradiente contínuo do material traseiro para essa região, amostrado apenas acima da face fechada; a versão vazia deve ter painel contínuo, sem silhueta/gradiente residual do papel e sem degrau na borda esquerda; remover o contorno cinza do papel, sem recortes/vazados; manter a largura da base original e alargar somente a borda superior da face que avança para o observador; não usar o recurso antigo `ofld`, cuja textura e base foram rejeitadas pelo usuário. Os outros três modos mantêm o estado fechado. A nova proposta v7 substitui apenas a antiga ideia de pasta aberta; o estudo aberto anterior permanece rejeitado. Drag and drop de itens internos de archives ainda é pendência, sem novo comportamento de arraste nesta integração.
+- Use `NSWorkspace.shared.icon(forFile:)` to get the same system icons.
+- Do not paint folders and documents with an arbitrary blue when there is real icon available.
+- Directories within archives preserve the native folder and receive the approved **v6 stamp**, with circular cavity and internal volume of the press/Z. The belt and the entire circle line are continuous over the cylinder, which reaches the opening without overtaking it. The shape, light and shadow use the approved reference, by neutral masks that modulate the folder material; do not copy the blue background or replace the folder with a full image. The current lighting is fixed; dynamic height/light map was a previous proposal, not the technique implemented.
+- Up to and including 32 pt, centralize the stamp on the face; above that, use the right lower face. Adjust by size after zoom: 48% diameter in compact, 38% up to 48 pt, 34% below 128 pt and 30% in large previews, with higher approved positioning. A single resource feeds all scales.
+- Common local folders reuse the refined native composition of internal folders by removing only the compression stamp. Keep the four states (open/closed, empty/with content), material, edge on paper and approved perspective; use the composition shared in the four modes, previews and Information. In List, expansion opens line and preview; Recollection closes. Other modes do not inherit previous expansion. Preserve the open transition in the local drop and the detection of any direct child (including hidden and subfolders). Files and packages keep their system-specific icons.
+- Internal folders containing files use a **closed** folder, with a wide strip of paper and rounded corners behind the native face, following the user's reference. The paper must be behind the entire rounded upper edge of the face: restore the full cut of the native face above the paper without interrupting it with horizontal cut below the edge. The approved stamp remains on the face. Detect files by the actual archive metadata, including descendants, hidden and zero bytes; do not infer by aggregate size. Empty folders or only empty subfolders keep the version paperless. The old open version of study was rejected and removed from the composer; the rule below defines the new approved open folder. Apply the same state at List, Columns, Icons, Gallery and previews. History, references and [plan](../Design/ArchiveFolderStamp/DEBOSSING-PLAN.md) preserved in `../Design/ArchiveFolderStamp`; v6 was authorized and integrated.
+- **Approved and integrated open folder:** in List, the expansion of an internal directory changes its icon and the hero of the preview for the open version of the same native folder with approved stamp; apply also to multiple selection heroes. Collect restores closed folder, with paper only when there are files. Selection does not equal expansion. The composition must preserve color, gradient and rounded corners of the closed folder, tilt face and stamp together and have contact shadow; the area behind the paper shall show only the rear panel, without rounded leftovers of the closed face on both sides and without horizontal lines/bands next to the paper; use continuous gradient of the rear material to that region, sampled only above the closed face; the empty version must have continuous panel, without silhouette/gradient residual paper and without step on the left edge; remove the grey outline of the paper, without cutting/empty; maintain the width of the original base and extend only the upper edge of the face that advances to the observer; not use the old feature `ofld`, whose texture and base were rejected by the user. The other three modes keep the state closed. The new proposal v7 replaces only the old open folder idea; the previous open study remains rejected. Drag and drop of archives internal items is still pending, without new drag behavior in this integration.
 
-- Usar `URLResourceValues` para tamanho, datas e etiquetas.
-- Separar leitura do sistema de arquivos, estado de navegação e composição visual.
-- As visualizações usam os itens reais do serviço de arquivos, de Recentes ou do motor de archives. Fixtures de desenvolvimento não definem o conteúdo mostrado ao usuário.
+- Use `URLResourceValues` for size, dates and tags.
+- Separate file system reading, navigation status and visual composition.
+- The views use actual file service items, Recents or archives engine. Development Fixtures do not define the content shown to the user.
 
-## 15. Localização
+## 15. Location
 
-### Referência de atalhos
+### Shortcut Reference
 
-- O menu Ajuda contém `Keyboard Shortcuts…` (`Command + /`), que abre uma janela auxiliar única da aplicação.
-- A janela agrupa comandos de arquivos, navegação, visualização, preview e interações modificadas com mouse ou arraste. A referência deve permanecer sincronizada com os atalhos realmente registrados nos menus e handlers da aplicação.
-- A janela oferece busca nativa na toolbar e filtra ações, categorias e representações dos atalhos sem ocultar o agrupamento dos resultados.
-- As combinações usam os glifos nativos do macOS (`⌃`, `⌥`, `⇧` e `⌘`) e mantêm a ação correspondente legível e localizável.
-- Quando uma mesma ação aceita mais de uma combinação equivalente, como Quick Look com `Space` ou `Command + Y`, ela ocupa uma única linha e apresenta as combinações em cápsulas separadas lado a lado.
+- The Help menu contains `Keyboard Shortcuts…` (`Command + /`), which opens a unique auxiliary window of the application.
+- The window groups file commands, navigation, preview, and modified mouse interactions or drag. The reference must remain synchronized with the shortcuts actually recorded in the application menus and handlers.
+- The window offers native search in the toolbar and filters actions, categories and representations of shortcuts without concealing the grouping of results.
+- The combinations use the native glyphs of macOS (`⌃`, `⌥`, `⇧` and `⌘`) and maintain the corresponding action readable and traceable.
+- When a single action accepts more than one equivalent combination, such as Quick Look with `Space` or `Command + Y`, it occupies a single line and presents the combinations in separate capsules side by side.
 
 Idiomas atuais:
 
-- inglês;
-- português do Brasil.
+- English;
+- Brazilian Portuguese.
 
 Regras:
 
-- A preferência padrão é o idioma do sistema.
-- Percorrer `Locale.preferredLanguages` até encontrar um idioma suportado.
-- Mapear qualquer variante de português para `pt-BR` enquanto for a única tradução em português.
-- Mapear inglês para `en`.
-- Se nenhum idioma puder ser mapeado, usar inglês.
-- Permitir escolha manual em Settings.
-- Persistir a escolha em `UserDefaults` por meio de `FileBrowserPreferences`.
-- Injetar a `Locale` selecionada no ambiente SwiftUI.
-- Manter textos em String Catalog (`Localizable.xcstrings`).
-- Datas, tamanhos e plurais devem respeitar a locale ativa.
+- The default preference is the system language.
+- Walk `Locale.preferredLanguages` until you find a supported language.
+- Map any variant of Portuguese to `pt-BR` while it is the only Portuguese translation.
+- Map English to `en`.
+- If no language can be mapped, use English.
+- Allow manual choice in Settings.
+- Continue the choice at `UserDefaults` by means of `FileBrowserPreferences`.
+- Inject the selected `Locale` into the SwiftUI environment.
+- Keep texts in String Catalog (`Localizable.xcstrings`).
+- Dates, sizes and plurals must respect the active locale.
 
-## 16. Acessibilidade e foco
+## 16. Accessibility and focus
 
-- Todo botão apenas com ícone precisa de label de acessibilidade e help.
-- Disclosure arrows devem anunciar expandir ou recolher.
-- Controles da toolbar não devem capturar permanentemente o foco do conteúdo.
-- Após trocar visualização ou executar uma ação de toolbar, devolver foco ao navegador de arquivos.
-- Durante navegação rápida, coalescer restauração de foco, rolagens e carregamentos de preview; antes de publicar um preview pendente, confirmar que o item ainda é a seleção primária.
-- Usar cores semânticas do sistema para temas claro, escuro, contraste aumentado e cor de destaque.
-- Não depender apenas de cor para indicar direção de ordenação, expansão ou tipo de controle.
-- Hitboxes devem ser maiores que o desenho visual sempre que necessário.
+- Every button just with icon needs accessibility label and help.
+- Dislosure arrows must announce expand or collect.
+- Toolbar controls must not permanently capture the focus of the content.
+- After exchanging preview or performing a toolbar action, return focus to the file browser.
+- During fast navigation, coalesce focus restoration, rolling and preview loadings; before publishing a pending preview, confirm that the item is still the primary selection.
+- Use semantic system colors for light, dark, enhanced contrast and highlight color themes.
+- Do not depend only on color to indicate direction of sorting, expansion or type of control.
+- Hitboxes must be bigger than visual drawing whenever necessary.
 
-## 17. Feedback de ações
+## 17. Share feedback
 
-- Ações concluídas podem usar um aviso temporário no topo do conteúdo.
-- O feedback deve ser curto, animado e desaparecer automaticamente.
-- Menus de contexto e toolbar devem chamar o mesmo modelo de ações.
-- Uma ação desabilitada deve permanecer visível quando isso ajuda o usuário a entender sua disponibilidade.
-- Os comandos de archive executam operações reais e preservam a mesma hierarquia visual nos menus e na toolbar.
-- Em Settings, Compactação apresenta o perfil padrão e um editor de perfis com criação, atualização e exclusão. `Compress Custom…` permite escolher um perfil e ajustar opções somente para a operação atual; criação e salvamento de perfis ficam exclusivamente em Settings. A folha de compactação usa Save As, Tags e Where em linhas separadas com controles largos; o seletor de perfil se estende até a borda direita da grade. Where abre um seletor nativo de pasta. A altura acompanha o conteúdo visível, sem campo de nome de perfil nem ações de salvar perfil. A [alternativa A](../Design/CompressionModal/ALTERNATIVES.md) define uma grade compacta de duas colunas, com `Protect with password` à esquerda logo abaixo de `Solid archive`; ao marcar a proteção, os campos seguros de senha e confirmação aparecem abaixo do check na coluna esquerda, e o painel cresce para mantê-los inteiramente visíveis. Ao desmarcar, o painel encolhe; `Encrypt file names` permanece na coluna direita. Exibir apenas controles aceitos pelo formato e método selecionados: nível, método, dicionário, bytes rápidos, sólido, threads, senha, nomes criptografados em 7z e tipo de criptografia ZIP. Senhas são confirmadas em campo seguro e permanecem somente em memória nesta sessão; um perfil que exige senha solicita-a novamente quando não houver valor em memória. A compactação rápida usa o perfil padrão, inclusive nas quatro visualizações e em Recentes.
-- Após avaliar a grade, o usuário decidiu manter Save As, Tags e Where em linhas próprias e ampliar os três controles. A folha própria substitui o topo estreito do `NSSavePanel`; [os estudos anteriores](../Design/CompressionModal/ALTERNATIVES.md#refinamento-em-avaliação) permanecem como histórico de exploração. O destino continua sendo escolhido pelo seletor nativo do macOS.
-- Na folha implementada, cabeçalho, área superior, grade de opções e rodapé compartilham a mesma margem lateral de 20 pt. `Tags` e `Where` têm a mesma largura; `Save As` acompanha essa largura e os limites direitos desses controles, do seletor de perfil, da coluna direita e de Save ficam alinhados. Os seletores de opções têm rótulos acima e controles de largura uniforme por coluna. A [consulta às fontes Apple](../Design/CompressionModal/ALTERNATIVES.md#direção-após-consulta-às-diretrizes-apple) confirmou que rótulos superiores são compatíveis com os princípios de alinhamento, associação e adaptação, embora o `Form` macOS padrão apresente rótulos laterais. Preservar controles nativos, ordem de foco, VoiceOver, localização, espaçamento e expansão vertical da senha. A folha própria mantém a escolha de pasta pelo `NSOpenPanel` e grava tags no archive criado; conferir esses fluxos em archive real, além da revisão visual nos idiomas suportados.
+- Completed actions can use a temporary warning at the top of the content.
+- The feedback must be short, animated and disappear automatically.
+- Context and toolbar menus must call the same action model.
+- A disabled action must remain visible when it helps the user understand its availability.
+- The archive commands perform real operations and preserve the same visual hierarchy in the menus and toolbar.
+- In Settings, Compacting presents the default profile and a profile editor with creation, updating and deletion. `Compress Custom…` allows you to choose a profile and adjust options only for the current operation; creation and saving of profiles are exclusively in Settings. The compaction sheet uses Save As, Tags and Where in separate lines with wide controls; the profile selector extends to the right edge of the grid. Where opens a folder selector native. Height follows visible content without field profile name or actions to save profile. The [alternativa A](../Design/CompressionModal/ALTERNATIVES.md) defines a compact grid of two columns, with `Protect with password` on the left just below `Solid archive`; by marking the protection, the secure password and confirmation fields appear below the check in the left column, and the panel grows to keep them fully visible. When unchecking, the panel shrinks; `Encrypt file names` remains in the right column. Display only controls accepted by the selected format and method: level, method, dictionary, fast bytes, solid, threads, password, encrypted names in 7z and type of encryption ZIP. Passwords are confirmed in field secure and remain only in memory in this session; a profile that requires password requests it again when there is no memory value. Quick compression uses the default profile, including the four views and Recents.
+- After evaluating the grid, the user decided to keep Save As, Tags and Where on their own lines and expand the three controls. The own sheet replaces the narrow top of `NSSavePanel`; [the previous studies](../Design/CompressionModal/ALTERNATIVES.md#appraisal-refinement) remain as a history of exploration. The destination continues to be chosen by the native macOS selector.
+- In the implemented sheet, header, upper area, grid of options and footer share the same side margin of 20 pt. `Tags` and `Where` are the same width; `Save As` follows this width and the right limits of these controls, the profile selector, the right column and Save are aligned. The options selectors have labels above and uniform width controls per column. The [Apple sources want](../Design/CompressionModal/ALTERNATIVES.md#direction-after-consultation-of-apple-guidelines) confirmed that superior labels are compatible with the principles of alignment, association and adaptation, although the `Form` macOS standard has side labels. Preserve native controls, focus order, VoiceOver, location, spacing and vertical expansion of the password. The own sheet maintains the folder choice by `NSOpenPanel` and saves tags in archive created; check these flows in archive real, in addition to visual review in supported languages.
 
-## 18. Organização vigente
+## 18. Existing organisation
 
-`FileBrowserState` coordena navegação, seleção, operações e preview por janela; `FileSystemService` e os demais serviços isolam o acesso a arquivos e archives. `ContentView` compõe janela e toolbar. Sidebar, preview e cada um dos quatro modos possuem views próprias, enquanto componentes e métricas compartilhados residem em arquivos comuns. Todas as visualizações projetam o mesmo estado por janela; não duplicar seleção ou navegação ao evoluir uma delas. A fonte para pontos de código e limites de evidência é [`CURRENT-STATE.md`](CURRENT-STATE.md).
+`FileBrowserState` coordinates navigation, selection, operations and window preview; `FileSystemService` and the other services isolate access to files and archives. `ContentView` composes window and toolbar. Sidebar, preview and each of the four modes have their own views, while shared components and metrics reside in common files. All views project the same state by window; do not duplicate selection or navigation when evolving one of them. The source for code points and evidence limits is [`CURRENT-STATE.md`](CURRENT-STATE.md).
 
-## 19. Checklist de regressão
+## 19. Regression checklist
 
-Antes de considerar uma mudança visual concluída, verificar:
+Before considering a completed visual change, check:
 
-### Janela e toolbar
+### Window and toolbar
 
-- redimensionar lentamente da largura máxima até a mínima e voltar;
-- confirmar a ordem dos dois breakpoints da toolbar;
-- confirmar que nenhum controle volta com espaçamento corrompido;
-- abrir todos os menus na apresentação completa e compacta;
-- verificar títulos de diretório muito longos;
-- testar sidebar aberta, oculta automaticamente e oculta manualmente.
+- slowly resize from maximum width to minimum and return;
+- confirm the order of the two breakpoints of the toolbar;
+- confirm that no control returns with corrupted spacing;
+- open all menus in full and compact presentation;
+- check very long directory titles;
+- test open sidebar, hide automatically and hide manually.
 
-### Conteúdo
+### Content
 
-- testar diretório vazio, poucos itens e muitos itens;
-- testar nomes longos e extensões variadas;
-- testar clique simples, duplo, secundário e área vazia;
-- testar seleção simples, `Command`, `Shift` e seleção por teclado;
-- trocar entre as quatro visualizações com seleção ativa;
-- navegar profundamente e voltar para níveis anteriores.
+- test empty directory, few items and many items;
+- test long names and varied extensions;
+- test simple click, double, secondary and empty area;
+- test simple selection, `Command`, `Shift` and keyboard selection;
+- switch between the four views with active selection;
+- navigate deeply and return to previous levels.
 
-### Aparência e acessibilidade
+### Appearance and accessibility
 
-- tema claro e escuro;
-- cor de destaque diferente de azul;
-- português e inglês;
-- zoom de 70%, 100% e 160%;
-- foco de teclado depois de interagir com a toolbar;
-- labels de acessibilidade e tooltips dos controles por ícone.
+- light and dark theme;
+- distinguishing colour other than blue;
+- Portuguese and English;
+- zoom 70%, 100% and 160%;
+- keyboard focus after interacting with toolbar;
+- accessibility labels and controls tooltips by icon.
 
-## 20. Critério para novas decisões
+## 20. Criteria for new decisions
 
-Ao surgir uma dúvida de UI/UX:
+When a doubt of UI/UX arises:
 
-1. observar o comportamento atual do Finder e de aplicativos nativos equivalentes;
-2. identificar se o comportamento vem do SwiftUI, da `NSToolbar`, do AppKit ou do nosso layout;
-3. preferir API semântica do sistema quando ela produz o comportamento desejado;
-4. não depender de comportamento automático que já tenha se mostrado instável durante resize ou overflow;
-5. quando necessário, criar adaptação explícita e determinística;
-6. manter a ponte AppKit pequena, isolada e substituível;
-7. testar a sequência completa de estados, não apenas a aparência estática final;
-8. registrar neste documento a decisão e o motivo.
+1. observe the current behavior of Finder and equivalent native applications;
+2. identify whether the behavior comes from SwiftUI, `NSToolbar`, AppKit or our layout;
+3. prefer system semantic API when it produces desired behavior;
+4. do not depend on automatic behavior that has already proved unstable during resize or overflow;
+5. where necessary, create explicit and deterministic adaptation;
+6. maintain the bridge AppKit small, isolated and replaceable;
+7. test the complete sequence of states, not just the final static appearance;
+8. record in this document the decision and the reason.
 
-### Edição de tags — 2026-10-03
+### Tag Editing — 2026-10-03
 
-O menu de contexto e o ícone entre Share e reticências abrem a mesma folha de edição localizada. Mostrar estado integral/parcial das tags na seleção múltipla, catálogo existente e criação por nome/cor, com Cancelar e Aplicar. Preservar tags não editadas de cada item. A pilha de círculos avança da direita para a esquerda e a primeira tag colorida à esquerda (última colorida nos metadados) define a cor da pasta nos quatro modos, previews e drop; packages e arquivos mantêm seus ícones. Conferir a nova largura do grupo nas transições de toolbar antes de declarar a validação visual completa.
+The context menu and icon between Share and ellipsis open the same localized editing sheet. Show integral/partial status of tags in multiple selection, existing catalog and creation by name/color, with Cancel and Apply. Preserve unedited tags for each item. The stack of circles advances from right to left and the first color tag on the left (last color in metadata) defines the color of the folder in the four modes, previews and drop; packages and files keep their icons. Check the new width of group in the toolbar transitions before declaring full visual validation.
 
-#### Refinamento dos menus e material da pasta — 2026-10-03
+#### Menu refinement and folder material — 2026-10-03
 
-A seção de tags em contexto e reticências/overflow tem duas linhas: sete primeiros nomes do catálogo em círculos (sem mostrar os demais), seguidos por Edit Tags com símbolo `tag`. Check indica aplicação em todos os alvos; hover mostra x nos aplicados e + nos não aplicados. Seleção parcial usa traço e hover +, aplicando a todos ao clicar. O clique rápido grava imediatamente; Edit Tags continua abrindo a folha. A linha customizada AppKit mantém tooltips, estado e nomes para acessibilidade; o editor completo continua disponível como item convencional de teclado.
+The context tag and ellipsis/overflow section has two lines: seven first names of the catalog in circles (without showing the others), followed by Edit Tags with `tag` symbol. Check indicates application for all targets; hover shows x on applied and + on not applied. Partial selection uses dash and hover +, applying to everyone when clicking. Quick click records immediately; Edit Tags keeps opening the sheet. The custom line AppKit maintains tooltips, status and accessibility names; the complete editor remains available as a conventional keyboard item.
 
-Os círculos de tags na Lista preservam a ordem dos metadados invertida visualmente, com o círculo à esquerda cobrindo parte do vizinho à direita. A pasta adota a primeira cor dessa pilha, ignorando tags sem cor. A recoloração deve substituir apenas a matiz do material azul, preservar luminosidade, sombras, papel branco e detalhes neutros, e renderizar as representações nativas em resolução de preview antes da alteração de pixels. Não aplicar uma camada uniforme sobre a pasta composta. Os ícones de sistema continuam sendo obtidos por APIs públicas, sem recursos privados do Finder.
+Tag circles in List preserve the order of visually inverted metadata, with the circle on the left covering part of the neighbor on the right. The folder adopts the first color of this stack, ignoring colorless tags. Recollection must replace only the hue of the blue material, preserve luminosity, shadows, white paper and neutral details, and render native representations in preview resolution before pixel change. Not apply a uniform layer on the compound folder. System icons continue to be obtained by public APIs without private Finder resources.
 
-### Recepção da saída de archive — refinamento de 2026-10-04
+### Output reception of archive — refinement of 2026-10-04
 
-Soltar na pasta real deve publicar o arquivo nessa pasta com seu nome, não apenas aceitar o gesto ou selecionar o item. Receptores nativos em pastas/área livre/sidebar recebem a identidade virtual diretamente e fornecem a URL do destino à extração. Não aguardar a conversão da promessa em URL antes de escolher esse destino. Hit testing nativo limita-se ao gesto ativo, preservando cliques após o drop enquanto a exportação termina. A sessão por evento começa durante mouseDragged no host comum aos frames de todos os itens, no macOS 26/27. A fonte e sua representação são compartilhadas com itens locais. Entrega por gesto real em pastas do Zforge nos quatro modos está executada; cobertura externa/visual detalhada na matriz de regressão.
+Release in the real folder must publish the file in this folder with its name, not just accept gesture or select the item. Native receivers in folders/free area/sidebar receive the virtual identity directly and provide the destination URL to the extraction. Do not wait for the conversion of the promise to URL before choosing this destination. Hit testing native is limited to gesture active, preserving clicks after drop while export ends. The session per event begins during mouseDragged in the common host to frames of all items, in macOS 26/27. The source and its representation are shared with local items. Delivery by gesture real in Zforge folders in all four modes is executed; external/visual coverage detailed in the regression matrix.
 
-### ZF-30 — contrato de interação implementado em 2026-10-04
+### ZF-30 — interaction contract implemented in 2026-10-04
 
-O [plano vigente](ARCHIVE-DRAG-DROP-PLAN.md) amplia a ZF-30 para reorganização dentro do próprio archive. O usuário confirmou o badge na saída, mas reportou operações sem efeito e divergência visual. As regras abaixo foram implementadas com testes do motor/estado e gestos reais de UI; os limites de conferência visual e externa permanecem explícitos em REGRESSION-COVERAGE.
+The [plan current](ARCHIVE-DRAG-DROP-PLAN.md) magnifies the ZF-30 for reorganization within the archive itself. The user confirmed the badge on exit, but reported no effect operations and visual divergence. The rules below were implemented with motor/state tests and gestures real of UI; the limits of visual and external check remain explicit in REGRESSSION-COVERAGE.
 
-- Toda a apresentação do drag replica o item local equivalente no modo atual: linha na Lista, representação/formação do modo nos outros três, dimensões, ponto de captura, início/conclusão/cancelamento, feedback do alvo e seleção múltipla. Eliminar o ícone grande substituindo a linha e o salto desde o topo.
-- Item interno para fora: sem Option copia/extrai com badge; Option move/extrai e remove a origem, sem badge. Item interno para a raiz ou pasta do próprio archive: sem Option move; Option copia com badge. Destino e modificador atualizam o indicador durante o gesto e são capturados ao soltar.
-- Antes de movimentos que modificam o archive, aviso nativo identifica o original, itens e destino e informa que o arquivo compactado original será modificado. Return/Enter aprova, Escape cancela, Tab/Shift+Tab e Space permitem operar os controles sem mouse. Isso cobre Option + saída e movimento interno sem Option. Cancelamento anterior à execução não grava em nenhum destino. Cópia interna mantém a confirmação de alteração usada ao adicionar conteúdo.
-- Cópia/movimento internos regravam o próprio archive de forma validada, tratam conflitos, impedem ciclos e conservam origem em cópias. Após sucesso, manter hierarquia sobrevivente, revelar o destino interno e preservar outras árvores. Transferência entre archives diferentes permanece fora dessa decisão.
+- The entire drag presentation replicates the equivalent local item in the current mode: line in List, representation/form formation in the other three dimensions, capture point, start/conclusion/cancellation, feedback from target and multiple selection. Eliminate the large icon by replacing the line and jump from the top.
+- Internal item out: without option copy/extrait with badge; Option moves/extracts and removes origin without badge. Internal item for root or folder of own archive: without Option moves; Option copies with badge. Destination and modifier update the indicator during gesture and are captured on release.
+- Before movements that modify archive, native warning identifies the original, items and destination and informs that the original compressed file will be modified. Return/Enter approves, Escape cancels, Tab/Shift+Tab and Space allow you to operate the mouseless controls. This covers Option + output and internal movement without Option. Cancellation prior to execution does not save to any destination. Internal copy keeps the change confirmation used when adding content.
+- Internal copy/movement regulated their own archive in a validated way, deal with conflicts, prevent cycles and keep origin in copies. After success, maintain surviving hierarchy, reveal the inner destiny and preserve other trees. Transfer between different archives remains outside that decision.
 
-### Navegação após mutação de archive — D-34, 2026-10-04
+### Navigation after mutation of archive — D-34, 2026-10-04
 
-Adição, exclusão, saída por movimento e reorganização interna compartilham o restauro da navegação. Os breadcrumbs, Voltar/Avançar e Colunas devem apontar para a mesma sessão renovada: preservar a ordem do histórico e seus diretórios sobreviventes, descartando apenas caminhos removidos ou sessões aninhadas invalidadas. Revelar outro diretório é navegação e permite voltar ao local exibido antes da operação. Se o diretório exibido desaparecer, recuar ao ancestral sobrevivente mais próximo, sem criar uma parada duplicada. Recarregar os itens de cada ancestral das colunas, inclusive a pasta real que contém o archive, e selecionar a entrada que abre o nível seguinte. Preservar o restauro de disclosures/seleção do resultado na Lista e o estado dos demais archives.
+Addition, exclusion, exit by movement and internal reorganization share the restoration of navigation. Breadcrumbs, Back/Next and Columns must point to the same renewed session: preserve the history order and its surviving directories, discarding only removed paths or invalidated nested sessions. Revealing another directory is navigation and allows you to return to the displayed location before operation. If the directory displayed disappears, back to the nearest surviving ancestor without creating a duplicate stop. Reload items from each ancestor of columns, including the actual folder containing archive, and select the entry that opens the next level. Preserve the restoration of disclosures/selection of the result in List and the status of the others archives.

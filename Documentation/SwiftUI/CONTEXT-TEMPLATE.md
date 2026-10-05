@@ -1,56 +1,55 @@
 ---
-title: "<título oficial>"
-source_url: "https://developer.apple.com/<caminho-canônico>"
-source_identifier: "<identificador DocC ou URL>"
+title: "<official title>"
+source_url: "https://developer.apple.com/<canonical-path>"
+source_identifier: "<DocC identifier or URL>"
 captured_at: "<ISO-8601 UTC>"
 source_sha256: "<sha256>"
 source_etag: null
 source_last_modified: null
 source_format: "<application/json|text/html>"
-depth: <profundidade>
+depth: <depth>
 categories: ["On-demand expansion"]
 language: "en"
 authority: "Apple Developer"
 confidence: "primary-source"
 ---
 
-# <Título>
+# <Title>
 
-Contexto normalizado para recuperação rápida. A URL oficial e o hash permitem verificar mudanças; este arquivo não substitui a fonte.
+Context normalized for quick retrieval. The official URL and hash allow changes to be verified; this file does not replace the source.
 
-## Consulta rápida
+## Quick reference
 
-- Papel: <framework, collection, article, protocol, structure...>
-- Módulo: <módulo>
-- Relevância para Zforge: <direta, contextual ou não aplicável, com justificativa macOS>
-- Disponibilidade: <plataformas e versões>
-- Declaração: `<assinatura, se aplicável>`
+- Role: <framework, collection, article, protocol, structure...>
+- Module: <module>
+- Relevance to Zforge: <direct, contextual, or not applicable, with a macOS rationale>
+- Availability: <platforms and versions>
+- Declaration: `<signature, if applicable>`
 
-## Síntese
+## Summary
 
-<Resumo compacto da finalidade, do modelo mental e das recomendações da Apple. Não copiar a página integral.>
+<Compact summary of the purpose, mental model, and Apple's recommendations. Do not copy the entire page.>
 
-## Implicações práticas
+## Practical implications
 
-- <boa prática ou restrição>
-- <efeito sobre uma decisão do Zforge>
-- <incerteza, versão ou validação necessária>
+- <recommended practice or restriction>
+- <effect on a Zforge decision>
+- <uncertainty, version, or required validation>
 
-## Mapa do conteúdo
+## Content map
 
-- <seção principal>
-- <seção principal>
+- <section>
+- <section>
 
-## Links do segundo nível
+## Second-level links
 
-### <grupo>
+### <group>
 
-- [<título>](https://developer.apple.com/<link-ainda-não-ingerido>) — _Apple Developer; expandir sob demanda_
+- [<title>](https://developer.apple.com/<link-not-yet-ingested>) — _Apple Developer; expand on demand_
 
-## Proveniência
+## Provenance
 
-- Fonte: [Apple Developer](https://developer.apple.com/<caminho-canônico>)
-- Captura: `<ISO-8601 UTC>`
-- SHA-256 do payload: `<sha256>`
-- Escopo: uma página; os links absolutos acima ainda não foram percorridos.
-
+- Source: [Apple Developer](https://developer.apple.com/<canonical-path>)
+- Captured: `<ISO-8601 UTC>`
+- Payload SHA-256: `<sha256>`
+- Scope: one page; the absolute links above have not yet been traversed.

@@ -4,15 +4,15 @@ captured_at: "2026-07-16T23:52:09+00:00"
 source_url: "https://developer.apple.com/documentation/SwiftUI"
 ---
 
-# Índice local de SwiftUI
+# Local index SwiftUI
 
-Entrada principal: [SwiftUI](contexts/swiftui.md).
+Main input: [SwiftUI](contexts/swiftui.md).
 
-Síntese transversal: [Princípios SwiftUI para o Zforge](GUIDANCE.md).
+Cross-sectional synthesis: [Principles SwiftUI for Zforge](GUIDANCE.md).
 
-Cobertura inicial: home + 64 destinos únicos de primeiro nível (65 contextos), além das expansões sob demanda auditadas abaixo.
+Initial coverage: home + 64 unique first level destinations (65 contexts), in addition to the expansions on demand audited below.
 
-Para consultar, leia primeiro este índice e use `rg -n -i '<termos|símbolos>' Documentation/SwiftUI/contexts`. Links absolutos apontam para páginas ainda não ingeridas.
+To consult, first read this index and use `rg -n -i '<terms|symbols>' Documentation/SwiftUI/contexts`. Absolute links point to pages not yet ingested.
 
 ## Overview
 
@@ -115,7 +115,7 @@ Para consultar, leia primeiro este índice e use `rg -n -i '<termos|símbolos>' 
 - [ToolbarMinimizationBehavior](contexts/swiftui-toolbarminimizationbehavior.md)
 - [ToolbarMinimizationRestoration](contexts/swiftui-toolbarminimizationrestoration.md)
 
-## Expansões sob demanda
+## On-demand expansions
 
 - [Creating your app icon using Icon Composer](contexts/xcode-creating-your-app-icon-using-icon-composer.md)
 - [Alerts — Human Interface Guidelines](contexts/hig-alerts.md)
@@ -137,7 +137,7 @@ Para consultar, leia primeiro este índice e use `rg -n -i '<termos|símbolos>' 
 - [Form](contexts/swiftui-form.md)
 - [NSSavePanel.accessoryView](contexts/appkit-nssavepanel-accessoryview.md)
 
-## Tags e monitoramento de arquivos — expansão sob demanda
+## Tags and File Monitoring — On-demand Expansion
 
 - [coreservices-mdqueryexecute](contexts/coreservices-mdqueryexecute.md)
 - [coreservices-mdquerysetdispatchqueue](contexts/coreservices-mdquerysetdispatchqueue.md)
@@ -146,35 +146,35 @@ Para consultar, leia primeiro este índice e use `rg -n -i '<termos|símbolos>' 
 - [coreservices-file-level-events](contexts/coreservices-file-level-events.md)
 - [coreservices-fseventstreamcreate](contexts/coreservices-fseventstreamcreate.md)
 
-- [Views em itens de menu AppKit](contexts/appkit-menu-item-views.md) — linhas customizadas, eventos de mouse, tracking e limites de teclado; linha rápida de tags do Zforge.
-- [NSTableView.DraggingDestinationFeedbackStyle](contexts/appkit-nstableview-dragging-destination-feedback-style.md) — feedback nativo de arraste na sidebar e desenho próprio.
+- [Views on menu items AppKit](contexts/appkit-menu-item-views.md) — custom lines, mouse events, tracking and keyboard boundaries; quick line of Zforge tags.
+- [NSTableView.DraggingDestinationFeedbackStyle](contexts/appkit-nstableview-dragging-destination-feedback-style.md) — feedback native drag on sidebar and own drawing.
 
-- [DataRepresentation](contexts/coretransferable-data-representation.md) — representação dos bytes da URL original no drag de arquivos.
+- [DataRepresentation](contexts/coretransferable-data-representation.md) — representation of the bytes of the original URL in the file drag.
 
-- [NSDraggingSource](contexts/appkit-nsdraggingsource.md) — origem nativa de arraste/exportação de itens de archives.
+- [NSDraggingSource](contexts/appkit-nsdraggingsource.md) — native drag/export origin of archives items.
 
-- [draggingSession(_:sourceOperationMaskFor:)](contexts/appkit-nsdraggingsource-operation-mask.md) — origem nativa de arraste/exportação de itens de archives.
+- [draggingSession(_:sourceOperationMaskFor:)](contexts/appkit-nsdraggingsource-operation-mask.md) — native drag/export origin of archives items.
 
-- [draggingSourceOperationMask](contexts/appkit-dragging-source-operation-mask.md) — origem nativa de arraste/exportação de itens de archives.
+- [draggingSourceOperationMask](contexts/appkit-dragging-source-operation-mask.md) — native drag/export origin of archives items.
 
-- [filePromiseProvider(_:writePromiseTo:completionHandler:)](contexts/appkit-file-promise-write.md) — origem nativa de arraste/exportação de itens de archives.
+- [filePromiseProvider(_:writePromiseTo:completionHandler:)](contexts/appkit-file-promise-write.md) — native drag/export origin of archives items.
 
-- [NSPanGestureRecognizer](contexts/appkit-nspan-gesture-recognizer.md) — reconhecimento nativo do arraste virtual.
+- [NSPanGestureRecognizer](contexts/appkit-nspan-gesture-recognizer.md) — recognition native of virtual drag.
 
-- [NSGestureRecognizerDelegate](contexts/appkit-nsgesture-recognizer-delegate.md) — reconhecimento nativo do arraste virtual.
+- [NSGestureRecognizerDelegate](contexts/appkit-nsgesture-recognizer-delegate.md) — recognition native of virtual drag.
 
-- [NSGestureRecognizer](contexts/appkit-nsgesture-recognizer.md) — reconhecimento nativo do arraste virtual.
+- [NSGestureRecognizer](contexts/appkit-nsgesture-recognizer.md) — recognition native of virtual drag.
 
-- [NSFilePromiseProvider](contexts/appkit-nsfile-promise-provider.md) — origem nativa de arraste/exportação de itens de archives.
+- [NSFilePromiseProvider](contexts/appkit-nsfile-promise-provider.md) — native drag/export origin of archives items.
 
-- [NSPasteboardWriting](contexts/appkit-nspasteboard-writing.md) — origem nativa de arraste/exportação de itens de archives.
+- [NSPasteboardWriting](contexts/appkit-nspasteboard-writing.md) — native drag/export origin of archives items.
 
-- [Supporting Drag and Drop Through File Promises](contexts/appkit-supporting-file-promises.md) — publicação na pasta escolhida pelo receptor.
+- [Supporting Drag and Drop Through File Promises](contexts/appkit-supporting-file-promises.md) — publication in the folder chosen by the receiver.
 
-- [NSDraggingDestination](contexts/appkit-nsdraggingdestination.md) — recepção direta da identidade virtual e extração no destino.
+- [NSDraggingDestination](contexts/appkit-nsdraggingdestination.md) — direct reception of virtual identity and extraction at destination.
 
-- [dragContainer(for:itemID:in:_:)](contexts/swiftui-view-drag-container.md) — captura sob demanda em 2026-10-04; arraste e entrega de conteúdo.
+- [dragContainer(for:itemID:in:_:)](contexts/swiftui-view-drag-container.md) — capture on demand in 2026-10-04; drag and delivery of content.
 
-- [onDragSessionUpdated(_:)](contexts/swiftui-view-on-drag-session-updated.md) — captura sob demanda em 2026-10-04; arraste e entrega de conteúdo.
+- [onDragSessionUpdated(_:)](contexts/swiftui-view-on-drag-session-updated.md) — capture on demand in 2026-10-04; drag and delivery of content.
 
-- [FileRepresentation](contexts/coretransferable-file-representation.md) — captura sob demanda em 2026-10-04; arraste e entrega de conteúdo.
+- [FileRepresentation](contexts/coretransferable-file-representation.md) — capture on demand in 2026-10-04; drag and delivery of content.

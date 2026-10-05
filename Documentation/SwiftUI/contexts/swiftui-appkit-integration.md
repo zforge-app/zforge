@@ -16,62 +16,62 @@ confidence: "primary-source"
 
 # AppKit integration
 
-Contexto normalizado para recuperação rápida. A URL oficial e o hash permitem verificar mudanças; este arquivo não substitui a fonte.
+Context normalized for quick retrieval. The official URL and hash allow changes to be verified; this file does not replace the source.
 
-## Consulta rápida
+## Quick reference
 
-- Papel: API Collection
-- Módulo: SwiftUI
-- Relevância para Zforge: Direct. Use this context for SwiftUI decisions that must remain native to macOS.
+- Role: API Collection
+- Module: SwiftUI
+- Relevance to Zforge: Direct. Use this context for SwiftUI decisions that must remain native to macOS.
 
-## Síntese
+## Summary
 
-**Resumo oficial:** Add AppKit views to your SwiftUI app, or use SwiftUI views in your AppKit app.
+**Official summary:** Add AppKit views to your SwiftUI app, or use SwiftUI views in your AppKit app.
 
 Integrate SwiftUI with your app’s existing content using hosting controllers to add SwiftUI views into AppKit interfaces. A hosting controller wraps a set of SwiftUI views in a form that you can then add to your storyboard-based app. You can also add AppKit views and view controllers to your SwiftUI interfaces. A representable object wraps the designated view or view controller, and facilitates communication between the wrapped object and your SwiftUI views. For design guidance, see Designing for macOS in the Human Interface Guidelines.
 
-## Mapa do conteúdo
+## Content map
 
 - Overview
 
-## Links do segundo nível
+## Second-level links
 
 ### Overview and featured references
 
-- [Designing for macOS](https://developer.apple.com/design/Human-Interface-Guidelines/designing-for-macos) — People rely on the power, spaciousness, and flexibility of a Mac as they perform in-depth productivity tasks, view media or content, and play games… _(Apple Developer; expandir sob demanda)_
+- [Designing for macOS](https://developer.apple.com/design/Human-Interface-Guidelines/designing-for-macos) — People rely on the power, spaciousness, and flexibility of a Mac as they perform in-depth productivity tasks, view media or content, and play games… _(Apple Developer; expand on demand)_
 
 ### Displaying SwiftUI views in AppKit
 
-- [Unifying your app’s animations](https://developer.apple.com/documentation/swiftui/unifying-your-app-s-animations) — Create a consistent UI animation experience across SwiftUI, UIKit, and AppKit. _(Apple Developer; expandir sob demanda)_
-- [NSHostingController](https://developer.apple.com/documentation/swiftui/nshostingcontroller) — An AppKit view controller that hosts SwiftUI view hierarchy. _(Apple Developer; expandir sob demanda)_
-- [NSHostingView](https://developer.apple.com/documentation/swiftui/nshostingview) — An AppKit view that hosts a SwiftUI view hierarchy. _(Apple Developer; expandir sob demanda)_
-- [NSHostingMenu](https://developer.apple.com/documentation/swiftui/nshostingmenu) — An AppKit menu with menu items that are defined by a SwiftUI View. _(Apple Developer; expandir sob demanda)_
-- [NSHostingSizingOptions](https://developer.apple.com/documentation/swiftui/nshostingsizingoptions) — Options for how hosting views and controllers reflect their content’s size into Auto Layout constraints. _(Apple Developer; expandir sob demanda)_
-- [NSHostingSceneRepresentation](https://developer.apple.com/documentation/swiftui/nshostingscenerepresentation) — An AppKit type that hosts and can present SwiftUI scenes _(Apple Developer; expandir sob demanda)_
-- [NSHostingSceneBridgingOptions](https://developer.apple.com/documentation/swiftui/nshostingscenebridgingoptions) — Options for how hosting views and controllers manage aspects of the associated window. _(Apple Developer; expandir sob demanda)_
+- [Unifying your app’s animations](https://developer.apple.com/documentation/swiftui/unifying-your-app-s-animations) — Create a consistent UI animation experience across SwiftUI, UIKit, and AppKit. _(Apple Developer; expand on demand)_
+- [NSHostingController](https://developer.apple.com/documentation/swiftui/nshostingcontroller) — An AppKit view controller that hosts SwiftUI view hierarchy. _(Apple Developer; expand on demand)_
+- [NSHostingView](https://developer.apple.com/documentation/swiftui/nshostingview) — An AppKit view that hosts a SwiftUI view hierarchy. _(Apple Developer; expand on demand)_
+- [NSHostingMenu](https://developer.apple.com/documentation/swiftui/nshostingmenu) — An AppKit menu with menu items that are defined by a SwiftUI View. _(Apple Developer; expand on demand)_
+- [NSHostingSizingOptions](https://developer.apple.com/documentation/swiftui/nshostingsizingoptions) — Options for how hosting views and controllers reflect their content’s size into Auto Layout constraints. _(Apple Developer; expand on demand)_
+- [NSHostingSceneRepresentation](https://developer.apple.com/documentation/swiftui/nshostingscenerepresentation) — An AppKit type that hosts and can present SwiftUI scenes _(Apple Developer; expand on demand)_
+- [NSHostingSceneBridgingOptions](https://developer.apple.com/documentation/swiftui/nshostingscenebridgingoptions) — Options for how hosting views and controllers manage aspects of the associated window. _(Apple Developer; expand on demand)_
 
 ### Adding AppKit views to SwiftUI view hierarchies
 
-- [NSViewRepresentable](https://developer.apple.com/documentation/swiftui/nsviewrepresentable) — A wrapper that you use to integrate an AppKit view into your SwiftUI view hierarchy. _(Apple Developer; expandir sob demanda)_
-- [NSViewRepresentableContext](https://developer.apple.com/documentation/swiftui/nsviewrepresentablecontext) — Contextual information about the state of the system that you use to create and update your AppKit view. _(Apple Developer; expandir sob demanda)_
-- [NSViewControllerRepresentable](https://developer.apple.com/documentation/swiftui/nsviewcontrollerrepresentable) — A wrapper that you use to integrate an AppKit view controller into your SwiftUI interface. _(Apple Developer; expandir sob demanda)_
-- [NSViewControllerRepresentableContext](https://developer.apple.com/documentation/swiftui/nsviewcontrollerrepresentablecontext) — Contextual information about the state of the system that you use to create and update your AppKit view controller. _(Apple Developer; expandir sob demanda)_
+- [NSViewRepresentable](https://developer.apple.com/documentation/swiftui/nsviewrepresentable) — A wrapper that you use to integrate an AppKit view into your SwiftUI view hierarchy. _(Apple Developer; expand on demand)_
+- [NSViewRepresentableContext](https://developer.apple.com/documentation/swiftui/nsviewrepresentablecontext) — Contextual information about the state of the system that you use to create and update your AppKit view. _(Apple Developer; expand on demand)_
+- [NSViewControllerRepresentable](https://developer.apple.com/documentation/swiftui/nsviewcontrollerrepresentable) — A wrapper that you use to integrate an AppKit view controller into your SwiftUI interface. _(Apple Developer; expand on demand)_
+- [NSViewControllerRepresentableContext](https://developer.apple.com/documentation/swiftui/nsviewcontrollerrepresentablecontext) — Contextual information about the state of the system that you use to create and update your AppKit view controller. _(Apple Developer; expand on demand)_
 
 ### Adding AppKit gesture recognizers into SwiftUI view hierarchies
 
-- [NSGestureRecognizerRepresentable](https://developer.apple.com/documentation/swiftui/nsgesturerecognizerrepresentable) — A wrapper for an that you use to integrate that gesture recognizer into your SwiftUI hierarchy. _(Apple Developer; expandir sob demanda)_
-- [NSGestureRecognizerRepresentableContext](https://developer.apple.com/documentation/swiftui/nsgesturerecognizerrepresentablecontext) — Contextual information about the state of the system that you use to create and update a represented gesture recognizer. _(Apple Developer; expandir sob demanda)_
-- [NSGestureRecognizerRepresentableCoordinateSpaceConverter](https://developer.apple.com/documentation/swiftui/nsgesturerecognizerrepresentablecoordinatespaceconverter) — A structure used to convert locations to and from coordinate spaces in the hierarchy of the SwiftUI view associated with an NSGestureRecognizerRepresentable. _(Apple Developer; expandir sob demanda)_
+- [NSGestureRecognizerRepresentable](https://developer.apple.com/documentation/swiftui/nsgesturerecognizerrepresentable) — A wrapper for an that you use to integrate that gesture recognizer into your SwiftUI hierarchy. _(Apple Developer; expand on demand)_
+- [NSGestureRecognizerRepresentableContext](https://developer.apple.com/documentation/swiftui/nsgesturerecognizerrepresentablecontext) — Contextual information about the state of the system that you use to create and update a represented gesture recognizer. _(Apple Developer; expand on demand)_
+- [NSGestureRecognizerRepresentableCoordinateSpaceConverter](https://developer.apple.com/documentation/swiftui/nsgesturerecognizerrepresentablecoordinatespaceconverter) — A structure used to convert locations to and from coordinate spaces in the hierarchy of the SwiftUI view associated with an NSGestureRecognizerRepresentable. _(Apple Developer; expand on demand)_
 
 ### Framework integration
 
-- [UIKit integration](swiftui-uikit-integration.md) — Add UIKit views to your SwiftUI app, or use SwiftUI views in your UIKit app. _(contexto local)_
-- [WatchKit integration](swiftui-watchkit-integration.md) — Add WatchKit views to your SwiftUI app, or use SwiftUI views in your WatchKit app. _(contexto local)_
-- [Technology-specific views](swiftui-technology-specific-views.md) — Use SwiftUI views that other Apple frameworks provide. _(contexto local)_
+- [UIKit integration](swiftui-uikit-integration.md) — Add UIKit views to your SwiftUI app, or use SwiftUI views in your UIKit app. _(local context)_
+- [WatchKit integration](swiftui-watchkit-integration.md) — Add WatchKit views to your SwiftUI app, or use SwiftUI views in your WatchKit app. _(local context)_
+- [Technology-specific views](swiftui-technology-specific-views.md) — Use SwiftUI views that other Apple frameworks provide. _(local context)_
 
-## Proveniência
+## Provenance
 
-- Fonte: [Apple Developer](https://developer.apple.com/documentation/swiftui/appkit-integration)
-- Captura: `2026-07-16T23:52:09+00:00`
-- SHA-256 do payload: `10a53535b11cd0a1fce1deeb51ac5d2bd2e893e8b03197f3bc73f3d05db7c206`
-- Escopo: primeiro nível a partir da home SwiftUI; links absolutos acima ainda não foram percorridos.
+- Source: [Apple Developer](https://developer.apple.com/documentation/swiftui/appkit-integration)
+- Captured: `2026-07-16T23:52:09+00:00`
+- Payload SHA-256: `10a53535b11cd0a1fce1deeb51ac5d2bd2e893e8b03197f3bc73f3d05db7c206`
+- Scope: first level from home SwiftUI; absolute links above have not yet been covered.

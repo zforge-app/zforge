@@ -542,7 +542,7 @@ def render_link(
     local = local_by_identifier.get(identifier) or local_by_url.get(url_without_fragment(url))
     target = local or url
     title = markdown_escape(entry.get("title") or title_from_identifier(url))
-    suffix = "contexto local" if local else "Apple Developer; expandir sob demanda"
+    suffix = "local context" if local else "Apple Developer; expand on demand"
     abstract = entry.get("abstract", "")
     if abstract:
         return f"- [{title}]({target}) — {abstract} _({suffix})_"
@@ -590,34 +590,34 @@ def render_context(
         "",
         f"# {title}",
         "",
-        "Contexto normalizado para recuperação rápida. A URL oficial e o hash permitem verificar mudanças; este arquivo não substitui a fonte.",
+        "Context normalized for quick retrieval. The official URL and hash allow changes to be verified; this file does not replace the source.",
         "",
-        "## Consulta rápida",
+        "## Quick reference",
         "",
-        f"- Papel: {parsed.get('role') or 'Documentation'}",
-        f"- Módulo: {parsed.get('module') or 'Não informado'}",
-        f"- Relevância para Zforge: {zforge_relevance(seed, parsed)}",
+        f"- Role: {parsed.get('role') or 'Documentation'}",
+        f"- Module: {parsed.get('module') or 'Not specified'}",
+        f"- Relevance to Zforge: {zforge_relevance(seed, parsed)}",
     ]
     if parsed.get("platforms"):
-        lines.append(f"- Disponibilidade: {', '.join(parsed['platforms'])}")
+        lines.append(f"- Availability: {', '.join(parsed['platforms'])}")
     for declaration in parsed.get("declarations", []):
-        lines.append(f"- Declaração: `{declaration.replace('`', '')}`")
+        lines.append(f"- Declaration: `{declaration.replace('`', '')}`")
 
-    lines.extend(["", "## Síntese", ""])
+    lines.extend(["", "## Summary", ""])
     if abstract:
-        lines.append(f"**Resumo oficial:** {abstract}")
+        lines.append(f"**Official summary:** {abstract}")
         lines.append("")
     if narrative_parts:
         lines.append(" ".join(narrative_parts))
     elif not abstract:
-        lines.append("A página funciona principalmente como índice de APIs, exemplos e referências relacionadas.")
+        lines.append("The page primarily serves as an index of APIs, examples, and related references.")
 
     headings = parsed.get("headings", [])
     if headings:
-        lines.extend(["", "## Mapa do conteúdo", ""])
+        lines.extend(["", "## Content map", ""])
         lines.extend(f"- {heading}" for heading in headings)
 
-    lines.extend(["", "## Links do segundo nível", ""])
+    lines.extend(["", "## Second-level links", ""])
     seen_targets: set[tuple[str, str]] = set()
     rendered_any = False
     for group_title, entries in parsed.get("groups", []):
@@ -635,17 +635,17 @@ def render_context(
         lines.extend(render_link(entry, local_by_identifier, local_by_url) for entry in unique_entries)
         lines.append("")
     if not rendered_any:
-        lines.append("Nenhum link secundário foi exposto no conteúdo normalizado desta página.")
+        lines.append("No secondary links were exposed in the normalized content of this page.")
         lines.append("")
 
     lines.extend(
         [
-            "## Proveniência",
+            "## Provenance",
             "",
-            f"- Fonte: [Apple Developer]({seed.source_url})",
-            f"- Captura: `{capture_time}`",
-            f"- SHA-256 do payload: `{download.sha256}`",
-            "- Escopo: primeiro nível a partir da home SwiftUI; links absolutos acima ainda não foram percorridos.",
+            f"- Source: [Apple Developer]({seed.source_url})",
+            f"- Captured: `{capture_time}`",
+            f"- Payload SHA-256: `{download.sha256}`",
+            "- Scope: first level from the SwiftUI home page; the absolute links above have not yet been traversed.",
             "",
         ]
     )
@@ -674,15 +674,15 @@ def render_index(home_seed: Seed, seeds: list[Seed], capture_time: str) -> str:
         f"source_url: {yaml_value(SWIFTUI_URL)}",
         "---",
         "",
-        "# Índice local de SwiftUI",
+        "# Local SwiftUI index",
         "",
-        f"Entrada principal: [{home_seed.title}](contexts/{home_seed.local_name}).",
+        f"Main entry: [{home_seed.title}](contexts/{home_seed.local_name}).",
         "",
-        "Síntese transversal: [Princípios SwiftUI para o Zforge](GUIDANCE.md).",
+        "Cross-cutting summary: [SwiftUI principles for Zforge](GUIDANCE.md).",
         "",
-        f"Cobertura inicial: home + {len(seeds)} destinos únicos de primeiro nível ({len(seeds) + 1} contextos).",
+        f"Initial coverage: home + {len(seeds)} unique first-level destinations ({len(seeds) + 1} contexts).",
         "",
-        "Para consultar, leia primeiro este índice e use `rg -n -i '<termos|símbolos>' Documentation/SwiftUI/contexts`. Links absolutos apontam para páginas ainda não ingeridas.",
+        "To consult this source, read this index first and use `rg -n -i '<terms|symbols>' Documentation/SwiftUI/contexts`. Absolute links point to pages that have not yet been ingested.",
         "",
     ]
     for category, items in categories.items():

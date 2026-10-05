@@ -14,38 +14,38 @@ confidence: "primary-source"
 
 # FileRepresentation
 
-## Síntese
+## Summary
 
-A exportação Transferable fornece um arquivo e permite representar conteúdo por arquivo. Não equivale ao destino final de uma promessa NSFilePromiseProvider; o Zforge precisa da URL exata fornecida pelo receptor para confirmar antes de escrever e coordenar remoção das origens.
+Transferable export provides a file and allows you to represent content per file. It does not equal the final destination of a promise NSFilePromiseProvider; the Zforge needs the exact URL provided by the receiver to confirm before writing and coordinating source removal.
 
-## Declaração
+## Declaration
 
 ```swift
 struct FileRepresentation<Item> where Item : Transferable
 ```
 
-## Mapa do conteúdo
+## Content map
 
 - declarations
 - mentions
 - content
 
-## Links secundários
+## Secondary links
 
-- [Choosing a transfer representation for a model type](https://developer.apple.com/documentation/coretransferable/choosing-a-transfer-representation-for-a-model-type) — expandir sob demanda.
-- [Core Transferable](https://developer.apple.com/documentation/coretransferable) — expandir sob demanda.
-- [ReceivedTransferredFile](https://developer.apple.com/documentation/coretransferable/receivedtransferredfile) — expandir sob demanda.
-- [SendableMetatype](https://developer.apple.com/documentation/swift/sendablemetatype) — expandir sob demanda.
-- [Sendable](https://developer.apple.com/documentation/swift/sendable) — expandir sob demanda.
-- [SentTransferredFile](https://developer.apple.com/documentation/coretransferable/senttransferredfile) — expandir sob demanda.
-- [Technologies](https://developer.apple.com/documentation/technologies) — expandir sob demanda.
-- [TransferRepresentation](https://developer.apple.com/documentation/coretransferable/transferrepresentation) — expandir sob demanda.
-- [Transferable](https://developer.apple.com/documentation/coretransferable/transferable) — expandir sob demanda.
-- [init(contentType:shouldAttemptToOpenInPlace:exporting:importing:)](https://developer.apple.com/documentation/coretransferable/filerepresentation/init(contenttype:shouldattempttoopeninplace:exporting:importing:)) — expandir sob demanda.
-- [init(exportedContentType:shouldAllowToOpenInPlace:exporting:)](https://developer.apple.com/documentation/coretransferable/filerepresentation/init(exportedcontenttype:shouldallowtoopeninplace:exporting:)) — expandir sob demanda.
-- [init(importedContentType:shouldAttemptToOpenInPlace:importing:)](https://developer.apple.com/documentation/coretransferable/filerepresentation/init(importedcontenttype:shouldattempttoopeninplace:importing:)) — expandir sob demanda.
+- [Choosing a transfer representation for a model type](https://developer.apple.com/documentation/coretransferable/choosing-a-transfer-representation-for-a-model-type) — expand on demand.
+- [Core Transferable](https://developer.apple.com/documentation/coretransferable) — expand on demand.
+- [ReceivedTransferredFile](https://developer.apple.com/documentation/coretransferable/receivedtransferredfile) — expand on demand.
+- [SendableMetatype](https://developer.apple.com/documentation/swift/sendablemetatype) — expand on demand.
+- [Sendable](https://developer.apple.com/documentation/swift/sendable) — expand on demand.
+- [SentTransferredFile](https://developer.apple.com/documentation/coretransferable/senttransferredfile) — expand on demand.
+- [Technologies](https://developer.apple.com/documentation/technologies) — expand on demand.
+- [TransferRepresentation](https://developer.apple.com/documentation/coretransferable/transferrepresentation) — expand on demand.
+- [Transferable](https://developer.apple.com/documentation/coretransferable/transferable) — expand on demand.
+- [init(contentType:shouldAttemptToOpenInPlace:exporting:importing:)](https://developer.apple.com/documentation/coretransferable/filerepresentation/init(contenttype:shouldattempttoopeninplace:exporting:importing:)) — expand on demand.
+- [init(exportedContentType:shouldAllowToOpenInPlace:exporting:)](https://developer.apple.com/documentation/coretransferable/filerepresentation/init(exportedcontenttype:shouldallowtoopeninplace:exporting:)) — expand on demand.
+- [init(importedContentType:shouldAttemptToOpenInPlace:importing:)](https://developer.apple.com/documentation/coretransferable/filerepresentation/init(importedcontenttype:shouldattempttoopeninplace:importing:)) — expand on demand.
 
-## Proveniência
+## Provenance
 
-- Fonte: [Apple Developer](https://developer.apple.com/documentation/coretransferable/filerepresentation).
-- Captura de uma página, sem percorrer links secundários. SDK consultado: macOS 27.0, Xcode local.
+- Source: [Apple Developer](https://developer.apple.com/documentation/coretransferable/filerepresentation).
+- Capture of a page, without going through secondary links. SDK consulted: macOS 27.0, Xcode local.

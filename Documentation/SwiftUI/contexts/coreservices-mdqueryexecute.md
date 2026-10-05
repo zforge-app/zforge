@@ -16,21 +16,21 @@ confidence: "primary-source"
 
 # MDQueryExecute(_:_:)
 
-## Consulta rápida
+## Quick reference
 
-- Plataforma: macOS; assinaturas conferidas com o SDK macOS 27.0 do Xcode local.
-- Declaração: `func MDQueryExecute(MDQuery!, CFOptionFlags) -> Bool`.
-- Uso no Zforge: catálogo global de tags, consulta e monitoramento de arquivos autorizados.
+- Plataforma: macOS; signatures with the SDK macOS 27.0 of the local Xcode.
+- Declaration: `func MDQueryExecute(MDQuery!, CFOptionFlags) -> Bool`.
+- Use in Zforge: Global catalog of tags, query and monitoring of authorized files.
 
-## Síntese
+## Summary
 
 Queries gather on a run loop, have an initial gathering phase and an optional live phase. Execute only once per query and stop it when replacing it.
 
-## Mapa do conteúdo
+## Content map
 
 
 
-## Links do segundo nível
+## Second-level links
 
 - [CFOptionFlags](https://developer.apple.com/documentation/corefoundation/cfoptionflags)
 - [Core Services](https://developer.apple.com/documentation/coreservices)
@@ -45,6 +45,6 @@ Queries gather on a run loop, have an initial gathering phase and an optional li
 - [Bool](https://developer.apple.com/documentation/swift/bool)
 - [Technologies](https://developer.apple.com/documentation/technologies)
 
-## Proveniência
+## Provenance
 
-Fonte oficial: [MDQueryExecute(_:_:)](https://developer.apple.com/documentation/coreservices/1413099-mdqueryexecute). Payload DocC capturado em 2026-10-02T23:16:46.165601+00:00; SHA-256 `b9311842ff1ae9efcecb3c86cf07bd47d4988396b149c2447372c38e2976cbb0`.
+Official source: [MDQueryExecute(_:_:)](https://developer.apple.com/documentation/coreservices/1413099-mdqueryexecute). Payload DocC captured in 2026-10-02T23:16:46.165601+00:00; SHA-256 `b9311842ff1ae9efcecb3c86cf07bd47d4988396b149c2447372c38e2976cbb0`.

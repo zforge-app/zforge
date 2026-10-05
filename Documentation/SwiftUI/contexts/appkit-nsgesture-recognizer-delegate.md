@@ -16,20 +16,20 @@ confidence: "primary-source"
 
 # NSGestureRecognizerDelegate
 
-## Consulta rápida
+## Quick reference
 
-- Módulo: AppKit, macOS. Assinaturas verificadas no SDK macOS 27.0.
-- Classes de gesto disponíveis desde macOS 10.10; delegate de tentativa desde 10.11, conforme SDK.
+- Module: AppKit, macOS. Signatures found in SDK macOS 27.0.
+- classes of gesture available since macOS 10.10; delegate attempt since 10.11, according to SDK.
 
-## Síntese e implicações
+## Summary and implications
 
-O delegate filtra o início de uma sequência de eventos e controla reconhecimento simultâneo. Retornar false na tentativa inicial exclui o reconhecedor da sequência.
+The delegate filters the beginning of an event sequence and controls simultaneous recognition. Return false in the initial attempt excludes the recognizator from the sequence.
 
-## Mapa do conteúdo
+## Content map
 
-- Reconhecimento, configuração, delegate e relações entre gestos.
+- Recognition, configuration, delegate and relationships between gestures.
 
-## Links do segundo nível
+## Second-level links
 
 - [AppKit](https://developer.apple.com/documentation/appkit)
 - [NSGestureRecognizer](https://developer.apple.com/documentation/appkit/nsgesturerecognizer)
@@ -42,9 +42,9 @@ O delegate filtra o início de uma sequência de eventos e controla reconhecimen
 - [gestureRecognizer(_:shouldRequireFailureOf:)](https://developer.apple.com/documentation/appkit/nsgesturerecognizerdelegate/gesturerecognizer(_:shouldrequirefailureof:))
 - [gestureRecognizerShouldBegin(_:)](https://developer.apple.com/documentation/appkit/nsgesturerecognizerdelegate/gesturerecognizershouldbegin(_:))
 
-## Proveniência
+## Provenance
 
-- Fonte: [Apple Developer](https://developer.apple.com/documentation/appkit/nsgesturerecognizerdelegate)
-- Captura: `2026-10-04T12:33:54.519715+00:00`
+- Source: [Apple Developer](https://developer.apple.com/documentation/appkit/nsgesturerecognizerdelegate)
+- Captured: `2026-10-04T12:33:54.519715+00:00`
 - SHA-256: `0a57c924cacfb4eb5f1d302a8dfa0e0a3be19eb3b63f437595397794522cd634`
-- Escopo: uma página; links secundários não percorridos.
+- Scope: one page; secondary links not covered.

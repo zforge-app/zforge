@@ -16,37 +16,37 @@ confidence: "primary-source"
 
 # draggingSession(_:sourceOperationMaskFor:)
 
-## Consulta rápida
+## Quick reference
 
-- Módulo: AppKit; API nativa de arraste do macOS.
-- Disponibilidade: macOS 10.7+
-- Declaração: `@ MainActor   func   draggingSession ( _   session :  NSDraggingSession ,  sourceOperationMaskFor   context :  NSDraggingContext ) ->  NSDragOperation`
+- Module: AppKit; Native drag API of macOS.
+- Availability: macOS 10.7+
+- Declaration: `@ MainActor   func   draggingSession ( _   session :  NSDraggingSession ,  sourceOperationMaskFor   context :  NSDraggingContext ) ->  NSDragOperation`
 
-## Síntese
+## Summary
 
-A origem informa ao AppKit um conjunto de operações aceitas conforme o contexto (dentro ou fora da aplicação). O método devolve NSDragOperation; contextos desconhecidos devem receber uma política explícita.
+The source shall inform AppKit of a set of operations accepted according to the context (within or outside the application). The method returns NSDragOperation; unknown contexts must receive an explicit policy.
 
-## Implicações práticas no Zforge
+## Practical implications no Zforge
 
-A origem virtual usa file promises e determina a operação permitida. A regra de produto exige cópia por padrão e movimentação com Option; ignorar a tradução automática de modificadores do AppKit e aplicar a regra explicitamente na origem e no destino interno. Promises escrevem somente na URL fornecida e removem entradas do archive apenas após a publicação bem-sucedida. O SDK macOS 27.0 declara a escrita de promises nonisolated e permite escolher a main operation queue; manter a coordenação de UI no MainActor.
+Virtual origin uses file promises and determines the allowed operation. The product rule requires standard copying and handling with Option; to ignore the automatic translation of AppKit and apply modifiers the rule explicitly in the origin and in the internal destination. Promises write only in the provided URL and remove archive entries only after successful publication. SDK macOS 27.0 declares the writing of nonisolated promises and allows you to choose the main operation queen; maintain coordination of UI in MainActor.
 
-## Mapa do conteúdo
+## Content map
 
-- Declaração, operações/modificadores ou escrita de promises.
-- Referências de tipos e métodos relacionados.
+- Declaration, operations/modifiers or writing of promises.
+- References of related types and methods.
 
-## Links do segundo nível
+## Second-level links
 
-- [AppKit](https://developer.apple.com/documentation/appkit) — Apple Developer; expandir sob demanda.
-- [MainActor](https://developer.apple.com/documentation/swift/mainactor) — Apple Developer; expandir sob demanda.
-- [NSDragOperation](https://developer.apple.com/documentation/appkit/nsdragoperation) — Apple Developer; expandir sob demanda.
-- [NSDraggingContext](https://developer.apple.com/documentation/appkit/nsdraggingcontext) — Apple Developer; expandir sob demanda.
-- [NSDraggingSession](https://developer.apple.com/documentation/appkit/nsdraggingsession) — Apple Developer; expandir sob demanda.
-- [NSDraggingSource](https://developer.apple.com/documentation/appkit/nsdraggingsource) — Apple Developer; expandir sob demanda.
-- [Technologies](https://developer.apple.com/documentation/technologies) — Apple Developer; expandir sob demanda.
+- [AppKit](https://developer.apple.com/documentation/appkit) — Apple Developer; expand on demand.
+- [MainActor](https://developer.apple.com/documentation/swift/mainactor) — Apple Developer; expand on demand.
+- [NSDragOperation](https://developer.apple.com/documentation/appkit/nsdragoperation) — Apple Developer; expand on demand.
+- [NSDraggingContext](https://developer.apple.com/documentation/appkit/nsdraggingcontext) — Apple Developer; expand on demand.
+- [NSDraggingSession](https://developer.apple.com/documentation/appkit/nsdraggingsession) — Apple Developer; expand on demand.
+- [NSDraggingSource](https://developer.apple.com/documentation/appkit/nsdraggingsource) — Apple Developer; expand on demand.
+- [Technologies](https://developer.apple.com/documentation/technologies) — Apple Developer; expand on demand.
 
-## Proveniência
+## Provenance
 
-- Fonte: [Apple Developer](https://developer.apple.com/documentation/appkit/nsdraggingsource/draggingsession(_:sourceoperationmaskfor:)).
-- Captura: `2026-10-04T10:57:06.062330+00:00`; SHA-256: `eac28bc9fe845f196da379b8565bcf23e88f74cbe3533368db68ebb284ae0d56`.
-- Escopo: uma página; links secundários não percorridos.
+- Source: [Apple Developer](https://developer.apple.com/documentation/appkit/nsdraggingsource/draggingsession(_:sourceoperationmaskfor:)).
+- Captured: `2026-10-04T10:57:06.062330+00:00`; SHA-256: `eac28bc9fe845f196da379b8565bcf23e88f74cbe3533368db68ebb284ae0d56`.
+- Scope: one page; secondary links not covered.

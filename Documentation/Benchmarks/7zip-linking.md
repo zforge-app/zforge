@@ -1,16 +1,16 @@
-# 7-Zip: CLI, linkagem estática e dinâmica
+# 7-Zip: CLI, static and dynamic linkage
 
-Execução em 2026-10-03. Branches solicitadas: `feat/7zz-static-linking` e `feat/7zz-dinamic-linking`; Git não permite `:` no nome. Referência estática: `d584002`, sobre fontes oficiais 26.02 (`08fa476`). A variante dinâmica mantém a mesma ponte e políticas, mas incorpora `libSevenZipNative.dylib` em `Contents/Frameworks`, assinada por `CodeSignOnCopy`. A implementação dinâmica não altera automaticamente a escolha de distribuição do produto.
+Execution in 2026-10-03. Branches requested: `feat/7zz-static-linking` and `feat/7zz-dinamic-linking`; Git does not allow `:` in the name. Static reference: `d584002`, on official sources 26.02 (`08fa476`). The dynamic variant maintains the same bridge and policies, but incorporates `libSevenZipNative.dylib` in `Contents/Frameworks`, signed by `CodeSignOnCopy`. Dynamic implementation does not automatically change the choice of product distribution.
 
-## Método e reprodução
+## Method and reproduction
 
-Mesma suíte de núcleo da rodada anterior: ZIP Store (`x=0` / `-mx=0`), criar, listar, testar e extrair. Dados determinísticos: um arquivo de 64 MiB (sequência 0–255 repetida) e 2.000 arquivos de 256 B (mesma sequência). Três repetições, cache aquecido, ordem CLI/estática/dinâmica rotacionada por repetição. Hashes SHA-256 dos arquivos extraídos conferidos fora dos temporizadores: todos coincidiram em todas as 18 execuções.
+Same core suite of the previous round: ZIP Store (`x=0` / `-mx=0`), create, list, test and extract. Deterministic data: a file of 64 MiB (sequence 0–255 repeated) and 2.000 files of 256 B (same sequence). Three repetitions, heated cache, order CLI/static/repetition rotated dynamics. Hashes SHA-256 from the extracted files checked out of the timers: all coincided in all 18 executions.
 
-Host macOS 27.0.1 arm64; Apple Clang 21.0.0, SDK 27.0; nativo O2, mínimo macOS 26.0. O CLI é o `Vendor/7zz` oficial. Revisão, hashes dos binários/ponte, medições individuais, RSS e medianas estão em [7zip-linking-results.json](7zip-linking-results.json). Os resultados desta execução substituem a comparação de duas variantes para comparação atual, mantendo aquela rodada como evidência histórica.
+Host macOS 27.0.1 arm64; Apple Clang 21.0.0, SDK 27.0; native O2, minimum macOS 26.0. The CLI is the official `Vendor/7zz`. Review, torque/bridge hashes, individual measurements, RSS and medians are [7zip-linking-results.json](7zip-linking-results.json). The results of this execution replace the comparison of two variants for current comparison, keeping that round as historical evidence.
 
-- [Harness Objective-C++](../../BuildSupport/SevenZip/Benchmarks/native.mm) comum às duas integrações.
-- [Runner Python](../../BuildSupport/SevenZip/Benchmarks/run.py) compila ambos os harnesses, gera os dados e compara com CLI. Não requer bibliotecas Python externas.
-- Compilar Release estática na branch correspondente e preservar sua `.a` em DerivedData separado. Compilar Release dinâmica na outra branch e preservar a dylib assinada do bundle. Os paths são passados explicitamente ao runner, permitindo executá-lo em ambas as branches.
+- [Harness Objective-C++](../../BuildSupport/SevenZip/Benchmarks/native.mm) common to both integrations.
+- [Runner Python](../../BuildSupport/SevenZip/Benchmarks/run.py) compiles both harnesses, generates data and compares it with CLI. It does not require external Python libraries.
+- Compile static release in the corresponding branch and preserve its `.a` in DerivedData separate. Compile Dynamic Release in the other branch and preserve the signed dylib of the bundle. Paths are passed explicitly to the runner, allowing it to run on both branches.
 
 ```sh
 python3 BuildSupport/SevenZip/Benchmarks/run.py \
@@ -19,26 +19,26 @@ python3 BuildSupport/SevenZip/Benchmarks/run.py \
   --output-dir /private/tmp/ZforgeThreeWayBenchmarkRepeat
 ```
 
-O diretório de saída precisa ser novo. Artefatos da execução registrada: `/private/tmp/ZforgeThreeWayBenchmark`, log `/private/tmp/zforge-three-way-benchmark.log`. Toda extração é feita em diretórios de saída separados.
+The output directory needs to be new. Registered execution artifacts: `/private/tmp/ZforgeThreeWayBenchmark`, log `/private/tmp/zforge-three-way-benchmark.log`. Every extraction is done in separate output directories.
 
-## Medianas em milissegundos
+## Median in milliseconds
 
-| Dados | Integração | Criar | Listar | Testar | Extrair |
+| Data | Integration | Criar | Listar | Testar | Extrair |
 | --- | --- | ---: | ---: | ---: | ---: |
-| 64 MiB / 1 arquivo | CLI | 26,075 | 3,411 | 11,225 | 25,324 |
-| 64 MiB / 1 arquivo | Estática | 23,463 | 0,500 | 8,735 | 26,374 |
-| 64 MiB / 1 arquivo | Dinâmica | 24,244 | 0,527 | 8,712 | 22,779 |
-| 256 B / 2.000 arquivos | CLI | 29,769 | 8,122 | 7,289 | 121,475 |
-| 256 B / 2.000 arquivos | Estática | 22,370 | 2,009 | 4,070 | 160,208 |
-| 256 B / 2.000 arquivos | Dinâmica | 22,479 | 2,051 | 4,124 | 163,565 |
+| 64 MiB / 1 file | CLI | 26,075 | 3,411 | 11,225 | 25,324 |
+| 64 MiB / 1 file | Static | 23,463 | 0,500 | 8,735 | 26,374 |
+| 64 MiB / 1 file | Dynamic | 24,244 | 0,527 | 8,712 | 22,779 |
+| 256 B / 2.000 files | CLI | 29,769 | 8,122 | 7,289 | 121,475 |
+| 256 B / 2.000 files | Static | 22,370 | 2,009 | 4,070 | 160,208 |
+| 256 B / 2.000 files | Dynamic | 22,479 | 2,051 | 4,124 | 163,565 |
 
-Estática e dinâmica tiveram tempos próximos nas operações com muitos arquivos: diferença dinâmica/estática de aproximadamente +0,5% na criação, +2,1% na listagem, +1,3% no teste e +2,1% na extração. Com somente três amostras, diferenças pequenas não estabelecem superioridade nem uma estimativa confiável de penalidade causada pela linkagem. Nos arquivos pequenos, a extração nativa ficou aproximadamente 32% (estática) e 35% (dinâmica) acima do CLI. O caminho nativo também impõe suas verificações de destino e metadados; a diferença não isola o efeito do linker.
+Static and dynamic had close times in operations with many files: dynamic/static difference of approximately +0,5% in creation, +2,1% in listing, +1,3% in test and +2,1% in extraction. With only three samples, small differences do not establish superiority or a reliable estimate of the penalty caused by the linkage. In small files, native extraction was approximately 32% (static) and 35% (dynamic) above CLI. The native path also imposes its destination checks and metadata; the difference does not isolate the linker effect.
 
-## Limites da interpretação
+## Limitations of the interpretation
 
-- Não inclui staging Swift, UI, sandbox, leitura comprimida com outros métodos, cache frio ou operação completa do Zforge. Ambos os nativos usam a mesma ponte; na estática ela é compilada no harness, na dinâmica vem da dylib do app.
-- Os tempos de fase nativos começam depois da inicialização do processo e do loader. O CLI inclui a inicialização de um processo por comando e descarta o texto de listagem em `/dev/null`, sem medir o parser Swift antigo. Portanto a vantagem de listagem é uma comparação desse protocolo, não de linkagem isolada.
-- `process_total_s` registra o processo inteiro dos harnesses nativos, incluindo loader e montagem de fontes. A primeira execução foi muito mais lenta (estática ~435 ms, dinâmica ~538 ms no dataset grande), enquanto as seguintes ficaram ~55–66 ms. Isso não é benchmark de lançamento do app nem prova do custo isolado da dylib. Não atribuir esses outliers somente à linkagem.
-- RSS nativo é o pico acumulado do processo de quatro operações; RSS CLI é medido por processo/operação. Não representam consumo de memória do aplicativo completo.
-- Tempos absolutos de criação/listagem dos arquivos pequenos variaram bastante em relação à rodada anterior. Estado do filesystem/cache e verificações de hash fora dos temporizadores podem alterar as condições das próximas fases; só comparar as três variantes desta rodada, sem inferir um ganho do código desde a medição anterior.
-- Debug dinâmica: 108 testes aprovados, 0 falhas, 0 ignorados em `/private/tmp/ZforgeDynamicTests.xcresult`. Release dinâmica compilada; `otool` confirmou `@rpath/libSevenZipNative.dylib`, dylib arm64 com `minos 26.0`, e `codesign --verify --deep --strict` validou app e biblioteca com assinatura Apple Development. A versão estática tem os mesmos 108 testes e provas de Release na matriz de regressão. UI, runtime macOS 26.0 e distribuição pública continuam pendentes.
+- It does not include staging Swift, UI, sandbox, reading compressed with other methods, cold cache or complete operation of Zforge. Both natives use the same bridge; in the static it is compiled in the harness, in the dynamic comes from the dylib of the app.
+- Native phase times begin after process and loader start. The CLI includes the initialization of a command process and discards the text listing process at `/dev/null`, without measuring the old Swift parser. Therefore, the advantage of listing is a comparison of this protocol, not of isolated linkage.
+- `process_total_s` records the entire process of native harnesses, including loader and source assembly. The first execution was much slower (static ~435 ms, dynamic ~538 ms on the big dataset), while the following were ~55–66 ms. This is neither app launch benchmark nor proof of the isolated cost of dylib. Do not assign these outliers only to linking.
+- RSS native is the cumulative peak of the four-operation process; RSS CLI is measured by process/operation. They do not represent full application memory consumption.
+- Absolute times of creation/listing of small files varied greatly from the previous round. State of the filesystem/cache and hash checks outside the timers may change the conditions of the next phases; only compare the three variants of this round, without inferring a code gain since the previous measurement.
+- Dynamic debug: 108 tests approved, 0 failures, 0 ignored in `/private/tmp/ZforgeDynamicTests.xcresult`. Compiled dynamic release; `otool` confirmed `@rpath/libSevenZipNative.dylib`, dylib arm64 with `minos 26.0`, and `codesign --verify --deep --strict` validated app and library with Apple Development signature. The static version has the same 108 tests and release tests in the regression matrix. UI, runtime macOS 26.0 and public distribution remain pending.

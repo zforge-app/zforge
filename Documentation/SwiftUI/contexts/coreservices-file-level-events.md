@@ -16,21 +16,21 @@ confidence: "primary-source"
 
 # kFSEventStreamCreateFlagFileEvents
 
-## Consulta rápida
+## Quick reference
 
-- Plataforma: macOS; assinaturas conferidas com o SDK macOS 27.0 do Xcode local.
-- Declaração: `var kFSEventStreamCreateFlagFileEvents: Int`.
-- Uso no Zforge: catálogo global de tags, consulta e monitoramento de arquivos autorizados.
+- Plataforma: macOS; signatures with the SDK macOS 27.0 of the local Xcode.
+- Declaration: `var kFSEventStreamCreateFlagFileEvents: Int`.
+- Use in Zforge: Global catalog of tags, query and monitoring of authorized files.
 
-## Síntese
+## Summary
 
 Request notifications for individual files within the watched hierarchy. This produces more events than directory-only notifications; Zforge filters relevant flags and debounces batches.
 
-## Mapa do conteúdo
+## Content map
 
 
 
-## Links do segundo nível
+## Second-level links
 
 - [Core Services](https://developer.apple.com/documentation/coreservices)
 - [File System Events](https://developer.apple.com/documentation/coreservices/file_system_events)
@@ -38,6 +38,6 @@ Request notifications for individual files within the watched hierarchy. This pr
 - [Int](https://developer.apple.com/documentation/swift/int)
 - [Technologies](https://developer.apple.com/documentation/technologies)
 
-## Proveniência
+## Provenance
 
-Fonte oficial: [kFSEventStreamCreateFlagFileEvents](https://developer.apple.com/documentation/coreservices/kfseventstreamcreateflagfileevents). Payload DocC capturado em 2026-10-02T23:16:46.165601+00:00; SHA-256 `bb81dec9e7c86e6c0519f8c3bb8a24f96ab5f4a5d2fd40b47e887782e8627a58`.
+Official source: [kFSEventStreamCreateFlagFileEvents](https://developer.apple.com/documentation/coreservices/kfseventstreamcreateflagfileevents). Payload DocC captured in 2026-10-02T23:16:46.165601+00:00; SHA-256 `bb81dec9e7c86e6c0519f8c3bb8a24f96ab5f4a5d2fd40b47e887782e8627a58`.

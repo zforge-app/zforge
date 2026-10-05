@@ -16,46 +16,46 @@ confidence: "primary-source"
 
 # NSItemProvider
 
-Contexto normalizado para recuperação rápida. A URL oficial e o hash permitem verificar mudanças; este arquivo não substitui a fonte.
+Context normalized for quick retrieval. The official URL and hash allow changes to be verified; this file does not replace the source.
 
-## Consulta rápida
+## Quick reference
 
-- Papel: classe de transporte de dados e arquivos entre processos
-- Módulo: Foundation
-- Relevância para Zforge: direta para drag and drop e copy/paste de URLs de arquivos
-- Disponibilidade: macOS 10.10+
-- Declaração: `class NSItemProvider`
+- Scroll: data transport class and files between processes
+- Module: Foundation
+- Relevance to Zforge: direct to drag and drop and copy/fold file URLs
+- Availability: macOS 10.10+
+- Declaration: `class NSItemProvider`
 
-## Síntese
+## Summary
 
-`NSItemProvider` transporta dados ou arquivos em drag and drop, copy/paste e extensões. Um provider pode publicar representações de arquivo, dados ou objetos e o consumidor deve solicitar uma representação compatível.
+`NSItemProvider` carries data or files in drag and drop, copy/paste and extensions. A provider may publish representations of files, data or objects and the consumer shall request a compatible representation.
 
-`init(contentsOf:)` cria um provider respaldado por um arquivo existente. `init(object:)` usa os identificadores fornecidos por um objeto que conforma a `NSItemProviderWriting`; `NSURL` é um desses tipos e publica representações de URL. `loadObject(ofClass:completionHandler:)` é o caminho correspondente para recuperar um objeto de uma classe registrada.
+`init(contentsOf:)` creates a provider supported by an existing file. `init(object:)` uses identifiers provided by an object that conforms to `NSItemProviderWriting`; `NSURL` is one of these types and publishes URL representations. `loadObject(ofClass:completionHandler:)` is the corresponding path to recover an object from a registered class.
 
-## Implicações práticas
+## Practical implications
 
-- Para operações de arquivos, o provider e o consumidor precisam concordar sobre `public.file-url` ou sobre o contrato de objeto `NSURL`.
-- A conclusão de carregamento pode ocorrer posteriormente e fora da fila principal; atualizações de UI devem retornar à main queue ou ao `MainActor`.
-- As restrições temporais específicas do drop são definidas por `DropDelegate.performDrop(info:)`.
+- For file operations, the provider and the consumer must agree on `public.file-url` or on the `NSURL` object contract.
+- The completion of loading may occur later and outside the main queue; UI updates must return to mainqueue or `MainActor`.
+- The specific time constraints of the drop are defined by `DropDelegate.performDrop(info:)`.
 
-## Mapa do conteúdo
+## Content map
 
 - Creating an item provider
 - Registering data, files and objects
 - Loading representations
 - Content types and visibility
 
-## Links do segundo nível
+## Second-level links
 
-### Criação e consumo
+### Creation and consumption
 
-- [init(object:)](https://developer.apple.com/documentation/foundation/nsitemprovider/init(object:)) — cria um provider a partir de `NSItemProviderWriting`. _Apple Developer; expandir sob demanda_
-- [init(contentsOf:)](https://developer.apple.com/documentation/foundation/nsitemprovider/init(contentsof:)) — fornece conteúdo respaldado por um arquivo. _Apple Developer; expandir sob demanda_
-- [loadObject(ofClass:completionHandler:)](https://developer.apple.com/documentation/foundation/nsitemprovider/loadobject(ofclass:completionhandler:)-6pysm) — carrega assincronamente um objeto da classe solicitada. _Apple Developer; expandir sob demanda_
+- [init(object:)](https://developer.apple.com/documentation/foundation/nsitemprovider/init(object:)) — cria a provider a partir de `NSItemProviderWriting`. _Apple Developer; expand on demand_
+- [init(contentsOf:)](https://developer.apple.com/documentation/foundation/nsitemprovider/init(contentsof:)) — provides content supported by a file. _Apple Developer; expand on demand_
+- [loadObject(ofClass:completionHandler:)](https://developer.apple.com/documentation/foundation/nsitemprovider/loadobject(ofclass:completionhandler:)-6pysm) — asynchronously loads an object of the requested class. _Apple Developer; expand on demand_
 
-## Proveniência
+## Provenance
 
-- Fonte: [Apple Developer](https://developer.apple.com/documentation/foundation/nsitemprovider)
-- Captura: `2026-07-20T02:07:43Z`
-- SHA-256 do payload: `d497a61d31294da0fbf6e42981f82efec2fe5be095e0d1842dbf32c7bb3c0d33`
-- Escopo: uma página; os links absolutos acima ainda não foram percorridos.
+- Source: [Apple Developer](https://developer.apple.com/documentation/foundation/nsitemprovider)
+- Captured: `2026-07-20T02:07:43Z`
+- Payload SHA-256: `d497a61d31294da0fbf6e42981f82efec2fe5be095e0d1842dbf32c7bb3c0d33`
+- Scope: one page; the above absolute links have not yet been covered.

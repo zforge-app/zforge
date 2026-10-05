@@ -14,49 +14,49 @@ confidence: "primary-source"
 
 # dragContainer(for:itemID:in:_:)
 
-## Síntese
+## Summary
 
-O container associa identidades a payloads Transferable e reutiliza as representações das células. O Zforge já usa esse caminho para arquivos locais; fontes virtuais precisam preservar a apresentação do mesmo modo.
+The container associates identities to Transferable payloads and reuses cell representations. Zforge already uses this path for local files; virtual sources need to preserve the presentation in the same way.
 
-## Declaração
+## Declaration
 
 ```swift
 nonisolated func dragContainer<ItemID, Item, Data>(for itemType: Item.Type = Item.self, itemID: KeyPath<Item, ItemID>, in namespace: Namespace.ID? = nil, _ payload: @escaping (Array<ItemID>) -> Data) -> some View where ItemID : Hashable, ItemID : Sendable, Item : Transferable, Item == Data.Element, Data : Collection
 
 ```
 
-## Mapa do conteúdo
+## Content map
 
 - declarations
 - parameters
 - content
 - content
 
-## Links secundários
+## Secondary links
 
-- [Array](https://developer.apple.com/documentation/swift/array) — expandir sob demanda.
-- [Collection](https://developer.apple.com/documentation/swift/collection) — expandir sob demanda.
-- [DragConfiguration](https://developer.apple.com/documentation/swiftui/dragconfiguration) — expandir sob demanda.
-- [DropConfiguration](https://developer.apple.com/documentation/swiftui/dropconfiguration) — expandir sob demanda.
-- [Element](https://developer.apple.com/documentation/swift/sequence/element) — expandir sob demanda.
-- [Hashable](https://developer.apple.com/documentation/swift/hashable) — expandir sob demanda.
-- [KeyPath](https://developer.apple.com/documentation/swift/keypath) — expandir sob demanda.
-- [Namespace.ID](https://developer.apple.com/documentation/swiftui/namespace/id) — expandir sob demanda.
-- [Namespace](https://developer.apple.com/documentation/swiftui/namespace) — expandir sob demanda.
-- [Sendable](https://developer.apple.com/documentation/swift/sendable) — expandir sob demanda.
-- [SwiftUI](https://developer.apple.com/documentation/swiftui) — expandir sob demanda.
-- [Technologies](https://developer.apple.com/documentation/technologies) — expandir sob demanda.
-- [Transferable](https://developer.apple.com/documentation/coretransferable/transferable) — expandir sob demanda.
-- [View](https://developer.apple.com/documentation/swiftui/view) — expandir sob demanda.
-- [dragConfiguration(_:)](https://developer.apple.com/documentation/swiftui/view/dragconfiguration(_:)) — expandir sob demanda.
-- [dragContainer(for:in:_:)](https://developer.apple.com/documentation/swiftui/view/dragcontainer(for:in:_:)) — expandir sob demanda.
-- [dragContainer(for:itemID:in:_:)](https://developer.apple.com/documentation/swiftui/view/dragcontainer(for:itemid:in:_:)-7xrvw) — expandir sob demanda.
-- [dragContainerSelection(_:containerNamespace:)](https://developer.apple.com/documentation/swiftui/view/dragcontainerselection(_:containernamespace:)) — expandir sob demanda.
-- [draggable(_:)](https://developer.apple.com/documentation/swiftui/view/draggable(_:)) — expandir sob demanda.
-- [draggable(containerItemID:containerNamespace:)](https://developer.apple.com/documentation/swiftui/view/draggable(containeritemid:containernamespace:)) — expandir sob demanda.
-- [dropConfiguration(_:)](https://developer.apple.com/documentation/swiftui/view/dropconfiguration(_:)) — expandir sob demanda.
+- [Array](https://developer.apple.com/documentation/swift/array) — expand on demand.
+- [Collection](https://developer.apple.com/documentation/swift/collection) — expand on demand.
+- [DragConfiguration](https://developer.apple.com/documentation/swiftui/dragconfiguration) — expand on demand.
+- [DropConfiguration](https://developer.apple.com/documentation/swiftui/dropconfiguration) — expand on demand.
+- [Element](https://developer.apple.com/documentation/swift/sequence/element) — expand on demand.
+- [Hashable](https://developer.apple.com/documentation/swift/hashable) — expand on demand.
+- [KeyPath](https://developer.apple.com/documentation/swift/keypath) — expand on demand.
+- [Namespace.ID](https://developer.apple.com/documentation/swiftui/namespace/id) — expand on demand.
+- [Namespace](https://developer.apple.com/documentation/swiftui/namespace) — expand on demand.
+- [Sendable](https://developer.apple.com/documentation/swift/sendable) — expand on demand.
+- [SwiftUI](https://developer.apple.com/documentation/swiftui) — expand on demand.
+- [Technologies](https://developer.apple.com/documentation/technologies) — expand on demand.
+- [Transferable](https://developer.apple.com/documentation/coretransferable/transferable) — expand on demand.
+- [View](https://developer.apple.com/documentation/swiftui/view) — expand on demand.
+- [dragConfiguration(_:)](https://developer.apple.com/documentation/swiftui/view/dragconfiguration(_:)) — expand on demand.
+- [dragContainer(for:in:_:)](https://developer.apple.com/documentation/swiftui/view/dragcontainer(for:in:_:)) — expand on demand.
+- [dragContainer(for:itemID:in:_:)](https://developer.apple.com/documentation/swiftui/view/dragcontainer(for:itemid:in:_:)-7xrvw) — expand on demand.
+- [dragContainerSelection(_:containerNamespace:)](https://developer.apple.com/documentation/swiftui/view/dragcontainerselection(_:containernamespace:)) — expand on demand.
+- [draggable(_:)](https://developer.apple.com/documentation/swiftui/view/draggable(_:)) — expand on demand.
+- [draggable(containerItemID:containerNamespace:)](https://developer.apple.com/documentation/swiftui/view/draggable(containeritemid:containernamespace:)) — expand on demand.
+- [dropConfiguration(_:)](https://developer.apple.com/documentation/swiftui/view/dropconfiguration(_:)) — expand on demand.
 
-## Proveniência
+## Provenance
 
-- Fonte: [Apple Developer](https://developer.apple.com/documentation/swiftui/view/dragcontainer(for:itemid:in:_:)).
-- Captura de uma página, sem percorrer links secundários. SDK consultado: macOS 27.0, Xcode local.
+- Source: [Apple Developer](https://developer.apple.com/documentation/swiftui/view/dragcontainer(for:itemid:in:_:)).
+- Capture of a page, without going through secondary links. SDK consulted: macOS 27.0, Xcode local.

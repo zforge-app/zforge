@@ -14,46 +14,46 @@ confidence: "primary-source"
 
 # onDragSessionUpdated(_:)
 
-## Síntese
+## Summary
 
-O callback acompanha fases do gesto e transferência. A documentação web mostra assinaturas de exemplo diferentes das disponíveis no SDK macOS 27.0: no SDK consultar draggedItemIDs(for:) e ended(DropOperation). Não inferir que encerrar o gesto prova publicação de conteúdo.
+Callback follows phases of gesture and transference. The web documentation shows example signatures different from those available in SDK macOS 27.0: in SDK see draggedItemIDs(for:) and ended(DropOperation). Do not infer that ending gesture proves publication of content.
 
-## Declaração
+## Declaration
 
 ```swift
 nonisolated func onDragSessionUpdated(_ onUpdate: @escaping (DragSession) -> Void) -> some View
 
 ```
 
-## Mapa do conteúdo
+## Content map
 
 - declarations
 - content
 
-## Links secundários
+## Secondary links
 
-- [DragSession](https://developer.apple.com/documentation/swiftui/dragsession) — expandir sob demanda.
-- [SwiftUI](https://developer.apple.com/documentation/swiftui) — expandir sob demanda.
-- [Technologies](https://developer.apple.com/documentation/technologies) — expandir sob demanda.
-- [View](https://developer.apple.com/documentation/swiftui/view) — expandir sob demanda.
-- [Void](https://developer.apple.com/documentation/swift/void) — expandir sob demanda.
-- [dragConfiguration(_:)](https://developer.apple.com/documentation/swiftui/view/dragconfiguration(_:)) — expandir sob demanda.
-- [dragContainer(for:in:_:)](https://developer.apple.com/documentation/swiftui/view/dragcontainer(for:in:_:)) — expandir sob demanda.
-- [dragContainer(for:itemID:in:_:)](https://developer.apple.com/documentation/swiftui/view/dragcontainer(for:itemid:in:_:)) — expandir sob demanda.
-- [dragContainerSelection(_:containerNamespace:)](https://developer.apple.com/documentation/swiftui/view/dragcontainerselection(_:containernamespace:)) — expandir sob demanda.
-- [dragPreviewsFormation(_:)](https://developer.apple.com/documentation/swiftui/view/dragpreviewsformation(_:)) — expandir sob demanda.
-- [draggable(_:)](https://developer.apple.com/documentation/swiftui/view/draggable(_:)) — expandir sob demanda.
-- [draggable(_:containerNamespace:_:)](https://developer.apple.com/documentation/swiftui/view/draggable(_:containernamespace:_:)) — expandir sob demanda.
-- [draggable(_:id:containerNamespace:_:)](https://developer.apple.com/documentation/swiftui/view/draggable(_:id:containernamespace:_:)) — expandir sob demanda.
-- [draggable(_:id:item:containerNamespace:)](https://developer.apple.com/documentation/swiftui/view/draggable(_:id:item:containernamespace:)) — expandir sob demanda.
-- [draggable(_:item:containerNamespace:)](https://developer.apple.com/documentation/swiftui/view/draggable(_:item:containernamespace:)) — expandir sob demanda.
-- [draggable(_:preview:)](https://developer.apple.com/documentation/swiftui/view/draggable(_:preview:)) — expandir sob demanda.
-- [draggable(containerItemID:containerNamespace:)](https://developer.apple.com/documentation/swiftui/view/draggable(containeritemid:containernamespace:)) — expandir sob demanda.
-- [dropConfiguration(_:)](https://developer.apple.com/documentation/swiftui/view/dropconfiguration(_:)) — expandir sob demanda.
-- [dropDestination(for:isEnabled:action:)](https://developer.apple.com/documentation/swiftui/view/dropdestination(for:isenabled:action:)) — expandir sob demanda.
-- [dropPreviewsFormation(_:)](https://developer.apple.com/documentation/swiftui/view/droppreviewsformation(_:)) — expandir sob demanda.
+- [DragSession](https://developer.apple.com/documentation/swiftui/dragsession) — expand on demand.
+- [SwiftUI](https://developer.apple.com/documentation/swiftui) — expand on demand.
+- [Technologies](https://developer.apple.com/documentation/technologies) — expand on demand.
+- [View](https://developer.apple.com/documentation/swiftui/view) — expand on demand.
+- [Void](https://developer.apple.com/documentation/swift/void) — expand on demand.
+- [dragConfiguration(_:)](https://developer.apple.com/documentation/swiftui/view/dragconfiguration(_:)) — expand on demand.
+- [dragContainer(for:in:_:)](https://developer.apple.com/documentation/swiftui/view/dragcontainer(for:in:_:)) — expand on demand.
+- [dragContainer(for:itemID:in:_:)](https://developer.apple.com/documentation/swiftui/view/dragcontainer(for:itemid:in:_:)) — expand on demand.
+- [dragContainerSelection(_:containerNamespace:)](https://developer.apple.com/documentation/swiftui/view/dragcontainerselection(_:containernamespace:)) — expand on demand.
+- [dragPreviewsFormation(_:)](https://developer.apple.com/documentation/swiftui/view/dragpreviewsformation(_:)) — expand on demand.
+- [draggable(_:)](https://developer.apple.com/documentation/swiftui/view/draggable(_:)) — expand on demand.
+- [draggable(_:containerNamespace:_:)](https://developer.apple.com/documentation/swiftui/view/draggable(_:containernamespace:_:)) — expand on demand.
+- [draggable(_:id:containerNamespace:_:)](https://developer.apple.com/documentation/swiftui/view/draggable(_:id:containernamespace:_:)) — expand on demand.
+- [draggable(_:id:item:containerNamespace:)](https://developer.apple.com/documentation/swiftui/view/draggable(_:id:item:containernamespace:)) — expand on demand.
+- [draggable(_:item:containerNamespace:)](https://developer.apple.com/documentation/swiftui/view/draggable(_:item:containernamespace:)) — expand on demand.
+- [draggable(_:preview:)](https://developer.apple.com/documentation/swiftui/view/draggable(_:preview:)) — expand on demand.
+- [draggable(containerItemID:containerNamespace:)](https://developer.apple.com/documentation/swiftui/view/draggable(containeritemid:containernamespace:)) — expand on demand.
+- [dropConfiguration(_:)](https://developer.apple.com/documentation/swiftui/view/dropconfiguration(_:)) — expand on demand.
+- [dropDestination(for:isEnabled:action:)](https://developer.apple.com/documentation/swiftui/view/dropdestination(for:isenabled:action:)) — expand on demand.
+- [dropPreviewsFormation(_:)](https://developer.apple.com/documentation/swiftui/view/droppreviewsformation(_:)) — expand on demand.
 
-## Proveniência
+## Provenance
 
-- Fonte: [Apple Developer](https://developer.apple.com/documentation/swiftui/view/ondragsessionupdated(_:)).
-- Captura de uma página, sem percorrer links secundários. SDK consultado: macOS 27.0, Xcode local.
+- Source: [Apple Developer](https://developer.apple.com/documentation/swiftui/view/ondragsessionupdated(_:)).
+- Capture of a page, without going through secondary links. SDK consulted: macOS 27.0, Xcode local.

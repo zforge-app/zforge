@@ -1,23 +1,23 @@
-# Zforge — índice e manutenção dos requisitos
+# Zforge — requirements index and maintenance
 
-Este diretório é a localização dos requisitos do projeto. Começar por este índice e abrir os documentos relacionados à funcionalidade em questão. [`../../AGENTS.md`](../../AGENTS.md) contém as instruções gerais do agente; [`../AGENTS.md`](../AGENTS.md) indexa toda a documentação.
+This directory holds the project's requirements. Start with this index and open the documents related to the feature in question. [`../../AGENTS.md`](../../AGENTS.md) contains the general agent instructions; [`../AGENTS.md`](../AGENTS.md) indexes all documentation.
 
-## Documentos de requisito
+## Requirements documents
 
-| Documento | Autoridade e conteúdo |
+| Document | Authority and content |
 | --- | --- |
-| [`CURRENT-STATE.md`](CURRENT-STATE.md) | Fonte de verdade para os contratos observáveis implementados, sua evidência e os pontos de código. Consultar antes de alterar qualquer funcionalidade. |
-| [`UI-UX-GUIDE.md`](UI-UX-GUIDE.md) | Requisitos de apresentação, interação nativa, teclado, responsividade e acessibilidade. As notas de protótipo identificadas em `DIVERGENCES.md` não substituem o contrato vigente. |
-| [`PRODUCT-REQUIREMENTS.md`](PRODUCT-REQUIREMENTS.md) | Visão, plataforma, segurança, integração 7-Zip, licenças, distribuição e direção funcional. Identifica como histórico o primeiro marco somente leitura e como planejadas as etapas futuras. |
-| [`OPEN-REQUIREMENTS.md`](OPEN-REQUIREMENTS.md) | Requisitos e decisões ainda pendentes, com vínculo às tasks e divergências. Não redefine funcionalidades prontas. |
-| [`DOCUMENTATION-REQUIREMENTS.md`](DOCUMENTATION-REQUIREMENTS.md) | Requisitos de cobertura, indexação, proveniência e atualização do corpus local SwiftUI/macOS. |
-| [`SEVENZIP-STATIC-INTEGRATION-PLAN.md`](SEVENZIP-STATIC-INTEGRATION-PLAN.md) | Plano da ZF-21: build estática do 7-Zip, adaptador nativo, migração, validação e distribuição. Backend implementado; evidências e verificações restantes estão registradas no plano e na matriz de regressão. |
-| [`ARCHIVE-DRAG-DROP-PLAN.md`](ARCHIVE-DRAG-DROP-PLAN.md) | Plano vigente da ZF-30: paridade visual com itens locais, confirmação por teclado, saída e reorganização dentro do próprio archive. Implementação e testes de regressão registrados; limites de validação separados. |
+| [`CURRENT-STATE.md`](CURRENT-STATE.md) | Source of truth for implemented observable contracts, their evidence, and code locations. Consult before changing any feature. |
+| [`UI-UX-GUIDE.md`](UI-UX-GUIDE.md) | Requirements for presentation, native interaction, keyboard support, responsiveness, and accessibility. Prototype notes identified in `DIVERGENCES.md` do not replace the current contract. |
+| [`PRODUCT-REQUIREMENTS.md`](PRODUCT-REQUIREMENTS.md) | Vision, platform, security, 7-Zip integration, licenses, distribution, and functional direction. Identifies the initial read-only milestone as historical and future stages as planned. |
+| [`OPEN-REQUIREMENTS.md`](OPEN-REQUIREMENTS.md) | Pending requirements and decisions, linked to tasks and divergences. Does not redefine completed features. |
+| [`DOCUMENTATION-REQUIREMENTS.md`](DOCUMENTATION-REQUIREMENTS.md) | Requirements for coverage, indexing, provenance, and updates to the local SwiftUI/macOS corpus. |
+| [`SEVENZIP-STATIC-INTEGRATION-PLAN.md`](SEVENZIP-STATIC-INTEGRATION-PLAN.md) | ZF-21 plan: static 7-Zip build, native adapter, migration, validation, and distribution. Backend implemented; evidence and remaining checks are recorded in the plan and regression matrix. |
+| [`ARCHIVE-DRAG-DROP-PLAN.md`](ARCHIVE-DRAG-DROP-PLAN.md) | Current ZF-30 plan: visual parity with local items, keyboard confirmation, export, and reorganization within the same archive. Implementation and regression tests recorded; validation limits listed separately. |
 
-## Precedência e atualização
+## Precedence and updates
 
-1. A instrução direta do usuário prevalece. Todas as regras da aplicação devem estar documentadas e atualizadas neste diretório. Sempre que um pedido alterar um requisito, adicionar um novo ou corrigir um comportamento incorreto, atualizar o documento correspondente na mesma interação, sem esperar um pedido adicional de documentação. Registrar como pendente o que ainda não foi implementado; quando implementado, sincronizar o contrato com o comportamento entregue e a evidência disponível.
-2. Para o comportamento já existente, `CURRENT-STATE.md` prevalece sobre uma intenção futura ou uma nota de protótipo. `UI-UX-GUIDE.md` orienta alterações visuais e de interação onde não houver conflito com o contrato vigente.
-3. A direção planejada permanece em `PRODUCT-REQUIREMENTS.md`; decisões e correções abertas ficam em `OPEN-REQUIREMENTS.md`. O estado de execução fica em [`../../TASKS.md`](../../TASKS.md). Conflitos e regressões ficam em [`../../DIVERGENCES.md`](../../DIVERGENCES.md), separados da fonte de verdade.
-4. Em **toda interação com o projeto**, revisar os contratos pertinentes e mantê-los atualizados. Registrar requisitos, decisões, correções e evidência nova na mesma mudança. Atualizar [`../../REGRESSION-COVERAGE.md`](../../REGRESSION-COVERAGE.md) ao mudar ou caracterizar um contrato. Não criar edições sem mudança real nem converter uma proposta em funcionalidade entregue.
-5. Manter links relativos válidos ao mover documentos. Referenciar o código a partir deste diretório com `../../Zforge/`, `../../ZforgeTests/` ou `../../ZforgeUITests/`.
+1. The user's direct instruction takes precedence. All application rules must be documented and kept up to date in this directory. Whenever a request changes a requirement, adds a new one, or fixes incorrect behavior, update the corresponding document in the same interaction, without waiting for a separate documentation request. Record unimplemented work as pending; when implementing it, synchronize the contract with delivered behavior and available evidence.
+2. For existing behavior, `CURRENT-STATE.md` takes precedence over future intentions or prototype notes. `UI-UX-GUIDE.md` guides visual and interaction changes where there is no conflict with the current contract.
+3. Planned direction remains in `PRODUCT-REQUIREMENTS.md`; open decisions and fixes belong in `OPEN-REQUIREMENTS.md`. Execution status belongs in [`../../TASKS.md`](../../TASKS.md). Conflicts and regressions belong in [`../../DIVERGENCES.md`](../../DIVERGENCES.md), separate from the source of truth.
+4. In **every interaction with the project**, review the relevant contracts and keep them up to date. Record requirements, decisions, fixes, and new evidence in the same change. Update [`../../REGRESSION-COVERAGE.md`](../../REGRESSION-COVERAGE.md) when changing or characterizing a contract. Do not make edits without an actual change or turn a proposal into a delivered feature.
+5. Keep relative links valid when moving documents. Reference code from this directory using `../../Zforge/`, `../../ZforgeTests/`, or `../../ZforgeUITests/`.

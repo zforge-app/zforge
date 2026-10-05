@@ -16,45 +16,45 @@ confidence: "primary-source"
 
 # holdingPriority
 
-Contexto normalizado para recuperação rápida. A URL oficial e o hash permitem verificar mudanças; este arquivo não substitui a fonte.
+Context normalized for quick retrieval. The official URL and hash allow changes to be verified; this file does not replace the source.
 
-## Consulta rápida
+## Quick reference
 
-- Papel: propriedade de instância de `NSSplitViewItem`
-- Módulo: AppKit
-- Relevância para Zforge: direta; controla qual painel preserva sua largura durante o redimensionamento de uma split view no macOS.
-- Disponibilidade: macOS 10.10+
-- Declaração: `var holdingPriority: NSLayoutConstraint.Priority { get set }`
+- Scroll: instance property of `NSSplitViewItem`
+- Module: AppKit
+- Relevance to Zforge: direta; controls which panel preserves its width during the resizing of a split view in macOS.
+- Availability: macOS 10.10+
+- Declaration: `var holdingPriority: NSLayoutConstraint.Priority { get set }`
 
-## Síntese
+## Summary
 
-Define a prioridade com que um item mantém sua espessura: largura em uma split view vertical ou altura em uma horizontal. O item com a menor prioridade é o primeiro a receber a variação de tamanho quando a split view cresce ou encolhe. O padrão é `defaultLow`.
+Sets the priority with which an item keeps its thickness: width in a vertical split view or height in a horizontal. The item with the lowest priority is the first to receive the variation in size when the split view grows or shrinks. The pattern is `defaultLow`.
 
-## Implicações práticas
+## Practical implications
 
-- Uma sidebar que deve manter largura absoluta precisa de prioridade maior que o painel de conteúdo que deve absorver a variação da janela.
-- A prioridade governa redimensionamento automático; ela não fixa o divisor nem impede que o usuário redimensione manualmente o item.
-- No Zforge, aplicar a propriedade ao `NSSplitViewItem` gerenciado pelo `NSSplitViewController`, preservando os limites `minimumThickness` e `maximumThickness`.
-- Assinatura e disponibilidade confirmadas também no SDK macOS 26.5 do Xcode local.
+- A sidebar that must maintain absolute width needs a higher priority than the content panel that must absorb the window variation.
+- The priority governs automatic resizing; it does not fix the divider nor prevents the user to manually resize the item.
+- In Zforge, apply the property at `NSSplitViewItem` managed by `NSSplitViewController`, preserving the limits `minimumThickness` and `maximumThickness`.
+- Signature and availability confirmed also in SDK macOS 26.5 of the local Xcode.
 
-## Mapa do conteúdo
+## Content map
 
-- Declaração
-- Discussão
-- APIs relacionadas de Auto Layout
+- Declaration
+- Discussion
+- Auto Layout related APIs
 
-## Links do segundo nível
+## Second-level links
 
-### Tipos e propriedades relacionadas
+### Types and related properties
 
-- [NSSplitViewItem](https://developer.apple.com/documentation/appkit/nssplitviewitem) — _Apple Developer; expandir sob demanda_
-- [NSLayoutConstraint.Priority](https://developer.apple.com/documentation/appkit/nslayoutconstraint/priority-swift.struct) — _Apple Developer; expandir sob demanda_
-- [defaultLow](https://developer.apple.com/documentation/appkit/nslayoutconstraint/priority-swift.struct/defaultlow) — _Apple Developer; expandir sob demanda_
-- [automaticallyAdjustsSafeAreaInsets](https://developer.apple.com/documentation/appkit/nssplitviewitem/automaticallyadjustssafeareainsets) — _Apple Developer; expandir sob demanda_
+- [NSSplitViewItem](https://developer.apple.com/documentation/appkit/nssplitviewitem) — _Apple Developer; expand on demand_
+- [NSLayoutConstraint.Priority](https://developer.apple.com/documentation/appkit/nslayoutconstraint/priority-swift.struct) — _Apple Developer; expand on demand_
+- [defaultLow](https://developer.apple.com/documentation/appkit/nslayoutconstraint/priority-swift.struct/defaultlow) — _Apple Developer; expand on demand_
+- [automaticallyAdjustsSafeAreaInsets](https://developer.apple.com/documentation/appkit/nssplitviewitem/automaticallyadjustssafeareainsets) — _Apple Developer; expand on demand_
 
-## Proveniência
+## Provenance
 
-- Fonte: [Apple Developer](https://developer.apple.com/documentation/appkit/nssplitviewitem/holdingpriority)
-- Captura: `2026-07-18T02:53:50Z`
-- SHA-256 do payload: `2276dea0b847f56c1cd227abe1725e8068e3923357404412ddde003074fe9892`
-- Escopo: uma página; os links absolutos acima ainda não foram percorridos.
+- Source: [Apple Developer](https://developer.apple.com/documentation/appkit/nssplitviewitem/holdingpriority)
+- Captured: `2026-07-18T02:53:50Z`
+- Payload SHA-256: `2276dea0b847f56c1cd227abe1725e8068e3923357404412ddde003074fe9892`
+- Scope: one page; the above absolute links have not yet been covered.

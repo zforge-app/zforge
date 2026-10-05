@@ -16,53 +16,53 @@ confidence: "primary-source"
 
 # NSPasteboardWriting
 
-## Consulta rápida
+## Quick reference
 
-- Módulo: AppKit; API nativa de arraste do macOS.
-- Disponibilidade: macOS; assinaturas verificadas no SDK macOS 27.0
-- Declaração: `protocol   NSPasteboardWriting  :  NSObjectProtocol`
+- Module: AppKit; Native drag API of macOS.
+- Availability: macOS; signatures found in SDK macOS 27.0
+- Declaration: `protocol   NSPasteboardWriting  :  NSObjectProtocol`
 
-## Síntese
+## Summary
 
-Uma promessa representa um arquivo futuro; a identidade auxiliar do item deve ser dado imediato no pasteboard, com writingOptions vazio. O conteúdo permanece uma promessa e seu delegate escreve na URL fornecida ao cumprir a solicitação. O provider deve ter fileType e delegate definidos antes de ser escrito no pasteboard.
+A promise represents a future archive; the auxiliary identity of the item must be given immediately on the pasteboard, with writingOptions empty. The content remains a promise and your delegate writes in the URL provided when complying with the request. The provider must have fileType and delegate set before it is written on the pasteboard.
 
-## Implicações práticas no Zforge
+## Practical implications no Zforge
 
-A origem virtual usa file promises e determina a operação permitida. A regra de produto exige cópia por padrão e movimentação com Option; ignorar a tradução automática de modificadores do AppKit e aplicar a regra explicitamente na origem e no destino interno. Promises escrevem somente na URL fornecida e removem entradas do archive apenas após a publicação bem-sucedida. O SDK macOS 27.0 declara a escrita de promises nonisolated e permite escolher a main operation queue; manter a coordenação de UI no MainActor.
+Virtual origin uses file promises and determines the allowed operation. The product rule requires standard copying and handling with Option; to ignore the automatic translation of AppKit and apply modifiers the rule explicitly in the origin and in the internal destination. Promises write only in the provided URL and remove archive entries only after successful publication. SDK macOS 27.0 declares the writing of nonisolated promises and allows you to choose the main operation queen; maintain coordination of UI in MainActor.
 
-## Mapa do conteúdo
+## Content map
 
-- Declaração, operações/modificadores ou escrita de promises.
-- Referências de tipos e métodos relacionados.
+- Declaration, operations/modifiers or writing of promises.
+- References of related types and methods.
 
-## Links do segundo nível
+## Second-level links
 
-- [AppKit](https://developer.apple.com/documentation/appkit) — Apple Developer; expandir sob demanda.
-- [NSAttributedString](https://developer.apple.com/documentation/foundation/nsattributedstring) — Apple Developer; expandir sob demanda.
-- [NSColor](https://developer.apple.com/documentation/appkit/nscolor) — Apple Developer; expandir sob demanda.
-- [NSFilePromiseProvider](appkit-nsfile-promise-provider.md) — Apple Developer; expandir sob demanda.
-- [NSImage](https://developer.apple.com/documentation/appkit/nsimage) — Apple Developer; expandir sob demanda.
-- [NSObjectProtocol](https://developer.apple.com/documentation/objectivec/nsobjectprotocol) — Apple Developer; expandir sob demanda.
-- [NSPasteboard.ContentsOptions](https://developer.apple.com/documentation/appkit/nspasteboard/contentsoptions) — Apple Developer; expandir sob demanda.
-- [NSPasteboard.WritingOptions](https://developer.apple.com/documentation/appkit/nspasteboard/writingoptions) — Apple Developer; expandir sob demanda.
-- [NSPasteboardItemDataProvider](https://developer.apple.com/documentation/appkit/nspasteboarditemdataprovider) — Apple Developer; expandir sob demanda.
-- [NSPasteboardItem](https://developer.apple.com/documentation/appkit/nspasteboarditem) — Apple Developer; expandir sob demanda.
-- [NSPasteboardReading](https://developer.apple.com/documentation/appkit/nspasteboardreading) — Apple Developer; expandir sob demanda.
-- [NSPasteboardTypeOwner](https://developer.apple.com/documentation/appkit/nspasteboardtypeowner) — Apple Developer; expandir sob demanda.
-- [NSPasteboard](https://developer.apple.com/documentation/appkit/nspasteboard) — Apple Developer; expandir sob demanda.
-- [NSSound](https://developer.apple.com/documentation/appkit/nssound) — Apple Developer; expandir sob demanda.
-- [NSString](https://developer.apple.com/documentation/foundation/nsstring) — Apple Developer; expandir sob demanda.
-- [NSTextStorage](https://developer.apple.com/documentation/appkit/nstextstorage) — Apple Developer; expandir sob demanda.
-- [NSURL](https://developer.apple.com/documentation/foundation/nsurl) — Apple Developer; expandir sob demanda.
-- [Pasteboard Writing Options](https://developer.apple.com/documentation/appkit/pasteboard-writing-options) — Apple Developer; expandir sob demanda.
-- [Technologies](https://developer.apple.com/documentation/technologies) — Apple Developer; expandir sob demanda.
-- [pasteboardPropertyList(forType:)](https://developer.apple.com/documentation/appkit/nspasteboardwriting/pasteboardpropertylist(fortype:)) — Apple Developer; expandir sob demanda.
-- [writableTypes(for:)](https://developer.apple.com/documentation/appkit/nspasteboardwriting/writabletypes(for:)) — Apple Developer; expandir sob demanda.
-- [writeObjects(_:)](https://developer.apple.com/documentation/appkit/nspasteboard/writeobjects(_:)) — Apple Developer; expandir sob demanda.
-- [writingOptions(forType:pasteboard:)](https://developer.apple.com/documentation/appkit/nspasteboardwriting/writingoptions(fortype:pasteboard:)) — Apple Developer; expandir sob demanda.
+- [AppKit](https://developer.apple.com/documentation/appkit) — Apple Developer; expand on demand.
+- [NSAttributedString](https://developer.apple.com/documentation/foundation/nsattributedstring) — Apple Developer; expand on demand.
+- [NSColor](https://developer.apple.com/documentation/appkit/nscolor) — Apple Developer; expand on demand.
+- [NSFilePromiseProvider](appkit-nsfile-promise-provider.md) — Apple Developer; expand on demand.
+- [NSImage](https://developer.apple.com/documentation/appkit/nsimage) — Apple Developer; expand on demand.
+- [NSObjectProtocol](https://developer.apple.com/documentation/objectivec/nsobjectprotocol) — Apple Developer; expand on demand.
+- [NSPasteboard.ContentsOptions](https://developer.apple.com/documentation/appkit/nspasteboard/contentsoptions) — Apple Developer; expand on demand.
+- [NSPasteboard.WritingOptions](https://developer.apple.com/documentation/appkit/nspasteboard/writingoptions) — Apple Developer; expand on demand.
+- [NSPasteboardItemDataProvider](https://developer.apple.com/documentation/appkit/nspasteboarditemdataprovider) — Apple Developer; expand on demand.
+- [NSPasteboardItem](https://developer.apple.com/documentation/appkit/nspasteboarditem) — Apple Developer; expand on demand.
+- [NSPasteboardReading](https://developer.apple.com/documentation/appkit/nspasteboardreading) — Apple Developer; expand on demand.
+- [NSPasteboardTypeOwner](https://developer.apple.com/documentation/appkit/nspasteboardtypeowner) — Apple Developer; expand on demand.
+- [NSPasteboard](https://developer.apple.com/documentation/appkit/nspasteboard) — Apple Developer; expand on demand.
+- [NSSound](https://developer.apple.com/documentation/appkit/nssound) — Apple Developer; expand on demand.
+- [NSString](https://developer.apple.com/documentation/foundation/nsstring) — Apple Developer; expand on demand.
+- [NSTextStorage](https://developer.apple.com/documentation/appkit/nstextstorage) — Apple Developer; expand on demand.
+- [NSURL](https://developer.apple.com/documentation/foundation/nsurl) — Apple Developer; expand on demand.
+- [Pasteboard Writing Options](https://developer.apple.com/documentation/appkit/pasteboard-writing-options) — Apple Developer; expand on demand.
+- [Technologies](https://developer.apple.com/documentation/technologies) — Apple Developer; expand on demand.
+- [pasteboardPropertyList(forType:)](https://developer.apple.com/documentation/appkit/nspasteboardwriting/pasteboardpropertylist(fortype:)) — Apple Developer; expand on demand.
+- [writableTypes(for:)](https://developer.apple.com/documentation/appkit/nspasteboardwriting/writabletypes(for:)) — Apple Developer; expand on demand.
+- [writeObjects(_:)](https://developer.apple.com/documentation/appkit/nspasteboard/writeobjects(_:)) — Apple Developer; expand on demand.
+- [writingOptions(forType:pasteboard:)](https://developer.apple.com/documentation/appkit/nspasteboardwriting/writingoptions(fortype:pasteboard:)) — Apple Developer; expand on demand.
 
-## Proveniência
+## Provenance
 
-- Fonte: [Apple Developer](https://developer.apple.com/documentation/appkit/nspasteboardwriting).
-- Captura: `2026-10-04T13:01:09.738317+00:00`; SHA-256: `3bd28ec45e98fedfff1a63479b43e5dff117073ee21bc4c79d2f3124e3c10f7c`.
-- Escopo: uma página; links secundários não percorridos.
+- Source: [Apple Developer](https://developer.apple.com/documentation/appkit/nspasteboardwriting).
+- Captured: `2026-10-04T13:01:09.738317+00:00`; SHA-256: `3bd28ec45e98fedfff1a63479b43e5dff117073ee21bc4c79d2f3124e3c10f7c`.
+- Scope: one page; secondary links not covered.
