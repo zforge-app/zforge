@@ -14,6 +14,16 @@ Antes de implementar ou corrigir uma interface, consulte este guia. Quando uma d
 - Legibilidade, previsibilidade, acessibilidade e comportamento nativo têm prioridade sobre efeitos visuais.
 - Cores e ícones do sistema devem ser usados sempre que possível para respeitar tema, contraste e preferências do usuário.
 
+### Polimento obrigatório da experiência
+
+Diretriz de 2026-10-04, vinculada aos [requisitos RNF-Q01 a RNF-Q06](PRODUCT-REQUIREMENTS.md#qualidade-polimento-e-prevenção-de-regressões): buscar um **“Wow effect”** pela qualidade do uso. **“Design is how it works”** exige avaliar o fluxo inteiro; a diretriz não é uma declaração de que todas as superfícies atuais já receberam essa validação.
+
+- Ícones, cores e formas devem comunicar ação, tipo e estado com coerência entre modos, menus, toolbar e preview. Nomenclatura e traduções devem ser claras, naturais e consistentes, incluindo tooltips, erros e labels de acessibilidade no String Catalog.
+- Posicionamento, ordenação, tamanhos e espaçamentos devem seguir a hierarquia da tarefa, com alinhamento estável, áreas de interação adequadas e legibilidade nas larguras e escalas suportadas. Conferir textos longos, idiomas suportados, temas claro/escuro, contraste aumentado e cor de destaque.
+- Gestos, mouse e teclado devem produzir os resultados especificados e feedback inequívoco, preservando seleção e foco conforme o contrato. Revisar estados normal, hover, selecionado, desabilitado, carregamento, erro e cancelamento quando aplicáveis.
+- Animações e transições devem explicar a mudança de estado, manter continuidade e responder a ações rápidas ou interrompidas. Não admitir saltos indevidos, recortes, cintilação nem retorno de conteúdo obsoleto. Respeitar redução de movimento e evitar efeitos que atrasem a ação ou prejudiquem acessibilidade.
+- Verificar sequência, geometria e comportamento por testes representativos e conferir o acabamento na interface em execução. Registrar condições, resultado e limites; aprovação de uma geometria final não comprova fluidez durante a transição. Aplicar o checklist de regressão deste guia às superfícies e aos fluxos adjacentes afetados.
+
 ### Ícone da aplicação
 
 O arquivo [zforge_icon.icon](../../Zforge/zforge_icon.icon/icon.json), exportado pelo usuário no Icon Composer, é a fonte atualmente selecionada para o app. Os estudos abaixo registram a evolução da direção visual; referências a integração ou aprovação pendente descrevem o estado de cada rodada, antes da exportação atual. A legibilidade e as variantes de aparência ainda precisam de conferência no app instalado.

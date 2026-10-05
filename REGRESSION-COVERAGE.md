@@ -2,6 +2,17 @@
 
 Esta matriz liga os contratos de `Documentation/Requirements/CURRENT-STATE.md` aos testes automatizados e às verificações que dependem do macOS. Ela descreve **cobertura de cenários**, não porcentagem de linhas. Teste existente significa fonte identificada; execução e resultado devem ser registrados separadamente. Em uma refatoração, acrescentar o caso de caracterização antes de mudar a área correspondente.
 
+## Política obrigatória de garantia
+
+Desde **2026-10-04**, aplicar os [requisitos RNF-Q01 a RNF-Q06](Documentation/Requirements/PRODUCT-REQUIREMENTS.md#qualidade-polimento-e-prevenção-de-regressões) e as [regras de testes para agentes](AGENTS.md#testes-como-garantia-de-comportamento). A política é normativa; esta atualização documental não acrescenta testes executados nem resolve as lacunas desta matriz.
+
+- Para cada funcionalidade alterada, relacionar requisito, cenário de uso (estado inicial → ação → resultado), testes unitários/integração/UI pertinentes e verificações visuais ou de performance necessárias. Cobrir também os consumidores de estado/handlers compartilhados e os fluxos adjacentes afetados.
+- Correções devem incluir teste que reproduza a falha antes da mudança e passe depois; refatorações devem preservar a caracterização anterior. Mudanças na lógica/expectativas de testes existentes exigem desacordo demonstrado com a especificação e justificativa rastreável. Ajustes de infraestrutura não podem reduzir cenários ou rigor.
+- Registrar o que realmente executou, resultados, falhas, ignorados, ambiente e limites. Build aprovada, teste apenas escrito ou runner que não iniciou não aprovam um contrato. Verificações visuais e medições de desempenho têm evidência própria.
+- Regressão introduzida ou reintroduzida em funcionalidade consolidada bloqueia a conclusão. Não ocultar falhas preexistentes nem declarar garantia integral quando a verificação necessária permanece pendente.
+
+## Matriz de contratos
+
 | Contrato em `Documentation/Requirements/CURRENT-STATE.md` | Cobertura automatizada identificada | Lacuna ou verificação de integração |
 | --- | --- | --- |
 | §1 Janela comum e Finder/Open With | `ZforgeTests.defaultLocationIsRecents`; `ZforgeUITests.testExample` | Abrir o bundle pelo Finder/Open With com archive real e confirmar janela dedicada pelo `WindowGroup`, conteúdo, título e aparência. UI test comum não equivale a esse caminho de Launch Services. |
