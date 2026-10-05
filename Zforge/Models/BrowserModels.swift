@@ -177,6 +177,7 @@ nonisolated enum BrowserSelectionAction: CaseIterable, Hashable, Sendable {
     case compress
     case compressCustom
     case addToArchive
+    case removeFromArchive
     case extractHere
     case extractNamed
     case extractChoose
@@ -187,6 +188,7 @@ nonisolated enum BrowserSelectionAction: CaseIterable, Hashable, Sendable {
         case .open: "arrow.up.forward.app"
         case .compress, .compressCustom: "archivebox"
         case .addToArchive: "archivebox.badge.plus"
+        case .removeFromArchive: "trash"
         case .extractHere, .extractNamed, .extractChoose: "arrow.down.to.line.compact"
         case .validate: "checkmark.shield"
         }

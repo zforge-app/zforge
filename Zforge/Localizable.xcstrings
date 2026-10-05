@@ -1,9 +1,177 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "" : {
-
+    "Modify the Original Archive?" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modificar o archive original?"
+          }
+        }
+      }
     },
+    "Moving %lld item(s) to %@ will modify the original archive %@. The source entries will be removed only after the transfer succeeds." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mover %lld item(ns) para %@ modificará o archive original %@. As entradas de origem só serão removidas após o sucesso da transferência."
+          }
+        }
+      }
+    },
+    "Copying %lld item(s) to %@ will modify the original archive %@. The source entries will be preserved." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copiar %lld item(ns) para %@ modificará o archive original %@. As entradas de origem serão preservadas."
+          }
+        }
+      }
+    },
+    "Move to Trash / Remove from Archive" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mover para o Lixo / Remover do archive"
+          }
+        }
+      }
+    },
+    "The archive itself cannot be the extraction destination." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O próprio archive não pode ser o destino da extração."
+          }
+        }
+      }
+    },
+    "Remove from Archive…" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remover do archive…"
+          }
+        }
+      }
+    },
+    "Remove from Archive?" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remover do archive?"
+          }
+        }
+      }
+    },
+    "The selected items will be permanently removed from the archive." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Os itens selecionados serão removidos permanentemente do archive."
+          }
+        }
+      }
+    },
+    "Remove" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remover"
+          }
+        }
+      }
+    },
+    "Removing from archive…" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Removendo do archive…"
+          }
+        }
+      }
+    },
+    "Moving out of archive…" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Movendo para fora do archive…"
+          }
+        }
+      }
+    },
+    "Items moved out of archive successfully." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Itens movidos para fora do archive com sucesso."
+          }
+        }
+      }
+    },
+    "Items removed from archive successfully." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Itens removidos do archive com sucesso."
+          }
+        }
+      }
+    },
+    "The archive changed since it was opened. Reopen it before removing items." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O archive foi alterado desde que foi aberto. Abra-o novamente antes de remover itens."
+          }
+        }
+      }
+    },
+    "Remove from Sidebar" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remover da barra lateral"
+          }
+        }
+      }
+    },
+    "Only folders can be added to Favorites." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Somente pastas podem ser adicionadas aos Favoritos."
+          }
+        }
+      }
+    },
+    "Add to Sidebar" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adicionar à barra lateral"
+          }
+        }
+      }
+    },
+    "" : {},
     "/path/to/folder" : {
       "localizations" : {
         "pt-BR" : {
@@ -248,16 +416,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Adicionar ao archive…"
-          }
-        }
-      }
-    },
-    "Add to Sidebar" : {
-      "localizations" : {
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Adicionar à barra lateral"
           }
         }
       }
@@ -2385,16 +2543,6 @@
         }
       }
     },
-    "Only folders can be added to Favorites." : {
-      "localizations" : {
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Somente pastas podem ser adicionadas aos Favoritos."
-          }
-        }
-      }
-    },
     "Only ZIP and 7z archives can be updated." : {
       "localizations" : {
         "pt-BR" : {
@@ -2657,16 +2805,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Remoto"
-          }
-        }
-      }
-    },
-    "Remove from Sidebar" : {
-      "localizations" : {
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Remover da barra lateral"
           }
         }
       }

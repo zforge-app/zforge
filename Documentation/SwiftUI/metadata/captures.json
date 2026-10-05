@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "captured_at": "2026-10-03T22:58:36.198078+00:00",
+  "captured_at": "2026-10-04T22:10:19.050472+00:00",
   "seed_url": "https://developer.apple.com/documentation/SwiftUI",
   "scope": "home plus unique first-level links exposed by Overview, Featured samples, and Topics, with audited on-demand expansions",
-  "expected_contexts": 93,
-  "captured_contexts": 93,
+  "expected_contexts": 107,
+  "captured_contexts": 107,
   "failures": [],
   "captures": [
     {
@@ -1327,6 +1327,202 @@
       "bytes": 17493,
       "categories": [
         "On-demand expansion",
+        "Drag and drop"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/appkit/nsdraggingsource",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/appkit/nsdraggingsource.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/appkit/nsdraggingsource.json",
+      "local_path": "contexts/appkit-nsdraggingsource.md",
+      "sha256": "9d51b11142080f08a75d66d1556b81b8e4a18722ae098638a2bea86a41f8c9f1",
+      "etag": "\"6df4-659026d43a608\"",
+      "last_modified": "Fri, 14 Aug 2026 14:13:38 GMT",
+      "bytes": 28148,
+      "categories": [
+        "On-demand expansion"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/appkit/nsdraggingsource/draggingsession(_:sourceoperationmaskfor:)",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/appkit/nsdraggingsource/draggingsession(_:sourceoperationmaskfor:).json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/appkit/nsdraggingsource/draggingsession(_:sourceoperationmaskfor:).json",
+      "local_path": "contexts/appkit-nsdraggingsource-operation-mask.md",
+      "sha256": "eac28bc9fe845f196da379b8565bcf23e88f74cbe3533368db68ebb284ae0d56",
+      "etag": "\"3be4-659026e43247b\"",
+      "last_modified": "Fri, 14 Aug 2026 14:13:54 GMT",
+      "bytes": 15332,
+      "categories": [
+        "On-demand expansion"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/appkit/nsdragginginfo/draggingsourceoperationmask",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/appkit/nsdragginginfo/draggingsourceoperationmask.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/appkit/nsdragginginfo/draggingsourceoperationmask.json",
+      "local_path": "contexts/appkit-dragging-source-operation-mask.md",
+      "sha256": "a719c5e7a53379626f3030d28497f24610e5d177c22a20610439bc257d0472b7",
+      "etag": "\"73ea-659026d849472\"",
+      "last_modified": "Fri, 14 Aug 2026 14:13:42 GMT",
+      "bytes": 29674,
+      "categories": [
+        "On-demand expansion"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/appkit/nsfilepromiseproviderdelegate/filepromiseprovider(_:writepromiseto:completionhandler:)",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/appkit/nsfilepromiseproviderdelegate/filepromiseprovider(_:writepromiseto:completionhandler:).json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/appkit/nsfilepromiseproviderdelegate/filepromiseprovider(_:writepromiseto:completionhandler:).json",
+      "local_path": "contexts/appkit-file-promise-write.md",
+      "sha256": "c5770fc257a31b7d790669c9af7bec260632eaf52264f5df47a337839bd130d6",
+      "etag": "\"5da7-659026dc59565\"",
+      "last_modified": "Fri, 14 Aug 2026 14:13:46 GMT",
+      "bytes": 23975,
+      "categories": [
+        "On-demand expansion"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/appkit/nspangesturerecognizer",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/appkit/nspangesturerecognizer.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/appkit/nspangesturerecognizer.json",
+      "local_path": "contexts/appkit-nspan-gesture-recognizer.md",
+      "sha256": "34274c2313dc58e2e0524eba2b43b46413282537ce8e3df50a60fd490768745b",
+      "etag": "\"882e-65b3b459ae12c\"",
+      "last_modified": "Fri, 11 Sep 2026 20:53:09 GMT",
+      "bytes": 34862,
+      "categories": [
+        "On-demand expansion"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/appkit/nsgesturerecognizerdelegate",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/appkit/nsgesturerecognizerdelegate.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/appkit/nsgesturerecognizerdelegate.json",
+      "local_path": "contexts/appkit-nsgesture-recognizer-delegate.md",
+      "sha256": "0a57c924cacfb4eb5f1d302a8dfa0e0a3be19eb3b63f437595397794522cd634",
+      "etag": "\"565c-659026db0009a\"",
+      "last_modified": "Fri, 14 Aug 2026 14:13:45 GMT",
+      "bytes": 22108,
+      "categories": [
+        "On-demand expansion"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/appkit/nsgesturerecognizer",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/appkit/nsgesturerecognizer.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/appkit/nsgesturerecognizer.json",
+      "local_path": "contexts/appkit-nsgesture-recognizer.md",
+      "sha256": "0554343ffe93d00c3f4482b5f78c70b467879cfec37fedc09c2e9ca85e8e2515",
+      "etag": "\"1ad51-65b79219fe8a1\"",
+      "last_modified": "Mon, 14 Sep 2026 22:41:13 GMT",
+      "bytes": 109905,
+      "categories": [
+        "On-demand expansion"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/appkit/nsfilepromiseprovider",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/appkit/nsfilepromiseprovider.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/appkit/nsfilepromiseprovider.json",
+      "local_path": "contexts/appkit-nsfile-promise-provider.md",
+      "sha256": "b3d86ec60ab7decea9ce9c90d28d9d5681af05d16de9142f657c17f82e6b6d5c",
+      "etag": "\"67a7-659026f05e728\"",
+      "last_modified": "Fri, 14 Aug 2026 14:14:07 GMT",
+      "bytes": 26535,
+      "categories": [
+        "On-demand expansion"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/appkit/nspasteboardwriting",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/appkit/nspasteboardwriting.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/appkit/nspasteboardwriting.json",
+      "local_path": "contexts/appkit-nspasteboard-writing.md",
+      "sha256": "3bd28ec45e98fedfff1a63479b43e5dff117073ee21bc4c79d2f3124e3c10f7c",
+      "etag": "\"850b-659026dadbf7d\"",
+      "last_modified": "Fri, 14 Aug 2026 14:13:45 GMT",
+      "bytes": 34059,
+      "categories": [
+        "On-demand expansion"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/appkit/supporting-drag-and-drop-through-file-promises",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/appkit/supporting-drag-and-drop-through-file-promises.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/appkit/supporting-drag-and-drop-through-file-promises.json",
+      "local_path": "contexts/appkit-supporting-file-promises.md",
+      "sha256": "ad5aea4873ea3fd5f914db6321f2c20104c4ee73964d5eddf097ed08f76a76d5",
+      "etag": "\"4b48-659026dbffe03\"",
+      "last_modified": "Fri, 14 Aug 2026 14:13:46 GMT",
+      "bytes": 19272,
+      "categories": [
+        "On-demand expansion"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/appkit/nsdraggingdestination",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/appkit/nsdraggingdestination.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/appkit/nsdraggingdestination.json",
+      "local_path": "contexts/appkit-nsdraggingdestination.md",
+      "sha256": "1d78a1e7eecfb0a84370b67c1d6656b1bb65e2e595cda46f61c289a61f23e3f0",
+      "etag": "\"156d0-659026f472fd1\"",
+      "last_modified": "Fri, 14 Aug 2026 14:14:12 GMT",
+      "bytes": 87760,
+      "categories": [
+        "On-demand expansion"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/view/dragcontainer(for:itemid:in:_:)",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/view/dragcontainer(for:itemid:in:_:).json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/view/dragcontainer(for:itemid:in:_:).json",
+      "local_path": "contexts/swiftui-view-drag-container.md",
+      "sha256": "127a60e70dd01577e61a8169502f556fe9b28d5ea0191bd865e2562da12d13bb",
+      "etag": "\"7bfc-65b3b3b74d145\"",
+      "last_modified": null,
+      "bytes": 31740,
+      "categories": [
+        "Drag and drop"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/view/ondragsessionupdated(_:)",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/view/ondragsessionupdated(_:).json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/view/ondragsessionupdated(_:).json",
+      "local_path": "contexts/swiftui-view-on-drag-session-updated.md",
+      "sha256": "424da9026779798aecec79712a37212d4744cf9c88fc4b8760e767b504ec059b",
+      "etag": "\"7434-65b3b3b6add2b\"",
+      "last_modified": null,
+      "bytes": 29748,
+      "categories": [
+        "Drag and drop"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/coretransferable/filerepresentation",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/coretransferable/filerepresentation.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/coretransferable/filerepresentation.json",
+      "local_path": "contexts/coretransferable-file-representation.md",
+      "sha256": "5e26a298d6c662bc828b8d3bc4750d25a1afa6defb0b7d4f64be04398ae21ed8",
+      "etag": "\"46ed-659029bae6b26\"",
+      "last_modified": null,
+      "bytes": 18157,
+      "categories": [
         "Drag and drop"
       ],
       "depth": 2

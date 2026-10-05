@@ -150,3 +150,31 @@ Para consultar, leia primeiro este índice e use `rg -n -i '<termos|símbolos>' 
 - [NSTableView.DraggingDestinationFeedbackStyle](contexts/appkit-nstableview-dragging-destination-feedback-style.md) — feedback nativo de arraste na sidebar e desenho próprio.
 
 - [DataRepresentation](contexts/coretransferable-data-representation.md) — representação dos bytes da URL original no drag de arquivos.
+
+- [NSDraggingSource](contexts/appkit-nsdraggingsource.md) — origem nativa de arraste/exportação de itens de archives.
+
+- [draggingSession(_:sourceOperationMaskFor:)](contexts/appkit-nsdraggingsource-operation-mask.md) — origem nativa de arraste/exportação de itens de archives.
+
+- [draggingSourceOperationMask](contexts/appkit-dragging-source-operation-mask.md) — origem nativa de arraste/exportação de itens de archives.
+
+- [filePromiseProvider(_:writePromiseTo:completionHandler:)](contexts/appkit-file-promise-write.md) — origem nativa de arraste/exportação de itens de archives.
+
+- [NSPanGestureRecognizer](contexts/appkit-nspan-gesture-recognizer.md) — reconhecimento nativo do arraste virtual.
+
+- [NSGestureRecognizerDelegate](contexts/appkit-nsgesture-recognizer-delegate.md) — reconhecimento nativo do arraste virtual.
+
+- [NSGestureRecognizer](contexts/appkit-nsgesture-recognizer.md) — reconhecimento nativo do arraste virtual.
+
+- [NSFilePromiseProvider](contexts/appkit-nsfile-promise-provider.md) — origem nativa de arraste/exportação de itens de archives.
+
+- [NSPasteboardWriting](contexts/appkit-nspasteboard-writing.md) — origem nativa de arraste/exportação de itens de archives.
+
+- [Supporting Drag and Drop Through File Promises](contexts/appkit-supporting-file-promises.md) — publicação na pasta escolhida pelo receptor.
+
+- [NSDraggingDestination](contexts/appkit-nsdraggingdestination.md) — recepção direta da identidade virtual e extração no destino.
+
+- [dragContainer(for:itemID:in:_:)](contexts/swiftui-view-drag-container.md) — captura sob demanda em 2026-10-04; arraste e entrega de conteúdo.
+
+- [onDragSessionUpdated(_:)](contexts/swiftui-view-on-drag-session-updated.md) — captura sob demanda em 2026-10-04; arraste e entrega de conteúdo.
+
+- [FileRepresentation](contexts/coretransferable-file-representation.md) — captura sob demanda em 2026-10-04; arraste e entrega de conteúdo.

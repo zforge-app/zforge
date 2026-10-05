@@ -198,7 +198,7 @@ private enum KeyboardShortcutCatalog {
             ("Copy", "⌘C"),
             ("Paste", "⌘V"),
             ("Move Items Here", "⌥⌘V"),
-            ("Move to Trash", "⌘⌫"),
+            ("Move to Trash / Remove from Archive", "⌘⌫"),
             ("Delete Immediately…", "⌥⌘⌫"),
             ("Eject", "⌘E")
         ]),

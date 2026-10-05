@@ -56,7 +56,7 @@ Drag and drop offers people a convenient way to move content from one part of yo
 - [dropConfiguration(_:)](https://developer.apple.com/documentation/swiftui/view/dropconfiguration(_:)) — Configures a drop session. _(Apple Developer; expandir sob demanda)_
 - [DropConfiguration](https://developer.apple.com/documentation/swiftui/dropconfiguration) — Describes the behavior of the drop. _(Apple Developer; expandir sob demanda)_
 - [dragContainer(for:in:_:)](https://developer.apple.com/documentation/swiftui/view/dragcontainer(for:in:_:)) — A container with draggable views where the drag payload is based on multiple identifiers of dragged items. _(Apple Developer; expandir sob demanda)_
-- [dragContainer(for:itemID:in:_:)](https://developer.apple.com/documentation/swiftui/view/dragcontainer(for:itemid:in:_:)) — A container with draggable views. _(Apple Developer; expandir sob demanda)_
+- [dragContainer(for:itemID:in:_:)](swiftui-view-drag-container.md) — A container with draggable views. _(Apple Developer; expandir sob demanda)_
 - [dragContainerSelection(_:containerNamespace:)](https://developer.apple.com/documentation/swiftui/view/dragcontainerselection(_:containernamespace:)) — Provides multiple item selection support for drag containers. _(Apple Developer; expandir sob demanda)_
 
 ### Moving items
@@ -127,3 +127,9 @@ Drag and drop offers people a convenient way to move content from one part of yo
 - Captura: `2026-07-16T23:52:09+00:00`
 - SHA-256 do payload: `d455ccf78fc1b22c79b48073df1d4da68bc337900bfa6abbf5c3a909905ffaaa`
 - Escopo: primeiro nível a partir da home SwiftUI; links absolutos acima ainda não foram percorridos.
+
+## Origem virtual em archives — AppKit
+
+- [NSDraggingSource](appkit-nsdraggingsource.md): fonte, modificadores e conclusão.
+- [Máscara da origem](appkit-nsdraggingsource-operation-mask.md) e [combinação com modificadores](appkit-dragging-source-operation-mask.md).
+- [Escrita de file promises](appkit-file-promise-write.md): publicar na URL fornecida e completar após escrita.

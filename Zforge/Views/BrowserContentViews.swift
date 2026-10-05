@@ -65,14 +65,9 @@ struct BrowserContent: View {
         .onModifierKeysChanged(mask: [.option, .command]) { _, modifiers in
             dragSession.modifiers = modifiers
         }
-        .dragContainer(for: BrowserDraggedFile.self, itemID: \.url) { (draggedURLs: [URL]) in
-            state.prepareDragPayload(draggedURLs).map { BrowserDraggedFile(url: $0) }
-        }
-        .dragContainerSelection(state.dragSelectionURLs)
-        .dragConfiguration(.browserFileOperations)
         .dragPreviewsFormation(state.viewMode.fileDragPreviewsFormation)
         .onDrop(
-            of: [UTType.fileURL.identifier],
+            of: [UTType.fileURL.identifier, ArchiveDragPolicy.type],
             delegate: BrowserFileDropDelegate(
                 state: state,
                 // The blank area represents the directory currently being
@@ -82,6 +77,12 @@ struct BrowserContent: View {
                 archiveAddress: state.archiveDropAddress
             )
         )
+        .overlay {
+            if state.fileDropDestinationURL != nil || state.archiveDropAddress != nil {
+                ArchiveDropDestination(directory: state.fileDropDestinationURL, address: state.archiveDropAddress)
+                    .accessibilityHidden(true)
+            }
+        }
         .dropPreviewsFormation(state.viewMode.fileDragPreviewsFormation)
         .onChange(of: state.renamingItemURL) { _, url in
             if url == nil {
@@ -357,12 +358,17 @@ struct BrowserFileDropDelegate: DropDelegate {
     var onTargetedChange: (Bool) -> Void = { _ in }
 
     func validateDrop(info: DropInfo) -> Bool {
-        (destinationURL != nil || archiveDestinationURL != nil || archiveAddress != nil)
+        if info.hasItemsConforming(to: [ArchiveDragPolicy.type]) { return destinationURL != nil || archiveAddress != nil || archiveDestinationURL.flatMap({ state.archiveAddress(for: $0) }) != nil }
+        return (destinationURL != nil || archiveDestinationURL != nil || archiveAddress != nil)
             && info.hasItemsConforming(to: [UTType.fileURL.identifier])
     }
 
     func dropUpdated(info: DropInfo) -> DropProposal? {
-        DropProposal(operation: archiveDestinationURL != nil || archiveAddress != nil
+        if info.hasItemsConforming(to: [ArchiveDragPolicy.type]) {
+            let operation = ArchiveDragPolicy.operation(option: NSEvent.modifierFlags.contains(.option), insideArchive: destinationURL == nil)
+            return DropProposal(operation: operation == .move ? .move : .copy)
+        }
+        return DropProposal(operation: archiveDestinationURL != nil || archiveAddress != nil
             ? .copy : BrowserFileDropProposalResolver.operation(for: transferOperation))
     }
 
@@ -378,6 +384,16 @@ struct BrowserFileDropDelegate: DropDelegate {
     func performDrop(info: DropInfo) -> Bool {
         onTargetedChange(false)
         guard validateDrop(info: info) else { return false }
+        if info.hasItemsConforming(to: [ArchiveDragPolicy.type]), destinationURL == nil,
+           let address = archiveAddress ?? archiveDestinationURL.flatMap({ state.archiveAddress(for: $0) }) {
+            return state.performArchiveItemDrop(providers: info.itemProviders(for: [ArchiveDragPolicy.type]),
+                to: address, moving: !NSEvent.modifierFlags.contains(.option))
+        }
+        if info.hasItemsConforming(to: [ArchiveDragPolicy.type]), let destinationURL {
+            let providers = info.itemProviders(for: [ArchiveDragPolicy.type])
+            let moving = NSEvent.modifierFlags.contains(.option)
+            return state.performArchiveItemDrop(providers: providers, to: destinationURL, moving: moving)
+        }
         let providers = info.itemProviders(for: [UTType.fileURL.identifier])
         if archiveDestinationURL != nil || archiveAddress != nil {
             return state.performArchiveDrop(
@@ -394,7 +410,7 @@ struct BrowserFileDropDelegate: DropDelegate {
     }
 
     private var transferOperation: BrowserFileTransferOperation {
-        BrowserFileDropOperationResolver.operation(for: dragSession.modifiers)
+        BrowserFileDropOperationResolver.operation(forNativeFlags: NSEvent.modifierFlags)
     }
 }
 
@@ -404,6 +420,12 @@ final class BrowserFileDragSession {
 }
 
 nonisolated enum BrowserFileDropOperationResolver {
+    static func operation(forNativeFlags flags: NSEvent.ModifierFlags) -> BrowserFileTransferOperation {
+        if flags.contains([.option, .command]) { return .alias }
+        if flags.contains(.option) { return .copy }
+        if flags.contains(.command) { return .move }
+        return .automatic
+    }
     static func operation(for modifiers: EventModifiers) -> BrowserFileTransferOperation {
         if modifiers.contains([.option, .command]) { return .alias }
         if modifiers.contains(.option) { return .copy }
@@ -438,37 +460,18 @@ nonisolated struct BrowserDraggedFile: Transferable {
     }
 }
 
-private extension DragConfiguration {
-    static var browserFileOperations: DragConfiguration {
-        var withinApp = OperationsWithinApp(
-            allowCopy: true,
-            allowMove: true,
-            allowDelete: false
-        )
-        withinApp.allowAlias = true
-
-        var outsideApp = OperationsOutsideApp(
-            allowCopy: true,
-            allowMove: true,
-            allowDelete: false
-        )
-        outsideApp.allowAlias = true
-
-        return DragConfiguration(
-            operationsWithinApp: withinApp,
-            operationsOutsideApp: outsideApp
-        )
-    }
-}
 
 extension View {
-    @ViewBuilder
-    func browserDraggable(item: BrowserItem) -> some View {
-        if let url = item.localURL {
-            draggable(containerItemID: url)
-        } else {
-            self
+    func browserDraggable(item: BrowserItem, state: FileBrowserState) -> some View {
+        Group {
+            if item.localURL != nil {
+                background { ArchiveDragSource(state: state, item: item).accessibilityHidden(true) }
+            } else if case .archive = item.location {
+                background { ArchiveDragSource(state: state, item: item).accessibilityHidden(true) }
+            } else { self }
         }
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("browser-item-" + item.name)
     }
 
     @ViewBuilder
@@ -509,7 +512,7 @@ extension View {
     ) -> some View {
         if location.fileSystemURL != nil || location.archiveDropAddress != nil {
             onDrop(
-                of: [UTType.fileURL.identifier],
+                of: [UTType.fileURL.identifier, ArchiveDragPolicy.type],
                 delegate: BrowserFileDropDelegate(
                     state: state,
                     destinationURL: location.fileSystemURL,
@@ -520,6 +523,10 @@ extension View {
                     }
                 )
             )
+            .overlay {
+                ArchiveDropDestination(directory: location.fileSystemURL, address: location.archiveDropAddress,
+                    onTargetedChange: { isTargeted.wrappedValue = $0 }).accessibilityHidden(true)
+            }
             .dropPreviewsFormation(state.viewMode.fileDragPreviewsFormation)
         } else {
             self
@@ -567,12 +574,17 @@ private struct BrowserArchiveDropTargetModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .onDrop(of: [UTType.fileURL.identifier], delegate: BrowserFileDropDelegate(
+            .onDrop(of: [UTType.fileURL.identifier, ArchiveDragPolicy.type], delegate: BrowserFileDropDelegate(
                 state: state, destinationURL: nil, dragSession: dragSession,
                 archiveDestinationURL: archiveURL, archiveAddress: address,
                 onTargetedChange: { isTargeted = $0 }
             ))
             .overlay { if isTargeted { BrowserFileDropHighlight() } }
+            .overlay {
+                if let target = address ?? archiveURL.flatMap({ state.archiveAddress(for: $0) }) {
+                    ArchiveDropDestination(address: target, onTargetedChange: { isTargeted = $0 }).accessibilityHidden(true)
+                }
+            }
             .onDisappear { isTargeted = false }
     }
 }
@@ -587,7 +599,7 @@ private struct BrowserFileDropTargetModifier: ViewModifier {
         content
             .environment(\.browserDropTargetURL, isTargeted ? destinationURL : nil)
             .onDrop(
-                of: [UTType.fileURL.identifier],
+                of: [UTType.fileURL.identifier, ArchiveDragPolicy.type],
                 delegate: BrowserFileDropDelegate(
                     state: state,
                     destinationURL: destinationURL,
@@ -602,6 +614,10 @@ private struct BrowserFileDropTargetModifier: ViewModifier {
                 if isTargeted {
                     BrowserFileDropHighlight()
                 }
+            }
+            .overlay {
+                ArchiveDropDestination(directory: destinationURL, onTargetedChange: { isTargeted = $0 })
+                    .accessibilityHidden(true)
             }
             .animation(.easeOut(duration: 0.12), value: isTargeted)
             .onDisappear { isTargeted = false }

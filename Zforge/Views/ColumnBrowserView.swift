@@ -123,9 +123,9 @@ struct ColumnBrowserView: View {
                             FinderColumn(
                                 state: state,
                                 component: component,
-                                items: state.columnItems[component.location] != nil
-                                    ? state.sortedColumnItems(at: component.location)
-                                    : (component.location == state.location ? state.sortedItems : []),
+                                // Navigation publishes the destination before its async
+                                // read completes. Root items can still belong to the parent.
+                                items: state.sortedColumnItems(at: component.location),
                                 isActive: component.location == (state.activeColumnLocation ?? state.location),
                                 selectedID: state.columnSelections[component.location],
                                 scale: scale,
@@ -378,7 +378,7 @@ private struct FinderColumn: View {
                                     }
                                 }
                             )
-                            .browserDraggable(item: item)
+                            .browserDraggable(item: item, state: state)
                             .browserDirectoryDropTarget(
                                 state: state,
                                 item: item,

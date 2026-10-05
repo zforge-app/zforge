@@ -127,6 +127,11 @@ struct BrowserSidebar: View {
             .buttonStyle(.plain)
 
             Section {
+                if let directory = browser.archiveDragFixtureDirectory {
+                    destinationRow("Dropped", directory.appendingPathComponent("Dropped"), "folder", canInsert: false, nextFavorite: nil)
+                        .accessibilityIdentifier("sidebar-fixture-drop")
+                        .accessibilityValue(directory.appendingPathComponent("Dropped").path)
+                }
                 ForEach(sidebar.favorites) { destination in
                     destinationRow(destination.name, destination.url, destination.systemImage, canInsert: true,
                                    nextFavorite: sidebar.favorites.drop(while: { $0.id != destination.id }).dropFirst().first?.url)
@@ -298,10 +303,16 @@ private struct SidebarDestinationRow: View {
                     .onChange(of: geometry.size.height) { _, height in rowHeight = height }
             }
         }
-        .onDrop(of: [UTType.fileURL.identifier], delegate: SidebarRowDropDelegate(
+        .onDrop(of: [UTType.fileURL.identifier, ArchiveDragPolicy.type], delegate: SidebarRowDropDelegate(
             browser: browser, url: url, canInsert: canInsert, nextFavorite: nextFavorite,
             rowHeight: rowHeight, feedback: feedback, owner: owner, dragSession: dragSession
         ))
+        .overlay {
+            ArchiveDropDestination(directory: url, onTargetedChange: { targeted in
+                if targeted { feedback.update(owner: owner, target: .folder(url)) }
+                else { feedback.leave(owner: owner) }
+            }).accessibilityHidden(true)
+        }
         .onDisappear { feedback.leave(owner: owner) }
 
     }
@@ -317,9 +328,10 @@ private struct SidebarRowDropDelegate: DropDelegate {
     let owner: String
     let dragSession: BrowserFileDragSession
 
-    func validateDrop(info: DropInfo) -> Bool { info.hasItemsConforming(to: [UTType.fileURL.identifier]) }
+    func validateDrop(info: DropInfo) -> Bool { info.hasItemsConforming(to: [UTType.fileURL.identifier, ArchiveDragPolicy.type]) }
     private func target(_ info: DropInfo) -> SidebarDropFeedback.Target {
-        SidebarDropFeedback.rowTarget(url: url, canInsert: canInsert, nextFavorite: nextFavorite,
+        if info.hasItemsConforming(to: [ArchiveDragPolicy.type]) { return .folder(url) }
+        return SidebarDropFeedback.rowTarget(url: url, canInsert: canInsert, nextFavorite: nextFavorite,
                                       height: rowHeight, y: info.location.y)
     }
     private func update(_ info: DropInfo) {
@@ -331,20 +343,27 @@ private struct SidebarRowDropDelegate: DropDelegate {
     func dropUpdated(info: DropInfo) -> DropProposal? {
         guard validateDrop(info: info) else { feedback.leave(owner: owner); return DropProposal(operation: .cancel) }
         update(info)
+        if info.hasItemsConforming(to: [ArchiveDragPolicy.type]) {
+            return DropProposal(operation: NSEvent.modifierFlags.contains(.option) ? .move : .copy)
+        }
         if case .insertion = target(info) { return DropProposal(operation: .copy) }
         return DropProposal(operation: BrowserFileDropProposalResolver.operation(
-            for: BrowserFileDropOperationResolver.operation(for: dragSession.modifiers)
+            for: BrowserFileDropOperationResolver.operation(forNativeFlags: NSEvent.modifierFlags)
         ))
     }
     func performDrop(info: DropInfo) -> Bool {
         feedback.leave(owner: owner)
         guard validateDrop(info: info) else { return false }
+        if info.hasItemsConforming(to: [ArchiveDragPolicy.type]) {
+            return browser.performArchiveItemDrop(providers: info.itemProviders(for: [ArchiveDragPolicy.type]),
+                to: url, moving: NSEvent.modifierFlags.contains(.option))
+        }
         let providers = info.itemProviders(for: [UTType.fileURL.identifier])
         switch target(info) {
         case let .insertion(anchor): return browser.performPinDrop(providers: providers, before: anchor)
         case let .folder(destination):
             return browser.performDrop(providers: providers, to: destination,
-                operation: BrowserFileDropOperationResolver.operation(for: dragSession.modifiers))
+                operation: BrowserFileDropOperationResolver.operation(forNativeFlags: NSEvent.modifierFlags))
         }
     }
 }

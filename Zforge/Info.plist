@@ -33,6 +33,14 @@
 	<key>LSApplicationCategoryType</key><string>public.app-category.utilities</string>
 	<key>LSMinimumSystemVersion</key><string>$(MACOSX_DEPLOYMENT_TARGET)</string>
 	<key>NSHumanReadableCopyright</key><string></string>
+	<key>UTExportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeIdentifier</key><string>app.zforge.archive-items</string>
+			<key>UTTypeConformsTo</key><array><string>public.data</string></array>
+			<key>UTTypeDescription</key><string>Zforge archive item transfer</string>
+		</dict>
+	</array>
 	<key>NSPrincipalClass</key><string>NSApplication</string>
 </dict>
 </plist>

@@ -461,7 +461,7 @@ bool Finish(HRESULT result, Context &context, NSError **error, int itemResult = 
 }
 + (BOOL)writeAtPath:(NSString *)path format:(NSString *)format updatingPath:(NSString *)updatingPath
     sources:(NSArray<ZFSevenZipSource *> *)sources properties:(NSDictionary<NSString *, id> *)properties
-    password:(NSString *)password operation:(ZFSevenZipOperation *)operation error:(NSError **)error {
+    excludingPaths:(NSArray<NSString *> *)excludingPaths password:(NSString *)password operation:(ZFSevenZipOperation *)operation error:(NSError **)error {
     Context ctx{operation, password};
     try {
         Archive old;
@@ -524,7 +524,14 @@ bool Finish(HRESULT result, Context &context, NSError **error, int itemResult = 
             for (ZFSevenZipSource *source in sources) [replaced addObject:source.archivePath];
             for (UInt32 i = 0; i < count; ++i) {
                 auto name = Property(old.handler, i, kpidPath);
-                if (name.vt != VT_BSTR || ![replaced containsObject:String(name.bstrVal)]) callback->kept.push_back(i);
+                NSString *itemPath = name.vt == VT_BSTR ? String(name.bstrVal) : @"";
+                BOOL excluded = NO;
+                for (NSString *removed in excludingPaths) {
+                    if ([itemPath isEqualToString:removed] || [itemPath hasPrefix:[removed stringByAppendingString:@"/"]]) {
+                        excluded = YES; break;
+                    }
+                }
+                if (!excluded && ![replaced containsObject:itemPath]) callback->kept.push_back(i);
             }
         }
         COutFileStream *file = new COutFileStream;

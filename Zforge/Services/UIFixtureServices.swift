@@ -30,7 +30,17 @@ final class UIFixtureTaggedItemsService: TaggedItemsServing {
 }
 
 actor UIFixtureFileSystemService: FileSystemServing {
+    private let itemsDelay: Duration
+
+    init(itemsDelay: Duration = .zero) {
+        self.itemsDelay = itemsDelay
+    }
+
     func items(in directory: URL, showHidden: Bool) async throws -> [BrowserItem] {
+        if itemsDelay > .zero, directory.lastPathComponent == "Fixture Folder" {
+            try await Task.sleep(for: itemsDelay)
+            return [makeItem(name: "FolderChild.txt", url: directory.appendingPathComponent("FolderChild.txt"))]
+        }
         let items = [
             makeItem(name: "Fixture Folder", directory: true),
             makeItem(name: "Welcome.txt", size: 1_024),
@@ -44,6 +54,7 @@ actor UIFixtureFileSystemService: FileSystemServing {
     func item(at url: URL) async throws -> BrowserItem {
         makeItem(
             name: url.lastPathComponent,
+            directory: url.lastPathComponent == "Fixture Folder",
             archive: ArchiveFormatRegistry.recognizes(url.lastPathComponent),
             url: url
         )
@@ -81,6 +92,11 @@ actor UIFixtureAccessGrantStore: AccessGrantStoring {
 
 actor UIFixtureArchiveEngine: ArchiveServing {
     private let sessionID = UUID()
+    private let itemsDelay: Duration
+
+    init(itemsDelay: Duration = .zero) {
+        self.itemsDelay = itemsDelay
+    }
 
     func openArchive(
         at url: URL,
@@ -99,6 +115,7 @@ actor UIFixtureArchiveEngine: ArchiveServing {
     }
 
     func items(at address: ArchiveAddress) async throws -> [BrowserItem] {
+        if itemsDelay > .zero { try await Task.sleep(for: itemsDelay) }
         let childAddress = ArchiveAddress(
             sessionID: address.sessionID,
             archiveID: address.archiveID,

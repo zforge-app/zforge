@@ -6,6 +6,7 @@
 //
 
 import XCTest
+import AppKit
 
 final class ZforgeUITests: XCTestCase {
 
@@ -29,7 +30,7 @@ final class ZforgeUITests: XCTestCase {
             "--ui-fixtures", "--ui-window-width", "1100", "--ui-view-mode", "icons",
             "-appLanguagePreference", "english"
         ]
-        app.launch()
+        launchArchiveFixture(app)
         app.activate()
         defer { app.terminate() }
         let content = { (mode: String) in
@@ -64,14 +65,19 @@ final class ZforgeUITests: XCTestCase {
         for mode in ["icons", "list", "columns", "gallery"] {
             let app = XCUIApplication()
             app.launchArguments = ["--ui-fixtures", "--ui-window-width", "1100", "--ui-view-mode", mode, "-appLanguagePreference", "english"]
-            app.launch()
+            launchArchiveFixture(app)
             app.activate()
-            let file = app.staticTexts["Welcome.txt"].firstMatch
+            // Preview titles can repeat the file name. Keep every interaction
+            // on the actual browser cell when selection opens its preview.
+            let file = app.descendants(matching: .any)
+                .matching(identifier: "browser-item-Welcome.txt").firstMatch
+                .staticTexts["Welcome.txt"].firstMatch
             XCTAssertTrue(file.waitForExistence(timeout: 5), mode)
             let content = app.descendants(matching: .any)["browser-mode-\(mode)"].firstMatch
             XCTAssertTrue(content.exists, mode)
             let area = content.frame
             let window = app.windows.firstMatch
+            let popup = window.menus.firstMatch
             let blank = window.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(
                 dx: area.minX - window.frame.minX + area.width * (mode == "gallery" ? 0.95 : 0.2),
                 dy: area.minY - window.frame.minY + area.height * (mode == "gallery" ? 0.97 : 0.8)
@@ -81,21 +87,313 @@ final class ZforgeUITests: XCTestCase {
             for selected in [false, true] {
                 if selected { file.click(); file.click() } else { blank.click() }
                 more.click()
-                XCTAssertTrue(app.menuItems["Open"].waitForExistence(timeout: 2), mode)
-                XCTAssertEqual(app.menuItems["Open"].isEnabled, selected, mode)
-                let expected = app.menuItems.allElementsBoundByIndex.map { "\($0.label):\($0.isEnabled)" }
+                XCTAssertTrue(popup.menuItems["Open"].waitForExistence(timeout: 2), mode)
+                XCTAssertEqual(popup.menuItems["Open"].isEnabled, selected, mode)
+                let expected = popup.menuItems.allElementsBoundByIndex.map { "\($0.label):\($0.isEnabled)" }
                 app.typeKey(.escape, modifierFlags: [])
                 blank.rightClick()
-                XCTAssertTrue(app.menuItems["Open"].waitForExistence(timeout: 2), "\(mode), selected: \(selected)")
-                XCTAssertEqual(app.menuItems.allElementsBoundByIndex.map { "\($0.label):\($0.isEnabled)" }, expected, mode)
+                XCTAssertTrue(popup.menuItems["Open"].waitForExistence(timeout: 2), "\(mode), selected: \(selected)")
+                XCTAssertEqual(popup.menuItems.allElementsBoundByIndex.map { "\($0.label):\($0.isEnabled)" }, expected, mode)
                 app.typeKey(.escape, modifierFlags: [])
             }
             // The blank-area monitor must leave the item-specific menu intact.
             file.rightClick()
-            XCTAssertTrue(app.menuItems["Open with"].waitForExistence(timeout: 2), mode)
+            XCTAssertTrue(popup.menuItems["Open with"].waitForExistence(timeout: 2), mode)
             app.typeKey(.escape, modifierFlags: [])
             app.terminate()
         }
+    }
+
+    @MainActor
+    private func launchArchiveFixture(_ app: XCUIApplication) {
+        app.launch(); app.activate()
+        // macOS can restore an application with no browser window. Create the
+        // fixture's window before looking for rows; this is test setup only.
+        if !app.windows.firstMatch.waitForExistence(timeout: 3) {
+            app.typeKey("n", modifierFlags: .command)
+        }
+        XCTAssertTrue(app.windows.firstMatch.waitForExistence(timeout: 8), app.debugDescription)
+    }
+
+    @MainActor
+    func testArchiveMutationKeepsBackHistoryAndAncestorColumnsInEveryMode() throws {
+        for mode in ["icons", "list", "columns", "gallery"] {
+            let app = XCUIApplication()
+            app.launchArguments = ["--ui-archive-drag-fixtures", "--ui-archive-navigation-fixtures",
+                "--ui-window-width", "1300", "--ui-view-mode", mode, "-appLanguagePreference", "english"]
+            launchArchiveFixture(app)
+            let initialTitle = app.windows.firstMatch.title
+            for name in ["Sample.zip", "Inside", "Deep"] {
+                let label = app.descendants(matching: .any).matching(identifier: "browser-item-\(name)").firstMatch.staticTexts[name].firstMatch
+                XCTAssertTrue(label.waitForExistence(timeout: 8), app.debugDescription)
+                if mode == "columns" { label.click() } else { label.doubleClick() }
+            }
+            XCTAssertTrue(app.windows["Deep"].firstMatch.waitForExistence(timeout: 8), app.debugDescription)
+            let payload = app.descendants(matching: .any).matching(identifier: "browser-item-DeepPayload.txt").firstMatch.staticTexts["DeepPayload.txt"].firstMatch
+            let leaf = app.descendants(matching: .any).matching(identifier: "browser-item-Leaf").firstMatch.staticTexts["Leaf"].firstMatch
+            XCTAssertTrue(payload.waitForExistence(timeout: 8)); XCTAssertTrue(leaf.exists)
+            XCUIElement.perform(withKeyModifiers: [.option]) { payload.click(forDuration: 0.3, thenDragTo: leaf) }
+            XCTAssertTrue(app.staticTexts["Modify the Original Archive?"].firstMatch.waitForExistence(timeout: 5))
+            app.typeKey(.return, modifierFlags: [])
+            let expectedTitle = mode == "list" ? "Deep" : "Leaf"
+            XCTAssertTrue(app.windows[expectedTitle].firstMatch.waitForExistence(timeout: 8), app.debugDescription)
+            let copies = app.descendants(matching: .any).matching(identifier: "browser-item-DeepPayload.txt")
+            let duplicate = XCTNSPredicateExpectation(predicate: NSPredicate(format: "count == %@", NSNumber(value: mode == "gallery" || mode == "icons" ? 1 : 2)), object: copies)
+            XCTAssertEqual(XCTWaiter.wait(for: [duplicate], timeout: 8), .completed, app.debugDescription)
+            if mode == "columns" {
+                for (index, name) in ["Sample.zip", "Inside", "Deep", "Leaf", "DeepPayload.txt"].enumerated() {
+                    let column = app.descendants(matching: .any).matching(identifier: "browser-column-\(index)").firstMatch
+                    XCTAssertTrue(column.staticTexts[name].firstMatch.exists, "Missing ancestor \(name): \(app.debugDescription)")
+                }
+            }
+            let capture = XCTAttachment(screenshot: app.screenshot()); capture.name = "Mutation hierarchy \(mode)"; capture.lifetime = .keepAlways; add(capture)
+            let titles = mode == "list" ? ["Inside", "Sample.zip", initialTitle] : ["Deep", "Inside", "Sample.zip", initialTitle]
+            for title in titles {
+                app.buttons["Back"].firstMatch.click()
+                XCTAssertTrue(app.windows[title].firstMatch.waitForExistence(timeout: 8), "Back skipped \(title): \(app.debugDescription)")
+            }
+            app.buttons["Forward"].firstMatch.click()
+            XCTAssertTrue(app.windows["Sample.zip"].firstMatch.waitForExistence(timeout: 8), app.debugDescription)
+            app.terminate()
+        }
+    }
+
+    @MainActor
+    func testArchiveDragCopiesIntoDroppedFolderInEveryMode() throws {
+        for mode in ["list", "icons", "columns", "gallery"] {
+            let app = XCUIApplication()
+            app.launchArguments = ["--ui-archive-drag-fixtures", "--ui-window-width", "1100",
+                "--ui-view-mode", mode, "-appLanguagePreference", "english"]
+            launchArchiveFixture(app)
+            app.activate()
+            let archive = app.staticTexts["Sample.zip"].firstMatch
+            XCTAssertTrue(archive.waitForExistence(timeout: 8), app.debugDescription)
+            if mode == "list" {
+                app.descendants(matching: .any).matching(identifier: "browser-item-Sample.zip").firstMatch.buttons.firstMatch.click()
+                let inside = app.staticTexts["Inside"].firstMatch
+                XCTAssertTrue(inside.waitForExistence(timeout: 5))
+                app.descendants(matching: .any).matching(identifier: "browser-item-Inside").firstMatch.buttons.firstMatch.click()
+            } else {
+                if mode == "columns" { archive.click() } else { archive.doubleClick() }
+                let inside = app.staticTexts["Inside"].firstMatch
+                XCTAssertTrue(inside.waitForExistence(timeout: 5))
+                if mode == "columns" { inside.click() } else { inside.doubleClick() }
+            }
+            let payload = app.descendants(matching: .any).matching(identifier: "browser-item-Payload.txt").firstMatch.staticTexts["Payload.txt"].firstMatch
+            XCTAssertTrue(payload.waitForExistence(timeout: 5))
+            let destination = app.descendants(matching: .any).matching(identifier: "sidebar-fixture-drop").firstMatch
+            XCTAssertTrue(destination.waitForExistence(timeout: 5))
+            payload.click(forDuration: 0.3, thenDragTo: destination)
+            let picture = XCTAttachment(screenshot: app.screenshot()); picture.name = "Archive copy \(mode)"; picture.lifetime = .keepAlways; add(picture)
+            destination.click()
+            XCTAssertTrue(app.windows["Dropped"].firstMatch.waitForExistence(timeout: 8), app.debugDescription)
+            XCTAssertTrue(app.descendants(matching: .any).matching(identifier: "browser-item-Payload.txt").firstMatch.waitForExistence(timeout: 8), app.debugDescription)
+            app.terminate()
+        }
+    }
+
+    @MainActor
+    func testArchiveMoveUsesKeyboardConfirmationAndCancellation() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-archive-drag-fixtures", "--ui-view-mode", "list", "-appLanguagePreference", "english"]
+        launchArchiveFixture(app)
+        let archive = app.staticTexts["Sample.zip"].firstMatch
+        XCTAssertTrue(archive.waitForExistence(timeout: 8))
+        app.descendants(matching: .any).matching(identifier: "browser-item-Sample.zip").firstMatch.buttons.firstMatch.click()
+        let inside = app.staticTexts["Inside"].firstMatch
+        XCTAssertTrue(inside.waitForExistence(timeout: 5))
+        app.descendants(matching: .any).matching(identifier: "browser-item-Inside").firstMatch.buttons.firstMatch.click()
+        let payload = app.descendants(matching: .any).matching(identifier: "browser-item-Payload.txt").firstMatch.staticTexts["Payload.txt"].firstMatch
+        let dropped = app.descendants(matching: .any).matching(identifier: "browser-item-Dropped").firstMatch.staticTexts["Dropped"].firstMatch
+        XCTAssertTrue(payload.waitForExistence(timeout: 5)); XCTAssertTrue(dropped.exists)
+        XCUIElement.perform(withKeyModifiers: [.option]) { payload.click(forDuration: 0.3, thenDragTo: dropped) }
+        XCTAssertTrue(app.staticTexts["Modify the Original Archive?"].firstMatch.waitForExistence(timeout: 5))
+        app.typeKey(.escape, modifierFlags: [])
+        XCTAssertTrue(payload.waitForExistence(timeout: 5))
+        app.descendants(matching: .any).matching(identifier: "browser-item-Dropped").firstMatch.buttons.firstMatch.click()
+        XCTAssertEqual(app.descendants(matching: .any).matching(identifier: "browser-item-Payload.txt").count, 1)
+        XCUIElement.perform(withKeyModifiers: [.option]) { payload.click(forDuration: 0.3, thenDragTo: dropped) }
+        XCTAssertTrue(app.staticTexts["Modify the Original Archive?"].firstMatch.waitForExistence(timeout: 5))
+        app.typeKey(.return, modifierFlags: [])
+        app.descendants(matching: .any).matching(identifier: "sidebar-fixture-drop").firstMatch.click()
+        XCTAssertTrue(app.windows["Dropped"].firstMatch.waitForExistence(timeout: 8))
+        XCTAssertTrue(app.descendants(matching: .any).matching(identifier: "browser-item-Payload.txt").firstMatch.waitForExistence(timeout: 8))
+    }
+
+    @MainActor
+    func testArchiveInternalMoveAndOptionCopyRevealExpandedDestination() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-archive-drag-fixtures", "--ui-view-mode", "list", "-appLanguagePreference", "english"]
+        launchArchiveFixture(app)
+        let archive = app.descendants(matching: .any).matching(identifier: "browser-item-Sample.zip").firstMatch
+        XCTAssertTrue(archive.waitForExistence(timeout: 8)); archive.buttons.firstMatch.click()
+        let inside = app.descendants(matching: .any).matching(identifier: "browser-item-Inside").firstMatch
+        XCTAssertTrue(inside.waitForExistence(timeout: 5)); inside.buttons.firstMatch.click()
+        let payloads = app.descendants(matching: .any).matching(identifier: "browser-item-Payload.txt")
+        let source = payloads.firstMatch.staticTexts["Payload.txt"].firstMatch
+        XCTAssertTrue(source.waitForExistence(timeout: 5))
+        let target = app.descendants(matching: .any).matching(identifier: "browser-item-Target").firstMatch.staticTexts["Target"].firstMatch
+        source.click(forDuration: 0.3, thenDragTo: target)
+        XCTAssertTrue(app.staticTexts["Modify the Original Archive?"].firstMatch.waitForExistence(timeout: 5))
+        app.typeKey(.return, modifierFlags: [])
+        XCTAssertTrue(source.waitForExistence(timeout: 8))
+        XCTAssertEqual(payloads.count, 1)
+        // Refresh expands Target and leaves the surviving Inside directory expanded.
+        let firstCapture = XCTAttachment(screenshot: app.screenshot()); firstCapture.name = "Internal move revealed"; firstCapture.lifetime = .keepAlways; add(firstCapture)
+        let insideTarget = inside.staticTexts["Inside"].firstMatch
+        XCUIElement.perform(withKeyModifiers: [.option]) { source.click(forDuration: 0.3, thenDragTo: insideTarget) }
+        XCTAssertTrue(app.staticTexts["Modify the Original Archive?"].firstMatch.waitForExistence(timeout: 5))
+        app.typeKey(.return, modifierFlags: [])
+        let duplicated = XCTNSPredicateExpectation(predicate: NSPredicate(format: "count == 2"), object: payloads)
+        XCTAssertEqual(XCTWaiter.wait(for: [duplicated], timeout: 8), .completed)
+        let capture = XCTAttachment(screenshot: app.screenshot()); capture.name = "Internal copy preserves both entries"; capture.lifetime = .keepAlways; add(capture)
+    }
+
+    @MainActor
+    func testArchiveCopyIntoAnotherZforgeWindow() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-archive-drag-fixtures", "--ui-window-width", "780", "--ui-view-mode", "list", "-appLanguagePreference", "english"]
+        app.launch(); app.activate()
+        let firstTitle = app.windows.firstMatch.title
+        let sourceWindow = app.windows.matching(NSPredicate(format: "title == %@", firstTitle)).firstMatch
+        let archive = sourceWindow.descendants(matching: .any).matching(identifier: "browser-item-Sample.zip").firstMatch
+        XCTAssertTrue(archive.waitForExistence(timeout: 8)); archive.buttons.firstMatch.click()
+        let inside = sourceWindow.descendants(matching: .any).matching(identifier: "browser-item-Inside").firstMatch
+        XCTAssertTrue(inside.waitForExistence(timeout: 5)); inside.buttons.firstMatch.click()
+        let payload = sourceWindow.descendants(matching: .any).matching(identifier: "browser-item-Payload.txt").firstMatch
+        XCTAssertTrue(payload.waitForExistence(timeout: 5))
+        app.typeKey("n", modifierFlags: [.command])
+        let second = app.windows.matching(NSPredicate(format: "title != %@ AND title BEGINSWITH %@", firstTitle, "ArchiveDragFixture-")).firstMatch
+        XCTAssertTrue(second.waitForExistence(timeout: 8), app.debugDescription)
+        let origin = second.coordinate(withNormalizedOffset: .zero)
+        origin.withOffset(CGVector(dx: 400, dy: 6)).click(forDuration: 0.3,
+            thenDragTo: origin.withOffset(CGVector(dx: 1200 - second.frame.minX, dy: 44 - second.frame.minY)))
+        // Drop onto a directory row in the new window, then inspect its contents.
+        let target = second.descendants(matching: .any).matching(identifier: "browser-item-Dropped").firstMatch.staticTexts["Dropped"].firstMatch
+        payload.staticTexts["Payload.txt"].firstMatch.click(forDuration: 0.3, thenDragTo: target)
+        target.doubleClick()
+        let dropped = app.windows["Dropped"].firstMatch
+        XCTAssertTrue(dropped.waitForExistence(timeout: 8), app.debugDescription)
+        XCTAssertTrue(dropped.descendants(matching: .any).matching(identifier: "browser-item-Payload.txt").firstMatch.waitForExistence(timeout: 8))
+        XCTAssertTrue(payload.exists)
+    }
+
+    @MainActor
+    func testLocalDragRetainsMoveAndOptionCopyBehavior() throws {
+        for copying in [false, true] {
+            let app = XCUIApplication()
+            app.launchArguments = ["--ui-archive-drag-fixtures", "--ui-view-mode", "list", "-appLanguagePreference", "english"]
+            launchArchiveFixture(app)
+            let localRows = app.descendants(matching: .any).matching(identifier: "browser-item-Local.txt")
+            let source = localRows.firstMatch.staticTexts["Local.txt"].firstMatch
+            XCTAssertTrue(source.waitForExistence(timeout: 8))
+            let destination = app.descendants(matching: .any).matching(identifier: "browser-item-Dropped").firstMatch
+            let target = destination.staticTexts["Dropped"].firstMatch
+            XCUIElement.perform(withKeyModifiers: copying ? [.option] : []) {
+                source.click(forDuration: 0.3, thenDragTo: target)
+            }
+            destination.buttons.firstMatch.click()
+            let count = XCTNSPredicateExpectation(predicate: NSPredicate(format: "count == %d", copying ? 2 : 1), object: localRows)
+            XCTAssertEqual(XCTWaiter.wait(for: [count], timeout: 8), .completed, app.debugDescription)
+            target.doubleClick()
+            XCTAssertTrue(app.windows["Dropped"].firstMatch.waitForExistence(timeout: 8))
+            XCTAssertTrue(source.waitForExistence(timeout: 5))
+            app.terminate()
+        }
+    }
+
+    @MainActor
+    func testLocalDropIntoArchiveRetainsConfirmationAndSource() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-archive-drag-fixtures", "--ui-view-mode", "list", "-appLanguagePreference", "english"]
+        launchArchiveFixture(app)
+        let local = app.descendants(matching: .any).matching(identifier: "browser-item-Local.txt").firstMatch.staticTexts["Local.txt"].firstMatch
+        XCTAssertTrue(local.waitForExistence(timeout: 8))
+        let archive = app.descendants(matching: .any).matching(identifier: "browser-item-Sample.zip").firstMatch
+        local.click(forDuration: 0.3, thenDragTo: archive.staticTexts["Sample.zip"].firstMatch)
+        let addButton = app.windows.firstMatch.buttons["Add to Archive"].firstMatch
+        XCTAssertTrue(addButton.waitForExistence(timeout: 5), app.debugDescription)
+        addButton.click()
+        archive.buttons.firstMatch.click()
+        let rows = app.descendants(matching: .any).matching(identifier: "browser-item-Local.txt")
+        let added = XCTNSPredicateExpectation(predicate: NSPredicate(format: "count == 2"), object: rows)
+        XCTAssertEqual(XCTWaiter.wait(for: [added], timeout: 8), .completed, app.debugDescription)
+    }
+
+    @MainActor
+    func testArchivePromisesPublishIntoFinderBeforeRemovingOriginal() throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent("ZforgeFinderDrag-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-archive-drag-fixtures", "--ui-window-width", "780", "--ui-view-mode", "list", "-appLanguagePreference", "english"]
+        app.launch(); app.activate()
+        let archive = app.descendants(matching: .any).matching(identifier: "browser-item-Sample.zip").firstMatch
+        XCTAssertTrue(archive.waitForExistence(timeout: 8)); archive.buttons.firstMatch.click()
+        let inside = app.descendants(matching: .any).matching(identifier: "browser-item-Inside").firstMatch
+        XCTAssertTrue(inside.waitForExistence(timeout: 5)); inside.buttons.firstMatch.click()
+        let payload = app.descendants(matching: .any).matching(identifier: "browser-item-Payload.txt").firstMatch.staticTexts["Payload.txt"].firstMatch
+        XCTAssertTrue(payload.waitForExistence(timeout: 5))
+        let window = app.windows.firstMatch
+        let origin = window.coordinate(withNormalizedOffset: .zero)
+        window.coordinate(withNormalizedOffset: CGVector(dx: 1, dy: 1)).withOffset(CGVector(dx: -2, dy: -2))
+            .click(forDuration: 0.2, thenDragTo: origin.withOffset(CGVector(dx: 780, dy: 720)))
+        let finder = XCUIApplication(bundleIdentifier: "com.apple.finder")
+        finder.activate(); finder.typeKey(.escape, modifierFlags: [])
+        // Open only the test-owned fixture directory. Gestures and assertions below
+        // still use the native Finder receiver through XCTest.
+        XCTAssertTrue(NSWorkspace.shared.open(directory))
+        let finderWindow = finder.windows.matching(NSPredicate(format: "title CONTAINS %@", directory.lastPathComponent)).firstMatch
+        XCTAssertTrue(finderWindow.waitForExistence(timeout: 5), finder.debugDescription)
+        defer { finder.activate(); finder.typeKey("w", modifierFlags: [.command]) }
+        let finderOrigin = finderWindow.coordinate(withNormalizedOffset: .zero)
+        let titlePoint = finderOrigin.withOffset(CGVector(dx: 300, dy: 14))
+        let desiredTitle = finderOrigin.withOffset(CGVector(dx: 1200 - finderWindow.frame.minX, dy: 74 - finderWindow.frame.minY))
+        titlePoint.click(forDuration: 0.2, thenDragTo: desiredTitle)
+        app.activate()
+        let drop = finderWindow.coordinate(withNormalizedOffset: CGVector(dx: 0.65, dy: 0.65))
+        print("Source \(window.frame), Finder \(finderWindow.frame), payload \(payload.frame)")
+        let arrangement = XCTAttachment(screenshot: app.screenshot()); arrangement.name = "Finder drop arrangement"; arrangement.lifetime = .keepAlways; add(arrangement)
+        payload.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).click(forDuration: 0.3, thenDragTo: drop)
+        let published = directory.appendingPathComponent("Payload.txt")
+        let written = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in FileManager.default.fileExists(atPath: published.path) }, object: nil)
+        XCTAssertEqual(XCTWaiter.wait(for: [written], timeout: 10), .completed)
+        XCTAssertEqual(try String(contentsOf: published, encoding: .utf8), "payload")
+        app.activate(); XCTAssertTrue(payload.exists)
+        try FileManager.default.removeItem(at: published)
+        XCUIElement.perform(withKeyModifiers: [.option]) {
+            payload.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).click(forDuration: 0.3, thenDragTo: drop)
+        }
+        XCTAssertTrue(app.staticTexts["Modify the Original Archive?"].firstMatch.waitForExistence(timeout: 5), app.debugDescription)
+        app.typeKey(.return, modifierFlags: [])
+        let moved = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in FileManager.default.fileExists(atPath: published.path) }, object: nil)
+        XCTAssertEqual(XCTWaiter.wait(for: [moved], timeout: 10), .completed)
+        XCTAssertEqual(try String(contentsOf: published, encoding: .utf8), "payload")
+        let removed = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == false"), object: payload)
+        XCTAssertEqual(XCTWaiter.wait(for: [removed], timeout: 10), .completed)
+    }
+
+    @MainActor
+    func testArchiveRemovalIsSharedByToolbarAndContextMenu() throws {
+        let app = XCUIApplication()
+        app.launchArguments = [
+            "--ui-fixtures", "--ui-window-width", "1100",
+            "--ui-view-mode", "list", "-appLanguagePreference", "english"
+        ]
+        launchArchiveFixture(app)
+        app.activate()
+        let archive = app.staticTexts["Sample.zip"].firstMatch
+        XCTAssertTrue(archive.waitForExistence(timeout: 5))
+        archive.doubleClick()
+        let inside = app.staticTexts["Inside.txt"].firstMatch
+        XCTAssertTrue(inside.waitForExistence(timeout: 5))
+        inside.click()
+        app.buttons["toolbar-more-menu"].click()
+        XCTAssertTrue(app.menuItems["Remove from Archive…"].waitForExistence(timeout: 3))
+        app.typeKey(.escape, modifierFlags: [])
+        inside.rightClick()
+        XCTAssertTrue(app.menuItems["Remove from Archive…"].waitForExistence(timeout: 3))
+        app.typeKey(.escape, modifierFlags: [])
     }
 
     @MainActor
@@ -327,13 +625,57 @@ final class ZforgeUITests: XCTestCase {
     }
 
     @MainActor
+    func testColumnLoadingNeverDuplicatesParentRows() throws {
+        let app = XCUIApplication()
+        app.launchArguments = [
+            "--ui-fixtures", "--ui-column-load-delay", "--ui-window-width", "1400",
+            "--ui-view-mode", "columns", "-browser.finderColumnWidth", "260",
+            "-browser.scale", "1", "-browser.previewVisible.columns", "YES",
+            "-appLanguagePreference", "english"
+        ]
+        launchArchiveFixture(app)
+
+        app.buttons["Downloads"].click()
+        let parent = app.descendants(matching: .any)["browser-column-0"]
+        XCTAssertTrue(parent.staticTexts["Fixture Folder"].waitForExistence(timeout: 5))
+        XCTAssertTrue(parent.staticTexts["Sample.zip"].waitForExistence(timeout: 5))
+        let child = app.descendants(matching: .any)["browser-column-1"]
+        // A delayed read holds the actual intermediate UI on screen. Final-state
+        // assertions alone cannot detect a one-frame duplicate during navigation.
+        for (container, result, previous) in [
+            ("Sample.zip", "Inside.txt", "FolderChild.txt"),
+            ("Fixture Folder", "FolderChild.txt", "Inside.txt"),
+            ("Sample.zip", "Inside.txt", "FolderChild.txt")
+        ] {
+            parent.staticTexts[container].click()
+            XCTAssertTrue(child.waitForExistence(timeout: 2))
+            XCTAssertFalse(child.staticTexts[result].exists, "The fixture must still be loading.")
+            for name in ["Welcome.txt", "Another.txt", "Sample.zip", "Fixture Folder", previous] {
+                XCTAssertFalse(child.staticTexts[name].exists, "Loading \(container) duplicated \(name).")
+            }
+            XCTAssertTrue(parent.staticTexts["Welcome.txt"].exists)
+            let pending = XCTAttachment(screenshot: app.windows.firstMatch.screenshot())
+            pending.name = "Loading column: \(container)"
+            pending.lifetime = .keepAlways
+            add(pending)
+
+            XCTAssertTrue(child.staticTexts[result].waitForExistence(timeout: 6))
+            XCTAssertEqual(child.staticTexts.count, 1)
+            let loaded = XCTAttachment(screenshot: app.windows.firstMatch.screenshot())
+            loaded.name = "Loaded column: \(container)"
+            loaded.lifetime = .keepAlways
+            add(loaded)
+        }
+    }
+
+    @MainActor
     func testColumnPreviewRecalculatesWidthForNewDepth() throws {
         let app = XCUIApplication()
         app.launchArguments = [
             "--ui-fixtures", "--ui-window-width", "1400", "--ui-view-mode", "columns",
             "-appLanguagePreference", "english"
         ]
-        app.launch()
+        launchArchiveFixture(app)
 
         let rootFile = app.staticTexts["Welcome.txt"]
         XCTAssertTrue(rootFile.waitForExistence(timeout: 5))
@@ -361,7 +703,7 @@ final class ZforgeUITests: XCTestCase {
             "-browser.finderColumnWidth", "600", "-browser.scale", "1",
             "-browser.previewVisible.columns", "YES", "-appLanguagePreference", "english"
         ]
-        app.launch()
+        launchArchiveFixture(app)
 
         let rootColumn = app.descendants(matching: .any)["browser-column-0"]
         XCTAssertTrue(rootColumn.waitForExistence(timeout: 5))
@@ -387,8 +729,17 @@ final class ZforgeUITests: XCTestCase {
         XCTAssertEqual(replacementFrame.maxX, expandedFrame.maxX, accuracy: 1)
 
         let clippedSampleLabel = rootColumn.staticTexts["Sample.zip"]
+        let sidebarFrame = app.outlines["browser-sidebar"].frame
+        let clickX = max(rootColumn.frame.minX, sidebarFrame.maxX) + 24
+        XCTAssertLessThan(clippedSampleLabel.frame.maxX, sidebarFrame.maxX)
+        XCTAssertLessThan(clickX, rootColumn.frame.maxX)
+        // The label is behind the sidebar after horizontal scrolling. Click
+        // the visible part of its row, rather than a multiple of the text width.
         clippedSampleLabel.coordinate(
-            withNormalizedOffset: CGVector(dx: 2, dy: 0.5)
+            withNormalizedOffset: CGVector(
+                dx: (clickX - clippedSampleLabel.frame.minX) / clippedSampleLabel.frame.width,
+                dy: 0.5
+            )
         ).click()
         XCTAssertTrue(childColumn.waitForExistence(timeout: 5))
         XCTAssertEqual(childColumn.frame.minX, expandedFrame.minX, accuracy: 1)
@@ -403,7 +754,7 @@ final class ZforgeUITests: XCTestCase {
             "-browser.finderColumnWidth", "600", "-browser.scale", "1",
             "-browser.previewVisible.columns", "YES", "-appLanguagePreference", "english"
         ]
-        app.launch()
+        launchArchiveFixture(app)
 
         let rootColumn = app.descendants(matching: .any)["browser-column-0"]
         let window = app.windows.firstMatch
