@@ -178,3 +178,17 @@ To consult, first read this index and use `rg -n -i '<terms|symbols>' Documentat
 - [onDragSessionUpdated(_:)](contexts/swiftui-view-on-drag-session-updated.md) — capture on demand in 2026-10-04; drag and delivery of content.
 
 - [FileRepresentation](contexts/coretransferable-file-representation.md) — capture on demand in 2026-10-04; drag and delivery of content.
+
+## Icon content previews — on-demand references
+
+- [QLThumbnailGenerator](contexts/quicklookthumbnailing-thumbnail-generator.md) — native icon content previews.
+
+- [takeSnapshot(with:completionHandler:)](contexts/webkit-webview-take-snapshot.md) — native icon content previews.
+
+- [CGImageSourceCreateThumbnailAtIndex(_:_:_:)](contexts/imageio-create-thumbnail-at-index.md) — native icon content previews.
+
+- [getDrawingTransform(_:rect:rotate:preserveAspectRatio:)](contexts/coregraphics-pdf-page-drawing-transform.md) — native icon content previews.
+
+- [CTFramesetterCreateFrame(_:_:_:_:)](contexts/coretext-create-text-frame.md) — native icon content previews.
+
+- [task(id:name:priority:file:line:_:)](contexts/swiftui-view-task-identity.md) — native icon content previews.

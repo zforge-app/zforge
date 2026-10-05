@@ -73,7 +73,7 @@ Views are the building blocks that you use to declare your app’s user interfac
 ### Assigning tasks
 
 - [task(id:name:executorPreference:priority:file:line:_:)](https://developer.apple.com/documentation/swiftui/view/task(id:name:executorpreference:priority:file:line:_:)) — Adds a task to perform before this view appears or when a specified value changes. _(Apple Developer; expand on demand)_
-- [task(id:name:priority:file:line:_:)](https://developer.apple.com/documentation/swiftui/view/task(id:name:priority:file:line:_:)) — Adds a task to perform before this view appears or when a specified value changes. _(Apple Developer; expand on demand)_
+- [task(id:name:priority:file:line:_:)](swiftui-view-task-identity.md) — Adds a task to perform before this view appears or when a specified value changes. _(Apple Developer; expand on demand)_
 - [task(name:executorPreference:priority:file:line:action:)](https://developer.apple.com/documentation/swiftui/view/task(name:executorpreference:priority:file:line:action:)) — Adds an asynchronous task to perform before this view appears. _(Apple Developer; expand on demand)_
 - [task(name:priority:file:line:_:)](https://developer.apple.com/documentation/swiftui/view/task(name:priority:file:line:_:)) — Adds an asynchronous task to perform before this view appears. _(Apple Developer; expand on demand)_
 
