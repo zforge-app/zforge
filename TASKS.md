@@ -37,7 +37,7 @@ Atualizado em **2026-10-03**. Esta lista preserva os pedidos levantados nesta co
 | ZF-31 | Uniformizar os ícones de diretórios locais com a composição aprovada para archives, sem selo | Implementado nos quatro estados, com expansão na Lista/preview e transição no drop; build e 7 testes de ícones aprovados; renderização 16–190 pt conferida; matriz visual/interação ampla pendente | D-27; OR-13 |
 | ZF-32 | Eliminar a espera por polling no teste de seleção rápida em Colunas | Implementado no motor simulado com timeout e limpeza; 140 testes distintos/420 execuções em três repetições aprovados, sem falhas; nenhum código de produção alterado | REGRESSION-COVERAGE.md |
 | ZF-33 | Abrir o menu de reticências com clique secundário no espaço vazio | Implementado e integrado em 2026-10-04; build assinada e 140 testes unitários aprovados; gesto conferido nos quatro modos; executor UI bloqueado ao iniciar automação | D-29 |
-| ZF-34 | Manter o modo de visualização individual por janela/aba | Implementado; build Debug assinada, 143 unitários e 1 teste de UI com duas janelas aprovados; padrão de Settings aplicado a futuras janelas | D-30 |
+| ZF-34 | Manter o modo de visualização individual por janela/aba | Implementado e integrado na main em 2026-10-04; build Debug assinada, 143 unitários e 1 teste de UI com duas janelas aprovados; padrão de Settings aplicado a futuras janelas | D-30 |
 
 ## ZF-01 — Documentação de referência e prevenção de regressões
 
