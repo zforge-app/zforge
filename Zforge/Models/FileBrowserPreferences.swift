@@ -32,6 +32,7 @@ final class FileBrowserPreferences {
 
     private let defaults: UserDefaults
 
+    // Default for newly created windows; the active mode belongs to FileBrowserState.
     var viewMode: BrowserViewMode { didSet { defaults.set(viewMode.rawValue, forKey: Key.viewMode) } }
     var scale: CGFloat { didSet { defaults.set(scale, forKey: Key.scale) } }
     var listColumnWidths: [String: Double] {

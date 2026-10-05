@@ -36,7 +36,7 @@ enum BrowserActionsMenu {
                 keyEquivalent: ""
             )
             viewItem.image = NSImage(
-                systemSymbolName: browser.preferences.viewMode.systemImage,
+                systemSymbolName: browser.viewMode.systemImage,
                 accessibilityDescription: viewItem.title
             )
             let viewMenu = NSMenu(title: viewItem.title)
@@ -46,9 +46,9 @@ enum BrowserActionsMenu {
                     systemImage: mode.systemImage,
                     isEnabled: true
                 ) {
-                    browser.preferences.viewMode = mode
+                    browser.viewMode = mode
                 }
-                modeItem.state = mode == browser.preferences.viewMode ? .on : .off
+                modeItem.state = mode == browser.viewMode ? .on : .off
                 viewMenu.addItem(modeItem)
             }
             viewItem.submenu = viewMenu

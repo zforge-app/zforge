@@ -314,7 +314,7 @@ struct RefactoringCharacterizationTests {
         await state.reload()
         #expect(state.items.compactMap(\.localURL) == [original])
         for mode in BrowserViewMode.allCases {
-            state.preferences.viewMode = mode
+            state.viewMode = mode
             #expect(state.flattenedList().map(\.item.id) == state.items.map(\.id))
         }
     }

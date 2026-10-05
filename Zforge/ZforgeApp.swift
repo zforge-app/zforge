@@ -258,13 +258,13 @@ private struct BrowserCommands: Commands {
             Button("Open") { Task { if let item = browser?.primarySelection { await browser?.open(item) } } }
                 .keyboardShortcut(.downArrow, modifiers: .command)
             Divider()
-            Button("Icons") { browser?.preferences.viewMode = .icons }
+            Button("Icons") { browser?.viewMode = .icons }
                 .keyboardShortcut("1", modifiers: .command)
-            Button("List") { browser?.preferences.viewMode = .list }
+            Button("List") { browser?.viewMode = .list }
                 .keyboardShortcut("2", modifiers: .command)
-            Button("Columns") { browser?.preferences.viewMode = .columns }
+            Button("Columns") { browser?.viewMode = .columns }
                 .keyboardShortcut("3", modifiers: .command)
-            Button("Gallery") { browser?.preferences.viewMode = .gallery }
+            Button("Gallery") { browser?.viewMode = .gallery }
                 .keyboardShortcut("4", modifiers: .command)
             Divider()
             Button("Zoom In") { browser?.preferences.zoomIn() }

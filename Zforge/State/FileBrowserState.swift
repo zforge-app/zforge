@@ -119,6 +119,8 @@ final class FileBrowserState {
     @ObservationIgnored private var activeFileTransferCount = 0
 
     var preferences: FileBrowserPreferences
+    // Each window snapshots the default; changing its mode leaves other windows intact.
+    var viewMode: BrowserViewMode
     var location: BrowserLocation {
         didSet { if location != .recents { selectedSidebarTag = nil } }
     }
@@ -127,7 +129,7 @@ final class FileBrowserState {
         let extended: Set<BrowserListColumn> = [.lastOpenedDate, .dateAdded, .version, .comments]
         let sortedByExtended = [BrowserSortField.lastOpenedDate, .dateAdded, .version, .comments]
             .contains(preferences.sort.field)
-        return sortedByExtended || (preferences.viewMode == .list &&
+        return sortedByExtended || (viewMode == .list &&
             !extended.isDisjoint(with: preferences.visibleListColumns(for: location)))
     }
     var sidebarTags: [String] {
@@ -183,8 +185,8 @@ final class FileBrowserState {
     var renameDraft = ""
     var renameInProgress = false
     var previewVisible: Bool {
-        get { preferences.previewVisible(in: preferences.viewMode) }
-        set { preferences.setPreviewVisible(newValue, in: preferences.viewMode) }
+        get { preferences.previewVisible(in: viewMode) }
+        set { preferences.setPreviewVisible(newValue, in: viewMode) }
     }
     var focusedItemID: BrowserItemID?
     var activeColumnLocation: BrowserLocation?
@@ -216,7 +218,7 @@ final class FileBrowserState {
 
     /// Inline expansion is a List presentation state, independent of selection and contents.
     func usesOpenFolderIcon(for item: BrowserItem) -> Bool {
-        guard preferences.viewMode == .list, item.isDirectory, !item.isPackage else { return false }
+        guard viewMode == .list, item.isDirectory, !item.isPackage else { return false }
         return expandedItems.contains(item.id)
     }
 
@@ -513,12 +515,12 @@ final class FileBrowserState {
     var fileDropDestinationURL: URL? { currentDirectoryURL }
     var archiveDropAddress: ArchiveAddress? { location.archiveDropAddress }
     var fileOperationDestinationURL: URL? {
-        if preferences.viewMode == .columns,
+        if viewMode == .columns,
            let activeColumnLocation {
             return activeColumnLocation.fileSystemURL?.standardizedFileURL
         }
         guard let currentDirectoryURL else { return nil }
-        guard preferences.viewMode == .list, let focusedItemID else {
+        guard viewMode == .list, let focusedItemID else {
             return currentDirectoryURL
         }
         let visibleEntries = flattenedList()
@@ -632,6 +634,7 @@ final class FileBrowserState {
         initialURL: URL? = nil
     ) {
         self.preferences = preferences
+        self.viewMode = preferences.viewMode
         self.fileSystem = fileSystem
         self.fileOperations = fileOperations
         self.recentItems = recentItems ?? SpotlightRecentItemsService()
@@ -1223,7 +1226,7 @@ final class FileBrowserState {
                 from: sources, outputURL: outputURL, options: options, password: password,
                 progress: self.archiveProgressHandler()
             )
-            if preservingColumnSelection && self.preferences.viewMode == .columns {
+            if preservingColumnSelection && self.viewMode == .columns {
                 await self.reload(
                     preservingColumnSelection: true,
                     refreshingColumnLocations: [
@@ -1423,7 +1426,7 @@ final class FileBrowserState {
     }
 
     private func refreshAfterArchiveExtraction(to destinationDirectories: [URL]) async {
-        guard preferences.viewMode == .columns else {
+        guard viewMode == .columns else {
             await reload()
             return
         }
@@ -1691,7 +1694,7 @@ final class FileBrowserState {
             synchronizeRenamingSelection()
         } catch {
             guard generation == reloadGeneration else { return }
-            if preferences.viewMode == .columns,
+            if viewMode == .columns,
                case let .fileSystem(currentURL) = currentLocation,
                !FileManager.default.fileExists(atPath: currentURL.path) {
                 await refreshColumnsAfterRemovingLocalItems([currentURL])
@@ -1748,7 +1751,7 @@ final class FileBrowserState {
                 if let operationError {
                     self.error = self.mapError(operationError)
                 }
-                if self.preferences.viewMode == .columns {
+                if self.viewMode == .columns {
                     await self.refreshColumnsAfterRemovingLocalItems(Array(newURLs.keys))
                 } else {
                     await self.reload()
@@ -1830,7 +1833,7 @@ final class FileBrowserState {
                 == sourceURL.standardizedFileURL.path
         })?.location.fileSystemURL ?? sourceURL
         let openedColumnParentLocation: BrowserLocation? = {
-            guard preferences.viewMode == .columns,
+            guard viewMode == .columns,
                   let sourceIndex = pathComponents.firstIndex(where: {
                       $0.location.fileSystemURL?.standardizedFileURL.path
                           == sourceURL.standardizedFileURL.path
@@ -1872,7 +1875,7 @@ final class FileBrowserState {
         to renamedURL: URL,
         openedColumnParentLocation: BrowserLocation?
     ) async {
-        guard preferences.viewMode == .columns else {
+        guard viewMode == .columns else {
             await reload()
             selectLocalItem(at: renamedURL)
             return
@@ -2023,7 +2026,7 @@ final class FileBrowserState {
                 if let operationError {
                     self.error = self.mapError(operationError)
                 }
-                if self.preferences.viewMode == .columns, !newURLs.isEmpty {
+                if self.viewMode == .columns, !newURLs.isEmpty {
                     await self.refreshColumnsAfterRemovingLocalItems(Array(newURLs.keys))
                 } else {
                     await self.reload()
@@ -2057,7 +2060,7 @@ final class FileBrowserState {
                 operationError = error
             }
 
-            if preferences.viewMode == .columns {
+            if viewMode == .columns {
                 await refreshColumnsAfterRemovingLocalItems(request.urls)
             } else {
                 await reload()
@@ -2370,7 +2373,7 @@ final class FileBrowserState {
     /// points at its parent. Reloading first would therefore try to enumerate
     /// a path that no longer exists and surface a misleading error.
     func refreshColumnsAfterRemovingLocalItems(_ urls: [URL]) async {
-        guard preferences.viewMode == .columns, !urls.isEmpty else {
+        guard viewMode == .columns, !urls.isEmpty else {
             await reload()
             return
         }
@@ -2764,7 +2767,7 @@ final class FileBrowserState {
         previewRequiresManualLoad = false
         previewURLs.removeAll()
         previewItemsRequiringManualLoad.removeAll()
-        guard previewVisible || preferences.viewMode == .gallery else { return }
+        guard previewVisible || viewMode == .gallery else { return }
         let previewableItems = selectedItems.filter { !$0.usesStaticIconPreview }
         guard !previewableItems.isEmpty else { return }
 
@@ -3323,7 +3326,7 @@ final class FileBrowserState {
             && generation == previewGeneration
             && selection.contains(itemID)
             && knownItems.first(where: { $0.id == itemID })?.usesStaticIconPreview == false
-            && (previewVisible || preferences.viewMode == .gallery)
+            && (previewVisible || viewMode == .gallery)
     }
 
     private func synchronizePrimaryPreviewState() {
@@ -3396,7 +3399,7 @@ final class FileBrowserState {
                 resultingURLs: resultingURLs,
                 operation: operation
             )
-            if preferences.viewMode == .columns {
+            if viewMode == .columns {
                 var affectedColumnLocations = Set<BrowserLocation>(urls.map {
                     .fileSystem($0.deletingLastPathComponent().standardizedFileURL)
                 })
@@ -3601,7 +3604,7 @@ final class FileBrowserState {
     }
 
     private func visibleItemsForSelection() -> [BrowserItem] {
-        preferences.viewMode == .list ? flattenedItems() : sortedItems
+        viewMode == .list ? flattenedItems() : sortedItems
     }
 
     private func fileURL(from provider: NSItemProvider) async -> URL? {

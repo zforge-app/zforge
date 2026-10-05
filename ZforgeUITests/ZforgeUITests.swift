@@ -23,6 +23,43 @@ final class ZforgeUITests: XCTestCase {
     }
 
     @MainActor
+    func testViewModeIsIndependentBetweenWindows() throws {
+        let app = XCUIApplication()
+        app.launchArguments = [
+            "--ui-fixtures", "--ui-window-width", "1100", "--ui-view-mode", "icons",
+            "-appLanguagePreference", "english"
+        ]
+        app.launch()
+        app.activate()
+        defer { app.terminate() }
+        let content = { (mode: String) in
+            app.descendants(matching: .any).matching(identifier: "browser-mode-\(mode)")
+        }
+        XCTAssertTrue(content("icons").firstMatch.waitForExistence(timeout: 5))
+        app.typeKey("2", modifierFlags: .command)
+        XCTAssertTrue(content("list").firstMatch.waitForExistence(timeout: 5))
+        app.typeKey("n", modifierFlags: .command)
+        XCTAssertTrue(content("icons").firstMatch.waitForExistence(timeout: 5))
+        XCTAssertEqual(app.windows.count, 2)
+        XCTAssertEqual(content("list").count, 1)
+
+        // Commands target the focused scene and leave the first window in List.
+        for (key, mode) in [("3", "columns"), ("4", "gallery"), ("1", "icons")] {
+            app.typeKey(key, modifierFlags: .command)
+            XCTAssertTrue(content(mode).firstMatch.waitForExistence(timeout: 5))
+            XCTAssertEqual(content("list").count, 1)
+        }
+        // Exercise the toolbar binding in the window that is still in Icons.
+        let iconsWindow = app.windows.containing(.any, identifier: "browser-mode-icons").firstMatch
+        let gallery = iconsWindow.descendants(matching: .any)["view-mode-gallery"]
+        XCTAssertTrue(gallery.exists)
+        gallery.click()
+        XCTAssertTrue(content("gallery").firstMatch.waitForExistence(timeout: 5))
+        XCTAssertEqual(content("list").count, 1)
+        XCTAssertEqual(content("icons").count, 0)
+    }
+
+    @MainActor
     func testBlankAreaUsesMoreMenuInEveryView() throws {
         for mode in ["icons", "list", "columns", "gallery"] {
             let app = XCUIApplication()

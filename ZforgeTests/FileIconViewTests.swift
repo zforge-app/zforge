@@ -170,17 +170,17 @@ struct FileIconViewTests {
             accessDate: nil, tags: [], contentTypeIdentifier: nil,
             encrypted: false, checksum: nil, compressionMethod: nil
         )
-        state.preferences.viewMode = .list
+        state.viewMode = .list
         #expect(!state.usesOpenFolderIcon(for: folder))
         state.expandedItems.insert(folder.id)
         #expect(state.usesOpenFolderIcon(for: folder))
         folder.archiveDirectoryContainsFiles = true
         #expect(state.usesOpenFolderIcon(for: folder))
         for mode in [BrowserViewMode.columns, .icons, .gallery] {
-            state.preferences.viewMode = mode
+            state.viewMode = mode
             #expect(!state.usesOpenFolderIcon(for: folder))
         }
-        state.preferences.viewMode = .list
+        state.viewMode = .list
         state.expandedItems.remove(folder.id)
         #expect(!state.usesOpenFolderIcon(for: folder))
         state.expandedItems.insert(folder.id)

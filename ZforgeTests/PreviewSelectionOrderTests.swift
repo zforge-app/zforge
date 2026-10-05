@@ -52,7 +52,7 @@ struct PreviewSelectionOrderTests {
         #expect(swiftItem.contentType?.conforms(to: .text) == true)
         #expect(markdownItem.contentType?.conforms(to: .text) == true)
         let state = FileBrowserState()
-        state.preferences.viewMode = .list
+        state.viewMode = .list
         state.previewVisible = true
         state.items = [swiftItem, markdownItem]
         state.selection = [swiftItem.id, markdownItem.id]

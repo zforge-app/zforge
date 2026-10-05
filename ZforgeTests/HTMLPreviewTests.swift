@@ -68,7 +68,7 @@ struct HTMLPreviewTests {
         let item = try await FileSystemService().item(at: url)
 
         let state = FileBrowserState()
-        state.preferences.viewMode = .list
+        state.viewMode = .list
         state.previewVisible = true
         state.items = [item]
         state.selection = [item.id]

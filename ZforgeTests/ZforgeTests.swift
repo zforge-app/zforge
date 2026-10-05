@@ -866,7 +866,7 @@ struct ZforgeTests {
         #expect(!state.previewVisible)
         #expect(state.previewURL == nil)
 
-        preferences.viewMode = .gallery
+        state.viewMode = .gallery
         state.updatePreview()
         try await Task.sleep(for: .milliseconds(120))
         #expect(state.previewVisible)
@@ -875,13 +875,13 @@ struct ZforgeTests {
         state.togglePreviewVisibility()
         #expect(!state.previewVisible)
 
-        preferences.viewMode = .columns
+        state.viewMode = .columns
         #expect(state.previewVisible)
 
         state.togglePreviewVisibility()
         #expect(!state.previewVisible)
 
-        preferences.viewMode = .icons
+        state.viewMode = .icons
         #expect(state.previewVisible)
 
         let reloaded = FileBrowserPreferences(defaults: defaults)

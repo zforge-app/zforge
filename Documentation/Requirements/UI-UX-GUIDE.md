@@ -112,6 +112,8 @@ A janela usa `.windowResizability(.contentMinSize)` para fazer o macOS respeitar
 
 ## 4. Toolbar
 
+O modo de visualização é individual por janela/aba. Os seletores completo, compacto e de overflow, os menus e os atalhos `⌘1`–`⌘4` atuam somente na janela correspondente. Cada nova janela inicia no modo definido por “Default View” em Settings (Ícones na ausência de preferência); mudar esse padrão não altera janelas existentes, e trocar o modo de uma janela não modifica o padrão.
+
 ### Estrutura
 
 A toolbar deve conter:

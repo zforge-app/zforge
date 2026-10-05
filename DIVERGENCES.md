@@ -247,3 +247,10 @@ Gravação de 19:47 mostra cópia de PDF com sufixo depois da extensão. Corrigi
 - **Relato:** gravação de 2026-10-03 às 22:18:43, em Ícones, mostra a área vazia sem o menu esperado.
 - **Causa identificada:** ponte nativa instalada somente nas células dos itens; fundos tinham apenas o gesto primário de limpar seleção.
 - **Correção implementada:** menu de ações compartilhado com o botão `•••`; ponte de fundo nas áreas vazias dos quatro modos com prioridade dos menus de item. Evidência executada e limites em `REGRESSION-COVERAGE.md`.
+
+### D-30 — Trocar visualização em uma janela altera todas (corrigido; validação em REGRESSION-COVERAGE)
+
+- **Relato:** usuário forneceu a gravação `Screen Recording 2026-10-04 at 20.51.06.mov` e pediu independência por janela.
+- **Causa:** modo ativo residia no singleton `FileBrowserPreferences.shared`, observado por todas as janelas.
+- **Correção:** `FileBrowserState.viewMode` é inicializado pelo padrão persistido e passa a orientar apresentação, toolbar, menus, atalhos, seleção, metadados, preview, drop e reconciliação de Colunas somente naquela janela/aba. Settings mantém o modo padrão para futuras instâncias.
+- **Evidência e limites:** ZF-34; testes e conferência da interface registrados em `REGRESSION-COVERAGE.md`.

@@ -128,7 +128,7 @@ struct ContentView: View {
             applyUITestWindowWidthIfNeeded()
             restoreContentFocus()
         }
-        .onChange(of: browser.preferences.viewMode) { previousViewMode, viewMode in
+        .onChange(of: browser.viewMode) { previousViewMode, viewMode in
             if viewMode == .columns {
                 browser.prepareColumnView()
             } else if previousViewMode == .columns {
@@ -335,7 +335,7 @@ struct ContentView: View {
         case .compactWithActionsOverflow:
             ToolbarItem(id: "view-mode-selector-compact-actions", placement: .primaryAction) {
                 ViewModeToolbarControl(
-                    selection: $browser.preferences.viewMode,
+                    selection: $browser.viewMode,
                     usesCompactPresentation: true
                 )
             }
@@ -360,7 +360,7 @@ struct ContentView: View {
         case .compactWithArchiveAction:
             ToolbarItem(id: "view-mode-selector-compact-archive", placement: .primaryAction) {
                 ViewModeToolbarControl(
-                    selection: $browser.preferences.viewMode,
+                    selection: $browser.viewMode,
                     usesCompactPresentation: true
                 )
             }
@@ -398,7 +398,7 @@ struct ContentView: View {
         case .expanded:
             ToolbarItem(id: "view-mode-selector-expanded", placement: .primaryAction) {
                 ViewModeToolbarControl(
-                    selection: $browser.preferences.viewMode,
+                    selection: $browser.viewMode,
                     usesCompactPresentation: false
                 )
             }

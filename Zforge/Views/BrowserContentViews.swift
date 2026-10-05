@@ -16,7 +16,7 @@ struct BrowserContent: View {
     var body: some View {
         GeometryReader { geometry in
             Group {
-                switch state.preferences.viewMode {
+                switch state.viewMode {
                 case .icons:
                     contentWithOptionalPreview {
                         IconBrowserView(
@@ -44,13 +44,13 @@ struct BrowserContent: View {
             .onAppear { updateContentWidth(geometry.size.width) }
             .onChange(of: geometry.size.width) { _, width in updateContentWidth(width) }
             .onChange(of: state.previewVisible) { _, _ in updateContentWidth(geometry.size.width) }
-            .onChange(of: state.preferences.viewMode) { _, _ in updateContentWidth(geometry.size.width) }
+            .onChange(of: state.viewMode) { _, _ in updateContentWidth(geometry.size.width) }
             .onChange(of: state.preferences.scale) { _, _ in updateContentWidth(geometry.size.width) }
             .onChange(of: state.preferences.previewWidth) { _, _ in updateContentWidth(geometry.size.width) }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(nsColor: .underPageBackgroundColor))
-        .accessibilityIdentifier("browser-mode-\(state.preferences.viewMode.rawValue)")
+        .accessibilityIdentifier("browser-mode-\(state.viewMode.rawValue)")
         .accessibilityValue(Double(state.preferences.scale).formatted(
             .percent.locale(state.preferences.language.locale)
         ))
@@ -70,7 +70,7 @@ struct BrowserContent: View {
         }
         .dragContainerSelection(state.dragSelectionURLs)
         .dragConfiguration(.browserFileOperations)
-        .dragPreviewsFormation(state.preferences.viewMode.fileDragPreviewsFormation)
+        .dragPreviewsFormation(state.viewMode.fileDragPreviewsFormation)
         .onDrop(
             of: [UTType.fileURL.identifier],
             delegate: BrowserFileDropDelegate(
@@ -82,7 +82,7 @@ struct BrowserContent: View {
                 archiveAddress: state.archiveDropAddress
             )
         )
-        .dropPreviewsFormation(state.preferences.viewMode.fileDragPreviewsFormation)
+        .dropPreviewsFormation(state.viewMode.fileDragPreviewsFormation)
         .onChange(of: state.renamingItemURL) { _, url in
             if url == nil {
                 contentFocus.wrappedValue = .content
@@ -134,7 +134,7 @@ struct BrowserContent: View {
 
     private func updateContentWidth(_ totalWidth: CGFloat) {
         let hasSidePreview = state.previewVisible
-            && state.preferences.viewMode == .icons
+            && state.viewMode == .icons
         contentWidth = max(
             totalWidth - (hasSidePreview ? state.preferences.previewWidth * state.preferences.scale : 0),
             1
@@ -143,7 +143,7 @@ struct BrowserContent: View {
 
     private func handleMoveCommand(_ direction: MoveCommandDirection) {
         let extending = NSEvent.modifierFlags.contains(.shift)
-        switch state.preferences.viewMode {
+        switch state.viewMode {
         case .icons:
             let scale = state.preferences.scale
             let itemWidth = BrowserMetrics.iconGridItemWidth * scale
@@ -520,7 +520,7 @@ extension View {
                     }
                 )
             )
-            .dropPreviewsFormation(state.preferences.viewMode.fileDragPreviewsFormation)
+            .dropPreviewsFormation(state.viewMode.fileDragPreviewsFormation)
         } else {
             self
         }
@@ -597,7 +597,7 @@ private struct BrowserFileDropTargetModifier: ViewModifier {
                     }
                 )
             )
-            .dropPreviewsFormation(state.preferences.viewMode.fileDragPreviewsFormation)
+            .dropPreviewsFormation(state.viewMode.fileDragPreviewsFormation)
             .overlay {
                 if isTargeted {
                     BrowserFileDropHighlight()
