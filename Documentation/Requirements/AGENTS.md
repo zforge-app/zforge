@@ -15,7 +15,7 @@ Este diretório é a localização dos requisitos do projeto. Começar por este 
 
 ## Precedência e atualização
 
-1. A instrução direta do usuário prevalece. Quando implementada, registrar a nova regra no documento de requisito adequado nesta mesma interação.
+1. A instrução direta do usuário prevalece. Todas as regras da aplicação devem estar documentadas e atualizadas neste diretório. Sempre que um pedido alterar um requisito, adicionar um novo ou corrigir um comportamento incorreto, atualizar o documento correspondente na mesma interação, sem esperar um pedido adicional de documentação. Registrar como pendente o que ainda não foi implementado; quando implementado, sincronizar o contrato com o comportamento entregue e a evidência disponível.
 2. Para o comportamento já existente, `CURRENT-STATE.md` prevalece sobre uma intenção futura ou uma nota de protótipo. `UI-UX-GUIDE.md` orienta alterações visuais e de interação onde não houver conflito com o contrato vigente.
 3. A direção planejada permanece em `PRODUCT-REQUIREMENTS.md`; decisões e correções abertas ficam em `OPEN-REQUIREMENTS.md`. O estado de execução fica em [`../../TASKS.md`](../../TASKS.md). Conflitos e regressões ficam em [`../../DIVERGENCES.md`](../../DIVERGENCES.md), separados da fonte de verdade.
 4. Em **toda interação com o projeto**, revisar os contratos pertinentes e mantê-los atualizados. Registrar requisitos, decisões, correções e evidência nova na mesma mudança. Atualizar [`../../REGRESSION-COVERAGE.md`](../../REGRESSION-COVERAGE.md) ao mudar ou caracterizar um contrato. Não criar edições sem mudança real nem converter uma proposta em funcionalidade entregue.
