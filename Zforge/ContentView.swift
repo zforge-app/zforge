@@ -517,7 +517,17 @@ struct ContentView: View {
         Task { @MainActor in
             await Task.yield()
             guard let window = NSApp.keyWindow ?? NSApp.windows.first else { return }
-            window.setContentSize(NSSize(width: width, height: window.contentView?.bounds.height ?? 720))
+            let visibleFrame = NSScreen.main?.visibleFrame
+            let height = min(window.contentView?.bounds.height ?? 720, (visibleFrame?.height ?? 820) - 100)
+            window.setContentSize(NSSize(width: width, height: height))
+            // Restored frames can be outside the current display. Fixture gestures
+            // need the requested content width on a visible, reachable surface.
+            if let visibleFrame {
+                window.setFrameOrigin(NSPoint(
+                    x: visibleFrame.midX - window.frame.width / 2,
+                    y: visibleFrame.midY - window.frame.height / 2
+                ))
+            }
         }
     }
 

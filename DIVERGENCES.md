@@ -312,3 +312,12 @@ Save 19:47 shows copy of PDF with suffix after extension. Corrected in code: exp
 
 
 **Main integration in 2026-10-05:** D-31–D-35 coexist with D-29/D-30 without IDs colliding. Refresh/drag follow window mode; Shared menus preserved. History in the four modes, absence of duplicate lines in the pending column and adjacent flows passed in the integrated matrix, recorded in `REGRESSION-COVERAGE.md`. Visual limits of OR-14 and runtime macOS 26 remain open.
+
+## D-37 — Icons displays file icons instead of available previews
+
+- **Report, 2026-10-05:** user screenshots show PNG/JPEG/PDF and other documents using file icons in Icons despite existing content-preview support.
+- **Requested contract:** display content thumbnails by default and offer a persistent option in application Settings.
+- **Implemented correction:** Icons requests bounded content thumbnails asynchronously, independently of selection/inspector visibility; unavailable content retains the native icon. The option defaults on, persists either choice and updates existing windows. Folders/archives and automatic archive-size limits are preserved. ZF-38.
+- **Related concurrency correction:** deterministic native ZIP tests reproduced lost materialization cache entries and restoration of a closed session; publication now merges into a live session or cancels and cleans output.
+- **Related interaction correction:** UI validation reproduced loss of an existing selection when Command was released after a click but before the single/double-click recognizer resolved. The shared recognizer now captures the originating mouse-down modifiers. Zoom also retains current content during raster replacement instead of flashing a fallback icon.
+- **Evidence and limits:** see `REGRESSION-COVERAGE.md`; a build or source inspection alone does not establish visual polish, performance or all format providers.

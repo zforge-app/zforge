@@ -4,7 +4,17 @@ import SwiftUI
 @MainActor
 @Observable
 final class FileBrowserPreferences {
-    static let shared = FileBrowserPreferences()
+    static let shared = FileBrowserPreferences(defaults: applicationDefaults)
+
+    private static var applicationDefaults: UserDefaults {
+        let process = ProcessInfo.processInfo
+        if process.arguments.contains("--ui-icon-preview-fixtures"),
+           let suite = process.environment["ZFORGE_UI_PREFERENCES_SUITE"],
+           let defaults = UserDefaults(suiteName: suite) {
+            return defaults
+        }
+        return .standard
+    }
 
     private enum Key {
         static let viewMode = "browser.viewMode"
@@ -18,6 +28,7 @@ final class FileBrowserPreferences {
         static let sortField = "browser.sortField"
         static let sortAscending = "browser.sortAscending"
         static let showHidden = "browser.showHidden"
+        static let showIconPreviews = "browser.showIconPreviews"
         static let previewVisibleIcons = "browser.previewVisible.icons"
         static let previewVisibleList = "browser.previewVisible.list"
         static let previewVisibleColumns = "browser.previewVisible.columns"
@@ -60,6 +71,7 @@ final class FileBrowserPreferences {
         }
     }
     var showHiddenFiles: Bool { didSet { defaults.set(showHiddenFiles, forKey: Key.showHidden) } }
+    var showIconPreviews: Bool { didSet { defaults.set(showIconPreviews, forKey: Key.showIconPreviews) } }
     private var previewVisibleIcons: Bool {
         didSet { defaults.set(previewVisibleIcons, forKey: Key.previewVisibleIcons) }
     }
@@ -300,6 +312,9 @@ final class FileBrowserPreferences {
                 : defaults.bool(forKey: Key.sortAscending)
         )
         showHiddenFiles = defaults.bool(forKey: Key.showHidden)
+        showIconPreviews = defaults.object(forKey: Key.showIconPreviews) == nil
+            ? true
+            : defaults.bool(forKey: Key.showIconPreviews)
         previewVisibleIcons = Self.storedPreviewVisibility(
             defaults: defaults,
             key: Key.previewVisibleIcons

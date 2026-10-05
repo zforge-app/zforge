@@ -2982,6 +2982,23 @@
         }
       }
     },
+    "Show previews in icon view" : {
+      "comment" : "A setting that displays file content thumbnails in the Icons view.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show previews in icon view"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar pré-visualizações na visão de ícones"
+          }
+        }
+      }
+    },
     "Show or Hide Preview" : {
       "extractionState" : "stale",
       "localizations" : {
