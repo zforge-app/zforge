@@ -61,7 +61,7 @@ struct GalleryBrowserView: View {
                                             Task { await state.openFromDoubleClick(item, modifiers: modifiers) }
                                         }
                                     )
-                                    .browserDraggable(item: item)
+                                    .browserDraggable(item: item, state: state)
                                     .browserDirectoryDropTarget(
                                         state: state,
                                         item: item,

@@ -86,6 +86,75 @@ final class FileBrowserState {
         let internalPath: String
     }
 
+    struct ArchiveTransferConfirmation: Equatable {
+        let archiveURL: URL
+        let itemCount: Int
+        let destination: String
+        let moving: Bool
+    }
+    @ObservationIgnored var archiveTransferConfirmation: ((ArchiveTransferConfirmation) -> Bool)?
+
+    func archiveTransferAlert(_ request: ArchiveTransferConfirmation) -> NSAlert {
+        let locale = preferences.language.locale
+        let alert = NSAlert()
+        alert.messageText = AppLocalization.string("Modify the Original Archive?", locale: locale)
+        alert.informativeText = String(format: AppLocalization.string(
+            request.moving ? "Moving %lld item(s) to %@ will modify the original archive %@. The source entries will be removed only after the transfer succeeds."
+                : "Copying %lld item(s) to %@ will modify the original archive %@. The source entries will be preserved.", locale: locale),
+            Int64(request.itemCount), request.destination, request.archiveURL.lastPathComponent)
+        alert.addButton(withTitle: AppLocalization.string(request.moving ? "Move" : "Copy", locale: locale)).keyEquivalent = "\r"
+        alert.addButton(withTitle: AppLocalization.string("Cancel", locale: locale)).keyEquivalent = "\u{1b}"
+        return alert
+    }
+
+    func confirmArchiveTransfer(_ items: [BrowserItem], destination: String, moving: Bool) async throws {
+        guard let first = items.first, case let .archive(address) = first.location else { throw ArchiveEngineError.itemNotFound }
+        let request = ArchiveTransferConfirmation(archiveURL: try await archives.archiveRootURL(for: address),
+            itemCount: items.count, destination: destination, moving: moving)
+        let approved = archiveTransferConfirmation?(request) ?? (archiveTransferAlert(request).runModal() == .alertFirstButtonReturn)
+        guard approved else { throw ArchiveEngineError.cancelled }
+    }
+
+    func archiveAddress(for url: URL) -> ArchiveAddress? {
+        if let result = inlineArchiveResults.first(where: { knownItemsByID[$0.key]?.localURL?.standardizedFileURL == url.standardizedFileURL })?.value {
+            return result.address
+        }
+        return nil
+    }
+
+    func reorganizeArchiveItems(_ items: [BrowserItem], to destination: ArchiveAddress, moving: Bool) async throws {
+        guard canReorganizeArchiveItems(items, to: destination), case let .archive(source) = items[0].location
+        else { throw ArchiveEngineError.updateUnsupported }
+        if moving, items.allSatisfy({ item in
+            guard case let .archive(address) = item.location else { return false }
+            return (address.internalPath as NSString).deletingLastPathComponent == destination.internalPath
+        }) { return }
+        try await confirmArchiveTransfer(items, destination: destination.internalPath.isEmpty ? "/" : destination.internalPath, moving: moving)
+        archiveOperationInProgress = true
+        defer { archiveOperationInProgress = false; archiveProgress = nil }
+        let url = try await archives.archiveRootURL(for: source)
+        let scoped = url.startAccessingSecurityScopedResource()
+        defer { if scoped { url.stopAccessingSecurityScopedResource() } }
+        var password: String?
+        let result: ArchiveReorganizationResult
+        while true {
+            do {
+                result = try await archives.reorganizeItems(items, to: destination, moving: moving, password: password,
+                    resolveConflict: { [weak self] conflict in await self?.resolveArchiveConflict(conflict) ?? .cancel },
+                    progress: archiveProgressHandler())
+                break
+            } catch ArchiveEngineError.passwordRequired {
+                guard let supplied = promptForArchiveUpdatePassword() else { throw ArchiveEngineError.cancelled }; password = supplied
+            } catch ArchiveEngineError.invalidPassword {
+                guard let supplied = promptForArchiveUpdatePassword() else { throw ArchiveEngineError.cancelled }; password = supplied
+            }
+        }
+        guard !result.paths.isEmpty else { return }
+        try await refreshUpdatedArchive(ArchiveAdditionRequest(sourceURLs: result.paths.map { URL(fileURLWithPath: $0) },
+            archiveURL: url, internalPath: destination.internalPath), password: result.password,
+            navigation: .revealDestination)
+    }
+
     @ObservationIgnored private let fileSystem: any FileSystemServing
     @ObservationIgnored private let fileOperations: any FileOperationServing
     @ObservationIgnored private let recentItems: any RecentItemsServing
@@ -265,7 +334,8 @@ final class FileBrowserState {
     }
 
     func contextualActions(for selected: [BrowserItem]) -> [BrowserSelectionAction] {
-        BrowserSelectionActionPolicy.actions(for: selected)
+        let actions = BrowserSelectionActionPolicy.actions(for: selected)
+        return canRemoveArchiveItems(selected) ? actions + [.removeFromArchive] : actions
     }
 
     func contextualTitle(_ action: BrowserSelectionAction, items selected: [BrowserItem]) -> String {
@@ -275,6 +345,7 @@ final class FileBrowserState {
         case .compress: return AppLocalization.string("Compress", locale: locale)
         case .compressCustom: return AppLocalization.string("Compress Custom…", locale: locale)
         case .addToArchive: return AppLocalization.string("Add to Archive…", locale: locale)
+        case .removeFromArchive: return AppLocalization.string("Remove from Archive…", locale: locale)
         case .extractHere: return AppLocalization.string("Extract Here", locale: locale)
         case .extractNamed:
             let names = selected.map { archiveExtractionDirectoryName(for: $0.name) }.joined(separator: ", ")
@@ -293,6 +364,9 @@ final class FileBrowserState {
             } else {
                 for item in selected { await open(item) }
             }
+            return nil
+        case .removeFromArchive:
+            requestArchiveRemoval(items: selected)
             return nil
         case .addToArchive:
             let sources = selected.compactMap(\.localURL)
@@ -598,15 +672,28 @@ final class FileBrowserState {
         return Array(fileSystemPathComponents(to: url).dropLast()) + pathComponents
     }
 
+    var archiveDragFixtureDirectory: URL? {
+        ProcessInfo.processInfo.arguments.contains("--ui-archive-drag-fixtures") ? initialURL : nil
+    }
+
     convenience init(initialURL: URL? = nil) {
+        if ProcessInfo.processInfo.arguments.contains("--ui-archive-drag-fixtures") {
+            self.init(preferences: FileBrowserPreferences.shared, fileSystem: FileSystemService(),
+                recentItems: UIFixtureRecentItemsService(), grants: UIFixtureAccessGrantStore(),
+                archives: NativeSevenZipArchiveEngine(),
+                initialURL: ZforgeTemporaryStorage.root().appendingPathComponent("ArchiveDragFixture-" + UUID().uuidString))
+            return
+        }
         if ProcessInfo.processInfo.arguments.contains("--ui-fixtures") {
+            let columnLoadDelay: Duration = ProcessInfo.processInfo.arguments.contains("--ui-column-load-delay")
+                ? .seconds(4) : .zero
             self.init(
                 preferences: FileBrowserPreferences.shared,
-                fileSystem: UIFixtureFileSystemService(),
+                fileSystem: UIFixtureFileSystemService(itemsDelay: columnLoadDelay),
                 recentItems: UIFixtureRecentItemsService(),
                 taggedItems: UIFixtureTaggedItemsService(),
                 grants: UIFixtureAccessGrantStore(),
-                archives: UIFixtureArchiveEngine(),
+                archives: UIFixtureArchiveEngine(itemsDelay: columnLoadDelay),
                 initialURL: initialURL
             )
             return
@@ -651,6 +738,30 @@ final class FileBrowserState {
 
     func start() async {
         await archives.cleanupStaleSessions()
+        if ProcessInfo.processInfo.arguments.contains("--ui-archive-drag-fixtures"), let initialURL {
+            do {
+                let inside = initialURL.appendingPathComponent("Inside", isDirectory: true)
+                let target = initialURL.appendingPathComponent("Target", isDirectory: true)
+                let dropped = initialURL.appendingPathComponent("Dropped", isDirectory: true)
+                for directory in [inside, target, dropped] {
+                    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+                }
+                try Data("payload".utf8).write(to: inside.appendingPathComponent("Payload.txt"))
+                try Data("survivor".utf8).write(to: inside.appendingPathComponent("Survivor.txt"))
+                if ProcessInfo.processInfo.arguments.contains("--ui-archive-navigation-fixtures") {
+                    let deep = inside.appendingPathComponent("Deep", isDirectory: true)
+                    let leaf = deep.appendingPathComponent("Leaf", isDirectory: true)
+                    try FileManager.default.createDirectory(at: leaf, withIntermediateDirectories: true)
+                    try Data("deep payload".utf8).write(to: deep.appendingPathComponent("DeepPayload.txt"))
+                    try Data("keep".utf8).write(to: leaf.appendingPathComponent("Keep.txt"))
+                }
+                try Data("local".utf8).write(to: initialURL.appendingPathComponent("Local.txt"))
+                try await archives.createArchive(from: [inside, target], outputURL: initialURL.appendingPathComponent("Sample.zip"),
+                    format: .zip, progress: { _ in })
+                try FileManager.default.removeItem(at: inside)
+                try FileManager.default.removeItem(at: target)
+            } catch { self.error = mapError(error); return }
+        }
         if let initialURL {
             do {
                 let item = try await fileSystem.item(at: initialURL)
@@ -1100,124 +1211,216 @@ final class FileBrowserState {
                     password = supplied
                 }
             }
-            let currentArchiveURL: URL?
-            if case let .archive(address) = self.location {
-                currentArchiveURL = try? await self.archives.archiveRootURL(for: address)
-            } else {
-                currentArchiveURL = nil
-            }
-            // Session IDs change after rewriting. Keep disclosure state by internal
-            // path, and invalidate only the archive that was actually updated.
-            let currentExpandedPaths: Set<String>
-            if case let .archive(address) = self.location {
-                currentExpandedPaths = self.expandedArchivePaths(in: address.sessionID)
-            } else {
-                currentExpandedPaths = []
-            }
-            let matchingInlineResults = self.inlineArchiveResults.filter { itemID, _ in
-                self.knownItemsByID[itemID]?.localURL?.standardizedFileURL
-                    == request.archiveURL.standardizedFileURL
-            }
-            var inlineExpandedPaths: [BrowserItemID: Set<String>] = [:]
-            for (itemID, result) in matchingInlineResults {
-                if self.expandedItems.contains(itemID) {
-                    inlineExpandedPaths[itemID] = self.expandedArchivePaths(in: result.address.sessionID)
-                }
-                let hierarchyIDs = self.cachedHierarchyIDs(rootedAt: itemID)
-                let sessions = self.inlineArchiveResults.filter { hierarchyIDs.contains($0.key) }
-                self.purgeCachedHierarchies(rootedAt: [itemID])
-                for session in sessions.values {
-                    if case let .archive(currentAddress) = self.location,
-                       currentAddress.sessionID == session.address.sessionID { continue }
-                    await self.archives.closeSession(session.address.sessionID)
-                }
-            }
-            let refreshedSessionID: UUID?
-            if case let .archive(address) = self.location,
-               currentArchiveURL?.standardizedFileURL == request.archiveURL.standardizedFileURL {
-                refreshedSessionID = address.sessionID
-            } else {
-                refreshedSessionID = nil
-            }
-            if let sessionID = refreshedSessionID,
-               case let .archive(currentAddress) = self.location,
-               currentAddress.sessionID == sessionID {
-                await self.archives.closeSession(sessionID)
-                let opened = try await self.archives.openArchive(
-                    at: request.archiveURL, password: password,
-                    policy: self.preferences.archiveBrowsingPolicy
-                )
-                let rootIndex = self.pathComponents.firstIndex { component in
-                    guard case let .archive(address) = component.location else { return false }
-                    return address.sessionID == sessionID && address.nestedArchiveDepth == 0
-                        && address.internalPath.isEmpty
-                }
-                let parentComponents = rootIndex.map { Array(self.pathComponents.prefix($0)) } ?? []
-                self.backStack.removeAll { entry in
-                    entry.components.contains { component in
-                        guard case let .archive(address) = component.location else { return false }
-                        return address.sessionID == sessionID
-                    }
-                }
-                self.forwardStack.removeAll { entry in
-                    entry.components.contains { component in
-                        guard case let .archive(address) = component.location else { return false }
-                        return address.sessionID == sessionID
-                    }
-                }
-                self.location = .archive(opened.address)
-                self.pathComponents = parentComponents + [BrowserPathComponent(
-                    location: .archive(opened.address), name: opened.displayName, isArchive: true
-                )]
-                self.activeColumnLocation = self.location
-                self.columnItems.removeAll()
-                self.columnSelections.removeAll()
-                self.clearSelection()
-                self.expandedItems.removeAll()
-                self.expandedChildren.removeAll()
-                await self.reload()
-            } else {
-                await self.reload()
-            }
-            if self.preferences.viewMode == .list {
-                if refreshedSessionID != nil {
-                    await self.restoreArchiveExpansion(
-                        in: self.items, paths: currentExpandedPaths,
-                        destinationPath: request.internalPath, password: password
-                    )
-                }
-                for (itemID, paths) in inlineExpandedPaths {
-                    guard let archiveItem = self.knownItemsByID[itemID] else { continue }
-                    await self.toggleExpansionImpl(archiveItem, password: password)
-                    await self.restoreArchiveExpansion(
-                        in: self.expandedChildren[itemID] ?? [], paths: paths,
-                        destinationPath: request.internalPath, password: password
-                    )
-                }
-                if refreshedSessionID != nil || !inlineExpandedPaths.isEmpty {
-                    let addedPaths = Set(request.sourceURLs.map {
-                        [request.internalPath, $0.lastPathComponent].filter { !$0.isEmpty }.joined(separator: "/")
-                    })
-                    var sessionIDs = Set(inlineExpandedPaths.keys.compactMap {
-                        self.inlineArchiveResults[$0]?.address.sessionID
-                    })
-                    if refreshedSessionID != nil, case let .archive(address) = self.location {
-                        sessionIDs.insert(address.sessionID)
-                    }
-                    let addedItems = self.flattenedItems().filter {
-                        guard case let .archive(address) = $0.location else { return false }
-                        return sessionIDs.contains(address.sessionID) && addedPaths.contains(address.internalPath)
-                    }
-                    for (index, item) in addedItems.enumerated() {
-                        self.select(item, modifiers: index == 0 ? [] : .command, orderedItems: self.flattenedItems())
-                    }
-                }
-            }
+            try await self.refreshUpdatedArchive(request, password: password, navigation: .preserveCurrentDirectory)
             return AppLocalization.string(
                 "Items added to archive successfully.", locale: self.preferences.language.locale
             )
         }
         contextualFeedbackMessage = result
+    }
+
+    private enum ArchiveRefreshNavigation { case preserveCurrentDirectory, revealDestination }
+
+    private func refreshUpdatedArchive(_ request: ArchiveAdditionRequest, password: String?, navigation: ArchiveRefreshNavigation) async throws {
+    let currentArchiveURL: URL?
+    if case let .archive(address) = self.location {
+        currentArchiveURL = try? await self.archives.archiveRootURL(for: address)
+    } else {
+        currentArchiveURL = nil
+    }
+    // Session IDs change after rewriting. Keep disclosure state by internal
+    // path, and invalidate only the archive that was actually updated.
+    let currentExpandedPaths: Set<String>
+    if case let .archive(address) = self.location {
+        currentExpandedPaths = self.expandedArchivePaths(in: address.sessionID)
+    } else {
+        currentExpandedPaths = []
+    }
+    let matchingInlineResults = self.inlineArchiveResults.filter { itemID, _ in
+        self.knownItemsByID[itemID]?.localURL?.standardizedFileURL
+            == request.archiveURL.standardizedFileURL
+    }
+    var inlineExpandedPaths: [BrowserItemID: Set<String>] = [:]
+    for (itemID, result) in matchingInlineResults {
+        if self.expandedItems.contains(itemID) {
+            inlineExpandedPaths[itemID] = self.expandedArchivePaths(in: result.address.sessionID)
+        }
+        let hierarchyIDs = self.cachedHierarchyIDs(rootedAt: itemID)
+        let sessions = self.inlineArchiveResults.filter { hierarchyIDs.contains($0.key) }
+        self.purgeCachedHierarchies(rootedAt: [itemID])
+        for session in sessions.values {
+            if case let .archive(currentAddress) = self.location,
+               currentAddress.sessionID == session.address.sessionID { continue }
+            await self.archives.closeSession(session.address.sessionID)
+        }
+    }
+    let refreshedSessionID: UUID?
+    if case let .archive(address) = self.location,
+       currentArchiveURL?.standardizedFileURL == request.archiveURL.standardizedFileURL {
+        refreshedSessionID = address.sessionID
+    } else {
+        refreshedSessionID = nil
+    }
+    if let sessionID = refreshedSessionID,
+       case let .archive(currentAddress) = self.location,
+       currentAddress.sessionID == sessionID {
+        await self.archives.closeSession(sessionID)
+        let opened = try await self.archives.openArchive(
+            at: request.archiveURL, password: password,
+            policy: self.preferences.archiveBrowsingPolicy
+        )
+        let requestedPath: String
+        if navigation == .preserveCurrentDirectory { requestedPath = currentAddress.internalPath }
+        else if preferences.viewMode == .list {
+            let original = currentAddress.internalPath.split(separator: "/")
+            let destination = request.internalPath.split(separator: "/")
+            requestedPath = zip(original, destination).prefix { $0 == $1 }.map { String($0.0) }.joined(separator: "/")
+        } else { requestedPath = request.internalPath }
+        try await self.restoreUpdatedArchiveNavigation(
+            from: currentAddress, to: opened, requestedPath: requestedPath,
+            revealsDestination: navigation == .revealDestination
+        )
+        self.clearSelection()
+        self.expandedItems.removeAll()
+        self.expandedChildren.removeAll()
+        await self.reload()
+    } else {
+        await self.reload()
+    }
+    if self.preferences.viewMode == .list {
+        if refreshedSessionID != nil {
+            await self.restoreArchiveExpansion(
+                in: self.items, paths: currentExpandedPaths,
+                destinationPath: request.internalPath, password: password
+            )
+        }
+        for (itemID, paths) in inlineExpandedPaths {
+            guard let archiveItem = self.knownItemsByID[itemID] else { continue }
+            await self.toggleExpansionImpl(archiveItem, password: password)
+            await self.restoreArchiveExpansion(
+                in: self.expandedChildren[itemID] ?? [], paths: paths,
+                destinationPath: request.internalPath, password: password
+            )
+        }
+        if refreshedSessionID != nil || !inlineExpandedPaths.isEmpty {
+            let addedPaths = Set(request.sourceURLs.map {
+                [request.internalPath, $0.lastPathComponent].filter { !$0.isEmpty }.joined(separator: "/")
+            })
+            var sessionIDs = Set(inlineExpandedPaths.keys.compactMap {
+                self.inlineArchiveResults[$0]?.address.sessionID
+            })
+            if refreshedSessionID != nil, case let .archive(address) = self.location {
+                sessionIDs.insert(address.sessionID)
+            }
+            let addedItems = self.flattenedItems().filter {
+                guard case let .archive(address) = $0.location else { return false }
+                return sessionIDs.contains(address.sessionID) && addedPaths.contains(address.internalPath)
+            }
+            for (index, item) in addedItems.enumerated() {
+                self.select(item, modifiers: index == 0 ? [] : .command, orderedItems: self.flattenedItems())
+            }
+        }
+    }
+    if preferences.viewMode != .list, refreshedSessionID != nil {
+        let names = Set(request.sourceURLs.map(\.lastPathComponent))
+        for (index, item) in items.filter({ names.contains($0.name) }).enumerated() {
+            select(item, modifiers: index == 0 ? [] : .command)
+        }
+    }
+    }
+
+    private func restoreUpdatedArchiveNavigation(
+        from oldAddress: ArchiveAddress, to opened: ArchiveOpenResult,
+        requestedPath: String, revealsDestination: Bool
+    ) async throws {
+        // The archive keeps its logical paths but receives new session/item IDs.
+        // Rebase surviving history, and enumerate each ancestor for Columns.
+        let root = BrowserPathComponent(location: .archive(opened.address), name: opened.displayName, isArchive: true)
+        var paths: [String: [BrowserPathComponent]] = ["": [root]]
+        var refreshedColumns: [BrowserLocation: [BrowserItem]] = [:]
+        func components(for path: String) async throws -> [BrowserPathComponent]? {
+            if let cached = paths[path] { return cached }
+            var cursor = opened.address
+            var result = [root]
+            for name in path.split(separator: "/").map(String.init) {
+                let key = BrowserLocation.archive(cursor)
+                let rows: [BrowserItem]
+                if let cached = refreshedColumns[key] { rows = cached }
+                else {
+                    rows = try await archives.items(at: cursor)
+                    refreshedColumns[key] = preferences.sort.sorted(rows)
+                }
+                guard let directory = rows.first(where: { $0.isDirectory && $0.name == name }),
+                      case let .archive(address) = directory.location else { return nil }
+                cursor = address
+                result.append(BrowserPathComponent(location: .archive(cursor), name: name, isArchive: false))
+                paths[cursor.internalPath] = result
+            }
+            return result
+        }
+        func rebased(_ entry: HistoryEntry) async throws -> HistoryEntry? {
+            guard let index = entry.components.firstIndex(where: {
+                if case let .archive(address) = $0.location { return address.sessionID == oldAddress.sessionID }
+                return false
+            }) else { return entry }
+            guard case let .archive(address) = entry.location,
+                  address.sessionID == oldAddress.sessionID,
+                  address.archiveID == oldAddress.archiveID, address.nestedArchiveDepth == 0,
+                  let branch = try await components(for: address.internalPath),
+                  let destination = branch.last else { return nil }
+            return HistoryEntry(components: Array(entry.components.prefix(index)) + branch,
+                location: destination.location, sidebarTag: entry.sidebarTag)
+        }
+        let previous = HistoryEntry(components: pathComponents, location: location, sidebarTag: selectedSidebarTag)
+        let previousRebased = try await rebased(previous)
+        var refreshedBack: [HistoryEntry] = []
+        var refreshedForward: [HistoryEntry] = []
+        for entry in backStack { if let entry = try await rebased(entry) { refreshedBack.append(entry) } }
+        for entry in forwardStack { if let entry = try await rebased(entry) { refreshedForward.append(entry) } }
+        var survivingPath = requestedPath
+        while try await components(for: survivingPath) == nil {
+            survivingPath = survivingPath.split(separator: "/").dropLast().joined(separator: "/")
+        }
+        let branch = paths[survivingPath] ?? [root]
+        let parentIndex = previous.components.firstIndex(where: {
+            if case let .archive(address) = $0.location { return address.sessionID == oldAddress.sessionID }
+            return false
+        }) ?? previous.components.count
+        pathComponents = Array(previous.components.prefix(parentIndex)) + branch
+        location = branch.last?.location ?? root.location
+        if revealsDestination, let previousRebased, previousRebased.location != location {
+            // Revealing another directory is actual navigation; Back returns to
+            // the directory shown before the operation, using the fresh session.
+            refreshedBack.append(previousRebased)
+            refreshedForward.removeAll()
+        } else if survivingPath != requestedPath {
+            while refreshedBack.last?.location == location { refreshedBack.removeLast() }
+        }
+        backStack = refreshedBack
+        forwardStack = refreshedForward
+        activeColumnLocation = location
+        pendingColumnExpansionItemID = nil
+        columnItems = columnItems.filter {
+            if case let .archive(address) = $0.key { return address.sessionID != oldAddress.sessionID }
+            return true
+        }
+        columnSelections = columnSelections.filter {
+            if case let .archive(address) = $0.key { return address.sessionID != oldAddress.sessionID }
+            return true
+        }
+        columnItems.merge(refreshedColumns) { _, fresh in fresh }
+        for component in pathComponents {
+            if case let .archive(address) = component.location {
+                columnItems[component.location] = preferences.sort.sorted(try await archives.items(at: address))
+            } else if case .fileSystem = component.location {
+                await reloadColumnItems(at: component.location)
+            }
+        }
+        for (parent, child) in zip(pathComponents, pathComponents.dropFirst()) {
+            columnSelections[parent.location] = columnItems[parent.location]?.first(where: {
+                $0.location == child.location || ($0.canNavigateAsArchive && $0.name == child.name)
+            })?.id
+        }
     }
 
     private func expandedArchivePaths(in sessionID: UUID) -> Set<String> {
@@ -2156,6 +2359,212 @@ final class FileBrowserState {
 
     var dragSelectionURLs: [URL] {
         selectedLocalURLs
+    }
+
+    @discardableResult
+    func performArchiveItemDrop(providers: [NSItemProvider], to directory: URL, moving: Bool) -> Bool {
+        guard !providers.isEmpty else { return false }
+        for provider in providers {
+            provider.loadDataRepresentation(forTypeIdentifier: ArchiveDragPolicy.type) { data, _ in
+                guard let data, let token = String(data: data, encoding: .utf8) else { return }
+                Task { @MainActor in ArchiveDragTransfer.active[token]?.drop(to: directory, moving: moving) }
+            }
+        }
+        return true
+    }
+
+    @discardableResult
+    func performArchiveItemDrop(providers: [NSItemProvider], to address: ArchiveAddress, moving: Bool) -> Bool {
+        guard !providers.isEmpty else { return false }
+        for provider in providers {
+            provider.loadDataRepresentation(forTypeIdentifier: ArchiveDragPolicy.type) { data, _ in
+                guard let data, let token = String(data: data, encoding: .utf8) else { return }
+                Task { @MainActor in ArchiveDragTransfer.active[token]?.drop(to: address, moving: moving) }
+            }
+        }
+        return true
+    }
+
+    func archiveDragItems(startingWith item: BrowserItem) -> [BrowserItem] {
+        guard case let .archive(address) = item.location else { return [] }
+        let candidates = selectedItems
+        if !selection.contains(item.id) || !candidates.allSatisfy({ candidate in
+            guard case let .archive(other) = candidate.location else { return false }
+            return other.sessionID == address.sessionID && other.archiveID == address.archiveID
+        }) { select(item) }
+        return selectedItems.filter { candidate in
+            guard case let .archive(other) = candidate.location else { return false }
+            return !selectedItems.contains { parent in
+                guard parent.isDirectory, parent.id != candidate.id,
+                      case let .archive(parentAddress) = parent.location else { return false }
+                return other.internalPath.hasPrefix(parentAddress.internalPath + "/")
+            }
+        }.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+    }
+
+    func canRemoveArchiveItems(_ items: [BrowserItem]) -> Bool {
+        guard !items.isEmpty, !archiveOperationInProgress,
+              case let .archive(first) = items[0].location, first.nestedArchiveDepth == 0,
+              items.allSatisfy({
+                  guard case let .archive(address) = $0.location else { return false }
+                  return address.sessionID == first.sessionID && address.archiveID == first.archiveID
+                      && address.nestedArchiveDepth == 0
+              }) else { return false }
+        let rootName = pathComponents.first(where: {
+            guard case let .archive(address) = $0.location else { return false }
+            return address.sessionID == first.sessionID && address.nestedArchiveDepth == 0
+        })?.name ?? inlineArchiveResults.first(where: {
+            $0.value.address.sessionID == first.sessionID
+        }).flatMap { knownItemsByID[$0.key]?.name }
+        return rootName.map(ArchiveFormatRegistry.supportsUpdating) ?? false
+    }
+
+    func canReorganizeArchiveItems(_ items: [BrowserItem], to destination: ArchiveAddress) -> Bool {
+        guard canRemoveArchiveItems(items), destination.nestedArchiveDepth == 0 else { return false }
+        return items.allSatisfy { item in
+            guard case let .archive(source) = item.location,
+                  source.sessionID == destination.sessionID, source.archiveID == destination.archiveID else { return false }
+            return !item.isDirectory || (destination.internalPath != source.internalPath
+                && !destination.internalPath.hasPrefix(source.internalPath + "/"))
+        }
+    }
+
+    func reportArchiveDragError(_ error: Error) {
+        guard (error as? ArchiveEngineError) != .cancelled, !(error is CancellationError) else { return }
+        self.error = mapError(error)
+    }
+
+    func transferArchiveItems(_ items: [BrowserItem], to destinations: [URL],
+                              moving: Bool, resolveConflicts: Bool, confirmed: Bool = false, promised: Bool = false) async throws {
+        guard !archiveOperationInProgress, items.count == destinations.count,
+              let first = items.first, case let .archive(address) = first.location else {
+            throw ArchiveEngineError.itemNotFound
+        }
+        if moving, !canRemoveArchiveItems(items) { throw ArchiveEngineError.updateUnsupported }
+        if moving, !confirmed {
+            try await confirmArchiveTransfer(items, destination: destinations.first?.deletingLastPathComponent().path ?? "", moving: true)
+        }
+        archiveOperationInProgress = true
+        archiveOperationDescription = AppLocalization.string(moving ? "Moving out of archive…" : "Extracting items…", locale: preferences.language.locale)
+        defer { archiveOperationInProgress = false; archiveProgress = nil }
+        let archiveURL = try await archives.archiveRootURL(for: address)
+        let scope = archiveURL.startAccessingSecurityScopedResource()
+        defer { if scope { archiveURL.stopAccessingSecurityScopedResource() } }
+        var exported: [BrowserItem] = []
+        var password: String?
+        var repeatedDecision: ArchiveConflictDecision?
+        for (item, destination) in zip(items, destinations) {
+            let resolvedDestination = destination.standardizedFileURL.resolvingSymlinksInPath()
+            let resolvedArchive = archiveURL.standardizedFileURL.resolvingSymlinksInPath()
+            guard resolvedDestination != resolvedArchive,
+                  !resolvedArchive.path.hasPrefix(resolvedDestination.path + "/") else {
+                throw ArchiveEngineError.archiveAsDestination
+            }
+            var backup: URL?
+            let destinationScope = destination.startAccessingSecurityScopedResource()
+            defer { if destinationScope { destination.stopAccessingSecurityScopedResource() } }
+            if resolveConflicts, FileManager.default.fileExists(atPath: destination.path) {
+                let decision = repeatedDecision ?? resolveArchiveConflict(ArchiveConflict(
+                    path: item.name, destinationURL: destination, isDirectory: item.isDirectory
+                ))
+                switch decision {
+                case let .keep(all): if all { repeatedDecision = decision }; continue
+                case .cancel: throw ArchiveEngineError.cancelled
+                case let .replace(all):
+                    if all { repeatedDecision = decision }
+                    let saved = destination.deletingLastPathComponent().appendingPathComponent(".zforge-export-backup-\(UUID().uuidString)")
+                    try FileManager.default.moveItem(at: destination, to: saved)
+                    backup = saved
+                }
+            }
+            do {
+                while true {
+                    do {
+                        if promised {
+                            try await archives.exportPromisedItem(item, to: destination, password: password, progress: archiveProgressHandler())
+                        } else {
+                            try await archives.exportItem(item, to: destination, password: password, progress: archiveProgressHandler())
+                        }
+                        break
+                    } catch ArchiveEngineError.passwordRequired {
+                        guard let supplied = promptForArchiveUpdatePassword() else { throw ArchiveEngineError.cancelled }
+                        password = supplied
+                    } catch ArchiveEngineError.invalidPassword {
+                        guard let supplied = promptForArchiveUpdatePassword() else { throw ArchiveEngineError.cancelled }
+                        password = supplied
+                    }
+                }
+                if let backup { try FileManager.default.removeItem(at: backup) }
+                exported.append(item)
+            } catch {
+                if let backup, !FileManager.default.fileExists(atPath: destination.path) {
+                    try? FileManager.default.moveItem(at: backup, to: destination)
+                }
+                self.error = mapError(error)
+                throw error
+            }
+        }
+        if moving, !exported.isEmpty {
+            do {
+                let updatedPassword = try await removeArchiveItems(exported, password: password)
+                try await refreshUpdatedArchive(ArchiveAdditionRequest(sourceURLs: [], archiveURL: archiveURL, internalPath: ""), password: updatedPassword, navigation: .preserveCurrentDirectory)
+            } catch { self.error = mapError(error); throw error }
+        }
+        contextualFeedbackMessage = AppLocalization.string(moving ? "Items moved out of archive successfully." : "Items extracted successfully.", locale: preferences.language.locale)
+    }
+
+    func finishPromisedArchiveMove(_ items: [BrowserItem]) async throws {
+        guard canRemoveArchiveItems(items), let first = items.first,
+              case let .archive(address) = first.location else { throw ArchiveEngineError.updateUnsupported }
+        archiveOperationInProgress = true
+        archiveOperationDescription = AppLocalization.string("Moving out of archive…", locale: preferences.language.locale)
+        defer { archiveOperationInProgress = false; archiveProgress = nil }
+        let url = try await archives.archiveRootURL(for: address)
+        let scoped = url.startAccessingSecurityScopedResource()
+        defer { if scoped { url.stopAccessingSecurityScopedResource() } }
+        let password = try await removeArchiveItems(items, password: nil)
+        try await refreshUpdatedArchive(ArchiveAdditionRequest(sourceURLs: [], archiveURL: url, internalPath: ""), password: password, navigation: .preserveCurrentDirectory)
+        contextualFeedbackMessage = AppLocalization.string("Items moved out of archive successfully.", locale: preferences.language.locale)
+    }
+
+    private func removeArchiveItems(_ items: [BrowserItem], password: String?) async throws -> String? {
+        var password = password
+        while true {
+            do { return try await archives.removeItems(items, password: password, progress: archiveProgressHandler()) }
+            catch ArchiveEngineError.passwordRequired {
+                guard let supplied = promptForArchiveUpdatePassword() else { throw ArchiveEngineError.cancelled }
+                password = supplied
+            } catch ArchiveEngineError.invalidPassword {
+                guard let supplied = promptForArchiveUpdatePassword() else { throw ArchiveEngineError.cancelled }
+                password = supplied
+            }
+        }
+    }
+
+    func requestArchiveRemoval(items: [BrowserItem]? = nil) {
+        let items = items ?? selectedItems
+        guard canRemoveArchiveItems(items) else { return }
+        let locale = preferences.language.locale
+        let alert = NSAlert()
+        alert.messageText = AppLocalization.string("Remove from Archive?", locale: locale)
+        alert.informativeText = AppLocalization.string("The selected items will be permanently removed from the archive.", locale: locale)
+        alert.addButton(withTitle: AppLocalization.string("Remove", locale: locale))
+        alert.addButton(withTitle: AppLocalization.string("Cancel", locale: locale))
+        guard alert.runModal() == .alertFirstButtonReturn else { return }
+        Task { await deleteArchiveItems(items) }
+    }
+
+    func deleteArchiveItems(_ items: [BrowserItem]) async {
+        guard canRemoveArchiveItems(items), let first = items.first,
+              case let .archive(address) = first.location else { return }
+        contextualFeedbackMessage = await runArchiveOperation(description: AppLocalization.string("Removing from archive…", locale: preferences.language.locale)) {
+            let url = try await self.archives.archiveRootURL(for: address)
+            let scoped = url.startAccessingSecurityScopedResource()
+            defer { if scoped { url.stopAccessingSecurityScopedResource() } }
+            let password = try await self.removeArchiveItems(items, password: nil)
+            try await self.refreshUpdatedArchive(ArchiveAdditionRequest(sourceURLs: [], archiveURL: url, internalPath: ""), password: password, navigation: .preserveCurrentDirectory)
+            return AppLocalization.string("Items removed from archive successfully.", locale: self.preferences.language.locale)
+        }
     }
 
     func prepareDragPayload(_ draggedURLs: [URL]) -> [URL] {

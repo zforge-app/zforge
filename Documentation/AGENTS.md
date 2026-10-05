@@ -12,6 +12,8 @@ Este diretório reúne os requisitos versionados do Zforge e a documentação t�
 6. [`Requirements/DOCUMENTATION-REQUIREMENTS.md`](Requirements/DOCUMENTATION-REQUIREMENTS.md) — requisitos da fonte local de documentação SwiftUI e macOS.
 7. [`Requirements/SEVENZIP-STATIC-INTEGRATION-PLAN.md`](Requirements/SEVENZIP-STATIC-INTEGRATION-PLAN.md) — plano da ZF-21 para integração estática nativa do 7-Zip, com implementação registrada, fases e verificações pendentes.
 
+8. [`Requirements/ARCHIVE-DRAG-DROP-PLAN.md`](Requirements/ARCHIVE-DRAG-DROP-PLAN.md) — plano vigente da ZF-30 para saída e reorganização de itens internos, com confirmação e paridade visual.
+
 ## Documentação técnica SwiftUI
 
 - [`SwiftUI/AGENTS.md`](SwiftUI/AGENTS.md) — regras próprias de consulta, atualização incremental e proveniência do corpus Apple.

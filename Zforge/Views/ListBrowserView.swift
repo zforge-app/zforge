@@ -430,7 +430,7 @@ private struct BrowserListRow: View {
                         : (index.isMultiple(of: 2) ? .clear : Color.primary.opacity(0.06))
                 )
         }
-        .browserDraggable(item: entry.item)
+        .browserDraggable(item: entry.item, state: state)
         .browserDirectoryDropTarget(
             state: state,
             item: entry.item,

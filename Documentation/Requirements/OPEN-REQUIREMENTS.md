@@ -17,7 +17,7 @@ Este documento mantém requisitos que ainda dependem de decisão, implementaçã
 
 | OR-13 | Completar a matriz visual do selo aprovado em uso real nos quatro modos, zoom, seleção múltipla, previews, tema claro/escuro e Obter Informações. | ZF-29: v6 aprovada integrada via máscaras neutras de luz/sombra de uma única referência. Build e 114 testes unitários aprovados; estado real de conteúdo em ZIP/7z, recurso/máscaras e pixels da faixa de papel cobertos. Compositor conferido em seis tamanhos, com e sem arquivos. Correção posterior das linhas traseiras passou nos 6 testes de ícones; última suíte completa teve 113 aprovados e falha intermitente de seleção rápida em Colunas (`firstStarted`), que passou isolada (histórico). ZF-32 substituiu essa espera por sinal explícito: validação posterior de 140 casos/420 execuções aprovada; evidência em REGRESSION-COVERAGE. Luz dinâmica/mapa de altura não fazem parte da técnica atual. Pastas internas com arquivos agora usam a versão fechada com papel; a antiga versão aberta foi rejeitada; a nova pasta aberta com selo foi autorizada para linhas expandidas da Lista e seus previews. Teste de UI de zoom falhou aguardando a Lista antes dos comandos; matriz real ampla continua pendente. |
 
-| OR-14 | Implementar drag and drop de itens dentro de archives. | Pedido explícito do usuário; ZF-30. Itens virtuais ainda não iniciam arraste (sem `localURL`). Planejar transferência/reorganização entre diretórios internos, operações aceitas, confirmação de alteração do archive e atualização da sessão; sem implementação nesta etapa. A adição de arquivos locais por drop já existente em OR-07 é um fluxo distinto. |
+| OR-14 | Completar conferência visual/externa de drag de itens internos. | Saída e reorganização implementadas, com confirmação Return/Escape e testes de regressão. XCTest executou cópia nos quatro modos e movimentos externos/internos em pastas do Zforge. Finder, arquivos locais e outra janela estão aprovados em UI. Mesa, seleção múltipla visual, mudança de Option em voo e temas/idiomas/zoom continuam delimitados em [REGRESSION-COVERAGE](../../REGRESSION-COVERAGE.md). Entre archives diferentes permanece uma decisão separada; escrita ZIP/7z raiz de volume único. |
 
 OR-01 foi reconciliado em [`UI-UX-GUIDE.md`](UI-UX-GUIDE.md). OR-05 já constava no commit `d23e1f7` da branch `main`; a entrega distribuída não foi verificada nesta interação.
 
@@ -26,3 +26,15 @@ OR-01 foi reconciliado em [`UI-UX-GUIDE.md`](UI-UX-GUIDE.md). OR-05 já constava
 - Quando uma decisão for tomada, atualizar primeiro o requisito e o contrato aplicável; depois ajustar `TASKS.md` e `DIVERGENCES.md` na mesma interação.
 - Quando uma implementação for concluída, mover seu comportamento observável para `CURRENT-STATE.md` e registrar a cobertura em [`../../REGRESSION-COVERAGE.md`](../../REGRESSION-COVERAGE.md). Remover desta lista apenas o que estiver resolvido ou explicitamente descartado, mantendo a rastreabilidade pela task/divergência.
 - Não transformar estas propostas em comportamento atual por inferência. Requisitos de estratégia de longo prazo permanecem em [`PRODUCT-REQUIREMENTS.md`](PRODUCT-REQUIREMENTS.md).
+
+- Refinamento OR-14 em 2026-10-04: usuário confirmou exclusão, mas reportou drag sem efeito. Correção da origem/payload implementada e testada por protocolo/coordenação; entrega real no destino e feedback de cursor continuam exigindo validação.
+
+- OR-14, novo retorno de 2026-10-04: usuário esclareceu que o arquivo não é extraído na pasta onde foi solto; iniciar a fonte não resolve o pedido. Receptores AppKit para destinos internos, tipo virtual declarado e sessão associada ao gesto no macOS 27 foram implementados. Testes do receptor verificam arquivos na pasta fornecida; entrega física/Finder ainda não confirmada.
+
+- Refinamento vigente de OR-14: reorganização no próprio archive foi solicitada e tem regra definida; deixou de ser apenas uma decisão a tomar. Plano atualizado nesta interação, sem mudança de código/build. Evidência do badge vem do relato do usuário; operações e apresentação continuam divergentes.
+
+- Execução posterior do plano, 2026-10-04: origem e apresentação compartilhadas com locais, reorganização interna validada em uma atualização, confirmação antes de publicar e refresh/revelação implementados. As notas anteriores sem código são históricas; evidência vigente na matriz de regressão.
+
+- D-32, 2026-10-04: a perda de Voltar/Avançar e das colunas ancestrais após mutação recebeu correção e testes próprios (ZF-33). Isso não substitui nem amplia a matriz visual de OR-14; evidência executada em REGRESSION-COVERAGE.
+
+- D-33, 2026-10-04: flash de linhas do pai durante leitura da coluna filha corrigido em ZF-34, com teste temporal dedicado. Resultados e limites em REGRESSION-COVERAGE; não redefine a matriz ampla de OR-14.

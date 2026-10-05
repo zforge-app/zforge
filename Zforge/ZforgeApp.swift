@@ -179,9 +179,12 @@ private struct BrowserCommands: Commands {
                         .disabled(browser?.selectedItems.contains(where: { !$0.isContainer }) != true)
                 }
             Divider()
-            Button("Move to Trash") { browser?.moveSelectionToTrash() }
+            Button(browser?.canRemoveArchiveItems(browser?.selectedItems ?? []) == true ? "Remove from Archive…" : "Move to Trash") {
+                if let browser, browser.canRemoveArchiveItems(browser.selectedItems) { browser.requestArchiveRemoval() }
+                else { browser?.moveSelectionToTrash() }
+            }
                 .keyboardShortcut(.delete, modifiers: .command)
-                .disabled(browser?.hasLocalSelection != true)
+                .disabled(browser?.hasLocalSelection != true && browser?.canRemoveArchiveItems(browser?.selectedItems ?? []) != true)
             Button("Delete Immediately…") { browser?.requestPermanentDeletion() }
                 .keyboardShortcut(.delete, modifiers: [.option, .command])
                 .disabled(browser?.hasLocalSelection != true)

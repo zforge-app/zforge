@@ -194,7 +194,7 @@ nonisolated final class NativeSevenZipBackend: @unchecked Sendable {
     }
 
     func write(to url: URL, updating original: URL? = nil, options: CompressionOptions,
-               password: String?, names: [String], directory: URL) async throws {
+               password: String?, names: [String], directory: URL, excludingPaths: [String] = []) async throws {
         let options = options.normalized()
         try await perform(resource: url) { operation in
             let properties = try options.nativeProperties(password: password)
@@ -224,7 +224,7 @@ nonisolated final class NativeSevenZipBackend: @unchecked Sendable {
             for name in names { try append(directory.appendingPathComponent(name), name: name) }
             try ZFSevenZipBridge.write(atPath: url.path, format: options.format.nativeHandlerName,
                 updatingPath: original?.path, sources: sources, properties: properties,
-                password: options.requiresPassword || original != nil ? password : nil, operation: operation)
+                excludingPaths: excludingPaths, password: options.requiresPassword || original != nil ? password : nil, operation: operation)
         }
     }
 }

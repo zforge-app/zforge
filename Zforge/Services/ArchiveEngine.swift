@@ -14,6 +14,8 @@ nonisolated enum ArchiveEngineError: LocalizedError, Equatable {
     case cancelled
     case updateUnsupported
     case multiVolumeUpdateUnsupported
+    case archiveAsDestination
+    case archiveChanged
     case archiveIncludedInSources
 
     var errorDescription: String? {
@@ -32,6 +34,8 @@ nonisolated enum ArchiveEngineError: LocalizedError, Equatable {
         case .cancelled: AppLocalization.string("error.cancelled")
         case .updateUnsupported: AppLocalization.string("Only ZIP and 7z archives can be updated.")
         case .multiVolumeUpdateUnsupported: AppLocalization.string("Multi-volume archives cannot be updated.")
+        case .archiveAsDestination: AppLocalization.string("The archive itself cannot be the extraction destination.")
+        case .archiveChanged: AppLocalization.string("The archive changed since it was opened. Reopen it before removing items.")
         case .archiveIncludedInSources: AppLocalization.string("The archive cannot be added to itself.")
         }
     }
@@ -80,6 +84,11 @@ nonisolated struct ArchiveOpenResult: Sendable {
     let displayName: String
 }
 
+nonisolated struct ArchiveReorganizationResult: Sendable {
+    let paths: [String]
+    let password: String?
+}
+
 nonisolated protocol ArchiveServing: Sendable {
     func openArchive(
         at url: URL,
@@ -107,6 +116,13 @@ nonisolated protocol ArchiveServing: Sendable {
         password: String?,
         progress: @escaping ArchiveProgressHandler
     ) async throws
+    func exportItem(_ item: BrowserItem, to url: URL, password: String?, progress: @escaping ArchiveProgressHandler) async throws
+    func exportPromisedItem(_ item: BrowserItem, to url: URL, password: String?, progress: @escaping ArchiveProgressHandler) async throws
+    @discardableResult
+    func removeItems(_ items: [BrowserItem], password: String?, progress: @escaping ArchiveProgressHandler) async throws -> String?
+    func reorganizeItems(_ items: [BrowserItem], to destination: ArchiveAddress, moving: Bool,
+                         password: String?, resolveConflict: @escaping ArchiveConflictResolver,
+                         progress: @escaping ArchiveProgressHandler) async throws -> ArchiveReorganizationResult
     func extractArchive(
         at url: URL,
         to destinationURL: URL,
@@ -133,6 +149,23 @@ nonisolated protocol ArchiveServing: Sendable {
 }
 
 extension ArchiveServing {
+    func exportPromisedItem(_ item: BrowserItem, to url: URL, password: String?, progress: @escaping ArchiveProgressHandler) async throws {
+        try await exportItem(item, to: url, password: password, progress: progress)
+    }
+    func exportItem(_ item: BrowserItem, to url: URL, password: String?, progress: @escaping ArchiveProgressHandler) async throws {
+        throw ArchiveEngineError.updateUnsupported
+    }
+    @discardableResult
+    func removeItems(_ items: [BrowserItem], password: String?, progress: @escaping ArchiveProgressHandler) async throws -> String? {
+        throw ArchiveEngineError.updateUnsupported
+    }
+
+    func reorganizeItems(_ items: [BrowserItem], to destination: ArchiveAddress, moving: Bool,
+                         password: String?, resolveConflict: @escaping ArchiveConflictResolver,
+                         progress: @escaping ArchiveProgressHandler) async throws -> ArchiveReorganizationResult {
+        throw ArchiveEngineError.updateUnsupported
+    }
+
     func addItems(
         from sourceURLs: [URL],
         to archiveURL: URL,
@@ -542,6 +575,203 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
         progress(ArchiveProgress(phase: .compressing, fraction: 1))
     }
 
+    func exportItem(_ item: BrowserItem, to url: URL, password: String?, progress: @escaping ArchiveProgressHandler) async throws {
+        try await publishItem(item, to: url, password: password, promised: false, progress: progress)
+    }
+
+    func exportPromisedItem(_ item: BrowserItem, to url: URL, password: String?, progress: @escaping ArchiveProgressHandler) async throws {
+        try await publishItem(item, to: url, password: password, promised: true, progress: progress)
+    }
+
+    private func publishItem(_ item: BrowserItem, to url: URL, password: String?, promised: Bool,
+                             progress: @escaping ArchiveProgressHandler) async throws {
+        guard case let .archive(address) = item.location,
+              let session = sessions[address.sessionID],
+              let archive = session.archives[address.archiveID],
+              archive.entries[address.internalPath] != nil else { throw ArchiveEngineError.itemNotFound }
+        let path = try safeArchivePath(address.internalPath)
+        let staging = session.directoryURL.appendingPathComponent("Export-\(UUID().uuidString)", isDirectory: true)
+        try fileManager.createDirectory(at: staging, withIntermediateDirectories: true)
+        defer { try? fileManager.removeItem(at: staging) }
+        let active = url.startAccessingSecurityScopedResource()
+        defer { if active { url.stopAccessingSecurityScopedResource() } }
+        progress(ArchiveProgress(phase: .extracting, fraction: 0))
+        try await nativeBackend.extract(at: archive.fileURL, password: password ?? session.password,
+            paths: [path], destination: staging)
+        try Task.checkCancellation()
+        let exportedRoot = staging.appendingPathComponent(path)
+        let candidates = [exportedRoot] + ((fileManager.enumerator(at: exportedRoot,
+            includingPropertiesForKeys: [.isSymbolicLinkKey])?.allObjects as? [URL]) ?? [])
+        for candidate in candidates {
+            if try candidate.resourceValues(forKeys: [.isSymbolicLinkKey]).isSymbolicLink == true {
+                let resolved = candidate.resolvingSymlinksInPath().standardizedFileURL
+                guard item.isDirectory, resolved.path.hasPrefix(exportedRoot.path + "/") else {
+                    throw ArchiveEngineError.unsafePath
+                }
+            }
+        }
+        // File promises export the selected item, not its ancestors in the archive.
+        // Never overwrite a destination or remove a source after a failed publication.
+        if promised {
+            // AppKit grants the promised URL, not its parent. A sibling staging
+            // file is outside that grant. Extraction/validation already finished
+            // in our session; copy only to the exact authorized URL.
+            try fileManager.copyItem(at: exportedRoot, to: url)
+        } else {
+            let publication = url.deletingLastPathComponent().appendingPathComponent(".zforge-publish-\(UUID().uuidString)")
+            defer { try? fileManager.removeItem(at: publication) }
+            try fileManager.copyItem(at: exportedRoot, to: publication)
+            try Task.checkCancellation()
+            try fileManager.moveItem(at: publication, to: url)
+        }
+        if let password { sessions[address.sessionID]?.password = password }
+        progress(ArchiveProgress(phase: .extracting, fraction: 1))
+    }
+
+    @discardableResult
+    func removeItems(_ items: [BrowserItem], password: String?, progress: @escaping ArchiveProgressHandler) async throws -> String? {
+        guard let first = items.first, case let .archive(address) = first.location,
+              address.nestedArchiveDepth == 0, let session = sessions[address.sessionID] else {
+            throw ArchiveEngineError.updateUnsupported
+        }
+        let archive = session.originalURL.standardizedFileURL.resolvingSymlinksInPath()
+        guard ArchiveFormatRegistry.supportsUpdating(archive.lastPathComponent) else { throw ArchiveEngineError.updateUnsupported }
+        if archive.pathExtension.lowercased() == "zip" {
+            let volumeName = archive.deletingPathExtension().lastPathComponent.lowercased() + ".z01"
+            guard !(try fileManager.contentsOfDirectory(atPath: archive.deletingLastPathComponent().path))
+                .contains(where: { $0.lowercased() == volumeName }) else { throw ArchiveEngineError.multiVolumeUpdateUnsupported }
+        }
+        guard let record = session.archives[address.archiveID],
+              fileManager.contentsEqual(atPath: archive.path, andPath: record.fileURL.path) else {
+            throw ArchiveEngineError.archiveChanged
+        }
+        let paths = try items.map { item -> String in
+            guard case let .archive(other) = item.location,
+                  other.sessionID == address.sessionID, other.archiveID == address.archiveID,
+                  other.nestedArchiveDepth == 0,
+                  session.archives[address.archiveID]?.entries[other.internalPath] != nil else { throw ArchiveEngineError.itemNotFound }
+            let path = try safeArchivePath(other.internalPath)
+            guard !path.isEmpty else { throw ArchiveEngineError.unsafePath }
+            return path
+        }
+        let directory = sessionsRoot.appendingPathComponent("Operations/\(UUID().uuidString)", isDirectory: true)
+        try fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? fileManager.removeItem(at: directory) }
+        let original = directory.appendingPathComponent(archive.lastPathComponent)
+        let updated = directory.appendingPathComponent("Updated-" + archive.lastPathComponent)
+        try fileManager.copyItem(at: archive, to: original)
+        let effectivePassword = password ?? session.password
+        let format: ArchiveCompressionFormat = archive.pathExtension.lowercased() == "zip" ? .zip : .sevenZip
+        progress(ArchiveProgress(phase: .compressing, fraction: 0))
+        try await nativeBackend.write(to: updated, updating: original,
+            options: CompressionOptions(format: format), password: effectivePassword,
+            names: [], directory: directory, excludingPaths: paths)
+        try await testArchive(at: updated, password: effectivePassword)
+        try Task.checkCancellation()
+        let replacement = archive.deletingLastPathComponent().appendingPathComponent(".zforge-remove-\(UUID().uuidString)")
+        try fileManager.copyItem(at: updated, to: replacement)
+        defer { try? fileManager.removeItem(at: replacement) }
+        try Task.checkCancellation()
+        guard fileManager.contentsEqual(atPath: archive.path, andPath: original.path) else {
+            throw ArchiveEngineError.archiveChanged
+        }
+        _ = try fileManager.replaceItemAt(archive, withItemAt: replacement)
+        if let password { sessions[address.sessionID]?.password = password }
+        progress(ArchiveProgress(phase: .compressing, fraction: 1))
+        return effectivePassword
+    }
+
+    func reorganizeItems(_ items: [BrowserItem], to destination: ArchiveAddress, moving: Bool,
+                         password: String?, resolveConflict: @escaping ArchiveConflictResolver,
+                         progress: @escaping ArchiveProgressHandler) async throws -> ArchiveReorganizationResult {
+        guard !items.isEmpty, destination.nestedArchiveDepth == 0,
+              let session = sessions[destination.sessionID],
+              let record = session.archives[destination.archiveID] else { throw ArchiveEngineError.itemNotFound }
+        let archive = session.originalURL.standardizedFileURL.resolvingSymlinksInPath()
+        guard ArchiveFormatRegistry.supportsUpdating(archive.lastPathComponent) else { throw ArchiveEngineError.updateUnsupported }
+        if archive.pathExtension.lowercased() == "zip" {
+            let volume = archive.deletingPathExtension().lastPathComponent.lowercased() + ".z01"
+            guard !(try fileManager.contentsOfDirectory(atPath: archive.deletingLastPathComponent().path))
+                .contains(where: { $0.lowercased() == volume }) else { throw ArchiveEngineError.multiVolumeUpdateUnsupported }
+        }
+        guard fileManager.contentsEqual(atPath: archive.path, andPath: record.fileURL.path) else { throw ArchiveEngineError.archiveChanged }
+        let target = destination.internalPath.isEmpty ? "" : try safeArchivePath(destination.internalPath)
+        if !target.isEmpty {
+            guard try await self.items(at: ArchiveAddress(sessionID: destination.sessionID,
+                archiveID: destination.archiveID, internalPath: (target as NSString).deletingLastPathComponent))
+                .contains(where: { $0.isDirectory && $0.name == (target as NSString).lastPathComponent }) else {
+                throw ArchiveEngineError.itemNotFound
+            }
+        }
+        let sources = try items.map { item -> String in
+            guard case let .archive(address) = item.location, address.sessionID == destination.sessionID,
+                  address.archiveID == destination.archiveID, address.nestedArchiveDepth == 0,
+                  record.entries[address.internalPath] != nil else { throw ArchiveEngineError.itemNotFound }
+            let path = try safeArchivePath(address.internalPath)
+            guard !path.isEmpty, !item.isDirectory || (target != path && !target.hasPrefix(path + "/")) else {
+                throw ArchiveEngineError.unsafePath
+            }
+            return path
+        }
+        // Normalize parent/descendant selections here as well as in the UI.
+        let roots = zip(items, sources).filter { item, path in
+            !zip(items, sources).contains { parent, parentPath in
+                parent.isDirectory && parentPath != path && path.hasPrefix(parentPath + "/")
+            }
+        }
+        let operation = sessionsRoot.appendingPathComponent("Operations/\(UUID().uuidString)", isDirectory: true)
+        let input = operation.appendingPathComponent("Input", isDirectory: true)
+        try fileManager.createDirectory(at: input, withIntermediateDirectories: true)
+        defer { try? fileManager.removeItem(at: operation) }
+        let original = operation.appendingPathComponent(archive.lastPathComponent)
+        let updated = operation.appendingPathComponent("Updated-" + archive.lastPathComponent)
+        try fileManager.copyItem(at: record.fileURL, to: original)
+        var occupied = try await self.items(at: destination).map(\.name)
+        var stagedNames: Set<String> = []
+        var paths: [String] = []
+        var exclusions: [String] = []
+        var repeated: ArchiveConflictDecision?
+        let effectivePassword = password ?? session.password
+        for (item, source) in roots {
+            var name = item.name
+            var path = [target, name].filter { !$0.isEmpty }.joined(separator: "/")
+            if moving && path == source { continue }
+            if path == source || stagedNames.contains(name) { name = uniqueStagedName(name, in: occupied); path = [target, name].filter { !$0.isEmpty }.joined(separator: "/") }
+            else if occupied.contains(name) {
+                // Never replace an ancestor that contains any selected source.
+                guard !sources.contains(where: { $0 == path || $0.hasPrefix(path + "/") }) else { throw ArchiveEngineError.unsafePath }
+                let decision: ArchiveConflictDecision
+                if let repeated { decision = repeated }
+                else { decision = await resolveConflict(ArchiveConflict(path: path, destinationURL: archive.appendingPathComponent(path), isDirectory: item.isDirectory)) }
+                switch decision {
+                case .cancel: throw ArchiveEngineError.cancelled
+                case let .keep(all): if all { repeated = decision }; continue
+                case let .replace(all): if all { repeated = decision }; exclusions.append(path)
+                }
+            }
+            let staged = input.appendingPathComponent(path)
+            try fileManager.createDirectory(at: staged.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try await exportItem(item, to: staged, password: effectivePassword, progress: progress)
+            occupied.append(name); stagedNames.insert(name); paths.append(path)
+            if moving { exclusions.append(source) }
+        }
+        guard !paths.isEmpty else { return ArchiveReorganizationResult(paths: [], password: effectivePassword) }
+        try Task.checkCancellation()
+        let format: ArchiveCompressionFormat = archive.pathExtension.lowercased() == "zip" ? .zip : .sevenZip
+        try await nativeBackend.write(to: updated, updating: original, options: CompressionOptions(format: format),
+            password: effectivePassword, names: paths, directory: input, excludingPaths: exclusions)
+        try await testArchive(at: updated, password: effectivePassword)
+        try Task.checkCancellation()
+        let replacement = archive.deletingLastPathComponent().appendingPathComponent(".zforge-reorganize-\(UUID().uuidString)")
+        try fileManager.copyItem(at: updated, to: replacement)
+        defer { try? fileManager.removeItem(at: replacement) }
+        try Task.checkCancellation()
+        guard fileManager.contentsEqual(atPath: archive.path, andPath: record.fileURL.path) else { throw ArchiveEngineError.archiveChanged }
+        _ = try fileManager.replaceItemAt(archive, withItemAt: replacement)
+        if let password { sessions[destination.sessionID]?.password = password }
+        return ArchiveReorganizationResult(paths: paths, password: effectivePassword)
+    }
+
     func testArchive(at url: URL, password: String?) async throws {
         let operationDirectory = sessionsRoot
             .appendingPathComponent("Operations", isDirectory: true)
@@ -729,9 +959,6 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
                 method: nil,
                 attributes: nil
             )
-        }
-        guard !entries.isEmpty else {
-            throw ArchiveEngineError.invalidArchive(AppLocalization.string("archive.empty_or_unsupported"))
         }
         return ArchiveRecord(
             id: UUID(),

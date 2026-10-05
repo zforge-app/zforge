@@ -12,6 +12,7 @@ Este diretório é a localização dos requisitos do projeto. Começar por este 
 | [`OPEN-REQUIREMENTS.md`](OPEN-REQUIREMENTS.md) | Requisitos e decisões ainda pendentes, com vínculo às tasks e divergências. Não redefine funcionalidades prontas. |
 | [`DOCUMENTATION-REQUIREMENTS.md`](DOCUMENTATION-REQUIREMENTS.md) | Requisitos de cobertura, indexação, proveniência e atualização do corpus local SwiftUI/macOS. |
 | [`SEVENZIP-STATIC-INTEGRATION-PLAN.md`](SEVENZIP-STATIC-INTEGRATION-PLAN.md) | Plano da ZF-21: build estática do 7-Zip, adaptador nativo, migração, validação e distribuição. Backend implementado; evidências e verificações restantes estão registradas no plano e na matriz de regressão. |
+| [`ARCHIVE-DRAG-DROP-PLAN.md`](ARCHIVE-DRAG-DROP-PLAN.md) | Plano vigente da ZF-30: paridade visual com itens locais, confirmação por teclado, saída e reorganização dentro do próprio archive. Implementação e testes de regressão registrados; limites de validação separados. |
 
 ## Precedência e atualização
 
