@@ -35,8 +35,12 @@ actor Counts {
 }
 '''
 (out/'measure.swift').write_text(src)
-source_hash=hashlib.sha256(src.encode()).hexdigest()
-subprocess.run(['xcrun','swiftc','-parse-as-library','-module-cache-path',str(out/'modules'),str(out/'measure.swift'),'-o',str(out/'measure')],check=True)
+native=repo/'Zforge/Native'
+source_hash={'measure.swift':hashlib.sha256(src.encode()).hexdigest()}
+for name in ['TagDirectoryReader.c','TagDirectoryReader.h']:
+ source_hash[name]=hashlib.sha256((native/name).read_bytes()).hexdigest()
+subprocess.run(['xcrun','clang','-c',str(native/'TagDirectoryReader.c'),'-o',str(out/'reader.o')],check=True)
+subprocess.run(['xcrun','swiftc','-parse-as-library','-module-cache-path',str(out/'modules'),'-import-objc-header',str(native/'TagDirectoryReader.h'),str(out/'measure.swift'),str(out/'reader.o'),'-o',str(out/'measure')],check=True)
 results=[]
 for repeat in range(3):
  run=subprocess.Popen(['/usr/bin/time','-l',str(out/'measure')],stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True,start_new_session=True)

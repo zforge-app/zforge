@@ -1,0 +1,252 @@
+{
+  "files": 100000,
+  "reference_commit": "8af9fcb",
+  "source_sha256": {
+    "TagDirectoryReader.c": "aa5901c4e00383fd1a1707c549316591a3942ca60a2f3885f1b30317a5b38329",
+    "TagDirectoryReader.h": "37b44201d83531cb74a9fc8040adb31e94bf0420319749a85b49e2ff1208e7cb",
+    "foundation": "ce50d72343415ea063a36c362268c49f6345b6724642059f8cb02d81597a36bb",
+    "native": "bd2b72d5722cb465136ba7e5093385e80c72bf8acfbd1d9b32c35fc36ebd80ee"
+  },
+  "measurements": [
+    {
+      "variant": "foundation",
+      "repeat": 1,
+      "elapsed_seconds": 26.2598819732666,
+      "records": {
+        "/folder-080/file-080000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-040/file-040000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-010/file-010000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-020/file-020000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-030/file-030000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-070/file-070000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-000/file-000000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-050/file-050000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-060/file-060000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-090/file-090000.txt": {
+          "Benchmark": 6
+        }
+      },
+      "cpu_seconds": 3.7600000000000002,
+      "rss_bytes": 13074432,
+      "footprint_bytes": 3686976
+    },
+    {
+      "variant": "native",
+      "repeat": 1,
+      "elapsed_seconds": 20.88878095149994,
+      "records": {
+        "/folder-030/file-030000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-090/file-090000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-020/file-020000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-050/file-050000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-000/file-000000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-010/file-010000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-080/file-080000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-040/file-040000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-060/file-060000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-070/file-070000.txt": {
+          "Benchmark": 6
+        }
+      },
+      "cpu_seconds": 3.65,
+      "rss_bytes": 12599296,
+      "footprint_bytes": 3572336
+    },
+    {
+      "variant": "native",
+      "repeat": 2,
+      "elapsed_seconds": 23.697817087173462,
+      "records": {
+        "/folder-060/file-060000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-020/file-020000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-080/file-080000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-040/file-040000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-090/file-090000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-070/file-070000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-000/file-000000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-050/file-050000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-010/file-010000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-030/file-030000.txt": {
+          "Benchmark": 6
+        }
+      },
+      "cpu_seconds": 4.32,
+      "rss_bytes": 12582912,
+      "footprint_bytes": 3555952
+    },
+    {
+      "variant": "foundation",
+      "repeat": 2,
+      "elapsed_seconds": 32.94910490512848,
+      "records": {
+        "/folder-090/file-090000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-060/file-060000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-080/file-080000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-040/file-040000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-020/file-020000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-000/file-000000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-070/file-070000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-030/file-030000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-050/file-050000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-010/file-010000.txt": {
+          "Benchmark": 6
+        }
+      },
+      "cpu_seconds": 6.09,
+      "rss_bytes": 12976128,
+      "footprint_bytes": 3572312
+    },
+    {
+      "variant": "foundation",
+      "repeat": 3,
+      "elapsed_seconds": 28.25896394252777,
+      "records": {
+        "/folder-030/file-030000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-060/file-060000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-000/file-000000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-020/file-020000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-080/file-080000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-040/file-040000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-090/file-090000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-050/file-050000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-010/file-010000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-070/file-070000.txt": {
+          "Benchmark": 6
+        }
+      },
+      "cpu_seconds": 5.1899999999999995,
+      "rss_bytes": 12926976,
+      "footprint_bytes": 3523160
+    },
+    {
+      "variant": "native",
+      "repeat": 3,
+      "elapsed_seconds": 27.65575098991394,
+      "records": {
+        "/folder-080/file-080000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-090/file-090000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-000/file-000000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-070/file-070000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-030/file-030000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-020/file-020000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-050/file-050000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-040/file-040000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-010/file-010000.txt": {
+          "Benchmark": 6
+        },
+        "/folder-060/file-060000.txt": {
+          "Benchmark": 6
+        }
+      },
+      "cpu_seconds": 5.08,
+      "rss_bytes": 12632064,
+      "footprint_bytes": 3605104
+    }
+  ]
+}

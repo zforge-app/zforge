@@ -20,15 +20,35 @@ nonisolated enum FinderTagMetadata {
     static func colorIndexes(at url: URL) -> [String: Int] {
         url.withUnsafeFileSystemRepresentation { path in
             guard let path else { return [:] }
-            let size = getxattr(path, attribute, nil, 0, 0, 0)
-            guard size > 0 else { return [:] }
-            var bytes = [UInt8](repeating: 0, count: size)
-            let count = bytes.withUnsafeMutableBytes { buffer in
-                getxattr(path, attribute, buffer.baseAddress, size, 0, 0)
-            }
-            guard count > 0 else { return [:] }
-            return colorIndexes(in: Data(bytes.prefix(count)))
+            return colorIndexes(atPath: path)
         }
+    }
+
+    /// Enumeration already supplies a filesystem path; avoid allocating a URL
+    /// for every untagged file just to recover that same C representation.
+    static func colorIndexes(atPath path: UnsafePointer<CChar>) -> [String: Int] {
+        readColorIndexes(atPath: path).colors
+    }
+
+    struct ReadResult: Sendable {
+        let colors: [String: Int]
+        let complete: Bool
+    }
+
+    static func readColorIndexes(atPath path: UnsafePointer<CChar>) -> ReadResult {
+        let size = getxattr(path, attribute, nil, 0, 0, 0)
+        if size <= 0 {
+            // Absence and a concurrently removed path are valid empty metadata;
+            // access/I/O failures must not become a durable false-negative.
+            let complete = size == 0 || errno == ENOATTR || errno == ENOENT || errno == ENOTDIR
+            return ReadResult(colors: [:], complete: complete)
+        }
+        var bytes = [UInt8](repeating: 0, count: size)
+        let count = bytes.withUnsafeMutableBytes { buffer in
+            getxattr(path, attribute, buffer.baseAddress, size, 0, 0)
+        }
+        guard count >= 0 else { return ReadResult(colors: [:], complete: false) }
+        return ReadResult(colors: colorIndexes(in: Data(bytes.prefix(count))), complete: true)
     }
 
     static func colorIndexes(in data: Data) -> [String: Int] {
@@ -76,7 +96,7 @@ nonisolated enum FinderTagPresentation {
 @MainActor
 @Observable
 final class FinderTagCatalog: NSObject {
-    static let shared = FinderTagCatalog()
+    static let shared = FinderTagCatalog(indexStore: .standard)
 
     private(set) var tags: [FinderTag] = []
     private(set) var revision: UInt64 = 0
@@ -89,42 +109,65 @@ final class FinderTagCatalog: NSObject {
     @ObservationIgnored private var workTask: Task<Void, Never>?
     @ObservationIgnored private var pendingScans = TagScanRoots()
     @ObservationIgnored private var pendingReads: Set<URL> = []
-    @ObservationIgnored private let scanner: TaggedFileScanner.Scan
-    @ObservationIgnored private let reader: TaggedFileScanner.Read
+    @ObservationIgnored private let scanner: @Sendable ([URL], @escaping TaggedFileScanner.Publish) async -> TaggedFileScanner.ScanResult
+    @ObservationIgnored private let reader: @Sendable ([URL]) async -> TaggedFileScanner.ReadResult
     @ObservationIgnored private let monitorsFiles: Bool
     @ObservationIgnored private let usesSpotlight: Bool
+    @ObservationIgnored private let eventDelay: @Sendable () async throws -> Void
     @ObservationIgnored private var running = false
     @ObservationIgnored private var eventTask: Task<Void, Never>?
     @ObservationIgnored private var pendingChanges: [String: TagFileChange] = [:]
     @ObservationIgnored private var stream: FSEventStreamRef?
     @ObservationIgnored private var generation: UInt64 = 0
 
+    @ObservationIgnored private let indexStore: TagIndexStore?
+    @ObservationIgnored private var loadedCheckpoint: TagIndexSnapshot?
+    @ObservationIgnored private var preparationTask: Task<Void, Never>?
+    @ObservationIgnored private var checkpointTask: Task<Void, Never>?
+    @ObservationIgnored private var pendingPreparation = TagScanRoots()
+    @ObservationIgnored private var journal: TagJournal?
+    @ObservationIgnored private var journalScopes: [TagJournal.Scope] = []
+    @ObservationIgnored private var checkpointDirty = false
+    @ObservationIgnored private var deferredScans = TagScanRoots()
+    private var checkpointComplete: Bool { deferredScans.urls.isEmpty }
+    @ObservationIgnored private var discoveryStarted: ContinuousClock.Instant?
+    @ObservationIgnored private var restoredIndex = false
+    @ObservationIgnored private var reportedReady = false
+
     @ObservationIgnored let discoveryPolicy: TagDiscoveryPolicy
 
     init(
         discoveryRoots: [URL] = TagDiscoveryPolicy.standardRoots,
-        scanner: @escaping TaggedFileScanner.Scan = { roots, publish in
-            await TaggedFileScanner.scan(roots, onBatch: publish)
-        },
-        reader: @escaping TaggedFileScanner.Read = { await TaggedFileScanner.read($0) },
+        scanner: TaggedFileScanner.Scan? = nil,
+        reader: TaggedFileScanner.Read? = nil,
         monitorsFiles: Bool = true,
-        usesSpotlight: Bool = true
+        usesSpotlight: Bool = true,
+        indexStore: TagIndexStore? = nil,
+        eventDelay: @escaping @Sendable () async throws -> Void = { try await Task.sleep(for: .milliseconds(350)) }
     ) {
         self.discoveryPolicy = TagDiscoveryPolicy(roots: discoveryRoots)
-        self.scanner = scanner
-        self.reader = reader
+        if let scanner {
+            self.scanner = { roots, publish in await scanner(roots, publish); return .init(interrupted: Task.isCancelled) }
+        } else {
+            self.scanner = { await TaggedFileScanner.scanResult($0, onBatch: $1) }
+        }
+        if let reader {
+            self.reader = { .init(records: await reader($0), complete: !Task.isCancelled) }
+        } else { self.reader = { await TaggedFileScanner.readResult($0) } }
         self.monitorsFiles = monitorsFiles
         self.usesSpotlight = usesSpotlight
+        self.indexStore = indexStore
+        self.eventDelay = eventDelay
         super.init()
     }
 
-    var isIdle: Bool { workTask == nil && eventTask == nil }
+    var isIdle: Bool { workTask == nil && eventTask == nil && preparationTask == nil && checkpointTask == nil }
 
     func waitForEvents() async { await eventTask?.value }
 
     /// Await finite queued work; no polling or production timer is introduced.
     func waitForIdle() async {
-        while let task = eventTask ?? workTask { await task.value }
+        while let task = preparationTask ?? eventTask ?? workTask ?? checkpointTask { await task.value }
     }
 
     func start() {
@@ -159,16 +202,29 @@ final class FinderTagCatalog: NSObject {
         var additions = TagScanRoots()
         for grant in (newScopes ?? []) + discoveryPolicy.roots.filter({ $0.path == "/Users/Shared" }) {
             for scope in discoveryPolicy.intersection(grant.standardizedFileURL) where !covered.contains(scope.standardizedFileURL) {
+                // Acquire the existing authorization before probing access.
+                let leased = grant.startAccessingSecurityScopedResource()
+                guard let directory = opendir(scope.path) else {
+                    if leased { grant.stopAccessingSecurityScopedResource() }
+                    continue
+                }
+                closedir(directory)
+                if leased { leasedScopes.append(grant) }
                 additions.insert(scope)
                 covered.insert(scope)
-                // Keep the lease from the authorized URL, including its bookmark.
-                if grant.startAccessingSecurityScopedResource() { leasedScopes.append(grant) }
             }
         }
         if !additions.urls.isEmpty {
+            if discoveryStarted == nil { discoveryStarted = .now }
+            reportedReady = false
             searchScopes = covered.urls
-            if monitorsFiles { startMonitoring() }
-            scan(additions.urls)
+            if indexStore != nil, monitorsFiles {
+                for scope in additions.urls { pendingPreparation.insert(scope) }
+                prepareDiscovery()
+            } else {
+                if monitorsFiles { startMonitoring() }
+                scan(additions.urls)
+            }
         }
         // An existing query already has live updates. Restarting it on sidebar
         // navigation or another window would repeat the global result read.
@@ -186,7 +242,7 @@ final class FinderTagCatalog: NSObject {
             changed = setRecord(path, colors: colors.isEmpty || discoveryPolicy.isVisible(url) ? colors : [:]) || changed
             if running, workTask != nil, discoveryPolicy.isVisible(url) { pendingReads.insert(url) }
         }
-        if changed { publish(); revision &+= 1 }
+        if changed { publish(); revision &+= 1; checkpointDirty = true; saveCheckpoint() }
     }
 
     func itemURLs(tagged name: String) -> [URL] {
@@ -202,6 +258,17 @@ final class FinderTagCatalog: NSObject {
         workTask?.cancel()
         eventTask?.cancel()
         eventTask = nil
+        preparationTask?.cancel()
+        journal?.stop()
+        journal = nil
+        journalScopes.removeAll()
+        loadedCheckpoint = nil
+        pendingPreparation = TagScanRoots()
+        checkpointDirty = false
+        deferredScans = TagScanRoots()
+        discoveryStarted = nil
+        restoredIndex = false
+        reportedReady = false
         pendingScans = TagScanRoots()
         pendingReads.removeAll()
         pendingChanges.removeAll()
@@ -232,6 +299,7 @@ final class FinderTagCatalog: NSObject {
     }
 
     private func scan(_ scopes: [URL]) {
+        checkpointDirty = true
         for scope in scopes { pendingScans.insert(scope) }
         scheduleWork()
     }
@@ -248,7 +316,8 @@ final class FinderTagCatalog: NSObject {
                     pendingReads.subtract(urls)
                     let batch = await reader(urls)
                     guard !Task.isCancelled else { break }
-                    receive(batch, generation: generation)
+                    deferRetries(batch.deferred)
+                    receive(batch.records, generation: generation)
                 } else if !pendingScans.urls.isEmpty {
                     let scopes = pendingScans.take()
                     // Reconcile previously indexed metadata after a subtree
@@ -257,13 +326,16 @@ final class FinderTagCatalog: NSObject {
                         scopes.contains { TagScanRoots.covers($0.path, path) }
                     }
                     let started = ContinuousClock.now
-                    await scanner(scopes) { [weak self] batch in
+                    let outcome = await scanner(scopes) { [weak self] batch in
                         await self?.receiveScanBatch(batch, generation: generation)
                     }
                     guard !Task.isCancelled else { break }
+                    guard !outcome.interrupted else { break }
+                    deferredScans.remove(coveredBy: scopes)
+                    deferRetries(outcome.deferred)
                     let elapsed = started.duration(to: .now)
                     Logger(subsystem: "io.libor.Zforge", category: "TagDiscovery").notice(
-                        "Tag discovery completed: duration=\(String(describing: elapsed), privacy: .public), scopes_attempted=\(scopes.count, privacy: .public)"
+                        "Tag discovery completed: duration=\(String(describing: elapsed), privacy: .public), scopes_attempted=\(scopes.count, privacy: .public), complete=\(outcome.complete, privacy: .public), inspected=\(outcome.inspected, privacy: .public), metadata_reads=\(outcome.metadataReads, privacy: .public), deferred_scopes=\(outcome.deferred.count, privacy: .public)"
                     )
                     pendingReads.formUnion(indexed.map { URL(fileURLWithPath: $0) })
                 } else { break }
@@ -272,6 +344,8 @@ final class FinderTagCatalog: NSObject {
             // A stop followed immediately by restart waits for the canceled
             // worker to retire before starting another filesystem worker.
             scheduleWork()
+            saveCheckpoint()
+            reportReady()
         }
     }
 
@@ -281,7 +355,7 @@ final class FinderTagCatalog: NSObject {
         for (path, colors) in batch where discoveryPolicy.contains(URL(fileURLWithPath: path)) {
             changed = setRecord(path, colors: colors.isEmpty || discoveryPolicy.isVisible(URL(fileURLWithPath: path)) ? colors : [:]) || changed
         }
-        if changed { publish(); revision &+= 1 }
+        if changed { publish(); revision &+= 1; checkpointDirty = true }
     }
 
     private func receiveScanBatch(_ batch: TaggedFileScanner.Batch, generation: UInt64) async {
@@ -292,7 +366,8 @@ final class FinderTagCatalog: NSObject {
             pendingReads.subtract(urls)
             let updated = await reader(urls)
             guard !Task.isCancelled else { return }
-            receive(updated, generation: generation)
+            deferRetries(updated.deferred)
+            receive(updated.records, generation: generation)
         }
     }
 
@@ -341,6 +416,141 @@ final class FinderTagCatalog: NSObject {
         if updated != tags { tags = updated }
     }
 
+    /// Restore only after scopes have been authorized. Monitor before scanning
+    /// so changes made during initial discovery cannot fall into a gap.
+    private func prepareDiscovery() {
+        guard running, preparationTask == nil, let indexStore, !pendingPreparation.urls.isEmpty else { return }
+        let generation = generation
+        preparationTask = Task { [weak self] in
+            guard let self else { return }
+            while running, !Task.isCancelled, !pendingPreparation.urls.isEmpty {
+                let additions = pendingPreparation.take()
+                if journal == nil { loadedCheckpoint = await indexStore.load() }
+                let snapshot = loadedCheckpoint
+                guard running, !Task.isCancelled, generation == self.generation else { break }
+                guard let description = TagJournal.describe(searchScopes) else {
+                    // Unavailable persistent history never authorizes stale reuse.
+                    startMonitoring()
+                    scan(additions)
+                    break
+                }
+                // Bookmarks arrive independently. A checkpoint containing Home
+                // and Shared is still reusable when only Shared is authorized
+                // initially; retain it for Home's later authorization even if
+                // a smaller checkpoint is written in the meantime.
+                let reusableScopes = description.scopes.filter { scope in
+                    additions.contains { $0.path == scope.path }
+                        && snapshot?.matches([scope]) == true
+                        && snapshot!.cursors[scope.path]! <= FSEventsGetCurrentEventId()
+                }
+                let restoredRoots = reusableScopes.map { URL(fileURLWithPath: $0.path) }
+                let coldRoots = additions.filter { url in !restoredRoots.contains { $0.path == url.path } }
+                var cursors = journal?.cursors ?? [:]
+                if !restoredRoots.isEmpty, let snapshot {
+                    for scope in reusableScopes { cursors[scope.path] = snapshot.cursors[scope.path] }
+                    restoredIndex = true
+                    let cachedRecords = snapshot.records.filter { path, _ in restoredRoots.contains { TagScanRoots.covers($0.path, path) } }
+                    Logger(subsystem: "io.libor.Zforge", category: "TagDiscovery").notice(
+                        "Tag index restored: tagged_records=\(cachedRecords.count, privacy: .public), scopes_restored=\(restoredRoots.count, privacy: .public)"
+                    )
+                    receive(cachedRecords, generation: generation)
+                    pendingReads.formUnion(cachedRecords.keys.map { URL(fileURLWithPath: $0) })
+                    for path in snapshot.deferredPaths where restoredRoots.contains(where: { TagScanRoots.covers($0.path, path) }) {
+                        let url = URL(fileURLWithPath: path)
+                        deferredScans.insert(url)
+                        pendingScans.insert(url)
+                    }
+                }
+                journal?.stop()
+                let journal = TagJournal(onChanges: { [weak self] changes in
+                    guard let self else { return }
+                    // A cold scan begins after history delivery. Its starting
+                    // tree already includes those historical changes; rescanning
+                    // them again would repeat the very first pass.
+                    let changes = self.journal?.isReplaying == true
+                        ? changes.filter { change in !coldRoots.contains { TagScanRoots.covers($0.path, change.path) } }
+                        : changes
+                    filesChanged(changes)
+                }, onHistory: { [weak self] in self?.saveCheckpoint() })
+                self.journal = journal
+                journalScopes = description.scopes
+                journal.start(description, since: cursors)
+                if !restoredRoots.isEmpty, journal.available { scheduleWork() }
+                checkpointDirty = true
+                await journal.waitForHistory()
+                guard running, !Task.isCancelled, generation == self.generation else { break }
+                scan(journal.available ? coldRoots : additions)
+            }
+            preparationTask = nil
+            prepareDiscovery()
+            saveCheckpoint()
+            reportReady()
+        }
+    }
+
+    /// The cursor and records are captured only after all events through that
+    /// cursor have drained. New events arriving during I/O get a later checkpoint.
+    private func saveCheckpoint() {
+        guard running, checkpointDirty, checkpointTask == nil, preparationTask == nil,
+              workTask == nil, eventTask == nil, pendingScans.urls.isEmpty, pendingReads.isEmpty,
+              let indexStore, let journal, journal.available, !journal.isReplaying else { return }
+        let retainedScopes = loadedCheckpoint?.version == TagIndexSnapshot.currentVersion
+            ? loadedCheckpoint!.scopes.filter { cached in
+                !journalScopes.contains { current in
+                    TagScanRoots.covers(current.path, cached.path) || TagScanRoots.covers(cached.path, current.path)
+                }
+            } : []
+        func retained(_ path: String) -> Bool { retainedScopes.contains { TagScanRoots.covers($0.path, path) } }
+        var savedRecords = loadedCheckpoint?.records.filter { path, _ in retained(path) } ?? [:]
+        savedRecords.merge(records.filter { path, _ in searchScopes.contains { TagScanRoots.covers($0.path, path) } }) { _, current in current }
+        var savedCursors = loadedCheckpoint?.cursors.filter { path, _ in retainedScopes.contains { $0.path == path } } ?? [:]
+        savedCursors.merge(journal.cursors) { _, current in current }
+        let savedDeferred = (loadedCheckpoint?.deferredPaths.filter(retained) ?? []) + deferredScans.urls.map(\.path)
+        // Preserve ungranted, disjoint scope data on disk without publishing it
+        // or trusting its identity. Later authorization validates it afresh.
+        let snapshot = TagIndexSnapshot(scopes: (journalScopes + retainedScopes).sorted { $0.path < $1.path },
+            cursors: savedCursors, records: savedRecords, deferredPaths: savedDeferred)
+        checkpointDirty = false
+        checkpointTask = Task { [weak self] in
+            let saved = await indexStore.save(snapshot)
+            if !saved {
+                Logger(subsystem: "io.libor.Zforge", category: "TagDiscovery").error("Tag index checkpoint could not be saved")
+            } else {
+                Logger(subsystem: "io.libor.Zforge", category: "TagDiscovery").notice(
+                    "Tag index checkpoint saved: scopes=\(snapshot.scopes.count, privacy: .public), tagged_records=\(snapshot.records.count, privacy: .public), deferred_scopes=\(snapshot.deferredPaths.count, privacy: .public)"
+                )
+            }
+            guard let self else { return }
+            checkpointTask = nil
+            saveCheckpoint()
+            reportReady()
+        }
+    }
+
+    private func deferRetries(_ urls: [URL]) {
+        for url in urls {
+            for scope in searchScopes {
+                if TagScanRoots.covers(scope.path, url.path) { deferredScans.insert(url) }
+                else if TagScanRoots.covers(url.path, scope.path) { deferredScans.insert(scope) }
+            }
+        }
+        if deferredScans.urls.count > 512 {
+            let affected = deferredScans.urls
+            deferredScans = TagScanRoots()
+            for scope in searchScopes where affected.contains(where: { TagScanRoots.covers(scope.path, $0.path) }) {
+                deferredScans.insert(scope)
+            }
+        }
+    }
+
+    private func reportReady() {
+        guard running, isIdle, !reportedReady, let discoveryStarted else { return }
+        reportedReady = true
+        Logger(subsystem: "io.libor.Zforge", category: "TagDiscovery").notice(
+            "Tag index ready: duration=\(String(describing: discoveryStarted.duration(to: .now)), privacy: .public), restored=\(self.restoredIndex, privacy: .public), complete=\(self.checkpointComplete, privacy: .public), scopes=\(self.searchScopes.count, privacy: .public)"
+        )
+    }
+
     private func startMonitoring() {
         if let stream { FSEventStreamStop(stream); FSEventStreamInvalidate(stream); FSEventStreamRelease(stream) }
         var context = FSEventStreamContext(
@@ -369,13 +579,25 @@ final class FinderTagCatalog: NSObject {
 
     func filesChanged(_ changes: [TagFileChange]) {
         guard running, !changes.isEmpty else { return }
+        var acceptedChange = false
+        // The cache lasts only for this synchronous delivery and cannot hide a
+        // later visibility transition. Bound it even for an unusually large batch.
+        var visibilityFlags: [URL: UInt32] = [:]
+        func readFlags(_ url: URL) -> UInt32? {
+            if let flags = visibilityFlags[url] { return flags }
+            let flags = TagDiscoveryPolicy.flags(at: url)
+            if visibilityFlags.count < 512 { visibilityFlags[url] = flags ?? 0 }
+            return flags
+        }
         for change in changes where change.isRelevant {
             guard searchScopes.contains(where: { TagScanRoots.covers($0.path, change.path) }) else { continue }
             let url = URL(fileURLWithPath: change.path)
             // Hidden activity cannot restart discovery. Retain a hide event only
             // when it must remove previously indexed items or descendants.
-            guard discoveryPolicy.isVisible(url)
+            guard discoveryPolicy.isVisible(url, readFlags: readFlags)
                     || records.keys.contains(where: { TagScanRoots.covers(change.path, $0) }) else { continue }
+            acceptedChange = true
+            checkpointDirty = true
             if var previous = pendingChanges[change.path] {
                 previous.flags |= change.flags
                 pendingChanges[change.path] = previous
@@ -399,10 +621,11 @@ final class FinderTagCatalog: NSObject {
                 pendingChanges.removeAll(keepingCapacity: true)
             }
         }
-        guard !pendingChanges.isEmpty || !pendingScans.urls.isEmpty else { return }
-        eventTask?.cancel()
+        // Hidden-only noise cannot postpone accepted changes. A finite window
+        // starts with the first change and keeps draining under continuous work.
+        guard acceptedChange, eventTask == nil else { return }
         eventTask = Task { [weak self] in
-            do { try await Task.sleep(for: .milliseconds(350)) } catch { return }
+            do { try await self?.eventDelay() } catch { return }
             guard let self, !Task.isCancelled else { return }
             let changes = Array(pendingChanges.values)
             pendingChanges.removeAll(keepingCapacity: true)
@@ -418,7 +641,7 @@ final class FinderTagCatalog: NSObject {
                 pendingReads.insert(url)
                 if change.requiresRecursiveScan { pendingScans.insert(url) }
             }
-            if changed { publish(); revision &+= 1 }
+            if changed { publish(); revision &+= 1; checkpointDirty = true }
             eventTask = nil
             scheduleWork()
         }
@@ -492,7 +715,7 @@ nonisolated struct TagFileChange: Sendable {
     var isRelevant: Bool {
         let mask = kFSEventStreamEventFlagItemXattrMod | kFSEventStreamEventFlagItemFinderInfoMod | kFSEventStreamEventFlagItemCreated
             | kFSEventStreamEventFlagItemRemoved | kFSEventStreamEventFlagItemRenamed
-            | kFSEventStreamEventFlagMustScanSubDirs
+            | kFSEventStreamEventFlagItemInodeMetaMod | kFSEventStreamEventFlagMustScanSubDirs
         return flags & FSEventStreamEventFlags(mask) != 0
     }
 
@@ -501,6 +724,7 @@ nonisolated struct TagFileChange: Sendable {
             || (flags & FSEventStreamEventFlags(kFSEventStreamEventFlagItemIsDir) != 0
                 && flags & FSEventStreamEventFlags(
                     kFSEventStreamEventFlagItemCreated | kFSEventStreamEventFlagItemRenamed | kFSEventStreamEventFlagItemFinderInfoMod
+                        | kFSEventStreamEventFlagItemInodeMetaMod
                 ) != 0)
     }
 

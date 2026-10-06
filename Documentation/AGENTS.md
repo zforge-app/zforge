@@ -41,3 +41,5 @@ In each interaction, consult the affected requirements and update your contracts
 - [Benchmarks/tag-discovery-ab.md](Benchmarks/tag-discovery-ab.md) — real-app enabled/disabled global tag discovery comparison, balanced startup windows and all numeric samples.
 
 - [Benchmarks/visible-tag-discovery.md](Benchmarks/visible-tag-discovery.md) — visible Home/Shared completion and post-completion resource measurements, with the failed initial latency target.
+
+- [Benchmarks/durable-tag-index.md](Benchmarks/durable-tag-index.md) — durable authorized startup reuse, native traversal comparison, exact-source cached resources and remaining first-pass latency.

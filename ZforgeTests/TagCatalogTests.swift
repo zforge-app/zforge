@@ -74,6 +74,27 @@ struct TagCatalogTests {
         #expect(FinderTagMetadata.colorIndexes(at: hidden[0]) == ["Visibility": 6])
     }
 
+    @Test("Visibility filtering never probes descendants below a hidden ancestor")
+    func hiddenAncestorBoundsMetadataProbes() throws {
+        let root = try fixtureRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let hidden = root.appendingPathComponent("A")
+        let parent = hidden.appendingPathComponent("First/Second/Third")
+        try FileManager.default.createDirectory(at: parent, withIntermediateDirectories: true)
+        let file = parent.appendingPathComponent("file.txt")
+        try Data("Visibility fixture".utf8).write(to: file)
+        #expect(chflags(hidden.path, UInt32(UF_HIDDEN)) == 0)
+        var probes: [URL] = []
+        let visible = TagDiscoveryPolicy.isVisible(file, boundary: root, readFlags: { url in
+            probes.append(url)
+            var info = stat()
+            return lstat(url.path, &info) == 0 ? info.st_flags : nil
+        })
+        #expect(!visible)
+        #expect(probes.count <= 2)
+        #expect(probes.allSatisfy { !TagScanRoots.covers(hidden.path + "/", $0.path) })
+    }
+
     @Test("The global scan includes tagged files in different directories and tagged folders")
     func scansAcrossDirectories() async throws {
         let root = try fixtureRoot()
@@ -126,7 +147,7 @@ struct TagCatalogTests {
         await gate.waitForArrival()
         worker.cancel()
         await gate.open()
-        await worker.value
+        _ = await worker.value
         #expect(await probe.batchCount == 1)
     }
 
@@ -593,7 +614,7 @@ struct TagCatalogTests {
         let external = root.appendingPathComponent("A/first.txt")
         try writeTags(["Included Fixture\n4"], to: external)
         let result = ScanResults()
-        await TaggedFileScanner.scan([root, temporary]) { await result.append($0) }
+        await TaggedFileScanner.scan([root, temporary, package]) { await result.append($0) }
         let records = await result.records
         #expect(records[external.path] == ["Included Fixture": 4])
         #expect(records.values.allSatisfy { $0["Excluded Fixture"] == nil })
@@ -665,6 +686,428 @@ struct TagCatalogTests {
         #expect(FinderTagQueryUpdates.urls(in: nil).isEmpty)
     }
 
+    @Test("Hidden noise and continued visible changes do not postpone queued tag reconciliation", arguments: [false, true])
+    @MainActor
+    func eventCoalescingCannotBeStarved(hiddenOnly: Bool) async throws {
+        let root = try fixtureRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let probe = CatalogWorkProbe()
+        let delay = ScanGate()
+        let first = root.appendingPathComponent("A/first.txt")
+        let second = root.appendingPathComponent(hiddenOnly ? ".hidden.txt" : "B/second.txt")
+        let catalog = FinderTagCatalog(discoveryRoots: [root], scanner: { _, _ in }, reader: { urls in
+            await probe.read(urls); return [:]
+        }, monitorsFiles: false, usesSpotlight: false, eventDelay: { await delay.arriveAndWait() })
+        defer { catalog.stop() }
+        catalog.refresh(searchScopes: [root])
+        await catalog.waitForIdle()
+        catalog.filesChanged([TagFileChange(path: first.path, flags: FSEventStreamEventFlags(kFSEventStreamEventFlagItemXattrMod))])
+        await delay.waitForArrival()
+        catalog.filesChanged([TagFileChange(path: second.path, flags: FSEventStreamEventFlags(kFSEventStreamEventFlagItemXattrMod))])
+        await delay.open()
+        await catalog.waitForIdle()
+        #expect(await delay.count == 1)
+        #expect(Set(await probe.reads.flatMap { $0 }) == Set(hiddenOnly ? [first] : [first, second]))
+        #expect(catalog.isIdle)
+    }
+
+    @Test("A completed persistent catalog reopens without scanning the same authorized tree")
+    @MainActor
+    func reopensCompletedIndexWithoutRecursiveScan() async throws {
+        let root = try fixtureRoot()
+        let storage = root.appendingPathComponent(".index.json")
+        defer { try? FileManager.default.removeItem(at: root) }
+        let file = root.appendingPathComponent("A/first.txt")
+        try writeTags(["Persistent Fixture\n6"], to: file)
+        let store = TagIndexStore(url: storage)
+        let first = FinderTagCatalog(discoveryRoots: [root], usesSpotlight: false, indexStore: store)
+        first.refresh(searchScopes: [root])
+        await first.waitForIdle()
+        #expect(await store.load() != nil)
+        first.stop()
+        let probe = CatalogWorkProbe()
+        let second = FinderTagCatalog(discoveryRoots: [root], scanner: { roots, _ in await probe.scanned(roots) },
+            usesSpotlight: false, indexStore: store)
+        defer { second.stop() }
+        second.refresh(searchScopes: [root])
+        await second.waitForIdle()
+        #expect(await probe.scans.isEmpty)
+        #expect(second.itemURLs(tagged: "Persistent Fixture") == [file])
+        #expect(second.isIdle)
+    }
+
+    @Test("Staged authorization restores each cached scope without replacing the other scope's checkpoint", arguments: [false, true])
+    @MainActor
+    func restoresStagedAuthorization(quitBetweenGrants: Bool) async throws {
+        let root = try fixtureRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let scopes = [root.appendingPathComponent("A"), root.appendingPathComponent("B")]
+        let file = scopes[0].appendingPathComponent("first.txt")
+        try writeTags(["Staged Cached\n6"], to: file)
+        let store = TagIndexStore(url: root.appendingPathComponent(".index.json"))
+        let first = FinderTagCatalog(discoveryRoots: scopes, usesSpotlight: false, indexStore: store)
+        first.refresh(searchScopes: scopes)
+        await first.waitForIdle()
+        #expect(await store.load()?.scopes.count == 2)
+        first.stop()
+        try writeTags(["Staged Offline\n4"], to: file)
+        let probe = CatalogWorkProbe()
+        let second = FinderTagCatalog(discoveryRoots: scopes, scanner: { scopes, publish in
+            await probe.scanned(scopes)
+            await TaggedFileScanner.scan(scopes, onBatch: publish)
+        }, usesSpotlight: false, indexStore: store)
+        defer { second.stop() }
+        second.refresh(searchScopes: [scopes[1]])
+        await second.waitForIdle()
+        #expect(second.itemURLs(tagged: "Staged Cached").isEmpty)
+        let final: FinderTagCatalog
+        if quitBetweenGrants {
+            second.stop()
+            final = FinderTagCatalog(discoveryRoots: scopes, scanner: { scopes, publish in
+                await probe.scanned(scopes)
+                await TaggedFileScanner.scan(scopes, onBatch: publish)
+            }, usesSpotlight: false, indexStore: store)
+            final.refresh(searchScopes: [scopes[1]])
+            await final.waitForIdle()
+        } else { final = second }
+        defer { final.stop() }
+        final.refresh(searchScopes: [scopes[0]])
+        await final.waitForIdle()
+        #expect(await probe.scans.isEmpty)
+        #expect(final.itemURLs(tagged: "Staged Offline") == [file])
+        #expect(await store.load()?.scopes.count == 2)
+    }
+
+    @Test("Persistent replay discovers offline edits, moves, additions and deletions without a full rescan")
+    @MainActor
+    func replaysOfflineChanges() async throws {
+        let root = try fixtureRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let file = root.appendingPathComponent("A/first.txt")
+        let deleted = root.appendingPathComponent("B/second.txt")
+        for url in [file, deleted] { try writeTags(["Offline Old\n6"], to: url) }
+        let store = TagIndexStore(url: root.appendingPathComponent(".index.json"))
+        let first = FinderTagCatalog(discoveryRoots: [root], usesSpotlight: false, indexStore: store)
+        first.refresh(searchScopes: [root])
+        await first.waitForIdle()
+        #expect(await store.load() != nil)
+        first.stop()
+        try writeTags(["Offline Changed\n4"], to: file)
+        let moved = root.appendingPathComponent("B/moved.txt")
+        try FileManager.default.moveItem(at: file, to: moved)
+        try FileManager.default.removeItem(at: deleted)
+        let added = root.appendingPathComponent("A/added.txt")
+        try Data().write(to: added)
+        try writeTags(["Offline Added\n2"], to: added)
+        let directory = root.appendingPathComponent("C")
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let child = directory.appendingPathComponent("child.txt")
+        try Data().write(to: child)
+        try writeTags(["Offline Child\n5"], to: child)
+        let hidden = root.appendingPathComponent(".hidden.txt")
+        try Data().write(to: hidden)
+        try writeTags(["Offline Hidden\n6"], to: hidden)
+        let probe = CatalogWorkProbe()
+        let second = FinderTagCatalog(discoveryRoots: [root], scanner: { roots, publish in
+            await probe.scanned(roots)
+            await TaggedFileScanner.scan(roots, onBatch: publish)
+        }, usesSpotlight: false, indexStore: store)
+        defer { second.stop() }
+        second.refresh(searchScopes: [root])
+        try await waitUntil({ second.itemURLs(tagged: "Offline Changed") == [moved]
+            && second.itemURLs(tagged: "Offline Added") == [added]
+            && second.itemURLs(tagged: "Offline Child") == [child]
+            && second.itemURLs(tagged: "Offline Old").isEmpty }, stage: "Offline history replay",
+            diagnostics: { "idle=\(second.isIdle), revision=\(second.revision)" })
+        await second.waitForIdle()
+        #expect(second.itemURLs(tagged: "Offline Hidden").isEmpty)
+        #expect(await probe.scans.flatMap { $0 }.allSatisfy { $0 != root })
+        #expect(await store.load()?.records[child.path] == ["Offline Child": 5])
+    }
+
+    @Test("Native inode visibility events discover and remove tagged directory descendants")
+    @MainActor
+    func inodeVisibilityEventsReconcileDescendants() async throws {
+        let root = try fixtureRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let directory = root.appendingPathComponent("A")
+        let file = directory.appendingPathComponent("first.txt")
+        try writeTags(["Inode Visibility\n6"], to: file)
+        #expect(chflags(directory.path, UInt32(UF_HIDDEN)) == 0)
+        let catalog = FinderTagCatalog(discoveryRoots: [root], monitorsFiles: false, usesSpotlight: false)
+        defer { catalog.stop() }
+        catalog.refresh(searchScopes: [root])
+        await catalog.waitForIdle()
+        #expect(catalog.itemURLs(tagged: "Inode Visibility").isEmpty)
+        let event = TagFileChange(path: directory.path,
+            flags: FSEventStreamEventFlags(kFSEventStreamEventFlagItemInodeMetaMod | kFSEventStreamEventFlagItemIsDir))
+        for hidden in [false, true, false] {
+            #expect(chflags(directory.path, hidden ? UInt32(UF_HIDDEN) : 0) == 0)
+            catalog.filesChanged([event])
+            await catalog.waitForIdle()
+            #expect(catalog.itemURLs(tagged: "Inode Visibility") == (hidden ? [] : [file]))
+        }
+    }
+
+    @Test("Persistent replay discovers tags in a previously hidden directory when it becomes visible")
+    @MainActor
+    func replaysOfflineVisibilityChanges() async throws {
+        let root = try fixtureRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let directory = root.appendingPathComponent("A")
+        let file = directory.appendingPathComponent("first.txt")
+        try writeTags(["Offline Visibility\n6"], to: file)
+        #expect(chflags(directory.path, UInt32(UF_HIDDEN)) == 0)
+        let store = TagIndexStore(url: root.appendingPathComponent(".index.json"))
+        let first = FinderTagCatalog(discoveryRoots: [root], usesSpotlight: false, indexStore: store)
+        first.refresh(searchScopes: [root])
+        await first.waitForIdle()
+        #expect(first.itemURLs(tagged: "Offline Visibility").isEmpty)
+        first.stop()
+        #expect(chflags(directory.path, 0) == 0)
+        let probe = CatalogWorkProbe()
+        let second = FinderTagCatalog(discoveryRoots: [root], scanner: { scopes, publish in
+            await probe.scanned(scopes)
+            await TaggedFileScanner.scan(scopes, onBatch: publish)
+        }, usesSpotlight: false, indexStore: store)
+        defer { second.stop() }
+        second.refresh(searchScopes: [root])
+        try await waitUntil({ second.itemURLs(tagged: "Offline Visibility") == [file] },
+            stage: "Offline directory visibility replay", diagnostics: { "idle=\(second.isIdle)" })
+        await second.waitForIdle()
+        #expect(await probe.scans.flatMap { $0 }.allSatisfy { $0 != root })
+    }
+
+    @Test("Incomplete initial discovery cannot be persisted as a completed index")
+    @MainActor
+    func interruptedIndexIsNotReusable() async throws {
+        let root = try fixtureRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let gate = ScanGate()
+        let store = TagIndexStore(url: root.appendingPathComponent(".index.json"))
+        let catalog = FinderTagCatalog(discoveryRoots: [root], scanner: { _, publish in
+            await publish([root.appendingPathComponent("A/first.txt").path: ["Partial": 6]])
+            await gate.arriveAndWait()
+        }, usesSpotlight: false, indexStore: store)
+        catalog.refresh(searchScopes: [root])
+        await gate.waitForArrival()
+        #expect(await store.load() == nil)
+        catalog.stop()
+        await gate.open()
+        await catalog.waitForIdle()
+        #expect(await store.load() == nil)
+        #expect(catalog.isIdle)
+    }
+
+    @Test("Invalid cache schema, scope identity, volume history or future cursor requires rebuilding", arguments: 0..<5)
+    @MainActor
+    func invalidPersistentIndexRebuilds(reason: Int) async throws {
+        let root = try fixtureRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let description = try #require(TagJournal.describe([root]))
+        let scope = try #require(description.scopes.first)
+        var snapshot = TagIndexSnapshot(scopes: description.scopes,
+            cursors: [scope.path: FSEventsGetCurrentEventId()], records: [:])
+        switch reason {
+        case 0: snapshot.version = 0
+        case 1: snapshot = TagIndexSnapshot(scopes: [TagJournal.Scope(path: scope.path, inode: scope.inode + 1, journal: scope.journal)], cursors: snapshot.cursors, records: [:])
+        case 2: snapshot = TagIndexSnapshot(scopes: [TagJournal.Scope(path: scope.path, inode: scope.inode, journal: "Invalidated Journal")], cursors: snapshot.cursors, records: [:])
+        case 3: snapshot = TagIndexSnapshot(scopes: snapshot.scopes, cursors: [scope.path: UInt64.max - 1], records: [:])
+        default: snapshot = TagIndexSnapshot(scopes: snapshot.scopes, cursors: [:], records: [:])
+        }
+        let store = TagIndexStore(url: root.appendingPathComponent(".index.json"))
+        #expect(await store.save(snapshot))
+        let probe = CatalogWorkProbe()
+        let catalog = FinderTagCatalog(discoveryRoots: [root], scanner: { roots, _ in await probe.scanned(roots) },
+            usesSpotlight: false, indexStore: store)
+        defer { catalog.stop() }
+        catalog.refresh(searchScopes: [root])
+        await catalog.waitForIdle()
+        let scannedPaths = await probe.scans.map { $0.map(\.path) }
+        #expect(scannedPaths == [[root.path]], Comment(rawValue: "Scanned paths: \(scannedPaths)"))
+    }
+
+    @Test("Corrupt storage and unavailable checkpoint paths preserve current tag discovery")
+    @MainActor
+    func indexStorageFailuresKeepDiscovery() async throws {
+        let root = try fixtureRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let file = root.appendingPathComponent("A/first.txt")
+        try writeTags(["Storage Fixture\n6"], to: file)
+        let corrupted = root.appendingPathComponent(".corrupt.json")
+        try Data("invalid index".utf8).write(to: corrupted)
+        for url in [corrupted, file.appendingPathComponent("index.json")] {
+            let store = TagIndexStore(url: url)
+            #expect(await store.load() == nil)
+            let catalog = FinderTagCatalog(discoveryRoots: [root], usesSpotlight: false, indexStore: store)
+            catalog.refresh(searchScopes: [root])
+            await catalog.waitForIdle()
+            #expect(catalog.itemURLs(tagged: "Storage Fixture") == [file])
+            #expect(catalog.isIdle)
+            catalog.stop()
+        }
+    }
+
+    @Test("A saved cache cannot restore ungranted scopes or expand discovery boundaries")
+    @MainActor
+    func cacheDoesNotExpandAuthorization() async throws {
+        let root = try fixtureRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let first = root.appendingPathComponent("A/first.txt")
+        let second = root.appendingPathComponent("B/second.txt")
+        try writeTags(["Authorized Fixture\n6"], to: first)
+        try writeTags(["Outside Fixture\n4"], to: second)
+        let store = TagIndexStore(url: root.appendingPathComponent(".index.json"))
+        let initial = FinderTagCatalog(discoveryRoots: [root], usesSpotlight: false, indexStore: store)
+        initial.refresh(searchScopes: [root])
+        await initial.waitForIdle()
+        initial.stop()
+        let limited = FinderTagCatalog(discoveryRoots: [root], usesSpotlight: false, indexStore: store)
+        defer { limited.stop() }
+        limited.refresh(searchScopes: [root.appendingPathComponent("A")])
+        await limited.waitForIdle()
+        #expect(limited.itemURLs(tagged: "Authorized Fixture") == [first])
+        #expect(limited.itemURLs(tagged: "Outside Fixture").isEmpty)
+    }
+
+    @Test("Dropped volume events reconcile every watched root even when their event path is hidden")
+    @MainActor
+    func journalLossReconcilesVolume() {
+        var received: [TagFileChange] = []
+        let journal = TagJournal(onChanges: { received += $0 }, onHistory: {})
+        let volume = TagJournal.Volume(device: 0, journal: "Test Journal",
+            paths: [("/fixture/Home", "/fixture/Home"), ("/fixture/Shared", "/fixture/Shared")])
+        for flag in [kFSEventStreamEventFlagUserDropped, kFSEventStreamEventFlagKernelDropped,
+                     kFSEventStreamEventFlagEventIdsWrapped, kFSEventStreamEventFlagRootChanged] {
+            received.removeAll()
+            journal.receive(volume: volume, paths: ["/fixture/Home/.hidden"],
+                flags: [FSEventStreamEventFlags(flag)], ids: [42])
+            #expect(Set(received.map(\.path)) == ["/fixture/Home", "/fixture/Shared"])
+            #expect(received.allSatisfy { $0.requiresRecursiveScan })
+        }
+        journal.stop()
+    }
+
+    @Test("A lost event from one native stream reconciles its sibling scope on the same volume")
+    @MainActor
+    func journalLossIncludesSiblingStream() async throws {
+        let root = try fixtureRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let roots = [root.appendingPathComponent("A"), root.appendingPathComponent("B")]
+        let description = try #require(TagJournal.describe(roots))
+        var received: [TagFileChange] = []
+        let journal = TagJournal(onChanges: { received += $0 }, onHistory: {})
+        journal.start(description, since: [:])
+        defer { journal.stop() }
+        #expect(journal.available)
+        await journal.waitForHistory()
+        for flag in [kFSEventStreamEventFlagUserDropped, kFSEventStreamEventFlagKernelDropped,
+                     kFSEventStreamEventFlagEventIdsWrapped, kFSEventStreamEventFlagRootChanged] {
+            received.removeAll()
+            journal.receive(volume: description.volumes[0], paths: [roots[0].appendingPathComponent(".hidden").path],
+                flags: [FSEventStreamEventFlags(flag)], ids: [42])
+            #expect(Set(received.map(\.path)) == Set(roots.map(\.path)))
+            #expect(received.allSatisfy { $0.requiresRecursiveScan })
+        }
+    }
+
+    @Test("Physical traversal reads tagged roots and packages without following directory aliases")
+    func nativeTraversalPreservesRootAndLinkBoundaries() async throws {
+        let root = try fixtureRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let file = root.appendingPathComponent("A/first.txt")
+        try writeTags(["Root Fixture\n6"], to: file)
+        let result = ScanResults()
+        await TaggedFileScanner.scan([file]) { await result.append($0) }
+        #expect(await result.records == [file.path: ["Root Fixture": 6]])
+        let link = root.appendingPathComponent("directory-link")
+        try FileManager.default.createSymbolicLink(at: link, withDestinationURL: root.appendingPathComponent("A"))
+        let all = ScanResults()
+        await TaggedFileScanner.scan([root]) { await all.append($0) }
+        #expect(await all.records[link.appendingPathComponent("first.txt").path] == nil)
+        let fallback = ScanResults()
+        await TaggedFileScanner.scan([root], budget: .init(usesBulkEnumeration: false)) { await fallback.append($0) }
+        #expect(await fallback.records == all.records)
+    }
+
+    @Test("A partial index retries its inaccessible subtree without rescanning accessible items")
+    @MainActor
+    func unreadableSubtreePreventsCheckpoint() async throws {
+        let root = try fixtureRoot()
+        let denied = root.appendingPathComponent("Denied")
+        try FileManager.default.createDirectory(at: denied, withIntermediateDirectories: true)
+        defer { chmod(denied.path, 0o700); try? FileManager.default.removeItem(at: root) }
+        #expect(chmod(denied.path, 0) == 0)
+        let result = ScanResults()
+        let complete = await TaggedFileScanner.scan([root]) { await result.append($0) }
+        #expect(!complete)
+        let store = TagIndexStore(url: root.appendingPathComponent(".index.json"))
+        let catalog = FinderTagCatalog(discoveryRoots: [root], usesSpotlight: false, indexStore: store)
+        defer { catalog.stop() }
+        catalog.refresh(searchScopes: [root])
+        await catalog.waitForIdle()
+        let saved = try #require(await store.load())
+        #expect(!saved.complete)
+        #expect(saved.deferredPaths == [denied.path])
+        #expect(catalog.isIdle)
+        catalog.stop()
+        let probe = CatalogWorkProbe()
+        let reopened = FinderTagCatalog(discoveryRoots: [root], scanner: { scopes, publish in
+            await probe.scanned(scopes)
+            await TaggedFileScanner.scan(scopes, onBatch: publish)
+        }, usesSpotlight: false, indexStore: store)
+        defer { reopened.stop() }
+        reopened.refresh(searchScopes: [root])
+        await reopened.waitForIdle()
+        #expect(await probe.scans.map { $0.map(\.path) } == [[denied.path]])
+    }
+
+    @Test("Bulk decoding preserves long names, Unicode names and package exclusion")
+    func bulkDecodingPreservesNames() async throws {
+        let root = try fixtureRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let names = ["Café notes.txt", String(repeating: "x", count: 250) + ".txt"]
+        let files = names.map { root.appendingPathComponent($0) }
+        for file in files {
+            try Data().write(to: file)
+            try writeTags(["Name Fixture\n6"], to: file)
+        }
+        let native = ScanResults()
+        let fallback = ScanResults()
+        #expect(await TaggedFileScanner.scan([root]) { await native.append($0) })
+        #expect(await TaggedFileScanner.scan([root], budget: .init(usesBulkEnumeration: false)) { await fallback.append($0) })
+        #expect(Set(await native.records.keys) == Set(files.map(\.path)))
+        #expect(await native.records == fallback.records)
+    }
+
+    @Test("The bulk xattr-presence hint skips only confirmed attribute-free inodes and keeps symlink target tags")
+    func bulkPresenceHintIsConservative() async throws {
+        let root = try fixtureRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let file = root.appendingPathComponent("A/first.txt")
+        // System provenance cannot be reliably removed on this host. Use the
+        // documented flags as controlled input, then verify real tagged items.
+        #expect(!ZFTagMayHaveXattrs(UInt32(VREG.rawValue), true, UInt64(EF_NO_XATTRS)))
+        #expect(ZFTagMayHaveXattrs(UInt32(VREG.rawValue), false, UInt64(EF_NO_XATTRS)))
+        #expect(ZFTagMayHaveXattrs(UInt32(VREG.rawValue), true, 0))
+        #expect(ZFTagMayHaveXattrs(UInt32(VLNK.rawValue), true, UInt64(EF_NO_XATTRS)))
+        let initial = await TaggedFileScanner.scanResult([root], onBatch: { _ in })
+        #expect(initial.complete)
+        try writeTags(["Presence Fixture\n6"], to: file)
+        let link = root.appendingPathComponent("linked.txt")
+        try FileManager.default.createSymbolicLink(at: link, withDestinationURL: file)
+        // When bulk object type is unavailable, lstat must retain the link
+        // identity so an attribute-free link still reads its tagged target.
+        var linkInfo = stat()
+        #expect(lstat(link.path, &linkInfo) == 0)
+        #expect(ZFTagObjectTypeFromMode(UInt32(linkInfo.st_mode)) == UInt32(VLNK.rawValue))
+        #expect(ZFTagMayHaveXattrs(ZFTagObjectTypeFromMode(UInt32(linkInfo.st_mode)), true, UInt64(EF_NO_XATTRS)))
+        let result = ScanResults()
+        let updated = await TaggedFileScanner.scanResult([root]) { await result.append($0) }
+        #expect(updated.complete)
+        #expect(Set(await result.records.keys) == [file.path, link.path])
+    }
+
     private func fixtureRoot() throws -> URL {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent("TagCatalogue-\(UUID())")
         for name in ["A", "B"] {
@@ -726,6 +1169,7 @@ private actor ScanBatchProbe {
 }
 
 private actor ScanGate {
+    private(set) var count = 0
     private var arrived = false
     private var opened = false
     private var arrivals: [CheckedContinuation<Void, Never>] = []
@@ -735,6 +1179,7 @@ private actor ScanGate {
         await withCheckedContinuation { arrivals.append($0) }
     }
     func arriveAndWait() async {
+        count += 1
         arrived = true
         for waiter in arrivals { waiter.resume() }
         arrivals.removeAll()
