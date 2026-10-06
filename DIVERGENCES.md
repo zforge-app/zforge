@@ -321,3 +321,12 @@ Save 19:47 shows copy of PDF with suffix after extension. Corrected in code: exp
 - **Correction:** native browser-window closure persists its current mode. Scene disappearance and unrelated windows do not write it. Quit with open browser windows selects the frontmost remaining browser and prevents teardown from overwriting that decision.
 - **Related diagnostics:** unnecessary `await` markers on two synchronous actor-local listing calls in `ArchiveEngine.reorganizeItems` removed. RNF-Q07 requires human review approval for any unavoidable newly introduced diagnostic.
 - **Validation:** 172 unit cases/245 executions and 3 UI cases passed, including relaunch in every mode and both close orders. Strict Debug compilation has no source warnings. Executed evidence, initial infrastructure failures, and remaining OR-15 conditions are recorded in `REGRESSION-COVERAGE.md`.
+
+## D-37 — Icons displays file icons instead of available previews
+
+- **Report, 2026-10-05:** user screenshots show PNG/JPEG/PDF and other documents using file icons in Icons despite existing content-preview support.
+- **Requested contract:** display content thumbnails by default and offer a persistent option in application Settings.
+- **Implemented correction:** Icons requests bounded content thumbnails asynchronously, independently of selection/inspector visibility; unavailable content retains the native icon. The option defaults on, persists either choice and updates existing windows. Folders/archives and automatic archive-size limits are preserved. ZF-38.
+- **Related concurrency correction:** deterministic native ZIP tests reproduced lost materialization cache entries and restoration of a closed session; publication now merges into a live session or cancels and cleans output.
+- **Related interaction correction:** UI validation reproduced loss of an existing selection when Command was released after a click but before the single/double-click recognizer resolved. The shared recognizer now captures the originating mouse-down modifiers. Zoom also retains current content during raster replacement instead of flashing a fallback icon.
+- **Evidence and limits:** see `REGRESSION-COVERAGE.md`; a build or source inspection alone does not establish visual polish, performance or all format providers.

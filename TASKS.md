@@ -41,6 +41,11 @@ Updated at **2026-10-05**. This list preserves the requests raised in this conve
 | ZF-35 | Preserve history and columns after archive mutation | User-confirmed correction; history migrated along the way, reloaded ancestors, navigable reveal and path fallback removed. Regression reproduced before correction; 166 unit cases/229 executions and 3 cases UI approved, including gesture and Back in all four modes. Build assinada aprovada. | D-34; REGRESSION-COVERAGE |
 | ZF-36 | Delete duplicate list flash when loading a column | Corrected: Each column uses only its own items. Temporal regression failed before and passed after; 166 unit cases/229 executions and five separate cases UI approved, catches of the inspected transition. Build assinada aprovada. | D-35; REGRESSION-COVERAGE |
 | ZF-37 | Restore the view mode of the last closed browser window and remove unnecessary await diagnostics | Implemented: 172 unit cases/245 executions and 3 UI cases passed; strict Debug compilation has no source warnings; remaining actual-use matrix in OR-15 | D-36; REGRESSION-COVERAGE |
+| ZF-38 | Show content previews in Icons by default with a persistent Settings option | Implemented and integrated into main on 2026-10-05; feature tests and bounded visual/performance evidence recorded in REGRESSION-COVERAGE; extended matrix OR-16 and the adjacent intermittent tag-event test remain explicit | D-37 |
+
+## ZF-38 — Content previews in Icons
+
+Requested on 2026-10-05: all previewable files should show content in Icons, enabled by default with a persistent Settings option. Implemented asynchronous grid thumbnails, native fallback, localized toggle, bounded cache/concurrency and safe archive materialization. Automated regression, actual interface inspection and performance evidence are recorded in `REGRESSION-COVERAGE.md`; remaining visual conditions stay explicitly pending. Related divergence: D-37.
 
 ## ZF-01 — Reference documentation and regression prevention
 

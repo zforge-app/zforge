@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "captured_at": "2026-10-04T22:10:19.050472+00:00",
+  "captured_at": "2026-10-05T16:41:25.903716+00:00",
   "seed_url": "https://developer.apple.com/documentation/SwiftUI",
   "scope": "home plus unique first-level links exposed by Overview, Featured samples, and Topics, with audited on-demand expansions",
-  "expected_contexts": 107,
-  "captured_contexts": 107,
+  "expected_contexts": 113,
+  "captured_contexts": 113,
   "failures": [],
   "captures": [
     {
@@ -1524,6 +1524,90 @@
       "bytes": 18157,
       "categories": [
         "Drag and drop"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/quicklookthumbnailing/qlthumbnailgenerator",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/quicklookthumbnailing/qlthumbnailgenerator.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/quicklookthumbnailing/qlthumbnailgenerator.json",
+      "local_path": "contexts/quicklookthumbnailing-thumbnail-generator.md",
+      "sha256": "72aba5e298f2db74e6602efbdb28b4d02ab2cbae6088eabb113be10b703a1eff",
+      "etag": "\"8059-6590246fa9ad1\"",
+      "last_modified": "Fri, 14 Aug 2026 14:02:55 GMT",
+      "bytes": 32857,
+      "categories": [
+        "Icon previews"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/webkit/wkwebview/takesnapshot(with:completionhandler:)",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/webkit/wkwebview/takesnapshot(with:completionhandler:).json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/webkit/wkwebview/takesnapshot(with:completionhandler:).json",
+      "local_path": "contexts/webkit-webview-take-snapshot.md",
+      "sha256": "18cdfa693021f6adac4add0d16663a12dce65493a2e4167007c08dfe365b3e22",
+      "etag": "\"72db-659024a60d7d7\"",
+      "last_modified": "Fri, 14 Aug 2026 14:03:52 GMT",
+      "bytes": 29403,
+      "categories": [
+        "Icon previews"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/imageio/cgimagesourcecreatethumbnailatindex(_:_:_:)",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/imageio/cgimagesourcecreatethumbnailatindex(_:_:_:).json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/imageio/cgimagesourcecreatethumbnailatindex(_:_:_:).json",
+      "local_path": "contexts/imageio-create-thumbnail-at-index.md",
+      "sha256": "6f64e587fb2efdf41f122cd94f3805a82cf1a27863718b650501b96f1c118daf",
+      "etag": "\"5b38-659028487ea62\"",
+      "last_modified": "Fri, 14 Aug 2026 14:20:08 GMT",
+      "bytes": 23352,
+      "categories": [
+        "Icon previews"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/coregraphics/cgpdfpage/getdrawingtransform(_:rect:rotate:preserveaspectratio:)",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/coregraphics/cgpdfpage/getdrawingtransform(_:rect:rotate:preserveaspectratio:).json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/coregraphics/cgpdfpage/getdrawingtransform(_:rect:rotate:preserveaspectratio:).json",
+      "local_path": "contexts/coregraphics-pdf-page-drawing-transform.md",
+      "sha256": "98ef06d765b5e306e9bf8f0261e59bcea322b9917b525f25282ee7c64783e7a0",
+      "etag": "\"6bfe-659023b04ab12\"",
+      "last_modified": "Fri, 14 Aug 2026 13:59:35 GMT",
+      "bytes": 27646,
+      "categories": [
+        "Icon previews"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/coretext/ctframesettercreateframe(_:_:_:_:)",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/coretext/ctframesettercreateframe(_:_:_:_:).json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/coretext/ctframesettercreateframe(_:_:_:_:).json",
+      "local_path": "contexts/coretext-create-text-frame.md",
+      "sha256": "78ce6031e8f838b04a1cc982423f20b565dc9a3a3dde3eb715fc1c24141729e5",
+      "etag": "\"4ebc-659024d1c8bf8\"",
+      "last_modified": "Fri, 14 Aug 2026 14:04:38 GMT",
+      "bytes": 20156,
+      "categories": [
+        "Icon previews"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/view/task(id:name:priority:file:line:_:)",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/view/task(id:name:priority:file:line:_:).json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/view/task(id:name:priority:file:line:_:).json",
+      "local_path": "contexts/swiftui-view-task-identity.md",
+      "sha256": "75a9a6d18a1d61c4dca4fc1dcd238dac0fba65242b22458d19dc1aa262e257b5",
+      "etag": "\"74a9-659025e3e428d\"",
+      "last_modified": "Fri, 14 Aug 2026 14:09:26 GMT",
+      "bytes": 29865,
+      "categories": [
+        "Icon previews"
       ],
       "depth": 2
     }

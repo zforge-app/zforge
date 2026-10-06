@@ -33,3 +33,5 @@ In each interaction, consult the affected requirements and update your contracts
 - [Benchmarks/7zip-linking.md](Benchmarks/7zip-linking.md) — comparison performed of official CLI, static and dynamic integration, with reproducible scripts and individual measurements.
 
 - [Benchmarks/7zip-ram.md](Benchmarks/7zip-ram.md) — RAM total Zforge and engines, real test with time series, baseline and post-cleaning.
+
+- [Benchmarks/icon-previews.md](Benchmarks/icon-previews.md) — bounded content-preview workload, disabled baseline, cold/warm latency, CPU, memory and main-actor response.

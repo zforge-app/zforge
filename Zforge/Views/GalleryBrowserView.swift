@@ -58,9 +58,8 @@ struct GalleryBrowserView: View {
                                     }
                                     .id(item.id)
                                     .finderClickGesture(
-                                        onSingleClick: { state.select(item, modifiers: NSEvent.modifierFlags) },
-                                        onDoubleClick: {
-                                            let modifiers = NSEvent.modifierFlags
+                                        onSingleClick: { state.select(item, modifiers: $0) },
+                                        onDoubleClick: { modifiers in
                                             Task { await state.openFromDoubleClick(item, modifiers: modifiers) }
                                         }
                                     )

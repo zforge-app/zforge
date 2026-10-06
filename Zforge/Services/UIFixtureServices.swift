@@ -1,4 +1,58 @@
+import AppKit
 import Foundation
+import ImageIO
+import UniformTypeIdentifiers
+
+@MainActor
+enum IconPreviewUIFixture {
+    static func create(at directory: URL, archives: any ArchiveServing) async throws {
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(
+            at: directory.appendingPathComponent("Empty Folder", isDirectory: true),
+            withIntermediateDirectories: true
+        )
+        guard let imageContext = CGContext(data: nil, width: 160, height: 120,
+            bitsPerComponent: 8, bytesPerRow: 640,
+            space: CGColorSpace(name: CGColorSpace.sRGB)!,
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else {
+            throw CocoaError(.fileWriteUnknown)
+        }
+        imageContext.setFillColor(CGColor(red: 0, green: 0.7, blue: 0.75, alpha: 1))
+        imageContext.fill(CGRect(x: 0, y: 0, width: 160, height: 120))
+        imageContext.setFillColor(CGColor(red: 1, green: 0.45, blue: 0, alpha: 1))
+        imageContext.fill(CGRect(x: 0, y: 0, width: 160, height: 60))
+        guard let image = imageContext.makeImage() else { throw CocoaError(.fileWriteUnknown) }
+        for (type, name) in [(UTType.png, "Preview.png"), (.jpeg, "Preview.jpg")] {
+            guard let destination = CGImageDestinationCreateWithURL(
+                directory.appendingPathComponent(name) as CFURL, type.identifier as CFString, 1, nil
+            ) else { throw CocoaError(.fileWriteUnknown) }
+            CGImageDestinationAddImage(destination, image, nil)
+            guard CGImageDestinationFinalize(destination) else { throw CocoaError(.fileWriteUnknown) }
+        }
+
+        var page = CGRect(x: 0, y: 0, width: 240, height: 320)
+        guard let context = CGContext(directory.appendingPathComponent("Preview.pdf") as CFURL,
+            mediaBox: &page, nil) else { throw CocoaError(.fileWriteUnknown) }
+        context.beginPDFPage(nil)
+        context.setFillColor(NSColor.systemTeal.cgColor)
+        context.fill(CGRect(x: 24, y: 190, width: 192, height: 106))
+        context.setFillColor(NSColor.systemOrange.cgColor)
+        context.fillEllipse(in: CGRect(x: 70, y: 44, width: 100, height: 100))
+        context.endPDFPage()
+        context.closePDF()
+
+        try Data("Icon preview fixture\nA plain text document with a visible content preview.\n".utf8)
+            .write(to: directory.appendingPathComponent("Preview.txt"))
+        try Data("<!doctype html><html><body><h1>Icon preview fixture</h1><p>HTML content preview.</p></body></html>".utf8)
+            .write(to: directory.appendingPathComponent("Preview.html"))
+        try Data(repeating: 0xFF, count: 128).write(to: directory.appendingPathComponent("Unsupported.bin"))
+        try await archives.createArchive(
+            from: [directory.appendingPathComponent("Preview.png")],
+            outputURL: directory.appendingPathComponent("Sample.zip"),
+            format: .zip, progress: { _ in }
+        )
+    }
+}
 
 @MainActor
 final class UIFixtureRecentItemsService: RecentItemsServing {

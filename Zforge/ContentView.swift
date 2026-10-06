@@ -518,7 +518,19 @@ struct ContentView: View {
         Task { @MainActor in
             await Task.yield()
             guard let window = NSApp.keyWindow ?? NSApp.windows.first else { return }
-            window.setContentSize(NSSize(width: width, height: window.contentView?.bounds.height ?? 720))
+            let visibleFrame = NSScreen.main?.visibleFrame
+            let height = min(window.contentView?.bounds.height ?? 720, (visibleFrame?.height ?? 820) - 100)
+            window.setContentSize(NSSize(width: width, height: height))
+            // Keep native cascading when visible so one fixture window cannot
+            // cover another window's close control. Clamp only offscreen frames.
+            if let visibleFrame {
+                window.setFrameOrigin(NSPoint(
+                    x: min(max(window.frame.minX, visibleFrame.minX),
+                           max(visibleFrame.minX, visibleFrame.maxX - window.frame.width)),
+                    y: min(max(window.frame.minY, visibleFrame.minY),
+                           max(visibleFrame.minY, visibleFrame.maxY - window.frame.height))
+                ))
+            }
         }
     }
 

@@ -120,8 +120,10 @@ final class ZforgeUITests: XCTestCase {
             let window = app.windows.firstMatch
             let popup = window.menus.firstMatch
             let blank = window.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(
-                dx: area.minX - window.frame.minX + area.width * (mode == "gallery" ? 0.95 : 0.2),
-                dy: area.minY - window.frame.minY + area.height * (mode == "gallery" ? 0.97 : 0.8)
+                // Gallery's inspector inherits the mode identifier. Anchor the
+                // empty strip to the actual cell's vertical position instead.
+                dx: mode == "gallery" ? window.frame.width - 26 : area.minX - window.frame.minX + area.width * 0.2,
+                dy: mode == "gallery" ? file.frame.midY - window.frame.minY : area.minY - window.frame.minY + area.height * 0.8
             ))
             let more = app.buttons["toolbar-more-menu"]
             XCTAssertTrue(more.exists, mode)
@@ -147,6 +149,9 @@ final class ZforgeUITests: XCTestCase {
 
     @MainActor
     private func launchArchiveFixture(_ app: XCUIApplication) {
+        // Saved windows from a previous test must not cover the fixture or change
+        // the initial window count required by the interaction scenarios.
+        app.launchArguments += ["-ApplePersistenceIgnoreState", "YES", "-NSQuitAlwaysKeepsWindows", "NO"]
         app.launch(); app.activate()
         // macOS can restore an application with no browser window. Create the
         // fixture's window before looking for rows; this is test setup only.

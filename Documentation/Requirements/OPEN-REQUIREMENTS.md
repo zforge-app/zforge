@@ -20,8 +20,10 @@ This document maintains requirements that still depend on a decision, implementa
 | OR-14 | Complete visual/external checks of dragging internal items. | Export and reorganization implemented, with Return/Escape confirmation and regression tests. XCTest executed copying in all four modes and external/internal moves in Zforge folders. Finder, local files, and another window passed UI validation. Desktop, visual multiple selection, changing Option during the gesture, and themes/languages/zoom remain bounded by [REGRESSION-COVERAGE](../../REGRESSION-COVERAGE.md). Transfers between different archives remain a separate decision; writing is limited to single-volume root ZIP/7z. |
 
 | OR-15 | Complete remaining actual-use checks for startup-mode restoration in native tabs and Quit with Settings/Info in front, including Portuguese, narrow windows, zoom, and accessibility conditions. | ZF-37/D-36: native closure and Quit are covered by unit tests; executed UI/relaunch checks and bounded manual evidence are recorded in REGRESSION-COVERAGE. These checks do not reopen the implemented two-window contract. |
+| OR-16 | Complete extended actual-use validation of icon content previews. | ZF-38/D-37: automated and visual evidence is recorded in REGRESSION-COVERAGE. Check provider-specific Office/video/audio formats, external bookmarks and remote resources, huge folders, encrypted/solid archives, repeated navigation and long-session memory, light appearance, VoiceOver and reduced-motion settings, and macOS 26 runtime. The isolated 200-file measurement characterizes the local service, not scrolling frame rate or all providers. |
 
 OR-01 was reconciled in [`UI-UX-GUIDE.md`](UI-UX-GUIDE.md). OR-05 was already in commit `d23e1f7` on branch `main`; distributed delivery was not verified in this interaction.
+
 
 ## Maintenance
 
@@ -40,3 +42,5 @@ OR-01 was reconciled in [`UI-UX-GUIDE.md`](UI-UX-GUIDE.md). OR-05 was already in
 - D-34, 2026-10-04: loss of Back/Forward and ancestor columns after mutation received a fix and dedicated tests (ZF-35). This does not replace or expand the OR-14 visual matrix; executed evidence is in REGRESSION-COVERAGE.
 
 - D-35, 2026-10-04: flashing parent rows during child-column loading fixed in ZF-36, with a dedicated temporal test. Results and limits are in REGRESSION-COVERAGE; this does not redefine the broad OR-14 matrix.
+
+- Integration follow-up, 2026-10-05: `TagCatalogTests.updatesGlobalCatalogueLive` again timed out during the combined full suite (196/197 distinct cases passed). The production catalog and test remain unchanged from the pre-integration base. Diagnose the intermittent native file-event observation; retain the failure and original conditions. This is an unresolved adjacent regression-suite gap, not full approval of global tag updates. See REGRESSION-COVERAGE.
