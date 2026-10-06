@@ -4,6 +4,7 @@ import CoreServices
 import Darwin
 import Foundation
 import Observation
+import OSLog
 import SwiftUI
 
 nonisolated struct FinderTag: Identifiable, Equatable, Sendable {
@@ -98,7 +99,10 @@ final class FinderTagCatalog: NSObject {
     @ObservationIgnored private var stream: FSEventStreamRef?
     @ObservationIgnored private var generation: UInt64 = 0
 
+    @ObservationIgnored let discoveryPolicy: TagDiscoveryPolicy
+
     init(
+        discoveryRoots: [URL] = TagDiscoveryPolicy.standardRoots,
         scanner: @escaping TaggedFileScanner.Scan = { roots, publish in
             await TaggedFileScanner.scan(roots, onBatch: publish)
         },
@@ -106,6 +110,7 @@ final class FinderTagCatalog: NSObject {
         monitorsFiles: Bool = true,
         usesSpotlight: Bool = true
     ) {
+        self.discoveryPolicy = TagDiscoveryPolicy(roots: discoveryRoots)
         self.scanner = scanner
         self.reader = reader
         self.monitorsFiles = monitorsFiles
@@ -131,7 +136,7 @@ final class FinderTagCatalog: NSObject {
         ) else { return }
         self.query = query
         MDQuerySetDispatchQueue(query, .main)
-        MDQuerySetSearchScope(query, [kMDQueryScopeComputer, kMDQueryScopeNetwork] as CFArray, 0)
+        MDQuerySetSearchScope(query, discoveryPolicy.roots.map(\.path) as CFArray, 0)
         for name in [kMDQueryDidFinishNotification, kMDQueryDidUpdateNotification].compactMap({ $0 }) {
             notificationTokens.append(NotificationCenter.default.addObserver(
                 forName: Notification.Name(rawValue: name as String), object: query, queue: .main
@@ -152,11 +157,13 @@ final class FinderTagCatalog: NSObject {
         var covered = TagScanRoots()
         for scope in searchScopes { covered.insert(scope) }
         var additions = TagScanRoots()
-        for scope in newScopes ?? [] where !covered.contains(scope.standardizedFileURL) {
-            additions.insert(scope)
-            covered.insert(scope)
-            // Keep the lease from the authorized URL, including its bookmark.
-            if scope.startAccessingSecurityScopedResource() { leasedScopes.append(scope) }
+        for grant in (newScopes ?? []) + discoveryPolicy.roots.filter({ $0.path == "/Users/Shared" }) {
+            for scope in discoveryPolicy.intersection(grant.standardizedFileURL) where !covered.contains(scope.standardizedFileURL) {
+                additions.insert(scope)
+                covered.insert(scope)
+                // Keep the lease from the authorized URL, including its bookmark.
+                if grant.startAccessingSecurityScopedResource() { leasedScopes.append(grant) }
+            }
         }
         if !additions.urls.isEmpty {
             searchScopes = covered.urls
@@ -171,13 +178,13 @@ final class FinderTagCatalog: NSObject {
     func observe(_ items: [BrowserItem]) {
         var changed = false
         for item in items {
-            guard let url = item.localURL else { continue }
+            guard let url = item.localURL, discoveryPolicy.contains(url) else { continue }
             let colors = Dictionary(uniqueKeysWithValues: Set(item.tags).map {
                 ($0, item.tagColorIndexes[$0] ?? FinderTagMetadata.defaultColorIndex(for: $0))
             })
             let path = url.standardizedFileURL.path
-            changed = setRecord(path, colors: colors) || changed
-            if running, workTask != nil { pendingReads.insert(url) }
+            changed = setRecord(path, colors: colors.isEmpty || discoveryPolicy.isVisible(url) ? colors : [:]) || changed
+            if running, workTask != nil, discoveryPolicy.isVisible(url) { pendingReads.insert(url) }
         }
         if changed { publish(); revision &+= 1 }
     }
@@ -249,10 +256,15 @@ final class FinderTagCatalog: NSObject {
                     let indexed = records.keys.filter { path in
                         scopes.contains { TagScanRoots.covers($0.path, path) }
                     }
+                    let started = ContinuousClock.now
                     await scanner(scopes) { [weak self] batch in
                         await self?.receiveScanBatch(batch, generation: generation)
                     }
                     guard !Task.isCancelled else { break }
+                    let elapsed = started.duration(to: .now)
+                    Logger(subsystem: "io.libor.Zforge", category: "TagDiscovery").notice(
+                        "Tag discovery completed: duration=\(String(describing: elapsed), privacy: .public), scopes_attempted=\(scopes.count, privacy: .public)"
+                    )
                     pendingReads.formUnion(indexed.map { URL(fileURLWithPath: $0) })
                 } else { break }
             }
@@ -266,8 +278,8 @@ final class FinderTagCatalog: NSObject {
     private func receive(_ batch: [String: [String: Int]], generation: UInt64) {
         guard running, generation == self.generation else { return }
         var changed = false
-        for (path, colors) in batch {
-            changed = setRecord(path, colors: colors) || changed
+        for (path, colors) in batch where discoveryPolicy.contains(URL(fileURLWithPath: path)) {
+            changed = setRecord(path, colors: colors.isEmpty || discoveryPolicy.isVisible(URL(fileURLWithPath: path)) ? colors : [:]) || changed
         }
         if changed { publish(); revision &+= 1 }
     }
@@ -300,7 +312,9 @@ final class FinderTagCatalog: NSObject {
 
     private func update(_ urls: [URL]) {
         guard running, !urls.isEmpty else { return }
-        pendingReads.formUnion(urls)
+        pendingReads.formUnion(urls.filter {
+            discoveryPolicy.contains($0) && (discoveryPolicy.isVisible($0) || records[$0.standardizedFileURL.path] != nil)
+        })
         scheduleWork()
     }
 
@@ -357,6 +371,11 @@ final class FinderTagCatalog: NSObject {
         guard running, !changes.isEmpty else { return }
         for change in changes where change.isRelevant {
             guard searchScopes.contains(where: { TagScanRoots.covers($0.path, change.path) }) else { continue }
+            let url = URL(fileURLWithPath: change.path)
+            // Hidden activity cannot restart discovery. Retain a hide event only
+            // when it must remove previously indexed items or descendants.
+            guard discoveryPolicy.isVisible(url)
+                    || records.keys.contains(where: { TagScanRoots.covers(change.path, $0) }) else { continue }
             if var previous = pendingChanges[change.path] {
                 previous.flags |= change.flags
                 pendingChanges[change.path] = previous
@@ -390,8 +409,8 @@ final class FinderTagCatalog: NSObject {
             var changed = false
             for change in changes {
                 // The worker handles metadata and temporary-file checks. Only
-                // deletion invalidates descendants of an indexed directory.
-                if !FileManager.default.fileExists(atPath: change.path) {
+                // deletion or hiding invalidates descendants of an indexed directory.
+                if !FileManager.default.fileExists(atPath: change.path) || !discoveryPolicy.isVisible(URL(fileURLWithPath: change.path)) {
                     let paths = records.keys.filter { TagScanRoots.covers(change.path, $0) }
                     for path in paths { changed = setRecord(path, colors: [:]) || changed }
                 }
@@ -471,7 +490,7 @@ nonisolated struct TagFileChange: Sendable {
     var flags: FSEventStreamEventFlags
 
     var isRelevant: Bool {
-        let mask = kFSEventStreamEventFlagItemXattrMod | kFSEventStreamEventFlagItemCreated
+        let mask = kFSEventStreamEventFlagItemXattrMod | kFSEventStreamEventFlagItemFinderInfoMod | kFSEventStreamEventFlagItemCreated
             | kFSEventStreamEventFlagItemRemoved | kFSEventStreamEventFlagItemRenamed
             | kFSEventStreamEventFlagMustScanSubDirs
         return flags & FSEventStreamEventFlags(mask) != 0
@@ -481,7 +500,7 @@ nonisolated struct TagFileChange: Sendable {
         flags & FSEventStreamEventFlags(kFSEventStreamEventFlagMustScanSubDirs) != 0
             || (flags & FSEventStreamEventFlags(kFSEventStreamEventFlagItemIsDir) != 0
                 && flags & FSEventStreamEventFlags(
-                    kFSEventStreamEventFlagItemCreated | kFSEventStreamEventFlagItemRenamed
+                    kFSEventStreamEventFlagItemCreated | kFSEventStreamEventFlagItemRenamed | kFSEventStreamEventFlagItemFinderInfoMod
                 ) != 0)
     }
 

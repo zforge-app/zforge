@@ -44,3 +44,9 @@ OR-01 was reconciled in [`UI-UX-GUIDE.md`](UI-UX-GUIDE.md). OR-05 was already in
 - D-35, 2026-10-04: flashing parent rows during child-column loading fixed in ZF-36, with a dedicated temporal test. Results and limits are in REGRESSION-COVERAGE; this does not redefine the broad OR-14 matrix.
 
 - Integration follow-up, 2026-10-05: `TagCatalogTests.updatesGlobalCatalogueLive` again timed out during the combined full suite (196/197 distinct cases passed). The production catalog and test remain unchanged from the pre-integration base. Diagnose the intermittent native file-event observation; retain the failure and original conditions. This is an unresolved adjacent regression-suite gap, not full approval of global tag updates. See REGRESSION-COVERAGE.
+
+### OR-19 scope refinement — 2026-10-06
+
+The user adopts visible Home/Shared discovery. First isolated real-tree completion is 135.45 s, exceeding the initially defined 60-second target, while scanner idle CPU is near zero. Completion-latency optimization is now D-41; do not claim the target met. Excluded outside/network locations remain available for local tag reading/editing but cannot expand global discovery. Shared sandbox authorization, long-session/high-tag-count memory, Release, frame pacing and the wider actual-use matrix remain independent pending checks. [Evidence](../Benchmarks/visible-tag-discovery.md).
+
+Final scope evidence, 2026-10-06: standalone median completion 149.23 s (three runs), final sandboxed app discovery 288.424 s; app CPU falls from 17.638% to 0.041%, mean footprint stays 97.32/97.36 MiB, peak 109.49 MiB. Final 227 unit cases/304 executions and three tag UI cases pass. The predeclared 60-second completion target remains failed; latency optimization, durable cross-launch reuse and extended OR-19 checks remain pending. See the visible-tag-discovery benchmark.

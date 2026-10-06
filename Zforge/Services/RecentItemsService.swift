@@ -144,7 +144,7 @@ final class SpotlightTaggedItemsService: NSObject, TaggedItemsServing {
         ) else { return catalog.itemURLs(tagged: tag) }
         self.query = query
         MDQuerySetDispatchQueue(query, .main)
-        MDQuerySetSearchScope(query, [kMDQueryScopeComputer, kMDQueryScopeNetwork] as CFArray, 0)
+        MDQuerySetSearchScope(query, catalog.discoveryPolicy.roots.map(\.path) as CFArray, 0)
         return await withCheckedContinuation { continuation in
             self.continuation = continuation
             notificationToken = NotificationCenter.default.addObserver(
@@ -175,7 +175,9 @@ final class SpotlightTaggedItemsService: NSObject, TaggedItemsServing {
             guard let path = MDItemCopyAttribute(item, "kMDItemPath" as CFString) as? String else {
                 continue
             }
-            results.appendIfNew(URL(fileURLWithPath: path))
+            let url = URL(fileURLWithPath: path)
+            guard catalog.discoveryPolicy.contains(url), catalog.discoveryPolicy.isVisible(url) else { continue }
+            results.appendIfNew(url)
         }
         for url in catalog.itemURLs(tagged: activeTag ?? "") {
             results.appendIfNew(url)

@@ -1,0 +1,39 @@
+{
+  "acceptance_seconds": 60,
+  "idle_window_seconds": 10,
+  "scope": "Visible Home and Users/Shared; unsandboxed production scanner, warm caches",
+  "measurements": [
+    {
+      "repeat": 1,
+      "elapsed_seconds": 135.4526389837265,
+      "tagged_records": 3,
+      "batches": 3749,
+      "idle_cpu_seconds": 0.00034399999999834563,
+      "cpu_seconds": 19.79,
+      "rss_bytes": 16777216,
+      "footprint_bytes": 3867224
+    },
+    {
+      "repeat": 2,
+      "elapsed_seconds": 149.22793006896973,
+      "tagged_records": 3,
+      "batches": 3958,
+      "idle_cpu_seconds": 0.0002610000000018431,
+      "cpu_seconds": 27.029999999999998,
+      "rss_bytes": 16809984,
+      "footprint_bytes": 3899992
+    },
+    {
+      "repeat": 3,
+      "elapsed_seconds": 165.36785995960236,
+      "tagged_records": 3,
+      "batches": 4026,
+      "idle_cpu_seconds": 0.00041700000000233217,
+      "cpu_seconds": 30.31,
+      "rss_bytes": 16760832,
+      "footprint_bytes": 3850840
+    }
+  ],
+  "source_sha256": "6e43cc6c7966a2a4e5d067d671b68d544ef089d652c81980981491458d1030be",
+  "source_boundary": "Scanner snapshot before final canonical-scope guard; actual priority roots are not symlinks. Final signed app is measured separately."
+}

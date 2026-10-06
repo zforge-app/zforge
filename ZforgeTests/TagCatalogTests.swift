@@ -7,6 +7,73 @@ import Testing
 
 @Suite("Global Finder tags")
 struct TagCatalogTests {
+    @Test("Authorized outside roots cannot expand discovery and observed items obey the same boundary")
+    @MainActor
+    func restrictsGlobalDiscoveryRoots() async throws {
+        let root = try fixtureRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let home = root.appendingPathComponent("A")
+        let shared = root.appendingPathComponent("B")
+        let outside = root.appendingPathComponent("outside.txt")
+        try Data("fixture".utf8).write(to: outside)
+        let files = [home.appendingPathComponent("first.txt"), shared.appendingPathComponent("second.txt"), outside]
+        for file in files { try writeTags(["Boundary\n6"], to: file) }
+        let catalog = FinderTagCatalog(discoveryRoots: [home, shared], monitorsFiles: false, usesSpotlight: false)
+        defer { catalog.stop() }
+        catalog.refresh(searchScopes: [root, outside])
+        await catalog.waitForIdle()
+        #expect(Set(catalog.itemURLs(tagged: "Boundary")) == Set(files.prefix(2)))
+        let fileSystem = FileSystemService()
+        catalog.observe([try await fileSystem.item(at: outside)])
+        #expect(Set(catalog.itemURLs(tagged: "Boundary")) == Set(files.prefix(2)))
+        #expect(TagDiscoveryPolicy.standardRoots.map(\.path) == [UserDirectoryService.homeURL.path, "/Users/Shared"])
+        #expect(!TagDiscoveryPolicy(roots: [home]).contains(root.appendingPathComponent("AB/file.txt")))
+        let escape = home.appendingPathComponent("escape")
+        try FileManager.default.createSymbolicLink(at: escape, withDestinationURL: shared)
+        #expect(TagDiscoveryPolicy(roots: [home]).intersection(escape).isEmpty)
+        let revision = catalog.revision
+        catalog.filesChanged([TagFileChange(path: home.appendingPathComponent(".noise/file.txt").path,
+            flags: FSEventStreamEventFlags(kFSEventStreamEventFlagMustScanSubDirs))])
+        #expect(catalog.isIdle)
+        #expect(catalog.revision == revision)
+        #expect(chflags(home.path, UInt32(UF_HIDDEN)) == 0)
+        catalog.filesChanged([TagFileChange(path: home.path, flags: FSEventStreamEventFlags(kFSEventStreamEventFlagItemFinderInfoMod | kFSEventStreamEventFlagItemIsDir))])
+        await catalog.waitForEvents()
+        await catalog.waitForIdle()
+        #expect(catalog.itemURLs(tagged: "Boundary") == [files[1]])
+        #expect(chflags(home.path, 0) == 0)
+        catalog.filesChanged([TagFileChange(path: home.path, flags: FSEventStreamEventFlags(kFSEventStreamEventFlagItemFinderInfoMod | kFSEventStreamEventFlagItemIsDir))])
+        await catalog.waitForEvents()
+        await catalog.waitForIdle()
+        #expect(Set(catalog.itemURLs(tagged: "Boundary")) == Set(files.prefix(2)))
+    }
+
+    @Test("Discovery excludes dot files, hidden flags and hidden ancestors while local tags remain readable")
+    func skipsHiddenItemsAndSubtrees() async throws {
+        let root = try fixtureRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let hiddenDirectory = root.appendingPathComponent(".hidden")
+        let flaggedDirectory = root.appendingPathComponent("flagged")
+        for directory in [hiddenDirectory, flaggedDirectory] {
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        }
+        let visible = root.appendingPathComponent("A/first.txt")
+        let hidden = [root.appendingPathComponent(".dot.txt"), root.appendingPathComponent("flag.txt"),
+                      hiddenDirectory.appendingPathComponent("child.txt"), flaggedDirectory.appendingPathComponent("child.txt")]
+        for file in [visible] + hidden {
+            try Data("fixture".utf8).write(to: file)
+            try writeTags(["Visibility\n6"], to: file)
+        }
+        #expect(chflags(hidden[1].path, UInt32(UF_HIDDEN)) == 0)
+        #expect(chflags(flaggedDirectory.path, UInt32(UF_HIDDEN)) == 0)
+        let result = ScanResults()
+        await TaggedFileScanner.scan([root, hiddenDirectory, flaggedDirectory]) { await result.append($0) }
+        #expect(Set(await result.records.keys) == [visible.path])
+        let updated = await TaggedFileScanner.read(hidden)
+        #expect(updated.values.allSatisfy { $0.isEmpty })
+        #expect(FinderTagMetadata.colorIndexes(at: hidden[0]) == ["Visibility": 6])
+    }
+
     @Test("The global scan includes tagged files in different directories and tagged folders")
     func scansAcrossDirectories() async throws {
         let root = try fixtureRoot()
@@ -74,7 +141,7 @@ struct TagCatalogTests {
         try writeTags([name + "\n6"], to: first)
         try writeTags([name + "\n6"], to: second)
         let fileSystem = FileSystemService()
-        let catalog = FinderTagCatalog()
+        let catalog = FinderTagCatalog(discoveryRoots: [FileManager.default.temporaryDirectory])
         catalog.observe([try await fileSystem.item(at: first), try await fileSystem.item(at: second)])
         let service = SpotlightTaggedItemsService(catalog: catalog)
         defer { service.stop(); catalog.stop() }
@@ -92,7 +159,7 @@ struct TagCatalogTests {
         let second = root.appendingPathComponent("B/second.txt")
         let name = "Zforge live \(UUID().uuidString)"
         try writeTags([name + "\n6"], to: first)
-        let catalog = FinderTagCatalog()
+        let catalog = FinderTagCatalog(discoveryRoots: [FileManager.default.temporaryDirectory])
         catalog.refresh(searchScopes: [root])
         defer { catalog.stop() }
         try await waitUntil({ catalog.itemURLs(tagged: name).count == 1 }, stage: "Initial discovery",
@@ -199,7 +266,8 @@ struct TagCatalogTests {
         #expect(state.selection.count == 2)
         #expect(state.selectedItems.allSatisfy { $0.tags.contains(name) })
         #expect(state.selectedItems.first { $0.name == "first.txt" }?.tags.contains("Keep") == true)
-        #expect(FinderTagCatalog.shared.itemURLs(tagged: name).count == 2)
+        #expect(!TagDiscoveryPolicy(roots: TagDiscoveryPolicy.standardRoots).isVisible(root))
+        #expect(FinderTagCatalog.shared.itemURLs(tagged: name).isEmpty)
         _ = await state.applyTags(additions: [:], removals: [name], items: state.selectedItems)
         #expect(FinderTagCatalog.shared.itemURLs(tagged: name).isEmpty)
     }
@@ -271,7 +339,7 @@ struct TagCatalogTests {
         let root = try fixtureRoot()
         defer { try? FileManager.default.removeItem(at: root) }
         let probe = CatalogWorkProbe()
-        let catalog = FinderTagCatalog(scanner: { roots, publish in
+        let catalog = FinderTagCatalog(discoveryRoots: [FileManager.default.temporaryDirectory], scanner: { roots, publish in
             await probe.scanned(roots)
             await publish([roots[0].appendingPathComponent("A/first.txt").path: ["Shared": 6]])
         }, monitorsFiles: false, usesSpotlight: false)
@@ -293,7 +361,7 @@ struct TagCatalogTests {
         defer { try? FileManager.default.removeItem(at: root) }
         let directory = root.appendingPathComponent("A")
         let probe = CatalogWorkProbe()
-        let catalog = FinderTagCatalog(scanner: { roots, _ in await probe.scanned(roots) }, reader: { urls in
+        let catalog = FinderTagCatalog(discoveryRoots: [FileManager.default.temporaryDirectory], scanner: { roots, _ in await probe.scanned(roots) }, reader: { urls in
             await probe.read(urls)
             return [directory.path: ["New Folder Tag": 4]]
         }, monitorsFiles: false, usesSpotlight: false)
@@ -315,7 +383,7 @@ struct TagCatalogTests {
         let root = try fixtureRoot()
         defer { try? FileManager.default.removeItem(at: root) }
         let probe = CatalogWorkProbe()
-        let catalog = FinderTagCatalog(scanner: { roots, _ in await probe.scanned(roots) }, reader: { urls in
+        let catalog = FinderTagCatalog(discoveryRoots: [FileManager.default.temporaryDirectory], scanner: { roots, _ in await probe.scanned(roots) }, reader: { urls in
             await probe.read(urls); return [:]
         }, monitorsFiles: false, usesSpotlight: false)
         defer { catalog.stop() }
@@ -344,7 +412,7 @@ struct TagCatalogTests {
         let second = try fixtureRoot()
         defer { try? FileManager.default.removeItem(at: first); try? FileManager.default.removeItem(at: second) }
         let probe = CatalogWorkProbe()
-        let catalog = FinderTagCatalog(scanner: { roots, _ in await probe.scanned(roots) }, reader: { urls in
+        let catalog = FinderTagCatalog(discoveryRoots: [FileManager.default.temporaryDirectory], scanner: { roots, _ in await probe.scanned(roots) }, reader: { urls in
             await probe.read(urls); return [:]
         }, monitorsFiles: false, usesSpotlight: false)
         defer { catalog.stop() }
@@ -369,7 +437,7 @@ struct TagCatalogTests {
         defer { try? FileManager.default.removeItem(at: root) }
         let gate = ScanGate()
         let probe = CatalogWorkProbe()
-        let catalog = FinderTagCatalog(scanner: { roots, publish in
+        let catalog = FinderTagCatalog(discoveryRoots: [FileManager.default.temporaryDirectory], scanner: { roots, publish in
             await probe.begin(roots)
             if await probe.scans.count == 1 { await gate.arriveAndWait() }
             // Intentionally attempt publication after cancellation to exercise
@@ -401,7 +469,7 @@ struct TagCatalogTests {
         let entered = ScanGate()
         let eventReady = ScanGate()
         let readReady = ScanGate()
-        let catalog = FinderTagCatalog(scanner: { _, publish in
+        let catalog = FinderTagCatalog(discoveryRoots: [FileManager.default.temporaryDirectory], scanner: { _, publish in
             await entered.arriveAndWait()
             // An empty production checkpoint must still drain live reads.
             await publish([:])
@@ -435,7 +503,7 @@ struct TagCatalogTests {
         let second = root.appendingPathComponent("B/second.txt")
         try writeTags(["Reference Fixture\n6"], to: first)
         try writeTags(["Reference Fixture\n6"], to: second)
-        let catalog = FinderTagCatalog(monitorsFiles: false, usesSpotlight: false)
+        let catalog = FinderTagCatalog(discoveryRoots: [FileManager.default.temporaryDirectory], monitorsFiles: false, usesSpotlight: false)
         defer { catalog.stop() }
         catalog.refresh(searchScopes: [root])
         await catalog.waitForIdle()
@@ -489,7 +557,7 @@ struct TagCatalogTests {
         let initial = await TaggedFileScanner.read([alias])
         #expect(initial[alias.path] == ["Linked Fixture": 6])
         #expect(initial[target.path] == nil)
-        let catalog = FinderTagCatalog(monitorsFiles: false, usesSpotlight: false)
+        let catalog = FinderTagCatalog(discoveryRoots: [FileManager.default.temporaryDirectory], monitorsFiles: false, usesSpotlight: false)
         defer { catalog.stop() }
         catalog.refresh(searchScopes: [root])
         await catalog.waitForIdle()
@@ -543,7 +611,7 @@ struct TagCatalogTests {
         let root = try fixtureRoot()
         defer { try? FileManager.default.removeItem(at: root) }
         let probe = CatalogWorkProbe()
-        let catalog = FinderTagCatalog(scanner: { roots, _ in await probe.scanned(roots) },
+        let catalog = FinderTagCatalog(discoveryRoots: [FileManager.default.temporaryDirectory], scanner: { roots, _ in await probe.scanned(roots) },
             monitorsFiles: false, usesSpotlight: false)
         defer { catalog.stop() }
         catalog.refresh(searchScopes: [root])
@@ -566,7 +634,7 @@ struct TagCatalogTests {
         let second = root.appendingPathComponent("B/second.txt")
         let folder = root.appendingPathComponent("B")
         for url in [first, second, folder] { try writeTags(["Reconcile Fixture\n6"], to: url) }
-        let catalog = FinderTagCatalog(monitorsFiles: false, usesSpotlight: false)
+        let catalog = FinderTagCatalog(discoveryRoots: [FileManager.default.temporaryDirectory], monitorsFiles: false, usesSpotlight: false)
         defer { catalog.stop() }
         catalog.refresh(searchScopes: [root])
         await catalog.waitForIdle()

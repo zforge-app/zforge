@@ -51,6 +51,8 @@ Implemented on 2026-10-05 while preserving tags: per-item temporary draining, ca
 
 **User validation, 2026-10-06:** considerable improvement and acceptable memory use confirmed. Remaining OR-19 verification is preserved.
 
+**Requested comparison, 2026-10-06:** the isolated global-catalog-disabled variant and normal app execute four balanced Recents/List launches. Mean CPU is 18.279% enabled versus 0.091% disabled; mean physical footprint is 94.87 versus 91.49 MiB during age 15–40 s. Production feature remains enabled; no app source change or test-suite approval is claimed. [Results and limits](Documentation/Benchmarks/tag-discovery-ab.md).
+
 ## ZF-38 — Content previews in Icons
 
 Requested on 2026-10-05: all previewable files should show content in Icons, enabled by default with a persistent Settings option. Implemented asynchronous grid thumbnails, native fallback, localized toggle, bounded cache/concurrency and safe archive materialization. Automated regression, actual interface inspection and performance evidence are recorded in `REGRESSION-COVERAGE.md`; remaining visual conditions stay explicitly pending. Related divergence: D-37.
@@ -331,3 +333,9 @@ In 2026-10-03, the user provided two recordings and a Finder capture: maintain o
 ## Integration of archives into main — 2026-10-05
 
 ZF-18/ZF-30/ZF-35/ZF-36 integrated with ZF-33/ZF-34: individual window mode preserved in drag and refresh, background menus and preserved item. Main maintained IDs and conflicting IDs of archives renumbered to ZF-35/ZF-36 and D-31–D-35. Integrated final validation: 169 unit cases/232 executions and ten different cases UI approved, including history in all four modes, transitory state of Columns, gestures locations/of archive, keyboard confirmation, menus in all four modes and independence between two windows. Build Debug and signature verified; failures of the initial rounds, setup/selectors adjustments and limits are recorded in `REGRESSION-COVERAGE.md`. Wide visual finishing and runtime macOS 26 preserved.
+
+### ZF-41 scope refinement — 2026-10-06
+
+Apply the user's observed Finder rules: global discovery is restricted to visible Home/Shared items across fallback, observations and Spotlight, with hidden-only notifications excluded from new work. Local tag editing/reading stays available. New exclusion characterization fails before the change and passes afterward; explicit scope and hide/unhide coverage added. The initial real-tree completion measurement is 135.45 s, above the declared 60 s target, with 0.000344 CPU seconds in ten post-completion seconds. Completion latency remains an optimization item; no persistent cross-launch index is implemented.
+
+Final scope evidence, 2026-10-06: standalone median completion 149.23 s (three runs), final sandboxed app discovery 288.424 s; app CPU falls from 17.638% to 0.041%, mean footprint stays 97.32/97.36 MiB, peak 109.49 MiB. Final 227 unit cases/304 executions and three tag UI cases pass. The predeclared 60-second completion target remains failed; latency optimization, durable cross-launch reuse and extended OR-19 checks remain pending. See the visible-tag-discovery benchmark.

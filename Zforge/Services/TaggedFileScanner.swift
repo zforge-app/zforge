@@ -1,4 +1,5 @@
 import Foundation
+import Darwin
 
 /// A minimal set of subtree roots, used for authorization and pending work.
 nonisolated struct TagScanRoots: Sendable {
@@ -23,6 +24,47 @@ nonisolated struct TagScanRoots: Sendable {
         let result = urls
         urls.removeAll(keepingCapacity: true)
         return result
+    }
+}
+
+/// Product discovery boundaries are separate from filesystem authorization.
+nonisolated struct TagDiscoveryPolicy: Sendable {
+    static var standardRoots: [URL] {
+        [UserDirectoryService.homeURL, URL(fileURLWithPath: "/Users/Shared", isDirectory: true)]
+    }
+    let roots: [URL]
+
+    func contains(_ url: URL) -> Bool {
+        roots.contains { TagScanRoots.covers($0.standardizedFileURL.path, url.standardizedFileURL.path) }
+    }
+
+    func intersection(_ grant: URL) -> [URL] {
+        roots.compactMap { root in
+            if TagScanRoots.covers(grant.path, root.path) { return root }
+            if TagScanRoots.covers(root.path, grant.path),
+               TagScanRoots.covers(root.resolvingSymlinksInPath().path, grant.resolvingSymlinksInPath().path) {
+                return grant
+            }
+            return nil
+        }
+    }
+
+    func isVisible(_ url: URL) -> Bool {
+        guard let root = roots.first(where: { TagScanRoots.covers($0.path, url.path) }) else { return false }
+        return Self.isVisible(url, boundary: root)
+    }
+
+    static func isVisible(_ url: URL, boundary: URL? = nil) -> Bool {
+        var current = url.standardizedFileURL
+        while current.path != "/" {
+            if current.lastPathComponent.hasPrefix(".") { return false }
+            var info = stat()
+            let status = current.withUnsafeFileSystemRepresentation { lstat($0!, &info) }
+            if status == 0, info.st_flags & UInt32(UF_HIDDEN) != 0 { return false }
+            if current.path == boundary?.standardizedFileURL.path { break }
+            current.deleteLastPathComponent()
+        }
+        return true
     }
 }
 
@@ -56,6 +98,9 @@ nonisolated enum TaggedFileScanner {
                     // item's identity so a later empty read removes that path.
                     let canonicalPath = url.resolvingSymlinksInPath().path
                     guard !exclusion.contains(path: canonicalPath) else { return }
+                    let boundary = ([FileManager.default.temporaryDirectory] + TagDiscoveryPolicy.standardRoots)
+                        .first { TagScanRoots.covers($0.path, url.path) }
+                    guard TagDiscoveryPolicy.isVisible(url, boundary: boundary) else { records[url.path] = [:]; return }
                     records[url.path] = FinderTagMetadata.colorIndexes(at: url)
                 }
                 inspected += 1
@@ -126,7 +171,9 @@ nonisolated enum TaggedFileScanner {
                 let directory = candidate.resolvingSymlinksInPath().standardizedFileURL
                 guard !Task.isCancelled else { return }
                 guard visitedRoots.insert(directory.path).inserted,
-                      !exclusion.contains(path: directory.path) else { continue }
+                      TagScanRoots.covers(root.path, directory.path),
+                      !exclusion.contains(path: directory.path),
+                      TagDiscoveryPolicy.isVisible(directory, boundary: root) else { continue }
                 autoreleasepool {
                     let colors = FinderTagMetadata.colorIndexes(at: directory)
                     if !colors.isEmpty { batch[directory.path] = colors }
@@ -135,7 +182,7 @@ nonisolated enum TaggedFileScanner {
                 guard await checkpoint() else { return }
                 guard let enumerator = FileManager.default.enumerator(
                     at: directory, includingPropertiesForKeys: nil,
-                    options: [.skipsPackageDescendants], errorHandler: { _, _ in true }
+                    options: [.skipsPackageDescendants, .skipsHiddenFiles], errorHandler: { _, _ in true }
                 ) else { continue }
                 while !Task.isCancelled {
                     let hasNext: Bool = autoreleasepool {
