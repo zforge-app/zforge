@@ -16,6 +16,7 @@ nonisolated struct BrowserWindowRequest: Codable, Hashable {
 struct BrowserWindowConfigurationView: NSViewRepresentable {
     let representedURL: URL?
     let tabSourceWindowNumber: Int?
+    let browser: FileBrowserState
 
     func makeNSView(context: Context) -> NSView {
         let view = NSView(frame: .zero)
@@ -30,6 +31,7 @@ struct BrowserWindowConfigurationView: NSViewRepresentable {
     private func configureWindow(for view: NSView) {
         DispatchQueue.main.async {
             guard let window = view.window else { return }
+            BrowserWindowLifecycle.shared.register(window, browser: browser)
             window.tabbingIdentifier = "io.libor.Zforge.browser"
             window.tabbingMode = .automatic
             window.representedURL = representedURL
@@ -41,6 +43,51 @@ struct BrowserWindowConfigurationView: NSViewRepresentable {
                 window.makeKeyAndOrderFront(nil)
             }
         }
+    }
+}
+
+/// Save at native window closure, not SwiftUI disappearance (which also occurs
+/// when a tab or scene content is replaced). Keep only weak window/state links.
+@MainActor
+final class BrowserWindowLifecycle: NSObject {
+    static let shared = BrowserWindowLifecycle()
+
+    private struct Entry {
+        weak var window: NSWindow?
+        weak var browser: FileBrowserState?
+    }
+
+    private var entries: [ObjectIdentifier: Entry] = [:]
+
+    init(notificationCenter: NotificationCenter = .default) {
+        super.init()
+        notificationCenter.addObserver(self, selector: #selector(windowWillClose(_:)),
+            name: NSWindow.willCloseNotification, object: nil)
+    }
+
+    func register(_ window: NSWindow, browser: FileBrowserState) {
+        entries = entries.filter { $0.value.window != nil && $0.value.browser != nil }
+        entries[ObjectIdentifier(window)] = Entry(window: window, browser: browser)
+    }
+
+    @objc private func windowWillClose(_ notification: Notification) {
+        guard let window = notification.object as? NSWindow,
+              let entry = entries.removeValue(forKey: ObjectIdentifier(window)),
+              let browser = entry.browser else { return }
+        browser.preferences.viewMode = browser.viewMode
+    }
+
+    /// Quit can terminate without individual window-close notifications. The
+    /// frontmost remaining browser supplies the mode; auxiliary windows do not.
+    func applicationWillTerminate(orderedWindows: [NSWindow]) {
+        for window in orderedWindows {
+            if let browser = entries[ObjectIdentifier(window)]?.browser {
+                browser.preferences.viewMode = browser.viewMode
+                break
+            }
+        }
+        // Do not let teardown notifications overwrite the selected mode.
+        entries.removeAll()
     }
 }
 

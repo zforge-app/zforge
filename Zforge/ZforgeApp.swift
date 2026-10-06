@@ -116,9 +116,20 @@ private struct BrowserCommands: Commands {
             .keyboardShortcut("t", modifiers: .command)
             .disabled(browser == nil)
 
-            Button("New Folder") { browser?.createNewFolder() }
+            Button(AppLocalization.string("New Folder", locale: browser?.preferences.language.locale)) {
+                browser?.createNewFolder()
+            }
                 .keyboardShortcut("n", modifiers: [.command, .shift])
                 .disabled(browser?.canModifyCurrentDirectory != true)
+                .modifierKeyAlternate(.option) {
+                    Button(AppLocalization.string("New Folder with Selection", locale: browser?.preferences.language.locale)) {
+                        browser?.createNewFolderWithSelection()
+                    }
+                        // The shortcut's Control modifier must not become part
+                        // of AppKit's visibility condition for the Option alternate.
+                        .keyboardShortcut(nil)
+                        .disabled(browser?.canCreateFolderWithSelection != true)
+                }
         }
 
         CommandGroup(after: .newItem) {
@@ -335,6 +346,8 @@ private struct ZforgeSettingsView: View {
                 }
             }
             Toggle("Show hidden files", isOn: $preferences.showHiddenFiles)
+            Toggle("Show previews in icon view", isOn: $preferences.showIconPreviews)
+                .accessibilityIdentifier("settings-show-icon-previews")
 
             Section("List Columns") {
                 Text("Choose the columns shown by default. Use the arrows to change their order. A folder can override this layout from a column header.")

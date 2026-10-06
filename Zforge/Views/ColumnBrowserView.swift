@@ -362,15 +362,14 @@ private struct FinderColumn: View {
                             }
                             .padding(.horizontal, BrowserMetrics.horizontalInset * scale)
                             .finderClickGesture(
-                                onSingleClick: {
+                                onSingleClick: { modifiers in
                                     state.activateColumnItem(
                                         item,
                                         in: component.location,
-                                        modifiers: NSEvent.modifierFlags
+                                        modifiers: modifiers
                                     )
                                 },
-                                onDoubleClick: {
-                                    let modifiers = NSEvent.modifierFlags
+                                onDoubleClick: { modifiers in
                                     if modifiers.contains(.command), item.isContainer, item.localURL != nil {
                                         state.openInNewWindow(item)
                                     } else if !item.isNavigableContainer {

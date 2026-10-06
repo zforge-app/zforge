@@ -1,4 +1,5 @@
 import Foundation
+import Darwin
 
 nonisolated enum BrowserFileTransferOperation: Equatable, Sendable {
     case automatic
@@ -12,8 +13,15 @@ nonisolated struct BrowserExactFileMove: Equatable, Sendable {
     let destinationURL: URL
 }
 
+nonisolated struct BrowserSelectionFolder: Equatable, Sendable {
+    let folderURL: URL
+    let moves: [BrowserExactFileMove]
+}
+
 nonisolated protocol FileOperationServing: Sendable {
     func createFolder(in directory: URL, locale: Locale?) async throws -> URL
+    func createFolder(containing sourceURLs: [URL], in directory: URL, locale: Locale?) async throws -> BrowserSelectionFolder
+    func setSelectionFolder(_ folder: BrowserSelectionFolder, grouped: Bool) async throws
     func rename(_ sourceURL: URL, to newName: String) async throws -> URL
     func createAliases(for sourceURLs: [URL], in directory: URL) async throws -> [URL]
     func transfer(
@@ -29,6 +37,10 @@ nonisolated protocol FileOperationServing: Sendable {
 nonisolated enum BrowserFileOperationError: LocalizedError, Equatable, Sendable {
     case invalidName
     case undoDestinationExists(String)
+    case invalidFolderSelection
+    case selectionFolderDestinationExists(String)
+    case selectionFolderContentsChanged(String)
+    case selectionFolderRecoveryFailed(String, String)
 
     var errorDescription: String? {
         switch self {
@@ -36,6 +48,14 @@ nonisolated enum BrowserFileOperationError: LocalizedError, Equatable, Sendable 
             AppLocalization.string("Enter a valid file name without slashes or colons.")
         case let .undoDestinationExists(name):
             AppLocalization.string("Cannot undo because an item named \(name) already exists.")
+        case .invalidFolderSelection:
+            AppLocalization.string("Select items from the same folder to create a folder with selection.")
+        case let .selectionFolderDestinationExists(name):
+            String(format: AppLocalization.string("Cannot complete this operation because an item named %@ already exists."), name)
+        case let .selectionFolderContentsChanged(name):
+            String(format: AppLocalization.string("Cannot undo because the contents of %@ have changed."), name)
+        case let .selectionFolderRecoveryFailed(original, recovery):
+            String(format: AppLocalization.string("The operation failed: %@ Some items could not be restored: %@"), original, recovery)
         }
     }
 }
@@ -58,6 +78,96 @@ actor FileOperationService: FileOperationServing {
             withIntermediateDirectories: false
         )
         return destination
+    }
+
+    func createFolder(
+        containing sourceURLs: [URL],
+        in directory: URL,
+        locale: Locale? = nil
+    ) async throws -> BrowserSelectionFolder {
+        let sources = sourceURLs.map(\.standardizedFileURL)
+        let parent = directory.standardizedFileURL
+        guard !sources.isEmpty,
+              Set(sources.map(\.path)).count == sources.count,
+              sources.allSatisfy({
+                  $0.deletingLastPathComponent().resolvingSymlinksInPath().path
+                      == parent.resolvingSymlinksInPath().path
+              }) else {
+            throw BrowserFileOperationError.invalidFolderSelection
+        }
+        // Validate the complete selection before any mutation, including dangling
+        // symlinks (which fileExists alone treats as missing).
+        for source in sources { _ = try fileManager.attributesOfItem(atPath: source.path) }
+        let folderURL = uniqueDestination(in: parent,
+            baseName: AppLocalization.string("untitled folder", locale: locale), pathExtension: nil)
+        let folder = BrowserSelectionFolder(folderURL: folderURL, moves: sources.map {
+            BrowserExactFileMove(sourceURL: $0, destinationURL: folderURL.appendingPathComponent($0.lastPathComponent))
+        })
+        try await setSelectionFolder(folder, grouped: true)
+        return folder
+    }
+
+    func setSelectionFolder(_ folder: BrowserSelectionFolder, grouped: Bool) async throws {
+        let moves = grouped ? folder.moves : folder.moves.map {
+            BrowserExactFileMove(sourceURL: $0.destinationURL, destinationURL: $0.sourceURL)
+        }
+        guard !moves.isEmpty else { throw BrowserFileOperationError.invalidFolderSelection }
+        if grouped {
+            guard !itemExists(at: folder.folderURL) else {
+                throw BrowserFileOperationError.selectionFolderDestinationExists(folder.folderURL.lastPathComponent)
+            }
+        } else {
+            let contents = try fileManager.contentsOfDirectory(at: folder.folderURL, includingPropertiesForKeys: nil)
+            guard Set(contents.map(\.lastPathComponent)) == Set(folder.moves.map { $0.destinationURL.lastPathComponent }) else {
+                throw BrowserFileOperationError.selectionFolderContentsChanged(folder.folderURL.lastPathComponent)
+            }
+        }
+        for move in moves {
+            _ = try fileManager.attributesOfItem(atPath: move.sourceURL.path)
+            guard !itemExists(at: move.destinationURL) else {
+                throw BrowserFileOperationError.selectionFolderDestinationExists(move.destinationURL.lastPathComponent)
+            }
+        }
+        if grouped { try fileManager.createDirectory(at: folder.folderURL, withIntermediateDirectories: false) }
+        var completed: [BrowserExactFileMove] = []
+        do {
+            for move in moves {
+                try Task.checkCancellation()
+                try fileManager.moveItem(at: move.sourceURL, to: move.destinationURL)
+                completed.append(move)
+            }
+            if !grouped { try removeEmptyDirectory(at: folder.folderURL) }
+        } catch {
+            let operationError = error
+            var recoveryFailures: [String] = []
+            for move in completed.reversed() {
+                do { try fileManager.moveItem(at: move.destinationURL, to: move.sourceURL) }
+                catch { recoveryFailures.append("\(move.sourceURL.lastPathComponent): \(error.localizedDescription)") }
+            }
+            if grouped, recoveryFailures.isEmpty {
+                do { try removeEmptyDirectory(at: folder.folderURL) }
+                catch { recoveryFailures.append(error.localizedDescription) }
+            }
+            guard recoveryFailures.isEmpty else {
+                // Never recursively remove a recovery folder: it may hold the
+                // user's only remaining copy of an item that failed to restore.
+                throw BrowserFileOperationError.selectionFolderRecoveryFailed(
+                    operationError.localizedDescription, recoveryFailures.joined(separator: "\n"))
+            }
+            throw operationError
+        }
+    }
+
+    private func itemExists(at url: URL) -> Bool {
+        (try? fileManager.attributesOfItem(atPath: url.path)) != nil
+    }
+
+    private func removeEmptyDirectory(at url: URL) throws {
+        let result = url.withUnsafeFileSystemRepresentation { path in
+            guard let path else { return Int32(-1) }
+            return Darwin.rmdir(path)
+        }
+        guard result == 0 else { throw NSError(domain: NSPOSIXErrorDomain, code: Int(errno)) }
     }
 
     func rename(_ sourceURL: URL, to newName: String) async throws -> URL {

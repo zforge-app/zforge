@@ -36,9 +36,8 @@ struct IconBrowserView: View {
                                 )
                                 .id(item.id)
                                 .finderClickGesture(
-                                    onSingleClick: { state.select(item, modifiers: NSEvent.modifierFlags) },
-                                    onDoubleClick: {
-                                        let modifiers = NSEvent.modifierFlags
+                                    onSingleClick: { state.select(item, modifiers: $0) },
+                                    onDoubleClick: { modifiers in
                                         Task { await state.openFromDoubleClick(item, modifiers: modifiers) }
                                     }
                                 )
@@ -90,10 +89,17 @@ private struct BrowserIconCell: View {
     let isSelected: Bool
     let scale: CGFloat
     let contentFocus: FocusState<BrowserFocusTarget?>.Binding
+    @State private var isPreviewLoaded = false
 
     var body: some View {
         VStack(spacing: 8 * scale) {
-            FileIconView(item: item, size: 64 * scale)
+            IconPreviewView(
+                item: item,
+                size: 64 * scale,
+                enabled: state.preferences.showIconPreviews,
+                state: state,
+                isLoaded: $isPreviewLoaded
+            )
                 .browserItemEmphasis(item, isSelected: isSelected)
                 .frame(width: 84 * scale, height: 72 * scale)
                 .background {
@@ -108,6 +114,9 @@ private struct BrowserIconCell: View {
                 textAlignment: .center,
                 contentFocus: contentFocus
             )
+                .accessibilityIdentifier(state.renamingItemID == item.id
+                    ? "rename-field-\(item.id.rawValue)"
+                    : "icon-\(state.preferences.showIconPreviews && isPreviewLoaded ? "preview" : "fallback")-\(item.name)")
                 .browserItemEmphasis(item, isSelected: isSelected)
                 .font(.system(size: 13 * scale))
                 .foregroundStyle(isSelected ? .white : .primary)
@@ -121,6 +130,7 @@ private struct BrowserIconCell: View {
         .frame(maxWidth: .infinity, minHeight: 90 * scale)
         .padding(8 * scale)
         .contentShape(Rectangle())
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: state.renamingItemID == item.id ? .contain : .combine)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }

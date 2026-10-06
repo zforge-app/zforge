@@ -10,6 +10,171 @@ import AppKit
 
 final class ZforgeUITests: XCTestCase {
 
+    @MainActor
+    private func waitForSelected(_ element: XCUIElement) -> Bool {
+        XCTWaiter.wait(for: [XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "selected == true"), object: element
+        )], timeout: 3) == .completed
+    }
+
+    @MainActor
+    func testFolderSelectionCommandIsLocalizedAndDocumented() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-fixtures", "--ui-window-width", "680",
+            "-appLanguagePreference", "portugueseBrazil", "-ApplePersistenceIgnoreState", "YES"]
+        addTeardownBlock { app.terminate() }
+        launchArchiveFixture(app)
+        defer { app.terminate() }
+        XCTAssertTrue(app.staticTexts["Welcome.txt"].waitForExistence(timeout: 8))
+        XCUIElement.perform(withKeyModifiers: .option) {
+            app.menuBars.menuBarItems["File"].click()
+            XCTAssertTrue(app.menuItems["Nova Pasta com Seleção"].exists, app.debugDescription)
+            let menu = XCTAttachment(screenshot: app.screenshot())
+            menu.name = "Portuguese folder selection alternate at 680 pt"
+            menu.lifetime = .keepAlways
+            add(menu)
+        }
+        app.terminate()
+        launchArchiveFixture(app)
+        app.typeKey("/", modifierFlags: .command)
+        let shortcuts = app.windows.containing(.staticText, identifier: "Atalhos de Teclado").firstMatch
+        XCTAssertTrue(shortcuts.waitForExistence(timeout: 3), app.debugDescription)
+        let browserWindow = app.windows.matching(NSPredicate(format: "identifier BEGINSWITH %@", "browser-")).firstMatch
+        browserWindow.buttons[XCUIIdentifierCloseWindow].click()
+        let search = shortcuts.searchFields.firstMatch
+        search.click()
+        // Preserve the user's clipboard while supplying the complete Unicode
+        // query. XCTest's simulated typing drops characters during searchable updates.
+        let pasteboard = NSPasteboard.general
+        let savedItems = (pasteboard.pasteboardItems ?? []).map { source in
+            let copy = NSPasteboardItem()
+            for type in source.types {
+                if let data = source.data(forType: type) { copy.setData(data, forType: type) }
+            }
+            return copy
+        }
+        var suppliedChangeCount = -1
+        defer {
+            if pasteboard.changeCount == suppliedChangeCount {
+                pasteboard.clearContents()
+                pasteboard.writeObjects(savedItems)
+            }
+        }
+        pasteboard.clearContents()
+        pasteboard.setString("Nova Pasta com Seleção", forType: .string)
+        suppliedChangeCount = pasteboard.changeCount
+        search.typeKey("v", modifierFlags: .command)
+        XCTAssertEqual(search.value as? String, "Nova Pasta com Seleção", app.debugDescription)
+        XCTAssertTrue(shortcuts.staticTexts["Nova Pasta com Seleção"].waitForExistence(timeout: 3))
+        XCTAssertTrue(shortcuts.descendants(matching: .any).matching(identifier: "shortcut-⌃⌥⌘N").firstMatch.exists)
+        let help = XCTAttachment(screenshot: app.screenshot())
+        help.name = "Portuguese folder selection shortcut help"
+        help.lifetime = .keepAlways
+        add(help)
+        app.typeKey("w", modifierFlags: .command)
+    }
+
+    @MainActor
+    func testNewFolderWithSelectionMenuAndShortcutInEveryMode() throws {
+        for mode in ["icons", "list", "columns", "gallery"] {
+            for activation in ["shortcut", "menu"] {
+                let app = XCUIApplication()
+                app.launchArguments = ["--ui-archive-drag-fixtures", "--ui-window-width", "1100",
+                    "--ui-view-mode", mode, "-appLanguagePreference", "english", "-ApplePersistenceIgnoreState", "YES"]
+                addTeardownBlock { app.terminate() }
+                launchArchiveFixture(app)
+                defer { app.terminate() }
+                app.windows.firstMatch.coordinate(withNormalizedOffset: CGVector(dx: 0.85, dy: 0.75)).click()
+
+                let local = app.descendants(matching: .any).matching(identifier: "browser-item-Local.txt").firstMatch.staticTexts["Local.txt"].firstMatch
+                let archive = app.descendants(matching: .any).matching(identifier: "browser-item-Sample.zip").firstMatch.staticTexts["Sample.zip"].firstMatch
+                XCTAssertTrue(local.waitForExistence(timeout: 8), mode)
+                let localCell = app.descendants(matching: .any).matching(identifier: "browser-item-Local.txt").firstMatch
+                let archiveCell = app.descendants(matching: .any).matching(identifier: "browser-item-Sample.zip").firstMatch
+                local.click()
+                XCTAssertTrue(waitForSelected(localCell), mode)
+                XCUIElement.perform(withKeyModifiers: .command) {
+                    archive.click()
+                    XCTAssertTrue(waitForSelected(archiveCell), mode)
+                }
+                XCTAssertTrue(localCell.isSelected, mode)
+
+                if activation == "menu" {
+                    XCUIElement.perform(withKeyModifiers: .option) {
+                        app.menuBars.menuBarItems["File"].click()
+                        let action = app.menuItems["New Folder with Selection"]
+                        XCTAssertTrue(action.isEnabled, mode)
+                        let enabledMenu = XCTAttachment(screenshot: app.screenshot())
+                        enabledMenu.name = "Enabled selection alternate - \(mode)"
+                        enabledMenu.lifetime = .keepAlways
+                        add(enabledMenu)
+                        action.hover()
+                        app.typeKey(.return, modifierFlags: .option)
+                    }
+                } else {
+                    app.typeKey("n", modifierFlags: [.control, .option, .command])
+                }
+
+                let editor = app.textFields.matching(NSPredicate(format: "identifier BEGINSWITH %@", "rename-field-")).firstMatch
+                XCTAssertTrue(editor.waitForExistence(timeout: 8), app.debugDescription)
+                XCTAssertEqual(editor.value as? String, "untitled folder", mode)
+                editor.typeText("Grouped Items")
+                app.typeKey(.return, modifierFlags: [])
+                let folder = app.descendants(matching: .any).matching(identifier: "browser-item-Grouped Items").firstMatch.staticTexts["Grouped Items"].firstMatch
+                XCTAssertTrue(folder.waitForExistence(timeout: 8), app.debugDescription)
+                if mode == "columns" { folder.click() } else { folder.doubleClick() }
+                XCTAssertTrue(app.windows["Grouped Items"].firstMatch.waitForExistence(timeout: 8), mode)
+                XCTAssertTrue(local.waitForExistence(timeout: 8), mode)
+                XCTAssertTrue(archive.waitForExistence(timeout: 8), mode)
+                app.buttons["Back"].firstMatch.click()
+                XCTAssertTrue(folder.waitForExistence(timeout: 8), mode)
+                XCTAssertFalse(local.exists, "Grouped file must be removed from its original folder in \(mode)")
+                XCTAssertFalse(archive.exists, "Grouped archive must be removed from its original folder in \(mode)")
+                app.typeKey("n", modifierFlags: [.shift, .command])
+                XCTAssertTrue(editor.waitForExistence(timeout: 8), "The original New Folder shortcut must still work in \(mode)")
+                app.typeKey(.escape, modifierFlags: [])
+            }
+        }
+    }
+
+    @MainActor
+    func testFolderSelectionMenuAlternatesWithOptionInEveryMode() throws {
+        for mode in ["icons", "list", "columns", "gallery"] {
+            let app = XCUIApplication()
+            app.launchArguments = ["--ui-archive-drag-fixtures", "--ui-window-width", "1100",
+                "--ui-view-mode", mode, "-appLanguagePreference", "english", "-ApplePersistenceIgnoreState", "YES"]
+            addTeardownBlock { app.terminate() }
+            launchArchiveFixture(app)
+            app.windows.firstMatch.coordinate(withNormalizedOffset: CGVector(dx: 0.85, dy: mode == "gallery" ? 0.9 : 0.75)).click()
+            let selectedCells = app.descendants(matching: .any).matching(NSPredicate(
+                format: "identifier BEGINSWITH %@ AND selected == true", "browser-item-"
+            ))
+            XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(
+                predicate: NSPredicate(format: "count == 0"), object: selectedCells
+            )], timeout: 3), .completed, mode)
+            app.menuBars.menuBarItems["File"].click()
+            XCTAssertTrue(app.menuItems["New Folder"].exists, mode)
+            let normal = XCTAttachment(screenshot: app.screenshot())
+            normal.name = "File menu without Option - \(mode)"
+            normal.lifetime = .keepAlways
+            add(normal)
+            XCUIElement.perform(withKeyModifiers: .option) {
+                let alternate = app.menuItems["New Folder with Selection"]
+                XCTAssertTrue(alternate.exists, mode)
+                XCTAssertFalse(alternate.isEnabled, mode)
+                let capture = XCTAttachment(screenshot: app.screenshot())
+                capture.name = "File menu with Option - \(mode)"
+                capture.lifetime = .keepAlways
+                add(capture)
+            }
+            let released = XCTAttachment(screenshot: app.screenshot())
+            released.name = "File menu after releasing Option - \(mode)"
+            released.lifetime = .keepAlways
+            add(released)
+            app.terminate()
+        }
+    }
+
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.
 
@@ -21,6 +186,47 @@ final class ZforgeUITests: XCTestCase {
 
     override func tearDownWithError() throws {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
+    }
+
+    @MainActor
+    func testLastClosedWindowRestoresViewModeAfterRelaunch() throws {
+        let app = XCUIApplication()
+        app.launchEnvironment["ZFORGE_UI_PREFERENCES_SUITE"] = "ZforgeViewRelaunch-\(UUID().uuidString)"
+        defer { app.terminate() }
+        for (initialMode, mode, closeFirst) in [("icons", "list", true),
+            ("columns", "gallery", false), ("icons", "gallery", true), ("icons", "columns", false)] {
+            app.launchArguments = ["--ui-fixtures", "--ui-window-width", "1100",
+                "--ui-view-mode", initialMode,
+                "-appLanguagePreference", "english"]
+            launchArchiveFixture(app)
+            let first = app.windows.containing(.any, identifier: "browser-mode-\(initialMode)").firstMatch
+            XCTAssertTrue(first.waitForExistence(timeout: 5))
+            app.typeKey("n", modifierFlags: .command)
+            XCTAssertTrue(app.windows.element(boundBy: 1).waitForExistence(timeout: 5))
+            app.typeKey(["icons": "1", "list": "2", "columns": "3", "gallery": "4"][mode]!, modifierFlags: .command)
+            let changed = app.windows.containing(.any, identifier: "browser-mode-\(mode)").firstMatch
+            XCTAssertTrue(changed.waitForExistence(timeout: 5))
+            XCTAssertTrue(first.exists, "Changing the second window must preserve the first mode")
+            // Alternate close order so every mode is exercised as the winner.
+            let winner = closeFirst ? changed : first
+            let loser = closeFirst ? first : changed
+            let expected = closeFirst ? mode : initialMode
+            loser.buttons[XCUIIdentifierCloseWindow].click()
+            XCTAssertTrue(winner.exists)
+            winner.buttons[XCUIIdentifierCloseWindow].click()
+            XCTAssertTrue(app.windows.firstMatch.waitForNonExistence(timeout: 5))
+            // Opening again in the same process must also use the saved mode.
+            app.typeKey("n", modifierFlags: .command)
+            let restored = app.descendants(matching: .any)["browser-mode-\(expected)"].firstMatch
+            XCTAssertTrue(restored.waitForExistence(timeout: 5))
+            app.typeKey("q", modifierFlags: .command)
+            XCTAssertTrue(app.wait(for: .notRunning, timeout: 5))
+            app.launchArguments = ["--ui-fixtures", "--ui-window-width", "1100",
+                "-appLanguagePreference", "english"]
+            launchArchiveFixture(app)
+            XCTAssertTrue(restored.waitForExistence(timeout: 5), "Relaunch must restore \(expected)")
+            app.terminate()
+        }
     }
 
     @MainActor
@@ -86,8 +292,10 @@ final class ZforgeUITests: XCTestCase {
             let area = content.frame
             let window = app.windows.firstMatch
             window.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(
-                dx: area.minX - window.frame.minX + area.width * (mode == "gallery" ? 0.95 : 0.2),
-                dy: area.minY - window.frame.minY + area.height * (mode == "gallery" ? 0.97 : 0.8)
+                // Gallery's mode container includes its inspector. Use the
+                // file row to locate the empty thumbnail strip, as in menu parity.
+                dx: mode == "gallery" ? window.frame.width - 26 : area.minX - window.frame.minX + area.width * 0.2,
+                dy: mode == "gallery" ? welcome.frame.midY - window.frame.minY : area.minY - window.frame.minY + area.height * 0.8
             )).click()
             let emptyMenu = openFileMenu(in: app)
             assertOpenPrecedesOpenWith(in: emptyMenu, open: "Open", openWith: "Open with", context: mode)
@@ -256,8 +464,10 @@ final class ZforgeUITests: XCTestCase {
             let window = app.windows.firstMatch
             let popup = window.menus.firstMatch
             let blank = window.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(
-                dx: area.minX - window.frame.minX + area.width * (mode == "gallery" ? 0.95 : 0.2),
-                dy: area.minY - window.frame.minY + area.height * (mode == "gallery" ? 0.97 : 0.8)
+                // Gallery's inspector inherits the mode identifier. Anchor the
+                // empty strip to the actual cell's vertical position instead.
+                dx: mode == "gallery" ? window.frame.width - 26 : area.minX - window.frame.minX + area.width * 0.2,
+                dy: mode == "gallery" ? file.frame.midY - window.frame.minY : area.minY - window.frame.minY + area.height * 0.8
             ))
             let more = app.buttons["toolbar-more-menu"]
             XCTAssertTrue(more.exists, mode)
@@ -283,13 +493,20 @@ final class ZforgeUITests: XCTestCase {
 
     @MainActor
     private func launchArchiveFixture(_ app: XCUIApplication) {
+        // Saved windows from a previous test must not cover the fixture or change
+        // the initial window count required by the interaction scenarios.
+        app.launchArguments += ["-ApplePersistenceIgnoreState", "YES", "-NSQuitAlwaysKeepsWindows", "NO"]
         app.launch(); app.activate()
         // macOS can restore an application with no browser window. Create the
         // fixture's window before looking for rows; this is test setup only.
-        if !app.windows.firstMatch.waitForExistence(timeout: 3) {
-            app.typeKey("n", modifierFlags: .command)
+        let browser = app.windows.matching(NSPredicate(format: "identifier BEGINSWITH %@", "browser-")).firstMatch
+        if !browser.waitForExistence(timeout: 3) {
+            // XCTest may not target synthesized keys when no window exists.
+            // Establish the fixture's first window through its native menu.
+            app.menuBars.menuBarItems["File"].click()
+            app.menuItems["New Zforge Window"].click()
         }
-        XCTAssertTrue(app.windows.firstMatch.waitForExistence(timeout: 8), app.debugDescription)
+        XCTAssertTrue(browser.waitForExistence(timeout: 8), app.debugDescription)
     }
 
     @MainActor
@@ -1158,13 +1375,16 @@ final class ZforgeUITests: XCTestCase {
             "--ui-fixtures",
             "-appLanguagePreference", "english"
         ]
-        app.launch()
+        addTeardownBlock { app.terminate() }
+        launchArchiveFixture(app)
         XCTAssertTrue(app.staticTexts["Welcome.txt"].waitForExistence(timeout: 5))
 
         app.typeKey("/", modifierFlags: .command)
 
         let shortcutsWindow = app.windows["Keyboard Shortcuts"]
         XCTAssertTrue(shortcutsWindow.waitForExistence(timeout: 3))
+        app.windows.matching(NSPredicate(format: "identifier BEGINSWITH %@", "browser-")).firstMatch
+            .buttons[XCUIIdentifierCloseWindow].click()
         let searchField = shortcutsWindow.searchFields.firstMatch
         XCTAssertTrue(searchField.waitForExistence(timeout: 2))
         searchField.click()

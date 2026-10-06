@@ -472,6 +472,7 @@ extension View {
         }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("browser-item-" + item.name)
+        .accessibilityAddTraits(state.selection.contains(item.id) ? .isSelected : [])
     }
 
     @ViewBuilder
@@ -548,20 +549,10 @@ extension View {
     }
 
     func finderClickGesture(
-        onSingleClick: @escaping () -> Void,
-        onDoubleClick: @escaping () -> Void
+        onSingleClick: @escaping (NSEvent.ModifierFlags) -> Void,
+        onDoubleClick: @escaping (NSEvent.ModifierFlags) -> Void
     ) -> some View {
-        gesture(
-            TapGesture(count: 2)
-                .exclusively(before: TapGesture(count: 1))
-                .onEnded { gesture in
-                    switch gesture {
-                    case .first: onDoubleClick()
-                    case .second: onSingleClick()
-                    }
-                },
-            including: .gesture
-        )
+        modifier(FinderClickGestureModifier(onSingleClick: onSingleClick, onDoubleClick: onDoubleClick))
     }
 }
 

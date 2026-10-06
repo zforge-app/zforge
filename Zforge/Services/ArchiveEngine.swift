@@ -226,11 +226,16 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
     private let fileManager: FileManager
     private let nativeBackend: NativeSevenZipBackend
     private let sessionsRoot: URL
+    private let materializationDidExtract: (@Sendable (BrowserItem) async -> Void)?
     private var sessions: [UUID: Session] = [:]
 
-    init(fileManager: FileManager = .default) {
+    init(
+        fileManager: FileManager = .default,
+        materializationDidExtract: (@Sendable (BrowserItem) async -> Void)? = nil
+    ) {
         self.fileManager = fileManager
         self.nativeBackend = NativeSevenZipBackend()
+        self.materializationDidExtract = materializationDidExtract
         sessionsRoot = ZforgeTemporaryStorage.archiveSessionsRoot(fileManager: fileManager)
     }
 
@@ -375,7 +380,7 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
         automaticLimit: Int64?
     ) async throws -> URL {
         guard case let .archive(address) = item.location,
-              var session = sessions[address.sessionID],
+              let session = sessions[address.sessionID],
               let archive = session.archives[address.archiveID] else {
             throw ArchiveEngineError.itemNotFound
         }
@@ -409,6 +414,11 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
             paths: archive.isRawStream ? [] : [address.internalPath], destination: purposeDirectory,
             outputFile: outputURL, byteLimit: UInt64(hardLimit))
 
+        guard !Task.isCancelled, sessions[address.sessionID]?.archives[address.archiveID] != nil else {
+            try? fileManager.removeItem(at: purposeDirectory)
+            throw ArchiveEngineError.cancelled
+        }
+
         let attributes = try fileManager.attributesOfItem(atPath: outputURL.path)
         if let written = (attributes[.size] as? NSNumber)?.int64Value, written > hardLimit {
             try? fileManager.removeItem(at: outputURL)
@@ -420,8 +430,19 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
             propagateQuarantine(from: session.originalURL, to: outputURL)
         }
 
-        session.materialized[cacheKey] = outputURL
-        sessions[address.sessionID] = session
+        // A supplied checkpoint lets integration tests coordinate completed native extractions.
+        if let materializationDidExtract { await materializationDidExtract(item) }
+
+        // Extraction suspends this actor. Merge into the live session so another
+        // materialization or nested archive cannot be overwritten by its snapshot.
+        guard !Task.isCancelled,
+              var currentSession = sessions[address.sessionID],
+              currentSession.archives[address.archiveID] != nil else {
+            try? fileManager.removeItem(at: purposeDirectory)
+            throw ArchiveEngineError.cancelled
+        }
+        currentSession.materialized[cacheKey] = outputURL
+        sessions[address.sessionID] = currentSession
         return outputURL
     }
 
@@ -697,7 +718,7 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
         guard fileManager.contentsEqual(atPath: archive.path, andPath: record.fileURL.path) else { throw ArchiveEngineError.archiveChanged }
         let target = destination.internalPath.isEmpty ? "" : try safeArchivePath(destination.internalPath)
         if !target.isEmpty {
-            guard try await self.items(at: ArchiveAddress(sessionID: destination.sessionID,
+            guard try self.items(at: ArchiveAddress(sessionID: destination.sessionID,
                 archiveID: destination.archiveID, internalPath: (target as NSString).deletingLastPathComponent))
                 .contains(where: { $0.isDirectory && $0.name == (target as NSString).lastPathComponent }) else {
                 throw ArchiveEngineError.itemNotFound
@@ -726,7 +747,7 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
         let original = operation.appendingPathComponent(archive.lastPathComponent)
         let updated = operation.appendingPathComponent("Updated-" + archive.lastPathComponent)
         try fileManager.copyItem(at: record.fileURL, to: original)
-        var occupied = try await self.items(at: destination).map(\.name)
+        var occupied = try self.items(at: destination).map(\.name)
         var stagedNames: Set<String> = []
         var paths: [String] = []
         var exclusions: [String] = []
