@@ -122,7 +122,15 @@ private struct BrowserCommands: Commands {
         }
 
         CommandGroup(after: .newItem) {
-            Menu("Open with") {
+            Button(AppLocalization.string("Open", locale: browser?.preferences.language.locale)) {
+                guard let browser else { return }
+                let selected = browser.selectedItems
+                Task { _ = await browser.performContextualAction(.open, items: selected) }
+            }
+            .disabled(browser?.selectedItems.isEmpty != false
+                || browser?.archiveOperationInProgress != false)
+
+            Menu(AppLocalization.string("Open with", locale: browser?.preferences.language.locale)) {
                 if let browser {
                     ForEach(browser.applicationsForOpening(browser.selectedItems), id: \.self) { application in
                         Button(FileManager.default.displayName(atPath: application.path)) {
@@ -138,7 +146,7 @@ private struct BrowserCommands: Commands {
             .disabled(browser?.selectedItems.isEmpty != false
                 || browser?.selectedItems.contains(where: \.isContainer) != false)
             .modifierKeyAlternate(.option) {
-                Menu("Always open with") {
+                Menu(AppLocalization.string("Always open with", locale: browser?.preferences.language.locale)) {
                     if let browser {
                         ForEach(browser.applicationsForOpening(browser.selectedItems), id: \.self) { application in
                             Button(FileManager.default.displayName(atPath: application.path)) {

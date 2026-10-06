@@ -61,6 +61,183 @@ final class ZforgeUITests: XCTestCase {
     }
 
     @MainActor
+    func testFileOpenPrecedesOpenWithAndTracksSelectionInEveryMode() throws {
+        for mode in ["icons", "list", "columns", "gallery"] {
+            let app = XCUIApplication()
+            app.launchArguments = [
+                "--ui-fixtures", "--ui-window-width", "1100", "--ui-view-mode", mode,
+                "-appLanguagePreference", "english"
+            ]
+            launchArchiveFixture(app)
+            defer { app.terminate() }
+
+            let welcome = app.descendants(matching: .any)
+                .matching(identifier: "browser-item-Welcome.txt").firstMatch
+                .staticTexts["Welcome.txt"].firstMatch
+            let another = app.descendants(matching: .any)
+                .matching(identifier: "browser-item-Another.txt").firstMatch
+                .staticTexts["Another.txt"].firstMatch
+            XCTAssertTrue(welcome.waitForExistence(timeout: 5), mode)
+            XCTAssertTrue(another.exists, mode)
+
+            // Gallery initially selects its first item. Establish the same
+            // empty-selection precondition by clicking the background in every mode.
+            let content = app.descendants(matching: .any)["browser-mode-\(mode)"].firstMatch
+            let area = content.frame
+            let window = app.windows.firstMatch
+            window.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(
+                dx: area.minX - window.frame.minX + area.width * (mode == "gallery" ? 0.95 : 0.2),
+                dy: area.minY - window.frame.minY + area.height * (mode == "gallery" ? 0.97 : 0.8)
+            )).click()
+            let emptyMenu = openFileMenu(in: app)
+            assertOpenPrecedesOpenWith(in: emptyMenu, open: "Open", openWith: "Open with", context: mode)
+            XCTAssertFalse(emptyMenu.menuItems["Open"].isEnabled, "Empty selection: \(mode)")
+            assertOpenWithAvailability(in: emptyMenu, app: app, enabled: false, context: "Empty selection: \(mode)")
+            app.typeKey(.escape, modifierFlags: [])
+
+            welcome.click()
+            let selectedMenu = openFileMenu(in: app)
+            XCTAssertTrue(selectedMenu.menuItems["Open"].isEnabled, "Single selection: \(mode)")
+            assertOpenWithAvailability(in: selectedMenu, app: app, enabled: true, context: "Single selection: \(mode)")
+            app.typeKey(.escape, modifierFlags: [])
+
+            XCUIElement.perform(withKeyModifiers: [.command]) { another.click() }
+            let multipleMenu = openFileMenu(in: app)
+            XCTAssertTrue(multipleMenu.menuItems["Open"].isEnabled, "Multiple selection: \(mode)")
+            assertOpenWithAvailability(in: multipleMenu, app: app, enabled: true, context: "Multiple selection: \(mode)")
+            assertOpenPrecedesOpenWith(in: multipleMenu, open: "Open", openWith: "Open with", context: mode)
+            _ = openFileMenu(in: app)
+            let capture = XCTAttachment(screenshot: app.screenshot())
+            capture.name = "File menu Open with multiple selection: \(mode)"
+            capture.lifetime = .keepAlways
+            add(capture)
+            app.typeKey(.escape, modifierFlags: [])
+        }
+    }
+
+    @MainActor
+    func testFileOpenNavigatesSelectedFolderAndArchiveInEveryMode() throws {
+        for mode in ["icons", "list", "columns", "gallery"] {
+            let app = XCUIApplication()
+            app.launchArguments = [
+                "--ui-archive-drag-fixtures", "--ui-window-width", "1100", "--ui-view-mode", mode,
+                "-appLanguagePreference", "english"
+            ]
+            launchArchiveFixture(app)
+            defer { app.terminate() }
+            let initialTitle = app.windows.firstMatch.title
+            let folder = app.descendants(matching: .any)
+                .matching(identifier: "browser-item-Dropped").firstMatch
+                .staticTexts["Dropped"].firstMatch
+            XCTAssertTrue(folder.waitForExistence(timeout: 8), mode)
+            // Command-click selects a container without expanding it in Columns.
+            // Navigation below therefore has to come from the File command.
+            if mode == "columns" {
+                XCUIElement.perform(withKeyModifiers: [.command]) { folder.click() }
+            } else {
+                folder.click()
+            }
+            XCTAssertEqual(app.windows.firstMatch.title, initialTitle, mode)
+            let folderMenu = openFileMenu(in: app)
+            XCTAssertTrue(folderMenu.menuItems["Open"].isEnabled, mode)
+            assertOpenWithAvailability(in: folderMenu, app: app, enabled: false, context: mode)
+            folderMenu.menuItems["Open"].click()
+            XCTAssertTrue(app.windows["Dropped"].firstMatch.waitForExistence(timeout: 8), mode)
+
+            app.buttons["Back"].firstMatch.click()
+            XCTAssertTrue(app.windows[initialTitle].firstMatch.waitForExistence(timeout: 8), mode)
+            let archive = app.descendants(matching: .any)
+                .matching(identifier: "browser-item-Sample.zip").firstMatch
+                .staticTexts["Sample.zip"].firstMatch
+            XCTAssertTrue(archive.waitForExistence(timeout: 8), mode)
+            if mode == "columns" {
+                XCUIElement.perform(withKeyModifiers: [.command]) { archive.click() }
+            } else {
+                archive.click()
+            }
+            XCTAssertEqual(app.windows.firstMatch.title, initialTitle, mode)
+            let archiveMenu = openFileMenu(in: app)
+            XCTAssertTrue(archiveMenu.menuItems["Open"].isEnabled, mode)
+            archiveMenu.menuItems["Open"].click()
+            XCTAssertTrue(app.windows["Sample.zip"].firstMatch.waitForExistence(timeout: 8), mode)
+            XCTAssertTrue(app.descendants(matching: .any)
+                .matching(identifier: "browser-item-Inside").firstMatch
+                .staticTexts["Inside"].firstMatch.waitForExistence(timeout: 8), mode)
+            let capture = XCTAttachment(screenshot: app.windows["Sample.zip"].firstMatch.screenshot())
+            capture.name = "File Open navigated into archive: \(mode)"
+            capture.lifetime = .keepAlways
+            add(capture)
+        }
+    }
+
+    @MainActor
+    func testFileOpenUsesPortugueseLocalization() throws {
+        let app = XCUIApplication()
+        app.launchArguments = [
+            "--ui-fixtures", "--ui-window-width", "1100", "--ui-view-mode", "list",
+            "-appLanguagePreference", "portugueseBrazil", "-AppleLanguages", "(en)"
+        ]
+        launchArchiveFixture(app)
+        defer { app.terminate() }
+        let welcome = app.descendants(matching: .any)
+            .matching(identifier: "browser-item-Welcome.txt").firstMatch
+            .staticTexts["Welcome.txt"].firstMatch
+        XCTAssertTrue(welcome.waitForExistence(timeout: 5))
+        let menu = openFileMenu(in: app)
+        assertOpenPrecedesOpenWith(in: menu, open: "Abrir", openWith: "Abrir com", context: "Portuguese")
+        XCTAssertFalse(menu.menuItems["Abrir"].isEnabled)
+        app.typeKey(.escape, modifierFlags: [])
+        welcome.click()
+        let selectedMenu = openFileMenu(in: app)
+        XCTAssertTrue(selectedMenu.menuItems["Abrir"].isEnabled)
+        let capture = XCTAttachment(screenshot: app.screenshot())
+        capture.name = "File menu Open in Portuguese"
+        capture.lifetime = .keepAlways
+        add(capture)
+    }
+
+    @MainActor
+    private func openFileMenu(in app: XCUIApplication) -> XCUIElement {
+        app.activate()
+        // AX exposes closed menus too; close any previous popup before presenting File.
+        app.typeKey(.escape, modifierFlags: [])
+        let file = app.menuBars.menuBarItems["File"].firstMatch
+        XCTAssertTrue(file.waitForExistence(timeout: 2))
+        file.click()
+        let menu = file.menus.firstMatch
+        XCTAssertTrue(menu.waitForExistence(timeout: 2))
+        XCTAssertTrue(menu.menuItems["New Zforge Window"].isHittable, "File menu must be visible")
+        return menu
+    }
+
+    @MainActor
+    private func assertOpenWithAvailability(in menu: XCUIElement, app: XCUIApplication, enabled: Bool, context: String) {
+        // SwiftUI disables the submenu's actions, while its parent remains enabled in AX.
+        menu.menuItems["Open with"].click()
+        let other = menu.menuItems["Open with"].menus.firstMatch.menuItems["Other…"].firstMatch
+        XCTAssertTrue(other.waitForExistence(timeout: 2), context)
+        XCTAssertEqual(other.isEnabled, enabled, context)
+        app.typeKey(.leftArrow, modifierFlags: [])
+    }
+
+    @MainActor
+    private func assertOpenPrecedesOpenWith(
+        in menu: XCUIElement, open: String, openWith: String, context: String
+    ) {
+        // Native menu items expose title rather than label. Direct children keep
+        // the order check independent of dynamically populated submenus.
+        let entries = menu.children(matching: .menuItem).allElementsBoundByAccessibilityElement.map(\.title)
+        XCTAssertEqual(entries.filter { $0 == open }.count, 1, "Unique File Open: \(context), entries: \(entries)")
+        XCTAssertEqual(entries.filter { $0 == openWith }.count, 1, "Unique File Open with: \(context)")
+        guard let openIndex = entries.firstIndex(of: open),
+              let openWithIndex = entries.firstIndex(of: openWith) else {
+            XCTFail("Missing File Open or Open with: \(context)")
+            return
+        }
+        XCTAssertEqual(openIndex + 1, openWithIndex, "File Open must immediately precede Open with: \(context)")
+    }
+
+    @MainActor
     func testBlankAreaUsesMoreMenuInEveryView() throws {
         for mode in ["icons", "list", "columns", "gallery"] {
             let app = XCUIApplication()
@@ -819,8 +996,9 @@ final class ZforgeUITests: XCTestCase {
             "--ui-view-mode", "list",
             "-appLanguagePreference", "english"
         ]
-        app.launch()
-        XCTAssertTrue(app.staticTexts["Fixture Folder"].waitForExistence(timeout: 5))
+        launchArchiveFixture(app)
+        // Recents lists files only; a folder cannot be its readiness signal.
+        XCTAssertTrue(app.staticTexts["Welcome.txt"].firstMatch.waitForExistence(timeout: 5))
 
         selectView(named: "Icons", in: app)
         selectView(named: "List", in: app)

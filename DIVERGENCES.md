@@ -238,6 +238,7 @@ Save 19:47 shows copy of PDF with suffix after extension. Corrected in code: exp
 
 ### D-28 — Quick selection test in Columns failure intermittently in the suite
 
+- **Pre-change evidence on 2026-10-05:** the ZF-40 baseline unit suite failed again with `timedOut("started:First.zip")`, before production changes. The same round also failed `TagCatalogTests.updatesGlobalCatalogueLive` with a generic `condition()` expectation. MainActor queue pressure is a diagnostic hypothesis, not a proven cause; the results and focused investigation are recorded in `REGRESSION-COVERAGE.md`. No production changes, retries, or timeout increases were made to conceal these failures.
 - **Previous evidence:** `rapidColumnArchiveSelectionPublishesOnlyCurrentArchive` failed `firstStarted` in the integrated suite (135 approved/1 failure) and passed isolated. There is no proven functional regression nor cause of established scheduling.
 - **Test correction:** Repeated consultation with pauses of 1 ms; Wait for explicit signal from the simulated engine. First loading is suspended until cancellation, without automatic completion after 2s; second doesn't use artificial delay. Timeout of 10s detects real locking and failure fatal in preparation closes the scenario. Early signs are remembered; continuations and watchdogs are removed on signal, cancellation, timeout or closure.
 - **Scope:** only fixture/tests and documented coverage; no modified production handler. Repeated verification at `REGRESSION-COVERAGE.md`; ZF-32.
@@ -312,3 +313,15 @@ Save 19:47 shows copy of PDF with suffix after extension. Corrected in code: exp
 
 
 **Main integration in 2026-10-05:** D-31–D-35 coexist with D-29/D-30 without IDs colliding. Refresh/drag follow window mode; Shared menus preserved. History in the four modes, absence of duplicate lines in the pending column and adjacent flows passed in the integrated matrix, recorded in `REGRESSION-COVERAGE.md`. Visual limits of OR-14 and runtime macOS 26 remain open.
+
+### D-38 — Focus test setup expected a folder in Recents
+
+- **Evidence on 2026-10-05:** `testArrowNavigationKeepsContentFocusAfterChangingView` failed before the mode/focus sequence because its initial readiness check required `Fixture Folder` in Recents.
+- **Specification conflict:** [CURRENT-STATE.md §2](Documentation/Requirements/CURRENT-STATE.md#2-navigation-and-access-to-the-file-system) requires Recents to contain non-directory files. The readiness check now requires the fixture file `Welcome.txt`; it also uses the existing fixture-window launch helper. Mode switching, Home navigation, empty-selection checks, arrow selection, and the enabled toolbar assertion are preserved. This corrects test preparation without redefining folder navigation or focus behavior.
+- **Validation:** execution results and remaining limits are in `REGRESSION-COVERAGE.md` (ZF-40).
+
+### D-39 — File Open verification overlaps other desktop UI runners
+
+- **Implemented request:** ZF-40 adds Open immediately above Open with in File, using the existing opening handler and localized titles.
+- **Evidence:** ordering/selection in four modes and Portuguese titles passed in partial rounds. Final stronger UI checks failed with lost enabled state, a disappearing submenu snapshot, and a non-hittable File menu. Exported captures did not consistently show the menu queried through accessibility. Separate active Zforge chats were also executing UI tests on the same desktop.
+- **Boundary:** shared keyboard/pointer/focus explains why overlapping runs cannot provide reliable interaction evidence, but does not establish the cause of every failure or prove the complete flow correct. Preserve the tests and run them in isolation; implementation and signed builds do not close OR-18. No source or menu behavior from those other worktrees was incorporated here.

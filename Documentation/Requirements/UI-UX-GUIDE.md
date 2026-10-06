@@ -165,6 +165,8 @@ Between `678` and `899 pt`, the selector uses its own compact capsule, with the 
 
 ### Action group
 
+The File menu places **Open** immediately above **Open with**, using the contextual opening behavior for the focused window's selection. Keep it visible but disabled without a selected target or while an archive operation is running. Use the existing localized label (**Abrir** in Brazilian Portuguese).
+
 In the expanded presentation, group remains with four actions:
 
 1. contextual action of archive;

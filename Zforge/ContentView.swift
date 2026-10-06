@@ -517,7 +517,9 @@ struct ContentView: View {
         Task { @MainActor in
             await Task.yield()
             guard let window = NSApp.keyWindow ?? NSApp.windows.first else { return }
-            window.setContentSize(NSSize(width: width, height: window.contentView?.bounds.height ?? 720))
+            // UI runs must not inherit an off-screen frame from a prior launch.
+            window.setContentSize(NSSize(width: width, height: 720))
+            window.center()
         }
     }
 

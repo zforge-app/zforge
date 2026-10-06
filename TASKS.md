@@ -40,6 +40,7 @@ Updated at **2026-10-05**. This list preserves the requests raised in this conve
 | ZF-34 | Keep individual view mode by window/tab | Implemented and integrated into the main in 2026-10-04; built Debug signed, 143 unit and 1 test UI with two approved windows; Settings pattern applied to future windows | D-30 |
 | ZF-35 | Preserve history and columns after archive mutation | User-confirmed correction; history migrated along the way, reloaded ancestors, navigable reveal and path fallback removed. Regression reproduced before correction; 166 unit cases/229 executions and 3 cases UI approved, including gesture and Back in all four modes. Build assinada aprovada. | D-34; REGRESSION-COVERAGE |
 | ZF-36 | Delete duplicate list flash when loading a column | Corrected: Each column uses only its own items. Temporal regression failed before and passed after; 166 unit cases/229 executions and five separate cases UI approved, catches of the inspected transition. Build assinada aprovada. | D-35; REGRESSION-COVERAGE |
+| ZF-40 | Add Open immediately above Open with in the File menu | Implemented on 2026-10-05 with shared opening handler and explicit app-language titles; signed Debug build, selection/order checks in four modes, localization and unit characterization have evidence. Complete visible-menu opening validation remains pending after overlapping UI runs failed. | D-39; OR-18; REGRESSION-COVERAGE |
 
 ## ZF-01 — Reference documentation and regression prevention
 
