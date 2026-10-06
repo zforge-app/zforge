@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "captured_at": "2026-10-05T16:41:25.903716+00:00",
+  "captured_at": "2026-10-06T12:01:05.635002+00:00",
   "seed_url": "https://developer.apple.com/documentation/SwiftUI",
   "scope": "home plus unique first-level links exposed by Overview, Featured samples, and Topics, with audited on-demand expansions",
-  "expected_contexts": 113,
-  "captured_contexts": 113,
+  "expected_contexts": 118,
+  "captured_contexts": 118,
   "failures": [],
   "captures": [
     {
@@ -1610,6 +1610,76 @@
         "Icon previews"
       ],
       "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/library/archive/documentation/Darwin/Conceptual/FSEvents_ProgGuide/UsingtheFSEventsFramework/UsingtheFSEventsFramework.html",
+      "fetch_url": "https://developer.apple.com/library/archive/documentation/Darwin/Conceptual/FSEvents_ProgGuide/UsingtheFSEventsFramework/UsingtheFSEventsFramework.html",
+      "final_url": "https://developer.apple.com/library/archive/documentation/Darwin/Conceptual/FSEvents_ProgGuide/UsingtheFSEventsFramework/UsingtheFSEventsFramework.html",
+      "local_path": "contexts/coreservices-persistent-file-system-events.md",
+      "sha256": "28e280a68e4cf7553d83882a5d21eac0c68d6cb1b4d171e57cf1c790110bdebf",
+      "etag": null,
+      "last_modified": "Fri, 30 Jan 2026 23:11:44 GMT",
+      "bytes": 54814,
+      "categories": [
+        "On-demand expansion"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/coreservices/1444453-fseventscopyuuidfordevice",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/coreservices/1444453-fseventscopyuuidfordevice.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/coreservices/1444453-fseventscopyuuidfordevice.json",
+      "local_path": "contexts/coreservices-fsevents-journal-uuid.md",
+      "sha256": "0a77660438f887544841f37a8b03574ccc73e9b55d0aeb5ea85494068de8dd56",
+      "etag": "\"43d0-65b3a465d1364\"",
+      "last_modified": "Fri, 11 Sep 2026 19:41:46 GMT",
+      "bytes": 17360,
+      "categories": [
+        "On-demand expansion"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://github.com/apple/darwin-xnu/blob/main/bsd/man/man2/getattrlistbulk.2",
+      "fetch_url": "https://raw.githubusercontent.com/apple/darwin-xnu/main/bsd/man/man2/getattrlistbulk.2",
+      "final_url": "https://raw.githubusercontent.com/apple/darwin-xnu/main/bsd/man/man2/getattrlistbulk.2",
+      "local_path": "contexts/darwin-bulk-directory-attributes.md",
+      "sha256": "20487d8f262f9cff2b969aa093cb3b72b50c3d34011b1cae6e1542147c55d4b3",
+      "etag": null,
+      "last_modified": null,
+      "bytes": 12552,
+      "categories": [
+        "On-demand expansion"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://github.com/apple-oss-distributions/xnu/blob/main/bsd/man/man2/getattrlist.2",
+      "fetch_url": "https://raw.githubusercontent.com/apple-oss-distributions/xnu/main/bsd/man/man2/getattrlist.2",
+      "final_url": "https://raw.githubusercontent.com/apple-oss-distributions/xnu/main/bsd/man/man2/getattrlist.2",
+      "local_path": "contexts/darwin-extended-attribute-presence.md",
+      "sha256": "b1398933bf3178aa2783a241b2aabcdbaa4dd118278f6c06e2a08221bb1305f5",
+      "etag": null,
+      "last_modified": null,
+      "bytes": 64151,
+      "categories": [
+        "On-demand expansion"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/coreservices/1447341-fseventstreamcreaterelativetodev",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/coreservices/1447341-fseventstreamcreaterelativetodev.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/coreservices/1447341-fseventstreamcreaterelativetodev.json",
+      "local_path": "contexts/coreservices-device-relative-event-stream.md",
+      "sha256": "1facf1dc23111020315c58a5a8f2305da7b3e53297714bf2ee35e6c87a65c517",
+      "etag": "\"99cd-65b3a469cdede\"",
+      "last_modified": "Fri, 11 Sep 2026 19:41:51 GMT",
+      "bytes": 39373,
+      "categories": [
+        "On-demand CoreServices"
+      ],
+      "depth": 1
     }
   ]
 }

@@ -192,3 +192,13 @@ To consult, first read this index and use `rg -n -i '<terms|symbols>' Documentat
 - [CTFramesetterCreateFrame(_:_:_:_:)](contexts/coretext-create-text-frame.md) — native icon content previews.
 
 - [task(id:name:priority:file:line:_:)](contexts/swiftui-view-task-identity.md) — native icon content previews.
+
+- [Using the FSEvents Framework](contexts/coreservices-persistent-file-system-events.md) — persistent tag-index event history and validation.
+
+- [FSEventsCopyUUIDForDevice(_:)](contexts/coreservices-fsevents-journal-uuid.md) — persistent tag-index event history and validation.
+
+- [Bulk directory attributes](contexts/darwin-bulk-directory-attributes.md) — bounded native directory traversal.
+
+- [Extended attribute presence](contexts/darwin-extended-attribute-presence.md) — skip confirmed attribute-free inodes.
+
+- [Device-relative FSEvents streams](contexts/coreservices-device-relative-event-stream.md) — one native path per stream, historical cursors and SDK/DocC evidence.

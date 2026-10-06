@@ -24,7 +24,7 @@ confidence: "primary-source"
 
 ## Summary
 
-Create a stream with watched paths, callback, copied context and a starting event ID. Use the since-now constant for a new live watcher. Schedule, start, stop, invalidate and release the stream explicitly.
+Create a stream with watched paths, callback, copied context and a starting event ID. Use the since-now constant for a new live watcher. For cross-launch reuse, consult [persistent event history](coreservices-persistent-file-system-events.md) and [volume journal identity](coreservices-fsevents-journal-uuid.md). Schedule, start, stop, invalidate and release the stream explicitly.
 
 ## Content map
 
