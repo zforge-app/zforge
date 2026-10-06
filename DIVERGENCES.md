@@ -312,3 +312,12 @@ Save 19:47 shows copy of PDF with suffix after extension. Corrected in code: exp
 
 
 **Main integration in 2026-10-05:** D-31–D-35 coexist with D-29/D-30 without IDs colliding. Refresh/drag follow window mode; Shared menus preserved. History in the four modes, absence of duplicate lines in the pending column and adjacent flows passed in the integrated matrix, recorded in `REGRESSION-COVERAGE.md`. Visual limits of OR-14 and runtime macOS 26 remain open.
+
+
+### D-36 — Startup mode remained fixed instead of following the last closed window (corrected)
+
+- **Report, 2026-10-05:** the application always reopened in Gallery. With two different window modes, the last window closed must determine the next application startup mode.
+- **Cause:** ZF-34 separated active modes from shared preferences but never wrote the closing window's mode back. The earlier Settings-only startup wording in D-30 is superseded by this explicit requirement; window independence remains mandatory.
+- **Correction:** native browser-window closure persists its current mode. Scene disappearance and unrelated windows do not write it. Quit with open browser windows selects the frontmost remaining browser and prevents teardown from overwriting that decision.
+- **Related diagnostics:** unnecessary `await` markers on two synchronous actor-local listing calls in `ArchiveEngine.reorganizeItems` removed. RNF-Q07 requires human review approval for any unavoidable newly introduced diagnostic.
+- **Validation:** 172 unit cases/245 executions and 3 UI cases passed, including relaunch in every mode and both close orders. Strict Debug compilation has no source warnings. Executed evidence, initial infrastructure failures, and remaining OR-15 conditions are recorded in `REGRESSION-COVERAGE.md`.

@@ -697,7 +697,7 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
         guard fileManager.contentsEqual(atPath: archive.path, andPath: record.fileURL.path) else { throw ArchiveEngineError.archiveChanged }
         let target = destination.internalPath.isEmpty ? "" : try safeArchivePath(destination.internalPath)
         if !target.isEmpty {
-            guard try await self.items(at: ArchiveAddress(sessionID: destination.sessionID,
+            guard try self.items(at: ArchiveAddress(sessionID: destination.sessionID,
                 archiveID: destination.archiveID, internalPath: (target as NSString).deletingLastPathComponent))
                 .contains(where: { $0.isDirectory && $0.name == (target as NSString).lastPathComponent }) else {
                 throw ArchiveEngineError.itemNotFound
@@ -726,7 +726,7 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
         let original = operation.appendingPathComponent(archive.lastPathComponent)
         let updated = operation.appendingPathComponent("Updated-" + archive.lastPathComponent)
         try fileManager.copyItem(at: record.fileURL, to: original)
-        var occupied = try await self.items(at: destination).map(\.name)
+        var occupied = try self.items(at: destination).map(\.name)
         var stagedNames: Set<String> = []
         var paths: [String] = []
         var exclusions: [String] = []

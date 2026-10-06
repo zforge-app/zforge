@@ -122,7 +122,7 @@ The window uses `.windowResizability(.contentMinSize)` to make macOS respect the
 
 ## 4. Toolbar
 
-The display mode is individual by window/tab. The complete, compact and overflow selectors, menus and shortcuts `⌘1`–`⌘4` act only in the corresponding window. Each new window starts in “Default View” mode in Settings (Icons in the absence of preference); changing this pattern does not change existing windows, and changing the mode of a window does not change the pattern.
+The display mode is individual by window/tab. The complete, compact and overflow selectors, menus and shortcuts `⌘1`–`⌘4` act only in the corresponding window. Each new window starts in the persisted startup mode (Icons in the absence of a preference). Changing a window mode does not change other open windows or immediately overwrite the startup mode. The last browser window/tab closed saves its current mode for the next window and application launch, regardless of which window changed mode most recently. Closing Settings, Info, or shortcut help, switching tabs, and replacing scene content must not overwrite it. Normal Quit with windows still open saves the frontmost remaining browser mode. “Default View” in Settings changes the startup preference for future windows until a later browser close or Quit updates it.
 
 ### Structure
 

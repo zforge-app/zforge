@@ -24,6 +24,47 @@ final class ZforgeUITests: XCTestCase {
     }
 
     @MainActor
+    func testLastClosedWindowRestoresViewModeAfterRelaunch() throws {
+        let app = XCUIApplication()
+        app.launchEnvironment["ZFORGE_UI_PREFERENCES_SUITE"] = "ZforgeViewRelaunch-\(UUID().uuidString)"
+        defer { app.terminate() }
+        for (initialMode, mode, closeFirst) in [("icons", "list", true),
+            ("columns", "gallery", false), ("icons", "gallery", true), ("icons", "columns", false)] {
+            app.launchArguments = ["--ui-fixtures", "--ui-window-width", "1100",
+                "--ui-view-mode", initialMode,
+                "-appLanguagePreference", "english"]
+            launchArchiveFixture(app)
+            let first = app.windows.containing(.any, identifier: "browser-mode-\(initialMode)").firstMatch
+            XCTAssertTrue(first.waitForExistence(timeout: 5))
+            app.typeKey("n", modifierFlags: .command)
+            XCTAssertTrue(app.windows.element(boundBy: 1).waitForExistence(timeout: 5))
+            app.typeKey(["icons": "1", "list": "2", "columns": "3", "gallery": "4"][mode]!, modifierFlags: .command)
+            let changed = app.windows.containing(.any, identifier: "browser-mode-\(mode)").firstMatch
+            XCTAssertTrue(changed.waitForExistence(timeout: 5))
+            XCTAssertTrue(first.exists, "Changing the second window must preserve the first mode")
+            // Alternate close order so every mode is exercised as the winner.
+            let winner = closeFirst ? changed : first
+            let loser = closeFirst ? first : changed
+            let expected = closeFirst ? mode : initialMode
+            loser.buttons[XCUIIdentifierCloseWindow].click()
+            XCTAssertTrue(winner.exists)
+            winner.buttons[XCUIIdentifierCloseWindow].click()
+            XCTAssertTrue(app.windows.firstMatch.waitForNonExistence(timeout: 5))
+            // Opening again in the same process must also use the saved mode.
+            app.typeKey("n", modifierFlags: .command)
+            let restored = app.descendants(matching: .any)["browser-mode-\(expected)"].firstMatch
+            XCTAssertTrue(restored.waitForExistence(timeout: 5))
+            app.typeKey("q", modifierFlags: .command)
+            XCTAssertTrue(app.wait(for: .notRunning, timeout: 5))
+            app.launchArguments = ["--ui-fixtures", "--ui-window-width", "1100",
+                "-appLanguagePreference", "english"]
+            launchArchiveFixture(app)
+            XCTAssertTrue(restored.waitForExistence(timeout: 5), "Relaunch must restore \(expected)")
+            app.terminate()
+        }
+    }
+
+    @MainActor
     func testViewModeIsIndependentBetweenWindows() throws {
         let app = XCUIApplication()
         app.launchArguments = [

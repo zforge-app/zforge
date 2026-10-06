@@ -108,7 +108,8 @@ struct ContentView: View {
         .background {
             BrowserWindowConfigurationView(
                 representedURL: browser.currentDirectoryURL,
-                tabSourceWindowNumber: tabSourceWindowNumber
+                tabSourceWindowNumber: tabSourceWindowNumber,
+                browser: browser
             )
                 .frame(width: 0, height: 0)
         }

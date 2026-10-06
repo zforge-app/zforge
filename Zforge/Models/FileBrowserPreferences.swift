@@ -4,7 +4,17 @@ import SwiftUI
 @MainActor
 @Observable
 final class FileBrowserPreferences {
-    static let shared = FileBrowserPreferences()
+    static let shared = FileBrowserPreferences(defaults: launchDefaults)
+
+    private static var launchDefaults: UserDefaults {
+        // UI relaunch tests must not read or overwrite the user's preferences.
+        if ProcessInfo.processInfo.arguments.contains("--ui-fixtures"),
+           let suite = ProcessInfo.processInfo.environment["ZFORGE_UI_PREFERENCES_SUITE"],
+           let defaults = UserDefaults(suiteName: suite) {
+            return defaults
+        }
+        return .standard
+    }
 
     private enum Key {
         static let viewMode = "browser.viewMode"
