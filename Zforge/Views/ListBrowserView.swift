@@ -395,15 +395,14 @@ private struct BrowserListRow: View {
             }
             .contentShape(Rectangle())
             .finderClickGesture(
-                onSingleClick: {
+                onSingleClick: { modifiers in
                     state.select(
                         entry.item,
-                        modifiers: NSEvent.modifierFlags,
+                        modifiers: modifiers,
                         orderedItems: state.flattenedItems()
                     )
                 },
-                onDoubleClick: {
-                    let modifiers = NSEvent.modifierFlags
+                onDoubleClick: { modifiers in
                     Task { await state.openFromDoubleClick(entry.item, modifiers: modifiers) }
                 }
             )

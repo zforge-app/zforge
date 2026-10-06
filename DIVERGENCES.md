@@ -241,7 +241,7 @@ Save 19:47 shows copy of PDF with suffix after extension. Corrected in code: exp
 - **Previous evidence:** `rapidColumnArchiveSelectionPublishesOnlyCurrentArchive` failed `firstStarted` in the integrated suite (135 approved/1 failure) and passed isolated. There is no proven functional regression nor cause of established scheduling.
 - **Test correction:** Repeated consultation with pauses of 1 ms; Wait for explicit signal from the simulated engine. First loading is suspended until cancellation, without automatic completion after 2s; second doesn't use artificial delay. Timeout of 10s detects real locking and failure fatal in preparation closes the scenario. Early signs are remembered; continuations and watchdogs are removed on signal, cancellation, timeout or closure.
 - **Scope:** only fixture/tests and documented coverage; no modified production handler. Repeated verification at `REGRESSION-COVERAGE.md`; ZF-32.
-- **Reopened verification, 2026-10-05:** the ZF-39 full unit run executed 182 cases (248 executions including parameterized cases): 181 passed and this case failed with `.timedOut("started:First.zip")`. The unchanged case subsequently executed once and passed in isolation. The previous synchronization fix and historical passing repetitions do not establish the cause of this new timeout or approve the failed full run. No timeout, expectation, or production Columns handler was changed to hide it. Investigation remains pending; evidence is recorded under ZF-39 in `REGRESSION-COVERAGE.md`.
+- **Reopened verification, 2026-10-05:** the ZF-39 full unit run executed 182 cases (248 executions including parameterized cases): 181 passed and this case failed with `.timedOut("started:First.zip")`. The unchanged case subsequently executed once and passed in isolation. The previous synchronization fix and historical passing repetitions do not establish the cause of this new timeout or approve the failed full run. No timeout, expectation, or production Columns handler was changed to hide it. Investigation remains pending; evidence is recorded under ZF-39 in `REGRESSION-COVERAGE.md`. The later integrated run executed this unchanged Columns case successfully (209/210 unit cases passed; the unrelated native tag-event case failed). That passing round does not establish the cause of the earlier timeout.
 
 ### D-29 — Secondary click on empty space does not open the ellipsis menu (corrected; one-off check in the four modes)
 
@@ -313,3 +313,23 @@ Save 19:47 shows copy of PDF with suffix after extension. Corrected in code: exp
 
 
 **Main integration in 2026-10-05:** D-31–D-35 coexist with D-29/D-30 without IDs colliding. Refresh/drag follow window mode; Shared menus preserved. History in the four modes, absence of duplicate lines in the pending column and adjacent flows passed in the integrated matrix, recorded in `REGRESSION-COVERAGE.md`. Visual limits of OR-14 and runtime macOS 26 remain open.
+
+
+### D-36 — Startup mode remained fixed instead of following the last closed window (correction implemented; verification reopened)
+
+- **Report, 2026-10-05:** the application always reopened in Gallery. With two different window modes, the last window closed must determine the next application startup mode.
+- **Cause:** ZF-34 separated active modes from shared preferences but never wrote the closing window's mode back. The earlier Settings-only startup wording in D-30 is superseded by this explicit requirement; window independence remains mandatory.
+- **Correction:** native browser-window closure persists its current mode. Scene disappearance and unrelated windows do not write it. Quit with open browser windows selects the frontmost remaining browser and prevents teardown from overwriting that decision.
+- **Related diagnostics:** unnecessary `await` markers on two synchronous actor-local listing calls in `ArchiveEngine.reorganizeItems` removed. RNF-Q07 requires human review approval for any unavoidable newly introduced diagnostic.
+- **Validation:** 172 unit cases/245 executions and 3 UI cases passed, including relaunch in every mode and both close orders. Strict Debug compilation has no source warnings. Executed evidence, initial infrastructure failures, and remaining OR-15 conditions are recorded in `REGRESSION-COVERAGE.md`.
+
+- **Verification reopened during ZF-39 integration, 2026-10-05:** unit lifecycle cases and in-process UI reopening passed, but the first List relaunch expectation failed. A separate run on production source from main `1eb4a42`, using the same fixture launcher and unchanged assertions, reproduced that failure. This is a preexisting verification gap; its cause is unresolved and historical passing runs are retained. See the ZF-39 integration evidence in `REGRESSION-COVERAGE.md`.
+
+## D-37 — Icons displays file icons instead of available previews
+
+- **Report, 2026-10-05:** user screenshots show PNG/JPEG/PDF and other documents using file icons in Icons despite existing content-preview support.
+- **Requested contract:** display content thumbnails by default and offer a persistent option in application Settings.
+- **Implemented correction:** Icons requests bounded content thumbnails asynchronously, independently of selection/inspector visibility; unavailable content retains the native icon. The option defaults on, persists either choice and updates existing windows. Folders/archives and automatic archive-size limits are preserved. ZF-38.
+- **Related concurrency correction:** deterministic native ZIP tests reproduced lost materialization cache entries and restoration of a closed session; publication now merges into a live session or cancels and cleans output.
+- **Related interaction correction:** UI validation reproduced loss of an existing selection when Command was released after a click but before the single/double-click recognizer resolved. The shared recognizer now captures the originating mouse-down modifiers. Zoom also retains current content during raster replacement instead of flashing a fallback icon.
+- **Evidence and limits:** see `REGRESSION-COVERAGE.md`; a build or source inspection alone does not establish visual polish, performance or all format providers.

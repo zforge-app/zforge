@@ -6,6 +6,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private var pendingArchiveURLs: [URL] = []
 
+    func applicationWillTerminate(_ notification: Notification) {
+        BrowserWindowLifecycle.shared.applicationWillTerminate(orderedWindows: NSApp.orderedWindows)
+    }
+
     func application(_ application: NSApplication, open urls: [URL]) {
         let archives = urls.filter { ArchiveFormatRegistry.recognizes($0.lastPathComponent) }
         guard !archives.isEmpty else { return }

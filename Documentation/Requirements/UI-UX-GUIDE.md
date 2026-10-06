@@ -122,7 +122,7 @@ The window uses `.windowResizability(.contentMinSize)` to make macOS respect the
 
 ## 4. Toolbar
 
-The display mode is individual by window/tab. The complete, compact and overflow selectors, menus and shortcuts `⌘1`–`⌘4` act only in the corresponding window. Each new window starts in “Default View” mode in Settings (Icons in the absence of preference); changing this pattern does not change existing windows, and changing the mode of a window does not change the pattern.
+The display mode is individual by window/tab. The complete, compact and overflow selectors, menus and shortcuts `⌘1`–`⌘4` act only in the corresponding window. Each new window starts in the persisted startup mode (Icons in the absence of a preference). Changing a window mode does not change other open windows or immediately overwrite the startup mode. The last browser window/tab closed saves its current mode for the next window and application launch, regardless of which window changed mode most recently. Closing Settings, Info, or shortcut help, switching tabs, and replacing scene content must not overwrite it. Normal Quit with windows still open saves the frontmost remaining browser mode. “Default View” in Settings changes the startup preference for future windows until a later browser close or Quit updates it.
 
 ### Structure
 
@@ -285,6 +285,12 @@ The four views share the same fundamental rules:
 - In column view, the selection of the active column uses the selection color; the hierarchy opened in previous columns uses discrete gray.
 
 ## 8. Icon preview
+
+- Show content thumbnails by default for files that have a preview; expose `Show previews in icon view` in Settings, persist either choice and apply it immediately to open windows. This preference is independent of inspector visibility and only changes Icons cells.
+- Keep the current file's thumbnail visible during zoom while a new raster loads, clear content on item revision, and discard obsolete results. Preserve the name as the accessible label and announce selection without duplicating decorative image labels. Capture mouse-down modifiers before the single/double-click delay; Command/Shift release must not change the intended selection in any mode.
+- Fit content into the existing icon area without cropping, preserve selection/hidden-file appearance and the complete cell hitbox, and keep the native icon visible while loading or when no representation is available. Folders and archives retain their established icons.
+- Load asynchronously for visible cells; bound raster dimensions, concurrency and cache. Cancel obsolete work on navigation, mode changes, zoom and preference changes without presenting background preview errors as modal dialogs. Preserve focus, selection, scrolling and cell geometry when a thumbnail arrives.
+- Use bounded image decoding, the first PDF page, the 1 KiB text preview, static HTML with document scripts disabled, and native Quick Look content representations for other formats. Internal files use the existing preview session and automatic limit; unknown-size/oversized items retain their icon and explicit inspector preview action. Enabled grid thumbnails remain independent when the inspector is hidden.
 
 - Usar `LazyVGrid` adaptativa.
 - Base cell: `110 pt`.

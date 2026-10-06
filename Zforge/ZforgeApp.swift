@@ -338,6 +338,8 @@ private struct ZforgeSettingsView: View {
                 }
             }
             Toggle("Show hidden files", isOn: $preferences.showHiddenFiles)
+            Toggle("Show previews in icon view", isOn: $preferences.showIconPreviews)
+                .accessibilityIdentifier("settings-show-icon-previews")
 
             Section("List Columns") {
                 Text("Choose the columns shown by default. Use the arrows to change their order. A folder can override this layout from a column header.")

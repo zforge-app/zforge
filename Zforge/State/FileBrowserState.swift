@@ -692,6 +692,13 @@ final class FileBrowserState {
     }
 
     convenience init(initialURL: URL? = nil) {
+        if ProcessInfo.processInfo.arguments.contains("--ui-icon-preview-fixtures") {
+            self.init(preferences: FileBrowserPreferences.shared, fileSystem: FileSystemService(),
+                recentItems: UIFixtureRecentItemsService(), grants: UIFixtureAccessGrantStore(),
+                archives: NativeSevenZipArchiveEngine(),
+                initialURL: ZforgeTemporaryStorage.root().appendingPathComponent("IconPreviewFixture-" + UUID().uuidString))
+            return
+        }
         if ProcessInfo.processInfo.arguments.contains("--ui-archive-drag-fixtures") {
             self.init(preferences: FileBrowserPreferences.shared, fileSystem: FileSystemService(),
                 recentItems: UIFixtureRecentItemsService(), grants: UIFixtureAccessGrantStore(),
@@ -754,6 +761,11 @@ final class FileBrowserState {
 
     func start() async {
         await archives.cleanupStaleSessions()
+        if ProcessInfo.processInfo.arguments.contains("--ui-icon-preview-fixtures"), let initialURL {
+            do {
+                try await IconPreviewUIFixture.create(at: initialURL, archives: archives)
+            } catch { self.error = mapError(error); return }
+        }
         if ProcessInfo.processInfo.arguments.contains("--ui-archive-drag-fixtures"), let initialURL {
             do {
                 let inside = initialURL.appendingPathComponent("Inside", isDirectory: true)
@@ -3318,6 +3330,10 @@ final class FileBrowserState {
             expandedChildren: expandedChildren, sort: preferences.sort,
             showsHidden: preferences.showHiddenFiles
         )
+    }
+
+    func iconPreview(for item: BrowserItem, pixelSize: Int) async throws -> CGImage? {
+        try await IconPreviewService.shared.image(for: item, pixelSize: pixelSize, archives: archives)
     }
 
     func updatePreview(manual: Bool = false) {

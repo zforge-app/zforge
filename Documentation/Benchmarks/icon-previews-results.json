@@ -1,0 +1,22 @@
+{
+  "baselineDisabledCPUSeconds": 0.0002670000000000172,
+  "baselineDisabledFiles": 200,
+  "baselineDisabledMilliseconds": 0.262333,
+  "coldCPUSeconds": 0.636171,
+  "coldMilliseconds": 337.492125,
+  "coldRenderCalls": 200,
+  "mainActorPingMaximumMilliseconds": 0.400584,
+  "mainActorPingP95Milliseconds": 0.0845,
+  "mainActorPingSamples": 184,
+  "maximumConcurrentServiceRequests": 4,
+  "maximumRasterBytes": 202752,
+  "maximumRasterDimension": 256,
+  "processPeakResidentBytes": 247054336,
+  "residentBytesAfterCold": 231686144,
+  "residentBytesBeforeCold": 214745088,
+  "warmAdditionalRenderCalls": 0,
+  "warmCPUSeconds": 0.0001849999999998797,
+  "warmMilliseconds": 0.183291,
+  "warmViewportFiles": 32,
+  "workload": "200 local files: 50 PNG, 50 JPEG (2560x1600), 50 three-page PDF, 50 32-KiB text; requested 256 pixels"
+}
