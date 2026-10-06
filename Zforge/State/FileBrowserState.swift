@@ -34,6 +34,7 @@ final class FileBrowserState {
         let removals: [URL]
         let moves: [BrowserExactFileMove]
         let actionName: String
+        let supportsRedo: Bool
     }
 
     enum PasswordOperation {
@@ -183,6 +184,8 @@ final class FileBrowserState {
     @ObservationIgnored private var pendingAuthorizationPurpose: AuthorizationPurpose?
     @ObservationIgnored private var openWindowHandler: ((URL?) -> Void)?
     @ObservationIgnored private weak var undoManager: UndoManager?
+    @ObservationIgnored private(set) var fileUndoTask: Task<Void, Never>?
+    @ObservationIgnored private var isClosed = false
     @ObservationIgnored private let itemProjection = BrowserItemProjection()
     @ObservationIgnored private var recursiveExpansionGeneration: UInt64 = 0
     @ObservationIgnored private var activeFileTransferCount = 0
@@ -619,6 +622,16 @@ final class FileBrowserState {
         return parent.path == currentDirectoryURL.standardizedFileURL.path ? nil : parent
     }
     var canModifyCurrentDirectory: Bool { fileOperationDestinationURL != nil }
+    var canCreateFolderWithSelection: Bool {
+        guard !isClosed, !fileOperationInProgress, !archiveOperationInProgress,
+              !renameInProgress, renamingItemURL == nil, !isLoading,
+              let directory = fileOperationDestinationURL,
+              hasLocalSelection else { return false }
+        let parentPath = directory.standardizedFileURL.resolvingSymlinksInPath().path
+        return selectedItems.allSatisfy {
+            $0.localURL?.deletingLastPathComponent().standardizedFileURL.resolvingSymlinksInPath().path == parentPath
+        }
+    }
     var hasLocalSelection: Bool {
         !selectedItems.isEmpty && selectedItems.allSatisfy { $0.localURL != nil }
     }
@@ -2079,6 +2092,62 @@ final class FileBrowserState {
         }
     }
 
+    @discardableResult
+    func createNewFolderWithSelection() -> Task<Void, Never>? {
+        guard canCreateFolderWithSelection, let directory = fileOperationDestinationURL else { return nil }
+        let sources = selectedLocalURLs
+        let startingLocation = location
+        let startingPath = pathComponents
+        let startingColumn = activeColumnLocation
+        let startingMode = viewMode
+        let locale = preferences.language.locale
+        activeFileTransferCount += 1
+        fileOperationInProgress = true
+        fileOperationDescription = AppLocalization.string("Creating folder with selection…", locale: locale)
+        return Task {
+            defer {
+                activeFileTransferCount -= 1
+                if activeFileTransferCount == 0 {
+                    fileOperationInProgress = false
+                    fileOperationDescription = ""
+                }
+            }
+            do {
+                let folder = try await fileOperations.createFolder(containing: sources, in: directory, locale: locale)
+                guard !isClosed else { return }
+                registerSelectionFolderUndo(folder, grouped: false)
+                // Complete the filesystem operation in its captured destination,
+                // but only publish selection/rename into the original browsing context.
+                guard location == startingLocation, pathComponents == startingPath,
+                      activeColumnLocation == startingColumn, viewMode == startingMode else { return }
+                if viewMode == .columns {
+                    await refreshColumnsAfterRemovingLocalItems(sources)
+                } else {
+                    await reload()
+                }
+                guard !isClosed, viewMode == startingMode,
+                      fileOperationDestinationURL?.standardizedFileURL == directory.standardizedFileURL else { return }
+                if startingMode != .columns {
+                    guard location == startingLocation, pathComponents == startingPath,
+                          activeColumnLocation == startingColumn else { return }
+                }
+                renamingItemURL = folder.folderURL.standardizedFileURL
+                renameDraft = folder.folderURL.lastPathComponent
+                synchronizeRenamingSelection()
+            } catch {
+                guard !isClosed else { return }
+                // Recovery can change a visible hierarchy even when the action
+                // failed. Refresh before assigning the error, since reload clears it.
+                if location == startingLocation {
+                    if viewMode == .columns { await refreshColumnsAfterRemovingLocalItems(sources.filter {
+                        !FileManager.default.fileExists(atPath: $0.path)
+                    }) } else { await reload() }
+                }
+                self.error = mapError(error)
+            }
+        }
+    }
+
     func beginRenamingSelectedItem() {
         guard canRenameSelection, let item = primarySelection else { return }
         beginRenaming(item)
@@ -2141,7 +2210,8 @@ final class FileBrowserState {
                             destinationURL: sourceURL
                         )
                     ],
-                    actionName: AppLocalization.string("Rename", locale: preferences.language.locale)
+                    actionName: AppLocalization.string("Rename", locale: preferences.language.locale),
+                    supportsRedo: true
                 )
                 renamingItemURL = nil
                 renameDraft = ""
@@ -3450,6 +3520,7 @@ final class FileBrowserState {
     }
 
     func close() {
+        isClosed = true
         undoManager?.removeAllActions(withTarget: self)
         monitor.stop()
         stopExpandedDirectoryMonitors()
@@ -4024,13 +4095,15 @@ final class FileBrowserState {
     private func registerUndo(
         removing removals: [URL] = [],
         moving moves: [BrowserExactFileMove] = [],
-        actionName: String
+        actionName: String,
+        supportsRedo: Bool = false
     ) {
         guard !removals.isEmpty || !moves.isEmpty, let undoManager else { return }
         let record = FileUndoRecord(
             removals: removals.map(\.standardizedFileURL),
             moves: moves,
-            actionName: actionName
+            actionName: actionName,
+            supportsRedo: supportsRedo
         )
         undoManager.registerUndo(withTarget: self) { state in
             state.performUndo(record)
@@ -4039,14 +4112,56 @@ final class FileBrowserState {
     }
 
     private func performUndo(_ record: FileUndoRecord) {
-        Task {
+        if record.supportsRedo, record.removals.isEmpty, !record.moves.isEmpty {
+            registerUndo(moving: record.moves.reversed().map {
+                BrowserExactFileMove(sourceURL: $0.destinationURL, destinationURL: $0.sourceURL)
+            }, actionName: record.actionName, supportsRedo: true)
+        }
+        enqueueFileUndo {
             do {
-                try await fileOperations.moveItems(record.moves)
-                try await fileOperations.removeItems(at: record.removals)
-                await reload()
+                try await self.fileOperations.moveItems(record.moves)
+                try await self.fileOperations.removeItems(at: record.removals)
+                await self.reload()
             } catch {
-                self.error = mapError(error)
+                self.error = self.mapError(error)
             }
+        }
+    }
+
+    private func registerSelectionFolderUndo(_ folder: BrowserSelectionFolder, grouped: Bool) {
+        guard let undoManager else { return }
+        undoManager.registerUndo(withTarget: self) { state in
+            // UndoManager requires the inverse synchronously inside its callback;
+            // registering it after async filesystem work would erase the Redo stack.
+            state.registerSelectionFolderUndo(folder, grouped: !grouped)
+            state.enqueueFileUndo {
+                do {
+                    try await state.fileOperations.setSelectionFolder(folder, grouped: grouped)
+                    state.cancelRenaming()
+                    let removed = grouped ? folder.moves.map(\.sourceURL) : [folder.folderURL]
+                    if state.viewMode == .columns { await state.refreshColumnsAfterRemovingLocalItems(removed) }
+                    else { await state.reload() }
+                    state.selectLocalItems(at: grouped ? [folder.folderURL] : folder.moves.map(\.sourceURL))
+                } catch { state.error = state.mapError(error) }
+            }
+        }
+        undoManager.setActionName(AppLocalization.string("New Folder with Selection", locale: preferences.language.locale))
+    }
+
+    private func enqueueFileUndo(_ operation: @escaping @MainActor () async -> Void) {
+        let previous = fileUndoTask
+        activeFileTransferCount += 1
+        fileOperationInProgress = true
+        fileUndoTask = Task {
+            await previous?.value
+            defer {
+                activeFileTransferCount -= 1
+                if activeFileTransferCount == 0 {
+                    fileOperationInProgress = false
+                    fileOperationDescription = ""
+                }
+            }
+            await operation()
         }
     }
 

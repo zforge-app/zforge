@@ -472,6 +472,7 @@ extension View {
         }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("browser-item-" + item.name)
+        .accessibilityAddTraits(state.selection.contains(item.id) ? .isSelected : [])
     }
 
     @ViewBuilder

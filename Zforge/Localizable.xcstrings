@@ -1,6 +1,22 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Cannot complete this operation because an item named %@ already exists." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cannot complete this operation because an item named %@ already exists."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não é possível concluir esta operação porque já existe um item chamado %@."
+          }
+        }
+      }
+    },
     "" : {
 
     },
@@ -2334,6 +2350,56 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nova Pasta"
+          }
+        }
+      }
+    },
+    "Cannot undo because the contents of %@ have changed." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não é possível desfazer porque o conteúdo de %@ foi alterado."
+          }
+        }
+      }
+    },
+    "Select items from the same folder to create a folder with selection." : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selecione itens da mesma pasta para criar uma pasta com a seleção."
+          }
+        }
+      }
+    },
+    "The operation failed: %@ Some items could not be restored: %@" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A operação falhou: %@ Alguns itens não puderam ser restaurados: %@"
+          }
+        }
+      }
+    },
+    "Creating folder with selection…" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Criando pasta com a seleção…"
+          }
+        }
+      }
+    },
+    "New Folder with Selection" : {
+      "localizations" : {
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nova Pasta com Seleção"
           }
         }
       }

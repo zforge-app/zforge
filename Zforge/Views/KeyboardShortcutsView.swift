@@ -10,12 +10,12 @@ struct KeyboardShortcutsView: View {
 
         return KeyboardShortcutCatalog.sections.compactMap { section in
             let matchingItems = section.items.filter { item in
-                let localizedAction = String(
-                    localized: String.LocalizationValue(item.action),
+                let localizedAction = AppLocalization.string(
+                    String.LocalizationValue(item.action),
                     locale: preferences.language.locale
                 )
-                let localizedSection = String(
-                    localized: String.LocalizationValue(section.title),
+                let localizedSection = AppLocalization.string(
+                    String.LocalizationValue(section.title),
                     locale: preferences.language.locale
                 )
                 let shortcutAliases = item.input
@@ -163,6 +163,9 @@ private struct KeyboardShortcutKeycap: View {
             RoundedRectangle(cornerRadius: 6)
                 .stroke(.separator, lineWidth: 0.5)
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(verbatim: input))
+        .accessibilityIdentifier("shortcut-\(input)")
     }
 }
 
@@ -190,6 +193,7 @@ private enum KeyboardShortcutCatalog {
             ("New Zforge Window", "⌘N"),
             ("New tab", "⌘T"),
             ("New Folder", "⇧⌘N"),
+            ("New Folder with Selection", "⌃⌥⌘N"),
             ("Duplicate", "⌘D"),
             ("Get Info", "⌘I"),
             ("Show Original", "⌘R"),

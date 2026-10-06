@@ -106,6 +106,14 @@ struct ContentView: View {
         .environment(\.locale, browser.preferences.language.locale)
         .focusedSceneValue(\.fileBrowserState, browser)
         .background {
+            Button(AppLocalization.string("New Folder with Selection", locale: browser.preferences.language.locale)) {
+                browser.createNewFolderWithSelection()
+            }
+            .keyboardShortcut("n", modifiers: [.control, .option, .command])
+            .disabled(!browser.canCreateFolderWithSelection)
+            .hidden()
+            .accessibilityHidden(true)
+            .frame(width: 0, height: 0)
             BrowserWindowConfigurationView(
                 representedURL: browser.currentDirectoryURL,
                 tabSourceWindowNumber: tabSourceWindowNumber

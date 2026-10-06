@@ -115,6 +115,7 @@ struct FileOperationServiceTests {
 
             let controller = NSHostingController(rootView: RenameBrowserHarness(state: state))
             let window = NSWindow(contentViewController: controller)
+            window.isReleasedWhenClosed = false
             window.setContentSize(NSSize(width: 760, height: 520))
             window.makeKeyAndOrderFront(nil)
 
@@ -139,6 +140,10 @@ struct FileOperationServiceTests {
                 window.firstResponder is NSTextView,
                 "Rename editor did not receive focus in \(viewMode.rawValue) view"
             )
+            // Detach the hosting tree on MainActor before AppKit's deferred
+            // window deallocation invokes lifecycle callbacks during teardown.
+            window.contentViewController = nil
+            window.contentView = nil
             window.close()
         }
     }
@@ -663,6 +668,14 @@ private actor SuspendedTransferFileOperationService: FileOperationServing {
 
     func createFolder(in directory: URL, locale: Locale?) async throws -> URL {
         try await service.createFolder(in: directory, locale: locale)
+    }
+
+    func createFolder(containing sourceURLs: [URL], in directory: URL, locale: Locale?) async throws -> BrowserSelectionFolder {
+        try await service.createFolder(containing: sourceURLs, in: directory, locale: locale)
+    }
+
+    func setSelectionFolder(_ folder: BrowserSelectionFolder, grouped: Bool) async throws {
+        try await service.setSelectionFolder(folder, grouped: grouped)
     }
 
     func rename(_ sourceURL: URL, to newName: String) async throws -> URL {

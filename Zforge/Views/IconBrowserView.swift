@@ -121,6 +121,6 @@ private struct BrowserIconCell: View {
         .frame(maxWidth: .infinity, minHeight: 90 * scale)
         .padding(8 * scale)
         .contentShape(Rectangle())
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: state.renamingItemID == item.id ? .contain : .combine)
     }
 }
