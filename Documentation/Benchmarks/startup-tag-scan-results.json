@@ -1,0 +1,343 @@
+{
+  "date": "2026-10-05",
+  "source_ref": "866a55c",
+  "file_count": 30000,
+  "measurements": [
+    {
+      "repeat": 1,
+      "variant": "baseline",
+      "exit": 0,
+      "seconds": 1.5781580209732056,
+      "rss_bytes": 94306304,
+      "footprint_bytes": 85344904,
+      "cpu_seconds": 1.57
+    },
+    {
+      "repeat": 1,
+      "variant": "pooled",
+      "exit": 0,
+      "seconds": 1.506971001625061,
+      "rss_bytes": 12058624,
+      "footprint_bytes": 3048000,
+      "cpu_seconds": 1.49
+    },
+    {
+      "repeat": 1,
+      "variant": "cached-root",
+      "exit": 0,
+      "seconds": 0.8901950120925903,
+      "rss_bytes": 11993088,
+      "footprint_bytes": 2982464,
+      "cpu_seconds": 0.8799999999999999
+    },
+    {
+      "repeat": 2,
+      "variant": "baseline",
+      "exit": 0,
+      "seconds": 1.55697500705719,
+      "rss_bytes": 94322688,
+      "footprint_bytes": 85361288,
+      "cpu_seconds": 1.55
+    },
+    {
+      "repeat": 2,
+      "variant": "pooled",
+      "exit": 0,
+      "seconds": 1.3608579635620117,
+      "rss_bytes": 12091392,
+      "footprint_bytes": 3080768,
+      "cpu_seconds": 1.35
+    },
+    {
+      "repeat": 2,
+      "variant": "cached-root",
+      "exit": 0,
+      "seconds": 0.8050858974456787,
+      "rss_bytes": 12009472,
+      "footprint_bytes": 2998848,
+      "cpu_seconds": 0.8
+    },
+    {
+      "repeat": 3,
+      "variant": "cached-root",
+      "exit": 0,
+      "seconds": 0.7973990440368652,
+      "rss_bytes": 12009472,
+      "footprint_bytes": 2998848,
+      "cpu_seconds": 0.79
+    },
+    {
+      "repeat": 3,
+      "variant": "pooled",
+      "exit": 0,
+      "seconds": 1.361744999885559,
+      "rss_bytes": 12058624,
+      "footprint_bytes": 3048000,
+      "cpu_seconds": 1.35
+    },
+    {
+      "repeat": 3,
+      "variant": "baseline",
+      "exit": 0,
+      "seconds": 1.527506947517395,
+      "rss_bytes": 94273536,
+      "footprint_bytes": 85295728,
+      "cpu_seconds": 1.51
+    }
+  ],
+  "correction_runs": [
+    {
+      "file_count": 30000,
+      "measurements": [
+        {
+          "repeat": 1,
+          "variant": "baseline",
+          "seconds": 1.2923309803009033,
+          "cpu_seconds": 1.29,
+          "rss_bytes": 97566720,
+          "footprint_bytes": 88343152
+        },
+        {
+          "repeat": 1,
+          "variant": "corrected",
+          "seconds": 8.638340950012207,
+          "cpu_seconds": 1.47,
+          "rss_bytes": 12566528,
+          "footprint_bytes": 3228248
+        },
+        {
+          "repeat": 2,
+          "variant": "corrected",
+          "seconds": 9.194601058959961,
+          "cpu_seconds": 1.57,
+          "rss_bytes": 12566528,
+          "footprint_bytes": 3228248
+        },
+        {
+          "repeat": 2,
+          "variant": "baseline",
+          "seconds": 1.2422800064086914,
+          "cpu_seconds": 1.24,
+          "rss_bytes": 97583104,
+          "footprint_bytes": 88375944
+        },
+        {
+          "repeat": 3,
+          "variant": "baseline",
+          "seconds": 1.2043129205703735,
+          "cpu_seconds": 1.19,
+          "rss_bytes": 97550336,
+          "footprint_bytes": 88310360
+        },
+        {
+          "repeat": 3,
+          "variant": "corrected",
+          "seconds": 8.848051071166992,
+          "cpu_seconds": 1.5,
+          "rss_bytes": 12533760,
+          "footprint_bytes": 3195480
+        }
+      ],
+      "idle_cpu_seconds": 0.0002789999999999182,
+      "label": "throttled-before-untagged-optimization",
+      "conditions": "Production slices and per-item draining; extra file properties still read."
+    },
+    {
+      "file_count": 30000,
+      "measurements": [
+        {
+          "repeat": 1,
+          "variant": "baseline",
+          "seconds": 1.3505229949951172,
+          "cpu_seconds": 1.34,
+          "rss_bytes": 96288768,
+          "footprint_bytes": 87065200
+        },
+        {
+          "repeat": 1,
+          "variant": "corrected",
+          "seconds": 2.7592740058898926,
+          "cpu_seconds": 0.47,
+          "rss_bytes": 12435456,
+          "footprint_bytes": 3097152
+        },
+        {
+          "repeat": 2,
+          "variant": "corrected",
+          "seconds": 2.52340304851532,
+          "cpu_seconds": 0.43000000000000005,
+          "rss_bytes": 12845056,
+          "footprint_bytes": 3523136
+        },
+        {
+          "repeat": 2,
+          "variant": "baseline",
+          "seconds": 2.027659058570862,
+          "cpu_seconds": 1.54,
+          "rss_bytes": 80117760,
+          "footprint_bytes": 87278192
+        },
+        {
+          "repeat": 3,
+          "variant": "baseline",
+          "seconds": 1.831360101699829,
+          "cpu_seconds": 1.7599999999999998,
+          "rss_bytes": 96206848,
+          "footprint_bytes": 87245448
+        },
+        {
+          "repeat": 3,
+          "variant": "corrected",
+          "seconds": 7.160187005996704,
+          "cpu_seconds": 1.1600000000000001,
+          "rss_bytes": 12992512,
+          "footprint_bytes": 3474008
+        }
+      ],
+      "idle_cpu_seconds": 0.0003349999999999742,
+      "label": "final-with-unit-runner",
+      "conditions": "Final scanner; full unit run overlapped part of the measurements."
+    },
+    {
+      "file_count": 30000,
+      "measurements": [
+        {
+          "repeat": 1,
+          "variant": "baseline",
+          "seconds": 1.3513840436935425,
+          "cpu_seconds": 1.34,
+          "rss_bytes": 97878016,
+          "footprint_bytes": 88638040
+        },
+        {
+          "repeat": 1,
+          "variant": "corrected",
+          "seconds": 6.604297995567322,
+          "cpu_seconds": 1.2,
+          "rss_bytes": 12484608,
+          "footprint_bytes": 3162712
+        },
+        {
+          "repeat": 2,
+          "variant": "corrected",
+          "seconds": 6.985309958457947,
+          "cpu_seconds": 1.26,
+          "rss_bytes": 12517376,
+          "footprint_bytes": 3195480
+        },
+        {
+          "repeat": 2,
+          "variant": "baseline",
+          "seconds": 1.2565950155258179,
+          "cpu_seconds": 1.25,
+          "rss_bytes": 97910784,
+          "footprint_bytes": 88670808
+        },
+        {
+          "repeat": 3,
+          "variant": "baseline",
+          "seconds": 1.3098030090332031,
+          "cpu_seconds": 1.3,
+          "rss_bytes": 97976320,
+          "footprint_bytes": 88998536
+        },
+        {
+          "repeat": 3,
+          "variant": "corrected",
+          "seconds": 6.857224941253662,
+          "cpu_seconds": 1.24,
+          "rss_bytes": 12484608,
+          "footprint_bytes": 3392088
+        }
+      ],
+      "idle_cpu_seconds": 0.00030599999999991745,
+      "label": "final-without-unit-runner",
+      "conditions": "Final scanner; no unit runner or build, but the separate real-app discovery remained active. Filesystem caches were not cleared."
+    },
+    {
+      "file_count": 30000,
+      "measurements": [
+        {
+          "repeat": 1,
+          "variant": "baseline",
+          "seconds": 1.8725030422210693,
+          "cpu_seconds": 1.83,
+          "rss_bytes": 98467840,
+          "footprint_bytes": 89244272
+        },
+        {
+          "repeat": 1,
+          "variant": "corrected",
+          "seconds": 5.450478911399841,
+          "cpu_seconds": 0.8500000000000001,
+          "rss_bytes": 12517376,
+          "footprint_bytes": 3261016
+        },
+        {
+          "repeat": 2,
+          "variant": "corrected",
+          "seconds": 3.544036030769348,
+          "cpu_seconds": 0.5900000000000001,
+          "rss_bytes": 12976128,
+          "footprint_bytes": 3687024
+        },
+        {
+          "repeat": 2,
+          "variant": "baseline",
+          "seconds": 1.331555962562561,
+          "cpu_seconds": 1.32,
+          "rss_bytes": 98516992,
+          "footprint_bytes": 89522800
+        },
+        {
+          "repeat": 3,
+          "variant": "baseline",
+          "seconds": 1.2567869424819946,
+          "cpu_seconds": 1.25,
+          "rss_bytes": 98533376,
+          "footprint_bytes": 89539184
+        },
+        {
+          "repeat": 3,
+          "variant": "corrected",
+          "seconds": 7.420415997505188,
+          "cpu_seconds": 1.34,
+          "rss_bytes": 12550144,
+          "footprint_bytes": 3457624
+        }
+      ],
+      "idle_cpu_seconds": 0.0002060000000001505,
+      "label": "delivered-source",
+      "conditions": "Exact delivered source including symlink identity correction. Production build overlapped the initial benchmark phase; separate real Home discovery remained active. Filesystem caches were not cleared."
+    }
+  ],
+  "final_application_active": {
+    "configuration": "Debug",
+    "pid": 35295,
+    "samples": 160,
+    "interval_ms": 250,
+    "duration_seconds": 40.343267,
+    "cpu_seconds": 6.998307583,
+    "mean_cpu_percent": 17.346903469666948,
+    "maximum_rss_bytes": 180109312,
+    "maximum_footprint_bytes": 102810728,
+    "sample_peak_footprint_mib": 110.1,
+    "note": "One real Home discovery, not a matched three-run application baseline. proc rusage CPU ticks converted using mach_timebase_info (125/3). This build precedes the incremental-reader identity correction; discovery is unchanged."
+  },
+  "measured_discovery_source_sha256": {
+    "Zforge/Services/FinderTagCatalog.swift": "a2a23fe293ff91c7b1eb4b48531a850837be8bd86bbffd6629e6389a6f304f7e",
+    "Zforge/Services/TaggedFileScanner.swift": "4744efd13f71a91d99b1ddde5d462fd6daaeef7a8f9ef908c7dbf6229476e0e6"
+  },
+  "final_source_sha256": {
+    "Zforge/Services/FinderTagCatalog.swift": "a2a23fe293ff91c7b1eb4b48531a850837be8bd86bbffd6629e6389a6f304f7e",
+    "Zforge/Services/TaggedFileScanner.swift": "cd1d5f963d2bf937df7b1bf39f2506283a9f706a9f724749431cbe29c37e8fe8"
+  },
+  "application_later_active": {
+    "samples": 80,
+    "duration_seconds": 20.073382,
+    "mean_cpu_percent": 17.042864067450118,
+    "maximum_rss_bytes": 166805504,
+    "maximum_footprint_bytes": 102663344,
+    "note": "Later active series around ten minutes in the same measured discovery build."
+  }
+}

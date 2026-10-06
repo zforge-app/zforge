@@ -82,16 +82,49 @@ final class FinderTagCatalog: NSObject {
     @ObservationIgnored private var query: MDQuery?
     @ObservationIgnored private var notificationTokens: [NSObjectProtocol] = []
     @ObservationIgnored private var records: [String: [String: Int]] = [:]
+    @ObservationIgnored private var tagReferences: [String: [Int: Int]] = [:]
     @ObservationIgnored private var searchScopes: [URL] = []
     @ObservationIgnored private var leasedScopes: [URL] = []
-    @ObservationIgnored private var scanTask: Task<Void, Never>?
+    @ObservationIgnored private var workTask: Task<Void, Never>?
+    @ObservationIgnored private var pendingScans = TagScanRoots()
+    @ObservationIgnored private var pendingReads: Set<URL> = []
+    @ObservationIgnored private let scanner: TaggedFileScanner.Scan
+    @ObservationIgnored private let reader: TaggedFileScanner.Read
+    @ObservationIgnored private let monitorsFiles: Bool
+    @ObservationIgnored private let usesSpotlight: Bool
+    @ObservationIgnored private var running = false
     @ObservationIgnored private var eventTask: Task<Void, Never>?
-    @ObservationIgnored private var pendingPaths: Set<String> = []
+    @ObservationIgnored private var pendingChanges: [String: TagFileChange] = [:]
     @ObservationIgnored private var stream: FSEventStreamRef?
     @ObservationIgnored private var generation: UInt64 = 0
 
+    init(
+        scanner: @escaping TaggedFileScanner.Scan = { roots, publish in
+            await TaggedFileScanner.scan(roots, onBatch: publish)
+        },
+        reader: @escaping TaggedFileScanner.Read = { await TaggedFileScanner.read($0) },
+        monitorsFiles: Bool = true,
+        usesSpotlight: Bool = true
+    ) {
+        self.scanner = scanner
+        self.reader = reader
+        self.monitorsFiles = monitorsFiles
+        self.usesSpotlight = usesSpotlight
+        super.init()
+    }
+
+    var isIdle: Bool { workTask == nil && eventTask == nil }
+
+    func waitForEvents() async { await eventTask?.value }
+
+    /// Await finite queued work; no polling or production timer is introduced.
+    func waitForIdle() async {
+        while let task = eventTask ?? workTask { await task.value }
+    }
+
     func start() {
-        guard query == nil else { return }
+        running = true
+        guard usesSpotlight, query == nil else { return }
         publish()
         guard let query = MDQueryCreate(
             kCFAllocatorDefault, "kMDItemUserTags == '*'" as CFString, nil, nil
@@ -102,29 +135,36 @@ final class FinderTagCatalog: NSObject {
         for name in [kMDQueryDidFinishNotification, kMDQueryDidUpdateNotification].compactMap({ $0 }) {
             notificationTokens.append(NotificationCenter.default.addObserver(
                 forName: Notification.Name(rawValue: name as String), object: query, queue: .main
-            ) { [weak self] _ in
-                Task { @MainActor [weak self] in self?.queryChanged() }
+            ) { [weak self] notification in
+                let updates = notification.name.rawValue == kMDQueryDidUpdateNotification as String
+                    ? FinderTagQueryUpdates.urls(in: notification.userInfo) : nil
+                Task { @MainActor [weak self] in
+                    if let updates { self?.update(updates) }
+                    else { self?.queryChanged() }
+                }
             })
         }
         if !MDQueryExecute(query, CFOptionFlags(kMDQueryWantsUpdates.rawValue)) { stopQuery() }
     }
 
     func refresh(searchScopes newScopes: [URL]? = nil) {
-        if let newScopes {
-            let additions = newScopes.filter { scope in
-                !searchScopes.contains { $0.standardizedFileURL == scope.standardizedFileURL }
-            }
-            if !additions.isEmpty {
-                // Own a security scope independently of the window that supplied it.
-                for scope in additions where scope.startAccessingSecurityScopedResource() {
-                    leasedScopes.append(scope)
-                }
-                searchScopes.append(contentsOf: additions)
-                startMonitoring()
-                scan(additions)
-            }
+        running = true
+        var covered = TagScanRoots()
+        for scope in searchScopes { covered.insert(scope) }
+        var additions = TagScanRoots()
+        for scope in newScopes ?? [] where !covered.contains(scope.standardizedFileURL) {
+            additions.insert(scope)
+            covered.insert(scope)
+            // Keep the lease from the authorized URL, including its bookmark.
+            if scope.startAccessingSecurityScopedResource() { leasedScopes.append(scope) }
         }
-        stopQuery()
+        if !additions.urls.isEmpty {
+            searchScopes = covered.urls
+            if monitorsFiles { startMonitoring() }
+            scan(additions.urls)
+        }
+        // An existing query already has live updates. Restarting it on sidebar
+        // navigation or another window would repeat the global result read.
         start()
     }
 
@@ -136,10 +176,8 @@ final class FinderTagCatalog: NSObject {
                 ($0, item.tagColorIndexes[$0] ?? FinderTagMetadata.defaultColorIndex(for: $0))
             })
             let path = url.standardizedFileURL.path
-            if records[path] != colors && (!colors.isEmpty || records[path] != nil) {
-                records[path] = colors.isEmpty ? nil : colors
-                changed = true
-            }
+            changed = setRecord(path, colors: colors) || changed
+            if running, workTask != nil { pendingReads.insert(url) }
         }
         if changed { publish(); revision &+= 1 }
     }
@@ -153,8 +191,13 @@ final class FinderTagCatalog: NSObject {
     func stop() {
         generation &+= 1
         stopQuery()
-        scanTask?.cancel()
+        running = false
+        workTask?.cancel()
         eventTask?.cancel()
+        eventTask = nil
+        pendingScans = TagScanRoots()
+        pendingReads.removeAll()
+        pendingChanges.removeAll()
         if let stream {
             FSEventStreamStop(stream)
             FSEventStreamInvalidate(stream)
@@ -182,38 +225,90 @@ final class FinderTagCatalog: NSObject {
     }
 
     private func scan(_ scopes: [URL]) {
-        let previous = scanTask
+        for scope in scopes { pendingScans.insert(scope) }
+        scheduleWork()
+    }
+
+    private func scheduleWork() {
+        guard running, workTask == nil,
+              !pendingScans.urls.isEmpty || !pendingReads.isEmpty else { return }
         let generation = generation
-        scanTask = Task { [weak self] in
-            await previous?.value
-            guard let self, !Task.isCancelled else { return }
-            await TaggedFileScanner.scan(scopes) { [weak self] batch in
-                await self?.receive(batch, generation: generation)
+        workTask = Task { [weak self] in
+            guard let self else { return }
+            while !Task.isCancelled, running {
+                if !pendingReads.isEmpty {
+                    let urls = Array(pendingReads.prefix(128))
+                    pendingReads.subtract(urls)
+                    let batch = await reader(urls)
+                    guard !Task.isCancelled else { break }
+                    receive(batch, generation: generation)
+                } else if !pendingScans.urls.isEmpty {
+                    let scopes = pendingScans.take()
+                    // Reconcile previously indexed metadata after a subtree
+                    // rescan, including removals hidden by lost/coalesced events.
+                    let indexed = records.keys.filter { path in
+                        scopes.contains { TagScanRoots.covers($0.path, path) }
+                    }
+                    await scanner(scopes) { [weak self] batch in
+                        await self?.receiveScanBatch(batch, generation: generation)
+                    }
+                    guard !Task.isCancelled else { break }
+                    pendingReads.formUnion(indexed.map { URL(fileURLWithPath: $0) })
+                } else { break }
             }
+            workTask = nil
+            // A stop followed immediately by restart waits for the canceled
+            // worker to retire before starting another filesystem worker.
+            scheduleWork()
         }
     }
 
     private func receive(_ batch: [String: [String: Int]], generation: UInt64) {
-        guard generation == self.generation else { return }
+        guard running, generation == self.generation else { return }
         var changed = false
-        for (path, colors) in batch where records[path] != colors {
-            records[path] = colors.isEmpty ? nil : colors
-            changed = true
+        for (path, colors) in batch {
+            changed = setRecord(path, colors: colors) || changed
         }
         if changed { publish(); revision &+= 1 }
     }
 
-    private func update(_ urls: [URL]) {
-        let generation = generation
-        Task { [weak self] in
-            let batch = await TaggedFileScanner.read(urls)
-            self?.receive(batch, generation: generation)
+    private func receiveScanBatch(_ batch: TaggedFileScanner.Batch, generation: UInt64) async {
+        guard running, generation == self.generation else { return }
+        receive(batch, generation: generation)
+        if !pendingReads.isEmpty {
+            let urls = Array(pendingReads.prefix(128))
+            pendingReads.subtract(urls)
+            let updated = await reader(urls)
+            guard !Task.isCancelled else { return }
+            receive(updated, generation: generation)
         }
+    }
+
+    /// Maintain the catalog incrementally instead of recounting every indexed
+    /// file each time another scan batch or edited item is published.
+    private func setRecord(_ path: String, colors: [String: Int]) -> Bool {
+        guard records[path] != (colors.isEmpty ? nil : colors) else { return false }
+        for (name, color) in records[path] ?? [:] {
+            let count = (tagReferences[name]?[color] ?? 1) - 1
+            tagReferences[name]?[color] = count > 0 ? count : nil
+            if tagReferences[name]?.isEmpty == true { tagReferences[name] = nil }
+        }
+        records[path] = colors.isEmpty ? nil : colors
+        for (name, color) in colors { tagReferences[name, default: [:]][color, default: 0] += 1 }
+        return true
+    }
+
+    private func update(_ urls: [URL]) {
+        guard running, !urls.isEmpty else { return }
+        pendingReads.formUnion(urls)
+        scheduleWork()
     }
 
     private func publish() {
         var colors: [String: Int] = [:]
-        for record in records.values { colors.merge(record) { old, new in new == 0 ? old : new } }
+        for (name, references) in tagReferences {
+            colors[name] = references.keys.filter { $0 != 0 }.min() ?? 0
+        }
         // This plist is read through the same Home authorization as user files.
         // Cross-domain CFPreferences alone is unavailable in the App Sandbox.
         let prefsURL = UserDirectoryService.homeURL.appendingPathComponent("Library/Preferences/com.apple.finder.plist")
@@ -243,11 +338,9 @@ final class FinderTagCatalog: NSObject {
                 guard let context else { return }
                 let catalog = Unmanaged<FinderTagCatalog>.fromOpaque(context).takeUnretainedValue()
                 let paths = unsafeBitCast(paths, to: NSArray.self) as? [String] ?? []
-                let relevant: [String] = (0..<min(count, paths.count)).compactMap { index in
-                    let mask = kFSEventStreamEventFlagItemXattrMod | kFSEventStreamEventFlagItemCreated
-                        | kFSEventStreamEventFlagItemRemoved | kFSEventStreamEventFlagItemRenamed
-                        | kFSEventStreamEventFlagMustScanSubDirs
-                    return flags[index] & FSEventStreamEventFlags(mask) != 0 ? paths[index] : nil
+                let relevant = (0..<min(count, paths.count)).compactMap { index -> TagFileChange? in
+                    let change = TagFileChange(path: paths[index], flags: flags[index])
+                    return change.isRelevant ? change : nil
                 }
                 Task { @MainActor in catalog.filesChanged(relevant) }
             }, &context, searchScopes.map(\.path) as CFArray,
@@ -260,29 +353,55 @@ final class FinderTagCatalog: NSObject {
         }
     }
 
-    private func filesChanged(_ paths: [String]) {
-        guard stream != nil else { return }
-        pendingPaths.formUnion(paths.filter { !ZforgeTemporaryStorage.contains(URL(fileURLWithPath: $0)) })
+    func filesChanged(_ changes: [TagFileChange]) {
+        guard running, !changes.isEmpty else { return }
+        for change in changes where change.isRelevant {
+            guard searchScopes.contains(where: { TagScanRoots.covers($0.path, change.path) }) else { continue }
+            if var previous = pendingChanges[change.path] {
+                previous.flags |= change.flags
+                pendingChanges[change.path] = previous
+            } else { pendingChanges[change.path] = change }
+            if pendingChanges.count > 512 {
+                // A large burst is a finite reconciliation of affected scopes,
+                // rather than an unbounded array of per-file tasks/URLs.
+                for scope in searchScopes {
+                    let affected = pendingChanges.values.filter { TagScanRoots.covers(scope.path, $0.path) }
+                    guard let first = affected.first else { continue }
+                    var ancestor = first.reconciliationPath
+                    for change in affected {
+                        while !TagScanRoots.covers(ancestor, change.reconciliationPath) {
+                            ancestor = (ancestor as NSString).deletingLastPathComponent
+                        }
+                    }
+                    // Reconcile the smallest common affected subtree, rather
+                    // than restarting all of Home for a burst in one folder.
+                    pendingScans.insert(URL(fileURLWithPath: ancestor, isDirectory: true))
+                }
+                pendingChanges.removeAll(keepingCapacity: true)
+            }
+        }
+        guard !pendingChanges.isEmpty || !pendingScans.urls.isEmpty else { return }
         eventTask?.cancel()
         eventTask = Task { [weak self] in
-            try? await Task.sleep(for: .milliseconds(350))
+            do { try await Task.sleep(for: .milliseconds(350)) } catch { return }
             guard let self, !Task.isCancelled else { return }
-            let paths = pendingPaths
-            pendingPaths.removeAll()
-            for path in paths {
-                let prefix = path + "/"
-                if !FileManager.default.fileExists(atPath: path) {
-                    records = records.filter { $0.key != path && !$0.key.hasPrefix(prefix) }
+            let changes = Array(pendingChanges.values)
+            pendingChanges.removeAll(keepingCapacity: true)
+            var changed = false
+            for change in changes {
+                // The worker handles metadata and temporary-file checks. Only
+                // deletion invalidates descendants of an indexed directory.
+                if !FileManager.default.fileExists(atPath: change.path) {
+                    let paths = records.keys.filter { TagScanRoots.covers(change.path, $0) }
+                    for path in paths { changed = setRecord(path, colors: [:]) || changed }
                 }
+                let url = URL(fileURLWithPath: change.path)
+                pendingReads.insert(url)
+                if change.requiresRecursiveScan { pendingScans.insert(url) }
             }
-            publish()
-            revision &+= 1
-            update(paths.map { URL(fileURLWithPath: $0) })
-            let directories = paths.compactMap { path -> URL? in
-                let url = URL(fileURLWithPath: path)
-                return (try? url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true ? url : nil
-            }
-            if !directories.isEmpty { scan(directories) }
+            if changed { publish(); revision &+= 1 }
+            eventTask = nil
+            scheduleWork()
         }
     }
 
@@ -291,62 +410,6 @@ final class FinderTagCatalog: NSObject {
         notificationTokens.removeAll()
         if let query { MDQueryStop(query) }
         query = nil
-    }
-}
-
-/// Reads actual Finder metadata in authorized directories, including files
-/// that Spotlight omits from a sandboxed query or has not indexed yet.
-nonisolated enum TaggedFileScanner {
-    static func read(_ urls: [URL]) async -> [String: [String: Int]] {
-        await Task.detached(priority: .utility) {
-            var records: [String: [String: Int]] = [:]
-            for url in urls where !ZforgeTemporaryStorage.contains(url) {
-                records[url.standardizedFileURL.path] = FinderTagMetadata.colorIndexes(at: url)
-            }
-            return records
-        }.value
-    }
-
-    static func scan(
-        _ roots: [URL],
-        onBatch: @escaping @Sendable ([String: [String: Int]]) async -> Void
-    ) async {
-        await Task.detached(priority: .utility) {
-            var seenRoots: Set<String> = []
-            var batch: [String: [String: Int]] = [:]
-            for root in roots {
-                // Publish common user locations before the larger Home tree.
-                let priorityRoots = root == UserDirectoryService.homeURL ? [
-                    root.appendingPathComponent("Downloads"), root.appendingPathComponent("Documents"),
-                    root.appendingPathComponent("Desktop"),
-                    root.appendingPathComponent("Library/Mobile Documents"),
-                    root.appendingPathComponent("Library/CloudStorage"), root
-                ] : [root]
-                for directory in priorityRoots where seenRoots.insert(directory.path).inserted {
-                    if !FinderTagMetadata.colorIndexes(at: directory).isEmpty {
-                        batch[directory.path] = FinderTagMetadata.colorIndexes(at: directory)
-                    }
-                    guard let enumerator = FileManager.default.enumerator(
-                        at: directory, includingPropertiesForKeys: [.isDirectoryKey, .isPackageKey],
-                        options: [.skipsPackageDescendants], errorHandler: { _, _ in true }
-                    ) else { continue }
-                    var inspected = 0
-                    while let url = enumerator.nextObject() as? URL {
-                        guard !Task.isCancelled else { return }
-                        if seenRoots.contains(url.path) || ZforgeTemporaryStorage.contains(url) {
-                            enumerator.skipDescendants(); continue
-                        }
-                        let colors = FinderTagMetadata.colorIndexes(at: url)
-                        if !colors.isEmpty { batch[url.standardizedFileURL.path] = colors }
-                        inspected += 1
-                        if inspected.isMultiple(of: 1_000) && !batch.isEmpty {
-                            await onBatch(batch); batch.removeAll()
-                        }
-                    }
-                    if !batch.isEmpty { await onBatch(batch); batch.removeAll() }
-                }
-            }
-        }.value
     }
 }
 
@@ -398,5 +461,50 @@ struct FinderTagDots: View {
             }
         }
         .accessibilityLabel(tags.joined(separator: ", "))
+    }
+}
+
+/// File-level metadata changes need one read. New/moved subtrees and lost-event
+/// notifications require reconciliation; directory xattr changes do not.
+nonisolated struct TagFileChange: Sendable {
+    let path: String
+    var flags: FSEventStreamEventFlags
+
+    var isRelevant: Bool {
+        let mask = kFSEventStreamEventFlagItemXattrMod | kFSEventStreamEventFlagItemCreated
+            | kFSEventStreamEventFlagItemRemoved | kFSEventStreamEventFlagItemRenamed
+            | kFSEventStreamEventFlagMustScanSubDirs
+        return flags & FSEventStreamEventFlags(mask) != 0
+    }
+
+    var requiresRecursiveScan: Bool {
+        flags & FSEventStreamEventFlags(kFSEventStreamEventFlagMustScanSubDirs) != 0
+            || (flags & FSEventStreamEventFlags(kFSEventStreamEventFlagItemIsDir) != 0
+                && flags & FSEventStreamEventFlags(
+                    kFSEventStreamEventFlagItemCreated | kFSEventStreamEventFlagItemRenamed
+                ) != 0)
+    }
+
+    var reconciliationPath: String {
+        requiresRecursiveScan ? path : (path as NSString).deletingLastPathComponent
+    }
+}
+
+/// Spotlight live notifications already identify the changed results; rereading
+/// the entire query for each notification would repeat unrelated metadata work.
+nonisolated enum FinderTagQueryUpdates {
+    static func urls(in info: [AnyHashable: Any]?) -> [URL] {
+        var urls: Set<URL> = []
+        for key in [kMDQueryUpdateAddedItems, kMDQueryUpdateChangedItems, kMDQueryUpdateRemovedItems] {
+            guard let key, let items = info?[key as String] as? [MDItem] else { continue }
+            for item in items {
+                autoreleasepool {
+                    if let path = MDItemCopyAttribute(item, kMDItemPath) as? String {
+                        urls.insert(URL(fileURLWithPath: path))
+                    }
+                }
+            }
+        }
+        return Array(urls)
     }
 }

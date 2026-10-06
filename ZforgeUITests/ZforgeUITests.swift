@@ -796,6 +796,7 @@ final class ZforgeUITests: XCTestCase {
         app.launchArguments = ["--ui-fixtures", "--ui-window-width", "1100", "--ui-view-mode", "list", "-appLanguagePreference", "english"]
         app.launch()
         app.activate()
+        openFixtureBrowserIfNeeded(app)
         let file = app.staticTexts["Welcome.txt"].firstMatch
         XCTAssertTrue(file.waitForExistence(timeout: 5))
         let rowFrame = file.frame
@@ -852,6 +853,7 @@ final class ZforgeUITests: XCTestCase {
         app.launchArguments = ["--ui-fixtures", "--ui-window-width", "1100", "--ui-view-mode", "icons", "-appLanguagePreference", "english"]
         app.launch()
         app.activate()
+        openFixtureBrowserIfNeeded(app)
         let file = app.staticTexts["Welcome.txt"].firstMatch
         XCTAssertTrue(file.waitForExistence(timeout: 5))
         let frame = file.frame
@@ -874,6 +876,7 @@ final class ZforgeUITests: XCTestCase {
             app.launchArguments = ["--ui-fixtures", "--ui-window-width", "1100", "--ui-view-mode", mode, "-appLanguagePreference", "english"]
             app.launch()
             app.activate()
+            openFixtureBrowserIfNeeded(app)
             let file = app.staticTexts["Welcome.txt"].firstMatch
             XCTAssertTrue(file.waitForExistence(timeout: 5), mode)
             file.rightClick()
@@ -1456,4 +1459,15 @@ final class ZforgeUITests: XCTestCase {
         XCTAssertTrue(menuItem.waitForExistence(timeout: 2))
         menuItem.click()
     }
+
+    @MainActor
+    private func openFixtureBrowserIfNeeded(_ app: XCUIApplication) {
+        // macOS may restore a windowless application after the preceding runner.
+        // Tag tests exercise browser interactions, not automatic scene creation.
+        if app.windows.count == 0 {
+            app.typeKey("n", modifierFlags: [.command])
+            XCTAssertTrue(app.windows.firstMatch.waitForExistence(timeout: 5))
+        }
+    }
+
 }

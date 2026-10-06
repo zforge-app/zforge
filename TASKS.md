@@ -1,6 +1,6 @@
 # Zforge — tracking of activities
 
-Updated at **2026-10-05**. This list preserves the requests raised in this conversation. `Documentation/Requirements/CURRENT-STATE.md` describes the existing behavior; `Documentation/Requirements/OPEN-REQUIREMENTS.md` meets still open requirements; `DIVERGENCES.md` has gaps and conflicts. The user confirmed D-01, D-03, D-05 and D-06 as OK. Column drag and preview was exercised in the app; the remaining to-dos remain identified below.
+Updated at **2026-10-06**. This list preserves the requests raised in this conversation. `Documentation/Requirements/CURRENT-STATE.md` describes the existing behavior; `Documentation/Requirements/OPEN-REQUIREMENTS.md` meets still open requirements; `DIVERGENCES.md` has gaps and conflicts. The user confirmed D-01, D-03, D-05 and D-06 as OK. Column drag and preview was exercised in the app; the remaining to-dos remain identified below.
 
 | ID | Activity | State | Divergence |
 | --- | --- | --- | --- |
@@ -44,6 +44,12 @@ Updated at **2026-10-05**. This list preserves the requests raised in this conve
 | ZF-38 | Show content previews in Icons by default with a persistent Settings option | Implemented and integrated into main on 2026-10-05; feature tests and bounded visual/performance evidence recorded in REGRESSION-COVERAGE; extended matrix OR-16 and the adjacent intermittent tag-event test remain explicit | D-37 |
 | ZF-39 | Add New Folder with Selection as the Option alternate in File | Implemented: `⌃⌥⌘N`, grouping, inline rename, and Undo/Redo. Integration with startup restoration and icon previews: 209/210 unit cases passed; the unchanged native tag-event case failed. All three new UI cases plus English Help and preview/selection passed after integration. The relaunch-mode failure also reproduces on main reference `1eb4a42` (D-36). Broad actual-use checks remain open. | OR-17; D-28; UI-UX-GUIDE; REGRESSION-COVERAGE |
 | ZF-40 | Add Open immediately above Open with in the File menu | Implemented and integrated with main on 2026-10-05; 210 unit and six serial UI cases passed, including all three new Open cases and adjacent menus/focus. Signed Debug build and bounded visual inspection passed. Broader actual-use matrix remains OR-18; historical failed rounds are retained. | D-38; D-39; OR-18; REGRESSION-COVERAGE |
+
+## ZF-41 — Correct high CPU and RAM immediately after launch
+
+Implemented on 2026-10-05 while preserving tags: per-item temporary draining, cached exclusions, less untagged filesystem work, one cancellable worker, bounded batches and cooperative 20% CPU duty target. The process index and Spotlight query are reused; live events reconcile only affected files/subtrees with bounded coalescing and incremental tag counts. Overlap/cancellation characterization failed before the fix and passes afterward. Final 225 unit cases/302 executions and three tag UI cases passed; the 30,000-file harness reduces peak RSS about 87% and consumes 0.000306 CPU seconds in ten seconds after completion. Optimized Debug discovery measured 17.35% CPU and 110.1 MiB lifetime peak footprint. Full-Home idle, extended matrix and intermittent native event verification remain OR-19; local strict signature verification reports an untrusted development certificate. No persistent cross-launch index or hard OS quota is claimed. Evidence: [startup correction and limits](Documentation/Benchmarks/startup-tag-scan.md), D-40 and `REGRESSION-COVERAGE.md`.
+
+**User validation, 2026-10-06:** considerable improvement and acceptable memory use confirmed. Remaining OR-19 verification is preserved.
 
 ## ZF-38 — Content previews in Icons
 
