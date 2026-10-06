@@ -316,6 +316,14 @@ struct FileOperationServiceTests {
             try await Task.sleep(for: .milliseconds(10))
         }
 
+        // The destination directory appears before recursive copying finishes.
+        // Column publication follows the completed transfer; retain the same
+        // bounded wait and all destination/content/active-column assertions.
+        for _ in 0..<100 where state.columnItems[rootLocation]?.contains(where: {
+            $0.name == "Codex copy"
+        }) != true {
+            try await Task.sleep(for: .milliseconds(10))
+        }
         #expect(FileManager.default.fileExists(atPath: copy.path))
         #expect(FileManager.default.fileExists(
             atPath: copy.appendingPathComponent("README.txt").path
@@ -323,11 +331,6 @@ struct FileOperationServiceTests {
         #expect(!FileManager.default.fileExists(
             atPath: source.appendingPathComponent("Codex").path
         ))
-        for _ in 0..<100 where state.columnItems[rootLocation]?.contains(where: {
-            $0.name == "Codex copy"
-        }) != true {
-            try await Task.sleep(for: .milliseconds(10))
-        }
         #expect(state.columnItems[rootLocation]?.contains(where: { $0.name == "Codex copy" }) == true)
     }
 
