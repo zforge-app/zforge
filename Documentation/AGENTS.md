@@ -47,3 +47,5 @@ In each interaction, consult the affected requirements and update your contracts
 - [Benchmarks/tag-catalog-optimization.md](Benchmarks/tag-catalog-optimization.md) — ZF-42 incremental restoration and background visibility batching, separate candidate timings, correctness exceptions and remaining application acceptance.
 
 - [Benchmarks/tag-catalog-equivalence.md](Benchmarks/tag-catalog-equivalence.md) — ZF-42 independent-oracle differential validation, baseline defects and repairs, one-time index invalidation and executed regression evidence.
+
+- [Benchmarks/tag-first-index-diagnosis.md](Benchmarks/tag-first-index-diagnosis.md) — real first-pass latency, matched raw scanner comparison, suspension/coverage controls, Release logging and unresolved signed-application attribution.

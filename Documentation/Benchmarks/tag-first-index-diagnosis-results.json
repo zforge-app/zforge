@@ -1,0 +1,1706 @@
+{
+  "date": "2026-10-07",
+  "scope": "Visible Home and Shared, live tree, warm caches; raw traversal and separate catalog/coverage controls, not signed full-application timing",
+  "measurements": [
+    {
+      "cpu_seconds": 30.121222583333335,
+      "deferred_count": 1,
+      "elapsed_seconds": 197.893568792,
+      "inspected": 452581,
+      "interrupted": false,
+      "metadata_reads": 445392,
+      "pause_actual_seconds": 163.81760555199992,
+      "pause_calls": 4382,
+      "pause_requested_seconds": 135.96021405200014,
+      "peak_footprint_bytes": 4326000,
+      "publish_calls": 4382,
+      "publish_seconds": 0.0027979600000000416,
+      "record_sha256": "81c4f4383a7d786d88415709ae169a29d73b73623b7f83fc0c7fe33230ca9fbb",
+      "tagged_records": 3,
+      "variant": "current-release",
+      "provenance": {
+        "configuration": "Release",
+        "source_commit": null,
+        "source_overrides": [],
+        "compile_commands": [
+          [
+            "xcrun",
+            "clang",
+            "-Os",
+            "-target",
+            "arm64-apple-macos26.0",
+            "-I",
+            "/private/tmp/zforge-cold-diagnosis/current-release-ok/native",
+            "-c",
+            "/private/tmp/zforge-cold-diagnosis/current-release-ok/native/TagDirectoryReader.c",
+            "-o",
+            "/private/tmp/zforge-cold-diagnosis/current-release-ok/TagDirectoryReader.o"
+          ],
+          [
+            "xcrun",
+            "clang",
+            "-Os",
+            "-target",
+            "arm64-apple-macos26.0",
+            "-I",
+            "/private/tmp/zforge-cold-diagnosis/current-release-ok/native",
+            "-c",
+            "/private/tmp/zforge-cold-diagnosis/current-release-ok/metrics.c",
+            "-o",
+            "/private/tmp/zforge-cold-diagnosis/current-release-ok/metrics.o"
+          ],
+          [
+            "xcrun",
+            "swiftc",
+            "-swift-version",
+            "6",
+            "-O",
+            "-whole-module-optimization",
+            "-target",
+            "arm64-apple-macos26.0",
+            "-default-isolation",
+            "MainActor",
+            "-enable-upcoming-feature",
+            "MemberImportVisibility",
+            "-enable-upcoming-feature",
+            "InferIsolatedConformances",
+            "-enable-upcoming-feature",
+            "NonisolatedNonsendingByDefault",
+            "-parse-as-library",
+            "-module-cache-path",
+            "/private/tmp/zforge-cold-diagnosis/current-release-ok/modules",
+            "-I",
+            "/private/tmp/zforge-cold-diagnosis/current-release-ok/native",
+            "-import-objc-header",
+            "/private/tmp/zforge-cold-diagnosis/current-release-ok/metrics.h",
+            "/private/tmp/zforge-cold-diagnosis/current-release-ok/measure.swift",
+            "/private/tmp/zforge-cold-diagnosis/current-release-ok/TagDirectoryReader.o",
+            "/private/tmp/zforge-cold-diagnosis/current-release-ok/metrics.o",
+            "-o",
+            "/private/tmp/zforge-cold-diagnosis/current-release-ok/measure"
+          ]
+        ],
+        "source_sha256": {
+          "Zforge/Services/FinderTagCatalog.swift": "96f77b6c526c6163864a466231c2af69026022370d855c51a24739e271e90cf9",
+          "Zforge/Services/TaggedFileScanner.swift": "341a1630b5f45cb00f2db1c0158422afcfac0a9a6ff7b88fe15a78108cf2963d",
+          "Zforge/Services/TagIndexStore.swift": "3cb2a769326a0421c81f370710cb36fd332169428da8c9dfda841e85fa341fe0",
+          "Zforge/Services/TagJournal.swift": "3338e54d1821a0a503d96ac9bd33252e2b74644b501414eac80a2b7a138aa4cf",
+          "Zforge/Services/UserDirectoryService.swift": "300f2a4587c32c91401be837c09cb25513a1bce9d6eed273bfdde9be45312e7d",
+          "Zforge/Services/ZforgeTemporaryStorage.swift": "cc356927251bffdac1dde880a402d6dab971022671c1d0d495261bd7581d1a92",
+          "Zforge/Native/TagDirectoryReader.c": "aa5901c4e00383fd1a1707c549316591a3942ca60a2f3885f1b30317a5b38329",
+          "Zforge/Native/TagDirectoryReader.h": "37b44201d83531cb74a9fc8040adb31e94bf0420319749a85b49e2ff1208e7cb"
+        },
+        "harness_sha256": "7dff572b9a15f4e5f8504e559ee2ca5f840e3be0aeaf662a0ccfee42c91bdb52",
+        "diagnostic_harness_sha256": "7e738435e3fb818c4090e3d1c2dabc9a48a14ae2b058c0d1500887def91d240e",
+        "benchmark_script_sha256": "eb6a60868e3819f022012efccfd2c9bc438c56bb3e3d8f40e1c0ec2c1b7cc1cb",
+        "resource_helper_sha256": "fa12fd697d6d108a03665b2adba467fcdf0e2353754a101b416855bfff697a53"
+      }
+    },
+    {
+      "cpu_seconds": 29.11848608333333,
+      "deferred_count": 1,
+      "elapsed_seconds": 171.134805125,
+      "inspected": 452581,
+      "interrupted": false,
+      "metadata_reads": 445392,
+      "pause_actual_seconds": 142.18980246700042,
+      "pause_calls": 3929,
+      "pause_requested_seconds": 115.1743962079999,
+      "peak_footprint_bytes": 4391560,
+      "publish_calls": 3929,
+      "publish_seconds": 0.06428788899999992,
+      "record_sha256": "81c4f4383a7d786d88415709ae169a29d73b73623b7f83fc0c7fe33230ca9fbb",
+      "tagged_records": 3,
+      "variant": "current-debug",
+      "provenance": {
+        "configuration": "Debug",
+        "source_commit": null,
+        "source_overrides": [],
+        "compile_commands": [
+          [
+            "xcrun",
+            "clang",
+            "-O0",
+            "-I",
+            "/private/tmp/zforge-cold-diagnosis/current-debug-ok/native",
+            "-c",
+            "/private/tmp/zforge-cold-diagnosis/current-debug-ok/native/TagDirectoryReader.c",
+            "-o",
+            "/private/tmp/zforge-cold-diagnosis/current-debug-ok/TagDirectoryReader.o"
+          ],
+          [
+            "xcrun",
+            "clang",
+            "-O0",
+            "-I",
+            "/private/tmp/zforge-cold-diagnosis/current-debug-ok/native",
+            "-c",
+            "/private/tmp/zforge-cold-diagnosis/current-debug-ok/metrics.c",
+            "-o",
+            "/private/tmp/zforge-cold-diagnosis/current-debug-ok/metrics.o"
+          ],
+          [
+            "xcrun",
+            "swiftc",
+            "-swift-version",
+            "6",
+            "-Onone",
+            "-parse-as-library",
+            "-module-cache-path",
+            "/private/tmp/zforge-cold-diagnosis/current-debug-ok/modules",
+            "-I",
+            "/private/tmp/zforge-cold-diagnosis/current-debug-ok/native",
+            "-import-objc-header",
+            "/private/tmp/zforge-cold-diagnosis/current-debug-ok/metrics.h",
+            "/private/tmp/zforge-cold-diagnosis/current-debug-ok/measure.swift",
+            "/private/tmp/zforge-cold-diagnosis/current-debug-ok/TagDirectoryReader.o",
+            "/private/tmp/zforge-cold-diagnosis/current-debug-ok/metrics.o",
+            "-o",
+            "/private/tmp/zforge-cold-diagnosis/current-debug-ok/measure"
+          ]
+        ],
+        "source_sha256": {
+          "Zforge/Services/FinderTagCatalog.swift": "96f77b6c526c6163864a466231c2af69026022370d855c51a24739e271e90cf9",
+          "Zforge/Services/TaggedFileScanner.swift": "341a1630b5f45cb00f2db1c0158422afcfac0a9a6ff7b88fe15a78108cf2963d",
+          "Zforge/Services/TagIndexStore.swift": "3cb2a769326a0421c81f370710cb36fd332169428da8c9dfda841e85fa341fe0",
+          "Zforge/Services/TagJournal.swift": "3338e54d1821a0a503d96ac9bd33252e2b74644b501414eac80a2b7a138aa4cf",
+          "Zforge/Services/UserDirectoryService.swift": "300f2a4587c32c91401be837c09cb25513a1bce9d6eed273bfdde9be45312e7d",
+          "Zforge/Services/ZforgeTemporaryStorage.swift": "cc356927251bffdac1dde880a402d6dab971022671c1d0d495261bd7581d1a92",
+          "Zforge/Native/TagDirectoryReader.c": "aa5901c4e00383fd1a1707c549316591a3942ca60a2f3885f1b30317a5b38329",
+          "Zforge/Native/TagDirectoryReader.h": "37b44201d83531cb74a9fc8040adb31e94bf0420319749a85b49e2ff1208e7cb"
+        },
+        "harness_sha256": "7dff572b9a15f4e5f8504e559ee2ca5f840e3be0aeaf662a0ccfee42c91bdb52",
+        "diagnostic_harness_sha256": "7e738435e3fb818c4090e3d1c2dabc9a48a14ae2b058c0d1500887def91d240e",
+        "benchmark_script_sha256": "eb6a60868e3819f022012efccfd2c9bc438c56bb3e3d8f40e1c0ec2c1b7cc1cb",
+        "resource_helper_sha256": "fa12fd697d6d108a03665b2adba467fcdf0e2353754a101b416855bfff697a53"
+      }
+    },
+    {
+      "cpu_seconds": 30.564759708333334,
+      "deferred_count": 1,
+      "elapsed_seconds": 179.154408083,
+      "inspected": 452581,
+      "interrupted": false,
+      "metadata_reads": 445392,
+      "pause_actual_seconds": 148.79870221900006,
+      "pause_calls": 4028,
+      "pause_requested_seconds": 120.81669250399982,
+      "peak_footprint_bytes": 4440712,
+      "publish_calls": 4028,
+      "publish_seconds": 0.070762623,
+      "record_sha256": "81c4f4383a7d786d88415709ae169a29d73b73623b7f83fc0c7fe33230ca9fbb",
+      "tagged_records": 3,
+      "variant": "baseline-debug",
+      "provenance": {
+        "configuration": "Debug",
+        "source_commit": "fd1baccaf9841b63cea1288c78c051445f17749a",
+        "source_overrides": [],
+        "compile_commands": [
+          [
+            "xcrun",
+            "clang",
+            "-O0",
+            "-I",
+            "/private/tmp/zforge-cold-diagnosis/baseline-debug-ok/native",
+            "-c",
+            "/private/tmp/zforge-cold-diagnosis/baseline-debug-ok/native/TagDirectoryReader.c",
+            "-o",
+            "/private/tmp/zforge-cold-diagnosis/baseline-debug-ok/TagDirectoryReader.o"
+          ],
+          [
+            "xcrun",
+            "clang",
+            "-O0",
+            "-I",
+            "/private/tmp/zforge-cold-diagnosis/baseline-debug-ok/native",
+            "-c",
+            "/private/tmp/zforge-cold-diagnosis/baseline-debug-ok/metrics.c",
+            "-o",
+            "/private/tmp/zforge-cold-diagnosis/baseline-debug-ok/metrics.o"
+          ],
+          [
+            "xcrun",
+            "swiftc",
+            "-swift-version",
+            "6",
+            "-Onone",
+            "-parse-as-library",
+            "-module-cache-path",
+            "/private/tmp/zforge-cold-diagnosis/baseline-debug-ok/modules",
+            "-I",
+            "/private/tmp/zforge-cold-diagnosis/baseline-debug-ok/native",
+            "-import-objc-header",
+            "/private/tmp/zforge-cold-diagnosis/baseline-debug-ok/metrics.h",
+            "/private/tmp/zforge-cold-diagnosis/baseline-debug-ok/measure.swift",
+            "/private/tmp/zforge-cold-diagnosis/baseline-debug-ok/TagDirectoryReader.o",
+            "/private/tmp/zforge-cold-diagnosis/baseline-debug-ok/metrics.o",
+            "-o",
+            "/private/tmp/zforge-cold-diagnosis/baseline-debug-ok/measure"
+          ]
+        ],
+        "source_sha256": {
+          "Zforge/Services/FinderTagCatalog.swift": "c3cb0a5e618101d108343fc3bf4866564b97410930fd894ac6ebeac2de996383",
+          "Zforge/Services/TaggedFileScanner.swift": "0d084178808f97b34a896de9e37d20e55c26aa13f11c20c9db7884ff0a4310c3",
+          "Zforge/Services/TagIndexStore.swift": "370a1f76b1bcc9bd6a4bde452f12708817ff81a2152810c7b271acfa559fb228",
+          "Zforge/Services/TagJournal.swift": "74cd5d5cc8b2d855dd67a6eb027c876b4c8da7e6cf43ceb1bb9f709744f340ae",
+          "Zforge/Services/UserDirectoryService.swift": "300f2a4587c32c91401be837c09cb25513a1bce9d6eed273bfdde9be45312e7d",
+          "Zforge/Services/ZforgeTemporaryStorage.swift": "cc356927251bffdac1dde880a402d6dab971022671c1d0d495261bd7581d1a92",
+          "Zforge/Native/TagDirectoryReader.c": "aa5901c4e00383fd1a1707c549316591a3942ca60a2f3885f1b30317a5b38329",
+          "Zforge/Native/TagDirectoryReader.h": "37b44201d83531cb74a9fc8040adb31e94bf0420319749a85b49e2ff1208e7cb"
+        },
+        "harness_sha256": "d1f5161bc079bf55425afbbb941f2d2a96c67ace7fb251254a5e85793286ce05",
+        "diagnostic_harness_sha256": "7e738435e3fb818c4090e3d1c2dabc9a48a14ae2b058c0d1500887def91d240e",
+        "benchmark_script_sha256": "eb6a60868e3819f022012efccfd2c9bc438c56bb3e3d8f40e1c0ec2c1b7cc1cb",
+        "resource_helper_sha256": "fa12fd697d6d108a03665b2adba467fcdf0e2353754a101b416855bfff697a53"
+      }
+    },
+    {
+      "cpu_seconds": 31.07390379166667,
+      "deferred_count": 1,
+      "elapsed_seconds": 182.627854125,
+      "inspected": 452585,
+      "interrupted": false,
+      "metadata_reads": 445396,
+      "pause_actual_seconds": 151.8038744019993,
+      "pause_calls": 4127,
+      "pause_requested_seconds": 122.70995438399993,
+      "peak_footprint_bytes": 4424328,
+      "publish_calls": 4127,
+      "publish_seconds": 0.06538029500000005,
+      "record_sha256": "81c4f4383a7d786d88415709ae169a29d73b73623b7f83fc0c7fe33230ca9fbb",
+      "tagged_records": 3,
+      "variant": "current-debug-coverage",
+      "provenance": {
+        "configuration": "Debug",
+        "source_commit": null,
+        "source_overrides": [],
+        "compile_commands": [
+          [
+            "xcrun",
+            "clang",
+            "-fprofile-instr-generate",
+            "-fcoverage-mapping",
+            "-O0",
+            "-I",
+            "/private/tmp/zforge-cold-diagnosis/current-debug-coverage/native",
+            "-c",
+            "/private/tmp/zforge-cold-diagnosis/current-debug-coverage/native/TagDirectoryReader.c",
+            "-o",
+            "/private/tmp/zforge-cold-diagnosis/current-debug-coverage/TagDirectoryReader.o"
+          ],
+          [
+            "xcrun",
+            "clang",
+            "-fprofile-instr-generate",
+            "-fcoverage-mapping",
+            "-O0",
+            "-I",
+            "/private/tmp/zforge-cold-diagnosis/current-debug-coverage/native",
+            "-c",
+            "/private/tmp/zforge-cold-diagnosis/current-debug-coverage/metrics.c",
+            "-o",
+            "/private/tmp/zforge-cold-diagnosis/current-debug-coverage/metrics.o"
+          ],
+          [
+            "xcrun",
+            "swiftc",
+            "-profile-generate",
+            "-profile-coverage-mapping",
+            "-swift-version",
+            "6",
+            "-Onone",
+            "-parse-as-library",
+            "-module-cache-path",
+            "/private/tmp/zforge-cold-diagnosis/current-debug-coverage/modules",
+            "-I",
+            "/private/tmp/zforge-cold-diagnosis/current-debug-coverage/native",
+            "-import-objc-header",
+            "/private/tmp/zforge-cold-diagnosis/current-debug-coverage/metrics.h",
+            "/private/tmp/zforge-cold-diagnosis/current-debug-coverage/measure.swift",
+            "/private/tmp/zforge-cold-diagnosis/current-debug-coverage/TagDirectoryReader.o",
+            "/private/tmp/zforge-cold-diagnosis/current-debug-coverage/metrics.o",
+            "-o",
+            "/private/tmp/zforge-cold-diagnosis/current-debug-coverage/measure"
+          ]
+        ],
+        "source_sha256": {
+          "Zforge/Services/FinderTagCatalog.swift": "96f77b6c526c6163864a466231c2af69026022370d855c51a24739e271e90cf9",
+          "Zforge/Services/TaggedFileScanner.swift": "341a1630b5f45cb00f2db1c0158422afcfac0a9a6ff7b88fe15a78108cf2963d",
+          "Zforge/Services/TagIndexStore.swift": "3cb2a769326a0421c81f370710cb36fd332169428da8c9dfda841e85fa341fe0",
+          "Zforge/Services/TagJournal.swift": "3338e54d1821a0a503d96ac9bd33252e2b74644b501414eac80a2b7a138aa4cf",
+          "Zforge/Services/UserDirectoryService.swift": "300f2a4587c32c91401be837c09cb25513a1bce9d6eed273bfdde9be45312e7d",
+          "Zforge/Services/ZforgeTemporaryStorage.swift": "cc356927251bffdac1dde880a402d6dab971022671c1d0d495261bd7581d1a92",
+          "Zforge/Native/TagDirectoryReader.c": "aa5901c4e00383fd1a1707c549316591a3942ca60a2f3885f1b30317a5b38329",
+          "Zforge/Native/TagDirectoryReader.h": "37b44201d83531cb74a9fc8040adb31e94bf0420319749a85b49e2ff1208e7cb"
+        },
+        "harness_sha256": "7dff572b9a15f4e5f8504e559ee2ca5f840e3be0aeaf662a0ccfee42c91bdb52",
+        "diagnostic_harness_sha256": "7e738435e3fb818c4090e3d1c2dabc9a48a14ae2b058c0d1500887def91d240e",
+        "benchmark_script_sha256": "eb6a60868e3819f022012efccfd2c9bc438c56bb3e3d8f40e1c0ec2c1b7cc1cb",
+        "resource_helper_sha256": "fa12fd697d6d108a03665b2adba467fcdf0e2353754a101b416855bfff697a53",
+        "coverage_instrumented": true
+      }
+    },
+    {
+      "cpu_seconds": 29.923548125000003,
+      "elapsed_seconds": 161.663941917,
+      "idle": true,
+      "monitoring": false,
+      "peak_footprint_bytes": 4752056,
+      "persistence": false,
+      "record_sha256": "81c4f4383a7d786d88415709ae169a29d73b73623b7f83fc0c7fe33230ca9fbb",
+      "spotlight": false,
+      "tagged_records": 3,
+      "variant": "catalog-current-debug",
+      "provenance": {
+        "configuration": "Debug",
+        "source_commit": null,
+        "source_overrides": [],
+        "compile_commands": [
+          [
+            "xcrun",
+            "clang",
+            "-O0",
+            "-I",
+            "/private/tmp/zforge-cold-diagnosis/catalog-current-debug/native",
+            "-c",
+            "/private/tmp/zforge-cold-diagnosis/catalog-current-debug/native/TagDirectoryReader.c",
+            "-o",
+            "/private/tmp/zforge-cold-diagnosis/catalog-current-debug/TagDirectoryReader.o"
+          ],
+          [
+            "xcrun",
+            "clang",
+            "-O0",
+            "-I",
+            "/private/tmp/zforge-cold-diagnosis/catalog-current-debug/native",
+            "-c",
+            "/private/tmp/zforge-cold-diagnosis/catalog-current-debug/metrics.c",
+            "-o",
+            "/private/tmp/zforge-cold-diagnosis/catalog-current-debug/metrics.o"
+          ],
+          [
+            "xcrun",
+            "swiftc",
+            "-swift-version",
+            "6",
+            "-Onone",
+            "-parse-as-library",
+            "-module-cache-path",
+            "/private/tmp/zforge-cold-diagnosis/catalog-current-debug/modules",
+            "-I",
+            "/private/tmp/zforge-cold-diagnosis/catalog-current-debug/native",
+            "-import-objc-header",
+            "/private/tmp/zforge-cold-diagnosis/catalog-current-debug/metrics.h",
+            "/private/tmp/zforge-cold-diagnosis/catalog-current-debug/measure.swift",
+            "/private/tmp/zforge-cold-diagnosis/catalog-current-debug/TagDirectoryReader.o",
+            "/private/tmp/zforge-cold-diagnosis/catalog-current-debug/metrics.o",
+            "-o",
+            "/private/tmp/zforge-cold-diagnosis/catalog-current-debug/measure"
+          ]
+        ],
+        "source_sha256": {
+          "Zforge/Services/FinderTagCatalog.swift": "96f77b6c526c6163864a466231c2af69026022370d855c51a24739e271e90cf9",
+          "Zforge/Services/TaggedFileScanner.swift": "341a1630b5f45cb00f2db1c0158422afcfac0a9a6ff7b88fe15a78108cf2963d",
+          "Zforge/Services/TagIndexStore.swift": "3cb2a769326a0421c81f370710cb36fd332169428da8c9dfda841e85fa341fe0",
+          "Zforge/Services/TagJournal.swift": "3338e54d1821a0a503d96ac9bd33252e2b74644b501414eac80a2b7a138aa4cf",
+          "Zforge/Services/UserDirectoryService.swift": "300f2a4587c32c91401be837c09cb25513a1bce9d6eed273bfdde9be45312e7d",
+          "Zforge/Services/ZforgeTemporaryStorage.swift": "cc356927251bffdac1dde880a402d6dab971022671c1d0d495261bd7581d1a92",
+          "Zforge/Native/TagDirectoryReader.c": "aa5901c4e00383fd1a1707c549316591a3942ca60a2f3885f1b30317a5b38329",
+          "Zforge/Native/TagDirectoryReader.h": "37b44201d83531cb74a9fc8040adb31e94bf0420319749a85b49e2ff1208e7cb"
+        },
+        "harness_sha256": "c37fb0cda20d274803af1754951251b5306a07a45b4eb64d23cfd4bdb62a7278",
+        "diagnostic_harness_sha256": "e129a6a459dfbca3428b784bc22bcc193b600bf5949b1aeea314d5645733e3f4",
+        "benchmark_script_sha256": "eb6a60868e3819f022012efccfd2c9bc438c56bb3e3d8f40e1c0ec2c1b7cc1cb",
+        "resource_helper_sha256": "fa12fd697d6d108a03665b2adba467fcdf0e2353754a101b416855bfff697a53"
+      }
+    }
+  ],
+  "logging": {
+    "default": {
+      "batches": 1000,
+      "debug_enabled": false,
+      "elapsed_seconds": 0.001250292
+    },
+    "observed": {
+      "batches": 1000,
+      "debug_enabled": true,
+      "elapsed_seconds": 0.015370375
+    },
+    "collected_debug_batches": 1000,
+    "collected_notices": 1
+  },
+  "recent_application_log": [
+    {
+      "timestamp": "2026-10-07 00:25:19.678295-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=1, relevant=1, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:25:20.069005-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=2, relevant=2, recursive=1, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:25:20.370231-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=3, relevant=3, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:25:21.314937-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=4, relevant=4, recursive=1, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:25:22.315646-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=4, relevant=4, recursive=1, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:25:22.620882-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=32, relevant=28, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:25:22.625349-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=32, relevant=29, recursive=1, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:25:22.626985-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=9, relevant=9, recursive=1, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:25:23.079615-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=1, relevant=1, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:25:23.422369-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=1, relevant=1, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:25:24.425056-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=7, relevant=7, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:25:24.725512-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=4, relevant=4, recursive=1, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:25:27.989046-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=4, relevant=4, recursive=1, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:25:29.464802-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=2, relevant=2, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:25:34.458034-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=2, relevant=2, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:25:36.503636-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=4, relevant=4, recursive=1, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:25:45.980052-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=2, relevant=2, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:25:49.283561-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=32, relevant=29, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:25:49.285181-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=22, relevant=19, recursive=2, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:25:49.587801-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=32, relevant=30, recursive=2, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:25:49.591141-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=17, relevant=17, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:25:49.884596-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=5, relevant=5, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:25:50.185186-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=6, relevant=6, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:25:50.485251-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=1, relevant=1, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:25:51.421049-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=4, relevant=4, recursive=1, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:25:53.947671-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=2, relevant=1, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:25:54.915539-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=9, relevant=9, recursive=2, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:25:55.214864-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=1, relevant=1, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:25:56.629573-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=4, relevant=4, recursive=1, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:26:04.452553-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=9, relevant=9, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:26:06.452559-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=4, relevant=4, recursive=1, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:26:07.680513-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=1, relevant=1, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:26:09.953860-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=3, relevant=3, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:26:15.615371-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=1, relevant=1, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:26:15.916300-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=3, relevant=3, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:26:16.589316-0300",
+      "processID": 63077,
+      "messageType": "Default",
+      "eventMessage": "Tag discovery completed: duration=456.463535583 seconds, scopes_attempted=1, complete=false, inspected=452492, metadata_reads=445366, deferred_scopes=1"
+    },
+    {
+      "timestamp": "2026-10-07 00:26:16.600195-0300",
+      "processID": 63077,
+      "messageType": "Default",
+      "eventMessage": "Tag index checkpoint saved: scopes=2, tagged_records=3, deferred_scopes=1"
+    },
+    {
+      "timestamp": "2026-10-07 00:26:16.600278-0300",
+      "processID": 63077,
+      "messageType": "Default",
+      "eventMessage": "Tag index ready: duration=456.506363292 seconds, restored=false, complete=false, scopes=1"
+    },
+    {
+      "timestamp": "2026-10-07 00:26:16.904968-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=4, relevant=4, recursive=1, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:26:18.114517-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=1, relevant=1, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:26:19.617169-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=2, relevant=2, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:26:19.957860-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=1, relevant=1, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:26:20.259376-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=6, relevant=6, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:26:21.428661-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=4, relevant=4, recursive=1, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:26:23.317464-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=7, relevant=7, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:26:24.455601-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=2, relevant=2, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:26:24.756405-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=1, relevant=1, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:26:25.161875-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=1, relevant=1, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:26:27.630012-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=1, relevant=1, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:26:27.931835-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=7, relevant=7, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:26:28.933002-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=8, relevant=8, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:26:31.656563-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=2, relevant=2, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:26:31.957849-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=4, relevant=4, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:26:32.259201-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=7, relevant=7, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:26:32.566322-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=1, relevant=1, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:26:33.512680-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=1, relevant=1, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:26:33.813841-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=1, relevant=1, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:26:34.115426-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=7, relevant=7, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:26:36.504032-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=4, relevant=4, recursive=1, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:26:36.930009-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=6, relevant=6, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:26:38.108623-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=2, relevant=2, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:26:39.109633-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=7, relevant=7, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:26:41.275196-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=6, relevant=6, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:26:44.470931-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=2, relevant=2, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:26:45.679042-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=2, relevant=2, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:26:45.979518-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=1, relevant=1, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:26:47.955717-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=1, relevant=1, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:26:49.631720-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=2, relevant=2, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:26:49.933190-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=3, relevant=3, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:26:50.234212-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=2, relevant=2, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:26:50.562633-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=1, relevant=1, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:26:51.111597-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=4, relevant=4, recursive=1, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:26:53.123801-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=1, relevant=1, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:26:54.218203-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=4, relevant=4, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:26:54.665854-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=2, relevant=2, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:26:54.967381-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=4, relevant=4, recursive=1, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:26:59.574582-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=3, relevant=3, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:01.314846-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=1, relevant=1, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:04.468204-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=2, relevant=2, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:06.404759-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=4, relevant=4, recursive=1, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:09.148824-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=1, relevant=1, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:09.449699-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=2, relevant=2, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:10.363050-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=3, relevant=3, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:14.467362-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=2, relevant=2, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:15.502468-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=32, relevant=28, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:15.505033-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=32, relevant=29, recursive=1, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:15.505919-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=10, relevant=10, recursive=1, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:15.799520-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=3, relevant=3, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:17.291505-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=9, relevant=8, recursive=2, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:17.538433-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=32, relevant=27, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:17.543204-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=32, relevant=30, recursive=1, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:17.544290-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=6, relevant=6, recursive=1, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:20.853460-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=26, relevant=26, recursive=12, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:21.151287-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=4, relevant=4, recursive=1, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:21.451567-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=1, relevant=1, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:21.753072-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=4, relevant=4, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:22.690478-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=5, relevant=5, recursive=2, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:24.355942-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=14, relevant=14, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:24.657708-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=13, relevant=13, recursive=5, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:24.957859-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=13, relevant=13, recursive=5, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:26.854936-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=2, relevant=1, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:27.157198-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=32, relevant=31, recursive=9, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:27.157820-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=8, relevant=8, recursive=2, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:27.457004-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=4, relevant=4, recursive=1, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:29.359109-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=3, relevant=3, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:30.796151-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=32, relevant=28, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:30.800189-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=32, relevant=28, recursive=1, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:30.802471-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=18, relevant=18, recursive=1, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:31.093073-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=5, relevant=5, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:31.394231-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=8, relevant=8, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:31.694212-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=1, relevant=1, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:34.457258-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=6, relevant=6, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:34.756637-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=1, relevant=1, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:35.987141-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=3, relevant=3, recursive=1, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:36.289224-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=7, relevant=7, recursive=1, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:36.588885-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=1, relevant=1, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:36.981438-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=9, relevant=9, recursive=2, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:37.280841-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=1, relevant=1, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:38.295107-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=32, relevant=28, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:38.297570-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=32, relevant=29, recursive=1, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:38.298366-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=9, relevant=9, recursive=1, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:38.592037-0300",
+      "processID": 63077,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=1, relevant=1, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:47.397695-0300",
+      "processID": 63205,
+      "messageType": "Default",
+      "eventMessage": "Tag index restored: tagged_records=3, scopes_restored=1"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:47.424155-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=32, relevant=32, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:47.425148-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=32, relevant=31, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:47.426375-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=32, relevant=32, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:47.427604-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=32, relevant=32, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:47.428811-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=32, relevant=32, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:47.429985-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=32, relevant=32, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:47.431179-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=32, relevant=32, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:47.431774-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=32, relevant=24, recursive=2, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:47.432298-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=32, relevant=29, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:47.432854-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=32, relevant=26, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:47.433324-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=32, relevant=27, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:47.433699-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=32, relevant=23, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:47.434129-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=32, relevant=24, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:47.434653-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=32, relevant=27, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:47.435320-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=32, relevant=27, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:47.436545-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=32, relevant=32, recursive=6, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:47.437844-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=32, relevant=32, recursive=10, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:47.439064-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=32, relevant=32, recursive=9, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:47.439633-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=32, relevant=14, recursive=3, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:47.439721-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=32, relevant=0, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:47.440660-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=32, relevant=17, recursive=2, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:47.441818-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=32, relevant=21, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:47.443009-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=32, relevant=22, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:47.449131-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=32, relevant=21, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:47.450273-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=32, relevant=21, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:47.451398-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=32, relevant=22, recursive=1, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:47.452402-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=32, relevant=22, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:47.453317-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=32, relevant=21, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:47.454270-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=32, relevant=22, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:47.455176-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=32, relevant=21, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:47.456025-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=32, relevant=21, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:47.457068-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=32, relevant=31, recursive=5, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:47.458280-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=32, relevant=32, recursive=2, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:47.459067-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=32, relevant=32, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:47.459775-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=32, relevant=31, recursive=3, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:47.460543-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=32, relevant=32, recursive=9, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:47.460617-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=1, relevant=1, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:47.460675-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=1, relevant=0, recursive=0, history_done=true, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:47.501968-0300",
+      "processID": 63205,
+      "messageType": "Default",
+      "eventMessage": "Tag discovery completed: duration=0.078381041 seconds, scopes_attempted=1, complete=false, inspected=1, metadata_reads=1, deferred_scopes=1"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:47.800312-0300",
+      "processID": 63205,
+      "messageType": "Default",
+      "eventMessage": "Tag index checkpoint saved: scopes=2, tagged_records=3, deferred_scopes=1"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:47.800382-0300",
+      "processID": 63205,
+      "messageType": "Default",
+      "eventMessage": "Tag index ready: duration=0.416192 seconds, restored=true, complete=false, scopes=1"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:47.988528-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=5, relevant=5, recursive=1, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:48.289753-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=4, relevant=4, recursive=1, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:49.465411-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=4, relevant=4, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:50.508186-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=3, relevant=3, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:51.411540-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=7, relevant=7, recursive=1, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:51.712639-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=5, relevant=5, recursive=1, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:51.779158-0300",
+      "processID": 63205,
+      "messageType": "Default",
+      "eventMessage": "Tag index checkpoint saved: scopes=2, tagged_records=3, deferred_scopes=1"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:52.012249-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=4, relevant=4, recursive=1, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:52.312890-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=4, relevant=4, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:53.757455-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=1, relevant=1, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:54.154643-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=2, relevant=2, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:54.457328-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=12, relevant=12, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:54.847173-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=4, relevant=4, recursive=1, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:55.148503-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=1, relevant=1, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:56.108870-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=1, relevant=1, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:56.410005-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=1, relevant=1, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:56.711490-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=4, relevant=4, recursive=1, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:27:58.548599-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=1, relevant=1, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:28:00.887618-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=3, relevant=3, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:28:02.740897-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=32, relevant=28, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:28:02.743651-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=32, relevant=29, recursive=1, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:28:02.744045-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=11, relevant=11, recursive=1, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:28:03.026983-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=2, relevant=2, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:28:04.153777-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=2, relevant=2, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:28:04.454757-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=3, relevant=3, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:28:06.192663-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=5, relevant=5, recursive=1, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:28:06.493273-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=2, relevant=1, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:28:08.116160-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=5, relevant=5, recursive=1, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:28:09.389935-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=8, relevant=8, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:28:12.288789-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=1, relevant=1, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:28:13.452211-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=1, relevant=1, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:28:14.463740-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=4, relevant=4, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:28:14.763841-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=1, relevant=1, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:28:15.315753-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=1, relevant=1, recursive=0, history_done=false, loss_events=0"
+    },
+    {
+      "timestamp": "2026-10-07 00:28:15.679075-0300",
+      "processID": 63205,
+      "messageType": "Debug",
+      "eventMessage": "Tag journal batch: events=2, relevant=2, recursive=0, history_done=false, loss_events=0"
+    }
+  ],
+  "prior_release_log": [
+    {
+      "timestamp": "2026-10-06 22:01:19.402177-0300",
+      "processID": 62609,
+      "messageType": "Default",
+      "eventMessage": "Tag discovery completed: duration=32.999693208 seconds, scopes_attempted=1, complete=true, inspected=0, metadata_reads=0, deferred_scopes=0"
+    },
+    {
+      "timestamp": "2026-10-06 22:01:19.456851-0300",
+      "processID": 62609,
+      "messageType": "Default",
+      "eventMessage": "Tag index checkpoint saved: scopes=1, tagged_records=10000, deferred_scopes=0"
+    },
+    {
+      "timestamp": "2026-10-06 22:01:19.456863-0300",
+      "processID": 62609,
+      "messageType": "Default",
+      "eventMessage": "Tag index ready: duration=33.060748042 seconds, restored=false, complete=true, scopes=1"
+    }
+  ],
+  "coverage_dylib_uuid": "0F29D733-8AD6-3EC3-BF1B-8DCF022DD3CE",
+  "baseline_ref": "fd1baccaf9841b63cea1288c78c051445f17749a",
+  "production_changed": false,
+  "power_windows": [
+    {
+      "window": "observed_app",
+      "start": "2026-10-07 00:18:40",
+      "end": "2026-10-07 00:26:17",
+      "events": []
+    },
+    {
+      "window": "earlier_app",
+      "start": "2026-10-06 19:59:00",
+      "end": "2026-10-06 20:08:38",
+      "events": []
+    }
+  ],
+  "earlier_application_scan": {
+    "timestamp": "2026-10-06 20:08:37.029991-0300",
+    "process_id": 53307,
+    "duration_seconds": 576.543263,
+    "inspected": 452474,
+    "metadata_reads": 445348,
+    "deferred_scopes": 1,
+    "exact_binary_provenance": "Historical application instance; not the immutable Git-reference diagnostic"
+  },
+  "observed_application": {
+    "process_id": 63077,
+    "scan_seconds": 456.463535583,
+    "ready_seconds": 456.506363292,
+    "inspected": 452492,
+    "metadata_reads": 445366,
+    "deferred_scopes": 1,
+    "ready_minus_scan_seconds": 0.042827708999993774,
+    "cached_reopen_seconds": 0.416192,
+    "logging_added_commit": "fd1bacc",
+    "full_app_timing_gap_attributed": false
+  },
+  "collection_notes": [
+    "Three raw profiles precede publication of four new diagnostic/evidence files; the live tree changes by four items afterward. All record hashes remain identical.",
+    "One sample per traversal configuration; warm cache, fixed order, ordinary applications open. Not a randomized compiler or coverage comparison.",
+    "The Xcode accessibility query lasted 1288 seconds. Coverage traversal completed in the background before the query returned; this does not create a 1288-second traversal sample.",
+    "Three initial custom-harness compilation attempts fail on an actor return of non-Sendable Any; passing Data across isolation fixes only the diagnostic. No production or test expectations change.",
+    "Native catalog timing disables journal/Spotlight/persistence/UI; it is not the signed sandboxed application.",
+    "One logging attempt with OS_ACTIVITY_DT_MODE=YES still leaves debug disabled; the live log observer is what verifies debug-enabled emission."
+  ],
+  "observed_run_builds": [
+    {
+      "start_local": "2026-10-07T00:27:44.174615-03:00",
+      "duration_seconds": 1.9733009338378906,
+      "title": "Build Zforge"
+    },
+    {
+      "start_local": "2026-10-07T00:18:31.973755-03:00",
+      "duration_seconds": 6.286452054977417,
+      "title": "Build Zforge"
+    }
+  ]
+}
