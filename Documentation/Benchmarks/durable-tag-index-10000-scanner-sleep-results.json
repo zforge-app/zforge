@@ -1,0 +1,80 @@
+{
+  "files": 100000,
+  "tagged_files": 10000,
+  "reference_commit": "8af9fcb",
+  "source_sha256": {
+    "TagDirectoryReader.c": "aa5901c4e00383fd1a1707c549316591a3942ca60a2f3885f1b30317a5b38329",
+    "TagDirectoryReader.h": "37b44201d83531cb74a9fc8040adb31e94bf0420319749a85b49e2ff1208e7cb",
+    "foundation": "ce50d72343415ea063a36c362268c49f6345b6724642059f8cb02d81597a36bb",
+    "native": "bd2b72d5722cb465136ba7e5093385e80c72bf8acfbd1d9b32c35fc36ebd80ee"
+  },
+  "measurements": [
+    {
+      "variant": "foundation",
+      "repeat": 1,
+      "elapsed_seconds": 36.98214507102966,
+      "cpu_seconds": 6.4,
+      "rss_bytes": 24150016,
+      "footprint_bytes": 14713480,
+      "tagged_records": 10000,
+      "records_sha256": "3715b1e085ab78933979cd872afb538485eecb880bfe0055fb1194abc9f74c7e"
+    },
+    {
+      "variant": "native",
+      "repeat": 1,
+      "elapsed_seconds": 29.40486991405487,
+      "cpu_seconds": 5.37,
+      "rss_bytes": 24477696,
+      "footprint_bytes": 15434376,
+      "tagged_records": 10000,
+      "records_sha256": "3715b1e085ab78933979cd872afb538485eecb880bfe0055fb1194abc9f74c7e"
+    },
+    {
+      "variant": "native",
+      "repeat": 2,
+      "elapsed_seconds": 28.009112000465393,
+      "cpu_seconds": 5.19,
+      "rss_bytes": 24543232,
+      "footprint_bytes": 15549064,
+      "tagged_records": 10000,
+      "records_sha256": "3715b1e085ab78933979cd872afb538485eecb880bfe0055fb1194abc9f74c7e"
+    },
+    {
+      "variant": "foundation",
+      "repeat": 2,
+      "elapsed_seconds": 38.01334202289581,
+      "cpu_seconds": 7.02,
+      "rss_bytes": 24313856,
+      "footprint_bytes": 14992008,
+      "tagged_records": 10000,
+      "records_sha256": "3715b1e085ab78933979cd872afb538485eecb880bfe0055fb1194abc9f74c7e"
+    },
+    {
+      "variant": "foundation",
+      "repeat": 3,
+      "elapsed_seconds": 35.63484299182892,
+      "cpu_seconds": 6.61,
+      "rss_bytes": 24182784,
+      "footprint_bytes": 14860936,
+      "tagged_records": 10000,
+      "records_sha256": "3715b1e085ab78933979cd872afb538485eecb880bfe0055fb1194abc9f74c7e"
+    },
+    {
+      "variant": "native",
+      "repeat": 3,
+      "elapsed_seconds": 624.9427750110626,
+      "cpu_seconds": 5.73,
+      "rss_bytes": 24510464,
+      "footprint_bytes": 15417992,
+      "tagged_records": 10000,
+      "records_sha256": "3715b1e085ab78933979cd872afb538485eecb880bfe0055fb1194abc9f74c7e"
+    }
+  ],
+  "conditions": {
+    "classification": "sleep-affected historical run; not the final awake comparison",
+    "sleep_start_local": "2026-10-06T10:38:00-03:00",
+    "sleep_duration_seconds": 595,
+    "evidence": "pmset power log: Clamshell Sleep; retained native repeat 3 elapsed 624.942775 seconds and CPU 5.73 seconds",
+    "adjustment": "No samples deleted or durations corrected"
+  }
+}
