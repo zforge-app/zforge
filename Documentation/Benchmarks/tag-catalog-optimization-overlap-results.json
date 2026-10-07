@@ -1,0 +1,122 @@
+{
+  "files": 100000,
+  "tagged_files": 10000,
+  "reused_checkpoint": "/private/tmp/zforge-zf42-batched/index-1.json",
+  "source_sha256": {
+    "Zforge/Services/FinderTagCatalog.swift": "96f77b6c526c6163864a466231c2af69026022370d855c51a24739e271e90cf9",
+    "Zforge/Services/TaggedFileScanner.swift": "3e1f3c520116857f5f890cdee9bb3e1335502fc75ee700a6cf5c8851d3a770ff",
+    "Zforge/Services/TagIndexStore.swift": "370a1f76b1bcc9bd6a4bde452f12708817ff81a2152810c7b271acfa559fb228",
+    "Zforge/Services/TagJournal.swift": "74cd5d5cc8b2d855dd67a6eb027c876b4c8da7e6cf43ceb1bb9f709744f340ae",
+    "Zforge/Services/UserDirectoryService.swift": "300f2a4587c32c91401be837c09cb25513a1bce9d6eed273bfdde9be45312e7d",
+    "Zforge/Services/ZforgeTemporaryStorage.swift": "cc356927251bffdac1dde880a402d6dab971022671c1d0d495261bd7581d1a92",
+    "Zforge/Native/TagDirectoryReader.c": "aa5901c4e00383fd1a1707c549316591a3942ca60a2f3885f1b30317a5b38329",
+    "Zforge/Native/TagDirectoryReader.h": "37b44201d83531cb74a9fc8040adb31e94bf0420319749a85b49e2ff1208e7cb"
+  },
+  "harness_sha256": "b178895252979566add77579963585bf1dfa31903ad7fdfdbf9b9b564a0abaa6",
+  "benchmark_script_sha256": "8f91b840fc9069c1fa342e8bfb27b6ef15e674e740a08f3c9080214deaa4d721",
+  "resource_helper_sha256": "fa12fd697d6d108a03665b2adba467fcdf0e2353754a101b416855bfff697a53",
+  "measurements": [
+    {
+      "verified_records": 10000,
+      "measurements": [
+        {
+          "elapsed_seconds": 1.436369,
+          "resident_end_bytes": 33685504,
+          "footprint_end_bytes": 25641632,
+          "footprint_start_bytes": 6029840,
+          "cpu_seconds": 0.31971504166666664,
+          "phase": "reopen",
+          "lifetime_peak_footprint_bytes": 25641632,
+          "cpu_percent": 22.25855902394626
+        },
+        {
+          "elapsed_seconds": 10.531418,
+          "resident_end_bytes": 41959424,
+          "footprint_end_bytes": 33915552,
+          "footprint_start_bytes": 33931936,
+          "cpu_seconds": 0.0002963333333333429,
+          "phase": "idle",
+          "lifetime_peak_footprint_bytes": 33931936,
+          "cpu_percent": 0.002813802788317232
+        }
+      ],
+      "phase": "reopen",
+      "recursive_scan_calls": 0,
+      "index_bytes": 1320326,
+      "fixture_root_utf8_bytes": 77,
+      "repeat": 1,
+      "started_utc": "2026-10-06T23:28:21.663221+00:00",
+      "process_wall_seconds": 12.495057106018066,
+      "process_monotonic_seconds": 12.495073583,
+      "wall_minus_monotonic_seconds": -1.6476981933521984e-05
+    },
+    {
+      "measurements": [
+        {
+          "footprint_start_bytes": 5997072,
+          "cpu_percent": 13.679683434744947,
+          "footprint_end_bytes": 23872184,
+          "lifetime_peak_footprint_bytes": 23872184,
+          "cpu_seconds": 0.2752485,
+          "elapsed_seconds": 2.012097,
+          "resident_end_bytes": 31899648,
+          "phase": "reopen"
+        },
+        {
+          "cpu_seconds": 0.00017545833333332261,
+          "phase": "idle",
+          "lifetime_peak_footprint_bytes": 31851192,
+          "elapsed_seconds": 10.391544,
+          "footprint_end_bytes": 31785656,
+          "cpu_percent": 0.0016884722167689672,
+          "footprint_start_bytes": 31851192,
+          "resident_end_bytes": 39862272
+        }
+      ],
+      "recursive_scan_calls": 0,
+      "index_bytes": 1320326,
+      "fixture_root_utf8_bytes": 77,
+      "phase": "reopen",
+      "verified_records": 10000,
+      "repeat": 2,
+      "started_utc": "2026-10-06T23:28:34.159868+00:00",
+      "process_wall_seconds": 12.854871988296509,
+      "process_monotonic_seconds": 12.854889083,
+      "wall_minus_monotonic_seconds": -1.7094703490982965e-05
+    },
+    {
+      "verified_records": 10000,
+      "fixture_root_utf8_bytes": 77,
+      "index_bytes": 1320326,
+      "measurements": [
+        {
+          "elapsed_seconds": 2.074283,
+          "cpu_seconds": 0.4300235,
+          "lifetime_peak_footprint_bytes": 24527544,
+          "resident_end_bytes": 32555008,
+          "footprint_end_bytes": 24527544,
+          "footprint_start_bytes": 5997072,
+          "cpu_percent": 20.731187595906636,
+          "phase": "reopen"
+        },
+        {
+          "resident_end_bytes": 40468480,
+          "cpu_seconds": 0.00029641666666657684,
+          "footprint_end_bytes": 32408248,
+          "elapsed_seconds": 10.654518,
+          "lifetime_peak_footprint_bytes": 32457400,
+          "phase": "idle",
+          "cpu_percent": 0.0027820748593843183,
+          "footprint_start_bytes": 32457400
+        }
+      ],
+      "phase": "reopen",
+      "recursive_scan_calls": 0,
+      "repeat": 3,
+      "started_utc": "2026-10-06T23:28:47.016432+00:00",
+      "process_wall_seconds": 13.187874794006348,
+      "process_monotonic_seconds": 13.187892834,
+      "wall_minus_monotonic_seconds": -1.8039993651797204e-05
+    }
+  ]
+}

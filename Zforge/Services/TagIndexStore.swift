@@ -2,7 +2,10 @@ import Foundation
 
 /// Only completed, authorized indexes qualify for cross-process reuse.
 nonisolated struct TagIndexSnapshot: Codable, Sendable {
-    static let currentVersion = 3
+    // Earlier checkpoints can omit Unicode-boundary items or advance cursors
+    // through an alias stream that never watched the physical directory. One
+    // rebuild is required; subsequent version-4 checkpoints remain reusable.
+    static let currentVersion = 4
     var version = currentVersion
     let scopes: [TagJournal.Scope]
     let cursors: [String: UInt64]

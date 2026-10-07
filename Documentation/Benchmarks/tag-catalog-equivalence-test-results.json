@@ -1,0 +1,245 @@
+{
+  "unicode": {
+    "devicesAndConfigurations": [
+      {
+        "device": {
+          "architecture": "arm64",
+          "deviceId": "00008142-000241D1346B401C",
+          "deviceName": "My Mac",
+          "modelName": "MacBook Air",
+          "osBuildNumber": "26A434",
+          "osVersion": "27.0.1",
+          "platform": "macOS"
+        },
+        "expectedFailures": 0,
+        "failedTests": 5,
+        "passedTests": 64,
+        "skippedTests": 0,
+        "testPlanConfiguration": {
+          "configurationId": "1",
+          "configurationName": "Test Scheme Action"
+        }
+      }
+    ],
+    "environmentDescription": "Zforge \u00b7 Built with macOS 27.0.1",
+    "expectedFailures": 0,
+    "failedTests": 2,
+    "finishTime": 1791332768.161,
+    "passedTests": 53,
+    "result": "Failed",
+    "runtimeWarnings": [],
+    "skippedTests": 0,
+    "startTime": 1791332734.841,
+    "statistics": [
+      {
+        "subtitle": "19 test runs",
+        "title": "5 tests ran with dynamic parameters"
+      }
+    ],
+    "testFailures": [
+      {
+        "failureText": "Expectation failed: catalog.itemURLs(tagged: \"Unicode Boundary\") == [file]\ncatalog.itemURLs(tagged: \"Unicode Boundary\") \u2192 []\n[file] \u2192 [file:///Users/felipe/Library/Containers/io.libor.Zforge/Data/tmp/TagCatalogue-6D03D953-F3B3-47F2-8650-5F7551D42D90/A/%CC%81file.txt]",
+        "targetName": "ZforgeTests",
+        "testIdentifier": 2,
+        "testIdentifierString": "TagCatalogTests/discoveryRetainsLeadingCombiningFilename()",
+        "testIdentifierURL": "test://com.apple.xcode/Zforge/ZforgeTests/TagCatalogTests/discoveryRetainsLeadingCombiningFilename()",
+        "testName": "Initial discovery and cached reopening retain a filename beginning with a combining mark"
+      },
+      {
+        "failureText": "Expectation failed: TagScanRoots.covers(root, path) == expected\nTagScanRoots.covers(root, path) \u2192 false\nexpected \u2192 true",
+        "targetName": "ZforgeTests",
+        "testIdentifier": 1,
+        "testIdentifierString": "TagCatalogTests/scopeBoundariesPreserveUnicode(root:path:expected:)",
+        "testIdentifierURL": "test://com.apple.xcode/Zforge/ZforgeTests/TagCatalogTests/scopeBoundariesPreserveUnicode(root:path:expected:)",
+        "testName": "Scope boundaries accept leading combining marks and preserve canonical Unicode equivalence"
+      }
+    ],
+    "title": "Test - Zforge",
+    "topInsights": [
+      {
+        "category": "Common Failures",
+        "impact": "50% of failures",
+        "text": "4 runs of 1 test failed with Expectation failed: TagScanRoots.covers(root, path) == expected"
+      },
+      {
+        "category": "Common Failures",
+        "impact": "50% of failures",
+        "text": "2 runs of 1 test failed with Expectation failed: catalog.itemURLs(tagged: \"Unicode Boundary\") == [file]"
+      },
+      {
+        "category": "Common Failures",
+        "impact": "50% of failures",
+        "text": "2 runs of 1 test failed with Expectation failed: await store.load()?.records[file.path] == [\"Unicode Boundary\": 6]"
+      }
+    ],
+    "totalTestCount": 55
+  },
+  "alias": {
+    "devicesAndConfigurations": [
+      {
+        "device": {
+          "architecture": "arm64",
+          "deviceId": "00008142-000241D1346B401C",
+          "deviceName": "My Mac",
+          "modelName": "MacBook Air",
+          "osBuildNumber": "26A434",
+          "osVersion": "27.0.1",
+          "platform": "macOS"
+        },
+        "expectedFailures": 0,
+        "failedTests": 1,
+        "passedTests": 69,
+        "skippedTests": 0,
+        "testPlanConfiguration": {
+          "configurationId": "1",
+          "configurationName": "Test Scheme Action"
+        }
+      }
+    ],
+    "environmentDescription": "Zforge \u00b7 Built with macOS 27.0.1",
+    "expectedFailures": 0,
+    "failedTests": 1,
+    "finishTime": 1791333221.501,
+    "passedTests": 55,
+    "result": "Failed",
+    "runtimeWarnings": [],
+    "skippedTests": 0,
+    "startTime": 1791333186.074,
+    "statistics": [
+      {
+        "subtitle": "19 test runs",
+        "title": "5 tests ran with dynamic parameters"
+      }
+    ],
+    "testFailures": [
+      {
+        "failureText": "Expectation failed: mapping.relative.hasSuffix(\"/A\")\nmapping.relative \u2192 \"/Users/felipe/Library/Containers/io.libor.Zforge/Data/tmp/TagCatalogue-9C151EC3-49FE-480C-A187-9B9C7EF8447E/Alias\"",
+        "targetName": "ZforgeTests",
+        "testIdentifier": 1,
+        "testIdentifierString": "TagCatalogTests/journalMonitorsPhysicalAliasTarget()",
+        "testIdentifierURL": "test://com.apple.xcode/Zforge/ZforgeTests/TagCatalogTests/journalMonitorsPhysicalAliasTarget()",
+        "testName": "Device-relative monitoring resolves an authorized directory alias and preserves logical event paths"
+      }
+    ],
+    "title": "Test - Zforge",
+    "topInsights": [
+      {
+        "category": "Longest Test Runs",
+        "impact": "41% of duration",
+        "text": "1 longest test run with outlier durations exceeding 3.25s (three standard deviations)"
+      }
+    ],
+    "totalTestCount": 56
+  },
+  "generation": {
+    "devicesAndConfigurations": [
+      {
+        "device": {
+          "architecture": "arm64",
+          "deviceId": "00008142-000241D1346B401C",
+          "deviceName": "My Mac",
+          "modelName": "MacBook Air",
+          "osBuildNumber": "26A434",
+          "osVersion": "27.0.1",
+          "platform": "macOS"
+        },
+        "expectedFailures": 0,
+        "failedTests": 1,
+        "passedTests": 70,
+        "skippedTests": 0,
+        "testPlanConfiguration": {
+          "configurationId": "1",
+          "configurationName": "Test Scheme Action"
+        }
+      }
+    ],
+    "environmentDescription": "Zforge \u00b7 Built with macOS 27.0.1",
+    "expectedFailures": 0,
+    "failedTests": 1,
+    "finishTime": 1791333445.582,
+    "passedTests": 56,
+    "result": "Failed",
+    "runtimeWarnings": [],
+    "skippedTests": 0,
+    "startTime": 1791333417.281,
+    "statistics": [
+      {
+        "subtitle": "19 test runs",
+        "title": "5 tests ran with dynamic parameters"
+      }
+    ],
+    "testFailures": [
+      {
+        "failureText": "Expectation failed: !obsolete.matches([scope])\nobsolete.matches([scope]) \u2192 false",
+        "targetName": "ZforgeTests",
+        "testIdentifier": 1,
+        "testIdentifierString": "TagCatalogTests/obsoleteDiscoveryContractRequiresRebuild()",
+        "testIdentifierURL": "test://com.apple.xcode/Zforge/ZforgeTests/TagCatalogTests/obsoleteDiscoveryContractRequiresRebuild()",
+        "testName": "Indexes produced before Unicode and physical-journal corrections require one rebuild"
+      }
+    ],
+    "title": "Test - Zforge",
+    "topInsights": [
+      {
+        "category": "Longest Test Runs",
+        "impact": "21% of duration",
+        "text": "2 longest test runs with outlier durations exceeding 1.07s (three standard deviations)"
+      }
+    ],
+    "totalTestCount": 57
+  },
+  "final_regression": {
+    "devicesAndConfigurations": [
+      {
+        "device": {
+          "architecture": "arm64",
+          "deviceId": "00008142-000241D1346B401C",
+          "deviceName": "My Mac",
+          "modelName": "MacBook Air",
+          "osBuildNumber": "26A434",
+          "osVersion": "27.0.1",
+          "platform": "macOS"
+        },
+        "expectedFailures": 0,
+        "failedTests": 0,
+        "passedTests": 351,
+        "skippedTests": 0,
+        "testPlanConfiguration": {
+          "configurationId": "1",
+          "configurationName": "Test Scheme Action"
+        }
+      }
+    ],
+    "environmentDescription": "Zforge \u00b7 Built with macOS 27.0.1",
+    "expectedFailures": 0,
+    "failedTests": 0,
+    "finishTime": 1791333641.98,
+    "passedTests": 260,
+    "result": "Passed",
+    "runtimeWarnings": [
+      {
+        "issueType": "Runtime Warning",
+        "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions",
+        "sourceURL": "file:///Users/felipe/Documents/dev/Zforge/ZforgeTests/FileOperationServiceTests.swift"
+      }
+    ],
+    "skippedTests": 0,
+    "startTime": 1791333560.903,
+    "statistics": [
+      {
+        "subtitle": "112 test runs",
+        "title": "21 tests ran with dynamic parameters"
+      }
+    ],
+    "testFailures": [],
+    "title": "Test - Zforge",
+    "topInsights": [
+      {
+        "category": "Longest Test Runs",
+        "impact": "45% of duration",
+        "text": "6 longest test runs with outlier durations exceeding 0.96s (three standard deviations)"
+      }
+    ],
+    "totalTestCount": 260
+  }
+}

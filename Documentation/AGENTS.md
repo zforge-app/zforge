@@ -43,3 +43,7 @@ In each interaction, consult the affected requirements and update your contracts
 - [Benchmarks/visible-tag-discovery.md](Benchmarks/visible-tag-discovery.md) — visible Home/Shared completion and post-completion resource measurements, with the failed initial latency target.
 
 - [Benchmarks/durable-tag-index.md](Benchmarks/durable-tag-index.md) — durable authorized startup reuse, native traversal comparison, exact-source cached resources and remaining first-pass latency.
+
+- [Benchmarks/tag-catalog-optimization.md](Benchmarks/tag-catalog-optimization.md) — ZF-42 incremental restoration and background visibility batching, separate candidate timings, correctness exceptions and remaining application acceptance.
+
+- [Benchmarks/tag-catalog-equivalence.md](Benchmarks/tag-catalog-equivalence.md) — ZF-42 independent-oracle differential validation, baseline defects and repairs, one-time index invalidation and executed regression evidence.

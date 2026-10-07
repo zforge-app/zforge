@@ -240,7 +240,7 @@ final class FinderTagCatalog: NSObject {
             })
             let path = url.standardizedFileURL.path
             changed = setRecord(path, colors: colors.isEmpty || discoveryPolicy.isVisible(url) ? colors : [:]) || changed
-            if running, workTask != nil, discoveryPolicy.isVisible(url) { pendingReads.insert(url) }
+            if running, workTask != nil || preparationTask != nil, discoveryPolicy.isVisible(url) { pendingReads.insert(url) }
         }
         if changed { publish(); revision &+= 1; checkpointDirty = true; saveCheckpoint() }
     }
@@ -317,7 +317,7 @@ final class FinderTagCatalog: NSObject {
                     let batch = await reader(urls)
                     guard !Task.isCancelled else { break }
                     deferRetries(batch.deferred)
-                    receive(batch.records, generation: generation)
+                    await receive(batch.records, generation: generation)
                 } else if !pendingScans.urls.isEmpty {
                     let scopes = pendingScans.take()
                     // Reconcile previously indexed metadata after a subtree
@@ -349,25 +349,31 @@ final class FinderTagCatalog: NSObject {
         }
     }
 
-    private func receive(_ batch: [String: [String: Int]], generation: UInt64) {
-        guard running, generation == self.generation else { return }
+    private func receive(_ batch: [String: [String: Int]], generation: UInt64, revalidateUncertainRecords: Bool = false) async {
+        guard running, !Task.isCancelled, generation == self.generation else { return }
+        let visible = await TaggedFileScanner.visibilityResult(batch, policy: discoveryPolicy)
+        guard running, !Task.isCancelled, generation == self.generation else { return }
+        if revalidateUncertainRecords { pendingReads.formUnion(visible.metadataRechecks) }
         var changed = false
-        for (path, colors) in batch where discoveryPolicy.contains(URL(fileURLWithPath: path)) {
-            changed = setRecord(path, colors: colors.isEmpty || discoveryPolicy.isVisible(URL(fileURLWithPath: path)) ? colors : [:]) || changed
+        // Filesystem validation has completed off the main actor. Merge and
+        // publish once; a canceled generation cannot publish a partial batch.
+        for (path, colors) in visible.records {
+            changed = setRecord(path, colors: colors) || changed
         }
         if changed { publish(); revision &+= 1; checkpointDirty = true }
     }
 
     private func receiveScanBatch(_ batch: TaggedFileScanner.Batch, generation: UInt64) async {
         guard running, generation == self.generation else { return }
-        receive(batch, generation: generation)
+        await receive(batch, generation: generation)
+        guard running, !Task.isCancelled, generation == self.generation else { return }
         if !pendingReads.isEmpty {
             let urls = Array(pendingReads.prefix(128))
             pendingReads.subtract(urls)
             let updated = await reader(urls)
             guard !Task.isCancelled else { return }
             deferRetries(updated.deferred)
-            receive(updated.records, generation: generation)
+            await receive(updated.records, generation: generation)
         }
     }
 
@@ -453,8 +459,11 @@ final class FinderTagCatalog: NSObject {
                     Logger(subsystem: "io.libor.Zforge", category: "TagDiscovery").notice(
                         "Tag index restored: tagged_records=\(cachedRecords.count, privacy: .public), scopes_restored=\(restoredRoots.count, privacy: .public)"
                     )
-                    receive(cachedRecords, generation: generation)
-                    pendingReads.formUnion(cachedRecords.keys.map { URL(fileURLWithPath: $0) })
+                    await receive(cachedRecords, generation: generation, revalidateUncertainRecords: true)
+                    guard running, !Task.isCancelled, generation == self.generation else { break }
+                    // Persistent history revalidates changed paths. Enqueuing
+                    // every cached item repeats metadata work on quiet launches;
+                    // invalid or dropped history still reconciles the scope.
                     for path in snapshot.deferredPaths where restoredRoots.contains(where: { TagScanRoots.covers($0.path, path) }) {
                         let url = URL(fileURLWithPath: path)
                         deferredScans.insert(url)

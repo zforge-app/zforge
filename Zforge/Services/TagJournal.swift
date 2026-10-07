@@ -63,10 +63,18 @@ final class TagJournal {
             let mount = withUnsafePointer(to: &filesystem.f_mntonname) {
                 $0.withMemoryRebound(to: CChar.self, capacity: Int(MAXPATHLEN)) { String(cString: $0) }
             }
+            // Device-relative streams need the physical directory. Foundation
+            // may preserve /var or an authorized symlink alias; watching that
+            // spelling on the device can immediately report RootChanged and
+            // miss subsequent events. Keep the authorized logical identity for
+            // storage/publication and map physical event suffixes back to it.
+            guard let physicalPath = root.withUnsafeFileSystemRepresentation({ realpath($0!, nil) }) else { return nil }
+            defer { free(physicalPath) }
+            let physical = String(cString: physicalPath)
             // APFS firmlinks expose Data-volume roots as /Users, while external
             // mounts need their mount prefix removed for per-device streams.
-            let relative = mount != "/" && TagScanRoots.covers(mount, root.path)
-                ? String(root.path.dropFirst(mount.count)) : root.path
+            let relative = mount != "/" && TagScanRoots.covers(mount, physical)
+                ? String(physical.dropFirst(mount.count)) : physical
             scopes.append(Scope(path: root.path, inode: UInt64(info.st_ino), journal: journal))
             // Despite its array argument, the per-device API accepts exactly
             // one path. Keep independent streams and processed cursors so one

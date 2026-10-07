@@ -118,3 +118,11 @@ caffeinate -i python3 BuildSupport/Diagnostics/tag-index-scale-benchmark.py --ou
 ```
 
 For comparison captures, wrap the scanner command in `caffeinate -i` as well. Explicit fixture reuse is supported by `--fixture`; generated fixtures must start empty so stale tags cannot alter density. The sparse default remains ten tagged files per 100,000 total files. All output names and fixture content are English. Large tagged result maps are verified exactly and published as counts/hashes instead of repeating thousands of filenames. No new unit/UI suite execution is claimed: these are diagnostic invocations, and the production code remains at `fd1bacc`.
+
+## ZF-42 follow-up
+
+The requested first two catalog candidates are implemented and compared in [tag-catalog-optimization.md](tag-catalog-optimization.md). Ordinary cached metadata rereads are avoided when history is valid, with conservative linked/unverifiable exceptions and bounded background visibility validation. Contemporary isolated median cached readiness changes from 15.110 to 2.150 s; the exact-final below-2-second criterion still fails in two of three samples. JSON remains 1.259 MiB. Historical measurements above are retained; the follow-up provides current fingerprints, all prototype failures and final regression/UI counts.
+
+## ZF-42 follow-up correctness acceptance — 2026-10-06
+
+The incremental restore/background visibility implementation now passes 76 independent-oracle differential checkpoints, 257 unit cases / 348 executions and three serial UI cases. Two baseline defects are repaired: leading-combining scope boundaries and physical journal mapping for logical directory aliases. Index generation 4 rebuilds potentially incomplete older checkpoints once, with staged-grant migration covered; later valid caches reuse normally. This refines the implementation/evidence above without replacing historical measurements or closing D-41's real-Home first-pass target. [Reference adjustments, executed failures/results and remaining boundaries](tag-catalog-equivalence.md); [exact-final Release performance](tag-catalog-optimization.md).

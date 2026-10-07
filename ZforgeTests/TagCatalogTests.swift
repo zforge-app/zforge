@@ -7,6 +7,78 @@ import Testing
 
 @Suite("Global Finder tags")
 struct TagCatalogTests {
+    @Test("Indexes produced before Unicode and physical-journal corrections require one rebuild")
+    func obsoleteDiscoveryContractRequiresRebuild() {
+        let scope = TagJournal.Scope(path: "/fixture/Legacy", inode: 42, journal: "Fixture Journal")
+        var obsolete = TagIndexSnapshot(scopes: [scope], cursors: [scope.path: 42], records: [:])
+        obsolete.version = 3
+        #expect(!obsolete.matches([scope]))
+        let current = TagIndexSnapshot(scopes: [scope], cursors: [scope.path: 42], records: [:])
+        #expect(current.matches([scope]))
+    }
+
+    @Test("Device-relative monitoring resolves an authorized directory alias and preserves logical event paths")
+    @MainActor
+    func journalMonitorsPhysicalAliasTarget() async throws {
+        let root = try fixtureRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let physical = root.appendingPathComponent("A")
+        let alias = root.appendingPathComponent("Alias")
+        try FileManager.default.createSymbolicLink(at: alias, withDestinationURL: physical)
+        let description = try #require(TagJournal.describe([alias]))
+        #expect(description.scopes.map(\.path) == [alias.path])
+        let mapping = try #require(description.volumes.first?.paths.first)
+        #expect(mapping.logical == alias.path)
+        #expect(mapping.relative.hasSuffix("/A"))
+        #expect(!mapping.relative.hasSuffix("/Alias"))
+        var changes: [TagFileChange] = []
+        let journal = TagJournal(onChanges: { changes += $0 }, onHistory: {})
+        journal.start(description, since: [:])
+        defer { journal.stop() }
+        #expect(journal.available)
+        await journal.waitForHistory()
+        let file = physical.appendingPathComponent("first.txt")
+        let logicalFile = alias.appendingPathComponent("first.txt")
+        try writeTags(["Alias Journal\n6"], to: file)
+        try await waitUntil({ changes.contains { $0.path == logicalFile.path } },
+            stage: "Physical alias metadata event", diagnostics: { "Received paths: \(changes.map(\.path))" })
+        #expect(changes.filter { $0.path.hasSuffix("/first.txt") }.allSatisfy { $0.path == logicalFile.path })
+    }
+
+    @Test("Scope boundaries accept leading combining marks and preserve canonical Unicode equivalence", arguments: [
+        ("/fixture/A", "/fixture/A/\u{301}file.txt", true),
+        ("/fixture/A/", "/fixture/A/\u{301}file.txt", true),
+        ("/", "/\u{301}file.txt", true),
+        ("/fixture/A", "/fixture/A", true),
+        ("/fixture/A/", "/fixture/A", false),
+        ("/fixture/A", "/fixture/AB/file.txt", false),
+        ("/fixture/Roote\u{301}", "/fixture/Root\u{e9}/file.txt", true),
+        ("/fixture/Root\u{e9}", "/fixture/Roote\u{301}/\u{301}file.txt", true)
+    ])
+    func scopeBoundariesPreserveUnicode(root: String, path: String, expected: Bool) {
+        #expect(TagScanRoots.covers(root, path) == expected)
+    }
+
+    @Test("Initial discovery and cached reopening retain a filename beginning with a combining mark")
+    @MainActor
+    func discoveryRetainsLeadingCombiningFilename() async throws {
+        let root = try fixtureRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let scope = root.appendingPathComponent("A")
+        let file = scope.appendingPathComponent("\u{301}file.txt")
+        try Data("Unicode boundary fixture".utf8).write(to: file)
+        try writeTags(["Unicode Boundary\n6"], to: file)
+        let store = TagIndexStore(url: root.appendingPathComponent(".index.json"))
+        for _ in 0..<2 {
+            let catalog = FinderTagCatalog(discoveryRoots: [scope], usesSpotlight: false, indexStore: store)
+            catalog.refresh(searchScopes: [scope])
+            await catalog.waitForIdle()
+            #expect(catalog.itemURLs(tagged: "Unicode Boundary") == [file])
+            #expect(await store.load()?.records[file.path] == ["Unicode Boundary": 6])
+            catalog.stop()
+        }
+    }
+
     @Test("Authorized outside roots cannot expand discovery and observed items obey the same boundary")
     @MainActor
     func restrictsGlobalDiscoveryRoots() async throws {
@@ -93,6 +165,124 @@ struct TagCatalogTests {
         #expect(!visible)
         #expect(probes.count <= 2)
         #expect(probes.allSatisfy { !TagScanRoots.covers(hidden.path + "/", $0.path) })
+    }
+
+    @Test("Sibling visibility checks share ancestor probes and discard them between batches")
+    func visibilityBatchSharesOnlyAncestorFlags() {
+        let root = URL(fileURLWithPath: "/fixture/Batch")
+        let directory = root.appendingPathComponent("A")
+        var batch = TagVisibilityBatch(policy: .init(roots: [root]))
+        var probes: [String: Int] = [:]
+        for index in 0..<100 {
+            let file = directory.appendingPathComponent("file-\(index).txt")
+            let visible = batch.isVisible(file, readInfo: { path in probes[path, default: 0] += 1; return .init(flags: 0) })
+            #expect(visible)
+            #expect(probes[file.path] == 1)
+        }
+        #expect(probes[root.path] == 1)
+        #expect(probes[directory.path] == 1)
+        #expect(batch.cachedAncestorCount == 2)
+        var next = TagVisibilityBatch(policy: .init(roots: [root]))
+        var nextProbes: [String] = []
+        let hidden = next.isVisible(directory.appendingPathComponent("file-0.txt"), readInfo: { path in
+            nextProbes.append(path)
+            return .init(flags: path == directory.path ? UInt32(UF_HIDDEN) : 0)
+        })
+        #expect(!hidden)
+        #expect(nextProbes == [root.path, directory.path])
+    }
+
+    @Test("Batch path preparation preserves canonical keys and resolves unusual components before scope checks")
+    func visibilityBatchNormalizesOnlyUnusualKeys() {
+        let batch = TagVisibilityBatch(policy: .init(roots: [URL(fileURLWithPath: "/fixture/Batch")]))
+        #expect(batch.normalizedPath("/fixture/Batch/A/file.txt") == "/fixture/Batch/A/file.txt")
+        #expect(batch.normalizedPath("/fixture/Batch/A/../B/file.txt") == "/fixture/Batch/B/file.txt")
+        #expect(batch.normalizedPath("/fixture/Batch//A/file.txt") == "/fixture/Batch/A/file.txt")
+        let outside = batch.normalizedPath("/fixture/Batch/A/../../../Outside/file.txt")
+        #expect(outside == "/Outside/file.txt")
+        #expect(!batch.contains(normalizedPath: outside))
+    }
+
+    @Test("Combining characters at a filename boundary cannot bypass a hidden ancestor")
+    func visibilityChecksUnicodeBoundaryAncestors() {
+        let root = URL(fileURLWithPath: "/fixture/Batch")
+        let directory = root.appendingPathComponent("A")
+        let file = directory.appendingPathComponent("\u{301}file.txt")
+        var batch = TagVisibilityBatch(policy: .init(roots: [root]))
+        var probes: [String] = []
+        let visible = batch.isVisible(file, readInfo: { path in
+            probes.append(path)
+            return .init(flags: path == directory.path ? UInt32(UF_HIDDEN) : 0)
+        })
+        #expect(!visible)
+        #expect(probes == [root.path, directory.path])
+    }
+
+    @Test("An unavailable cached item identity requires conservative metadata reconciliation")
+    func unavailableVisibilityIdentityRequiresReread() {
+        let root = URL(fileURLWithPath: "/fixture/Batch")
+        let file = root.appendingPathComponent("unavailable.txt")
+        var batch = TagVisibilityBatch(policy: .init(roots: [root]))
+        let visible = batch.isVisible(file, readInfo: { path in
+            path == file.path ? nil : .init(flags: 0)
+        })
+        #expect(visible)
+        #expect(batch.metadataRechecks == [file.path])
+    }
+
+    @Test("Visibility batches cap ancestor storage and reject hidden lexical paths and outside scopes")
+    func visibilityBatchBoundsAndExclusions() {
+        let root = URL(fileURLWithPath: "/fixture/Batch")
+        var batch = TagVisibilityBatch(policy: .init(roots: [root]))
+        var probes = 0
+        for index in 0..<600 {
+            let visible = batch.isVisible(root.appendingPathComponent("directory-\(index)/file.txt"), readInfo: { _ in
+                probes += 1; return .init(flags: 0)
+            })
+            #expect(visible)
+        }
+        #expect(batch.cachedAncestorCount == 512)
+        let beforeExcluded = probes
+        for file in [root.appendingPathComponent(".hidden/file.txt"), root.appendingPathComponent("A/.file"),
+                     URL(fileURLWithPath: "/fixture/BatchOutside/file.txt")] {
+            let visible = batch.isVisible(file, readInfo: { _ in probes += 1; return .init(flags: 0) })
+            #expect(!visible)
+        }
+        #expect(probes == beforeExcluded)
+    }
+
+    @Test("Asynchronous visibility filtering retains removals and rejects hidden and outside records")
+    func visibilityFilteringPreservesRecordContract() async throws {
+        let root = try fixtureRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let visible = root.appendingPathComponent("A/first.txt")
+        let removed = root.appendingPathComponent("A/removed.txt")
+        let hidden = root.appendingPathComponent("B/second.txt")
+        #expect(chflags(hidden.path, UInt32(UF_HIDDEN)) == 0)
+        let outside = root.appendingPathComponent("Outside/file.txt")
+        let result = await TaggedFileScanner.visibleRecords([
+            visible.path: ["Batch Label": 6], removed.path: [:],
+            hidden.path: ["Hidden Label": 4], outside.path: ["Outside Label": 2]
+        ], policy: .init(roots: [root.appendingPathComponent("A"), root.appendingPathComponent("B")]))
+        #expect(result == [visible.path: ["Batch Label": 6], removed.path: [:], hidden.path: [:]])
+    }
+
+    @Test("Canceling a visibility batch discards partial results and stops subsequent probes")
+    func canceledVisibilityBatchDoesNotPublishPartialRecords() async {
+        let root = URL(fileURLWithPath: "/fixture/Batch")
+        let gate = ScanGate()
+        var budget = TaggedFileScanner.Budget()
+        budget.maximumItems = 1
+        budget.pause = { _ in await gate.arriveAndWait() }
+        let batch = Dictionary(uniqueKeysWithValues: (0..<256).map {
+            (root.appendingPathComponent("file-\($0).txt").path, ["Cancellation Label": 6])
+        })
+        let worker = Task { await TaggedFileScanner.visibleRecords(batch, policy: .init(roots: [root]), budget: budget) }
+        await gate.waitForArrival()
+        worker.cancel()
+        await gate.open()
+        #expect(await worker.value.isEmpty)
+        #expect(await gate.count == 1)
     }
 
     @Test("The global scan includes tagged files in different directories and tagged folders")
@@ -734,6 +924,69 @@ struct TagCatalogTests {
         #expect(await probe.scans.isEmpty)
         #expect(second.itemURLs(tagged: "Persistent Fixture") == [file])
         #expect(second.isIdle)
+    }
+
+    @Test("A valid quiet checkpoint restores unchanged tags without scheduling metadata rereads")
+    @MainActor
+    func quietCheckpointDoesNotRereadTaggedRecords() async throws {
+        let root = try fixtureRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let file = root.appendingPathComponent("A/first.txt")
+        let store = TagIndexStore(url: root.appendingPathComponent(".index.json"))
+        let initial = FinderTagCatalog(discoveryRoots: [root], usesSpotlight: false, indexStore: store)
+        initial.refresh(searchScopes: [root])
+        await initial.waitForIdle()
+        // Observe the fixture write through the native journal before saving
+        // its quiet checkpoint. Initial filesystem-event delivery is async;
+        // draining discovery alone is not a fence for a pre-start metadata write.
+        try writeTags(["Quiet Cached\n6"], to: file)
+        try await waitUntil({ initial.itemURLs(tagged: "Quiet Cached") == [file] },
+            stage: "Quiet fixture native metadata delivery", diagnostics: { "revision=\(initial.revision)" })
+        await initial.waitForIdle()
+        #expect(await store.load()?.records[file.path] == ["Quiet Cached": 6])
+        initial.stop()
+        let probe = CatalogWorkProbe()
+        let reopened = FinderTagCatalog(discoveryRoots: [root], scanner: { scopes, publish in
+            await probe.scanned(scopes)
+            await TaggedFileScanner.scan(scopes, onBatch: publish)
+        }, reader: { urls in
+            await probe.read(urls)
+            return await TaggedFileScanner.read(urls)
+        }, usesSpotlight: false, indexStore: store)
+        defer { reopened.stop() }
+        reopened.refresh(searchScopes: [root])
+        await reopened.waitForIdle()
+        #expect(reopened.itemURLs(tagged: "Quiet Cached") == [file])
+        #expect(await probe.scans.isEmpty)
+        #expect(await probe.reads.isEmpty)
+        #expect(reopened.isIdle)
+    }
+
+    @Test("Restored linked items revalidate target metadata changed outside the watched scope", arguments: [false, true])
+    @MainActor
+    func restoredLinksRevalidateExternalTargets(hardLink: Bool) async throws {
+        let root = try fixtureRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let scope = root.appendingPathComponent("A")
+        let target = root.appendingPathComponent("B/second.txt")
+        let alias = scope.appendingPathComponent("linked.txt")
+        try writeTags(["Linked Cached\n6"], to: target)
+        if hardLink { try FileManager.default.linkItem(at: target, to: alias) }
+        else { try FileManager.default.createSymbolicLink(at: alias, withDestinationURL: target) }
+        let store = TagIndexStore(url: root.appendingPathComponent(".index.json"))
+        let initial = FinderTagCatalog(discoveryRoots: [scope], usesSpotlight: false, indexStore: store)
+        initial.refresh(searchScopes: [scope])
+        await initial.waitForIdle()
+        #expect(initial.itemURLs(tagged: "Linked Cached") == [alias])
+        initial.stop()
+        try writeTags(["Linked Updated\n4"], to: target)
+        let reopened = FinderTagCatalog(discoveryRoots: [scope], usesSpotlight: false, indexStore: store)
+        defer { reopened.stop() }
+        reopened.refresh(searchScopes: [scope])
+        await reopened.waitForIdle()
+        #expect(reopened.itemURLs(tagged: "Linked Cached").isEmpty)
+        #expect(reopened.itemURLs(tagged: "Linked Updated") == [alias])
+        #expect(await store.load()?.records[alias.path] == ["Linked Updated": 4])
     }
 
     @Test("Staged authorization restores each cached scope without replacing the other scope's checkpoint", arguments: [false, true])

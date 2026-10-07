@@ -17,7 +17,15 @@ nonisolated struct TagScanRoots: Sendable {
     }
 
     static func covers(_ root: String, _ path: String) -> Bool {
-        path == root || path.hasPrefix(root.hasSuffix("/") ? root : root + "/")
+        if path == root { return true }
+        let prefix = root.hasSuffix("/") ? root.dropLast() : root[...]
+        // A slash followed by a combining mark is one Swift grapheme. Check
+        // the POSIX separator byte, preserving canonical-equivalent scope
+        // names through the fallback rather than changing filesystem identity.
+        if path.utf8.starts(with: prefix.utf8) {
+            return path.utf8.dropFirst(prefix.utf8.count).first == 0x2f
+        }
+        return path.hasPrefix(prefix) && path.dropFirst(prefix.count).utf8.first == 0x2f
     }
 
     mutating func remove(coveredBy scopes: [URL]) {
@@ -94,6 +102,86 @@ nonisolated struct TagDiscoveryPolicy: Sendable {
     }
 }
 
+/// Visibility is shared only within one finite batch. Cache ancestors, not
+/// thousands of distinct leaves, so sibling files reuse their directory probes.
+/// String paths avoid constructing a URL for every ancestor of every record.
+nonisolated struct TagVisibilityBatch {
+    struct FileInfo {
+        var flags: UInt32
+        var needsMetadataRefresh = false
+    }
+    private let roots: [String]
+    private(set) var metadataRechecks: Set<String> = []
+    private var ancestorFlags: [String: UInt32] = [:]
+    var cachedAncestorCount: Int { ancestorFlags.count }
+
+    init(policy: TagDiscoveryPolicy) {
+        roots = policy.roots.map { $0.standardizedFileURL.path }
+    }
+
+    func contains(normalizedPath path: String) -> Bool {
+        roots.contains { TagScanRoots.covers($0, path) }
+    }
+
+    /// Scanner/checkpoint keys normally already have the scope's canonical
+    /// prefix and no relative components. Avoid Foundation path construction
+    /// on that common path; retain normalization for aliases and unusual inputs.
+    func normalizedPath(_ path: String) -> String {
+        if contains(normalizedPath: path),
+           !path.utf8.split(separator: 0x2f, omittingEmptySubsequences: false).dropFirst()
+                .contains(where: { part in
+                    part.isEmpty || (part.first == 0x2e && (part.count == 1 || (part.count == 2 && part.last == 0x2e)))
+                }) {
+            return path
+        }
+        return URL(fileURLWithPath: path, isDirectory: false).standardizedFileURL.path
+    }
+
+    mutating func isVisible(_ url: URL, readInfo: (String) -> FileInfo? = Self.info(at:)) -> Bool {
+        isVisible(normalizedPath: url.standardizedFileURL.path, recordPath: url.path, readInfo: readInfo)
+    }
+
+    mutating func isVisible(normalizedPath path: String, recordPath: String? = nil,
+                            readInfo: (String) -> FileInfo? = Self.info(at:)) -> Bool {
+        guard let root = roots.first(where: { TagScanRoots.covers($0, path) }) else { return false }
+        var ancestors: [String] = []
+        var current = path
+        while current != "/" {
+            // POSIX separators are bytes, independent of Unicode grapheme
+            // clusters (a leading combining mark can combine with the slash).
+            let bytes = current.utf8
+            guard let separator = bytes.lastIndex(of: 0x2f) else { return false }
+            let nameStart = bytes.index(after: separator)
+            if nameStart != bytes.endIndex, bytes[nameStart] == 0x2e { return false }
+            ancestors.append(current)
+            if current == root { break }
+            current = separator == bytes.startIndex ? "/" : String(decoding: bytes[..<separator], as: UTF8.self)
+        }
+        for ancestor in ancestors.reversed() {
+            let flags: UInt32
+            if ancestor != path, let cached = ancestorFlags[ancestor] { flags = cached }
+            else {
+                let info = readInfo(ancestor)
+                flags = info?.flags ?? 0
+                if ancestor == path, info == nil || info?.needsMetadataRefresh == true { metadataRechecks.insert(recordPath ?? path) }
+                if ancestor != path, ancestorFlags.count < 512 { ancestorFlags[ancestor] = flags }
+            }
+            if flags & UInt32(UF_HIDDEN) != 0 { return false }
+        }
+        return true
+    }
+
+    static func info(at path: String) -> FileInfo? {
+        var info = stat()
+        guard lstat(path, &info) == 0 else { return nil }
+        let kind = info.st_mode & S_IFMT
+        // Changes to a linked target may occur outside every watched scope.
+        // Discover this during the existing visibility probe, with no extra stat.
+        let refresh = kind == S_IFLNK || (kind == S_IFREG && info.st_nlink > 1)
+        return FileInfo(flags: info.st_flags, needsMetadataRefresh: refresh)
+    }
+}
+
 /// Reads real Finder metadata even where a sandboxed Spotlight query omits it.
 /// One utility worker drains Foundation temporaries per item and cooperatively
 /// suspends between bounded slices. There are no periodic wakeups after return.
@@ -124,6 +212,49 @@ nonisolated enum TaggedFileScanner {
         var complete: Bool { !interrupted && deferred.isEmpty }
     }
 
+    /// Validate a whole delivery away from the main actor, with the same
+    /// bounded utility slices as metadata work. Empty records still remove
+    /// indexed paths; outside-policy records cannot be published.
+    struct VisibilityResult: Sendable {
+        var records: Batch
+        var metadataRechecks: [URL]
+    }
+
+    static func visibleRecords(_ batch: Batch, policy: TagDiscoveryPolicy, budget: Budget = Budget()) async -> Batch {
+        await visibilityResult(batch, policy: policy, budget: budget).records
+    }
+
+    static func visibilityResult(_ batch: Batch, policy: TagDiscoveryPolicy, budget: Budget = Budget()) async -> VisibilityResult {
+        let worker = Task.detached(priority: .utility) {
+            var visibility = TagVisibilityBatch(policy: policy)
+            var result: Batch = [:]
+            let clock = ContinuousClock()
+            var start = clock.now
+            var inspected = 0
+            for (path, colors) in batch {
+                guard !Task.isCancelled else { break }
+                autoreleasepool {
+                    let normalized = visibility.normalizedPath(path)
+                    guard visibility.contains(normalizedPath: normalized) else { return }
+                    result[path] = colors.isEmpty || visibility.isVisible(normalizedPath: normalized, recordPath: path) ? colors : [:]
+                }
+                inspected += 1
+                let elapsed = start.duration(to: clock.now)
+                if inspected >= budget.maximumItems || elapsed >= budget.workSlice {
+                    do { try await budget.pause(elapsed * 4) } catch { break }
+                    inspected = 0
+                    start = clock.now
+                }
+            }
+            if inspected > 0, !Task.isCancelled {
+                try? await budget.pause(start.duration(to: clock.now) * 4)
+            }
+            return Task.isCancelled ? VisibilityResult(records: [:], metadataRechecks: [])
+                : VisibilityResult(records: result, metadataRechecks: visibility.metadataRechecks.map { URL(fileURLWithPath: $0) })
+        }
+        return await withTaskCancellationHandler { await worker.value } onCancel: { worker.cancel() }
+    }
+
     static func read(_ urls: [URL], budget: Budget = Budget()) async -> Batch {
         await readResult(urls, budget: budget).records
     }
@@ -137,6 +268,8 @@ nonisolated enum TaggedFileScanner {
             var records: Batch = [:]
             var complete = true
             var deferred = TagScanRoots()
+            let boundaries = [FileManager.default.temporaryDirectory] + TagDiscoveryPolicy.standardRoots
+            var visibility = TagVisibilityBatch(policy: TagDiscoveryPolicy(roots: boundaries))
             for url in urls {
                 guard !Task.isCancelled else { break }
                 autoreleasepool {
@@ -145,9 +278,11 @@ nonisolated enum TaggedFileScanner {
                     // item's identity so a later empty read removes that path.
                     let canonicalPath = url.resolvingSymlinksInPath().path
                     guard !exclusion.contains(path: canonicalPath) else { return }
-                    let boundary = ([FileManager.default.temporaryDirectory] + TagDiscoveryPolicy.standardRoots)
-                        .first { TagScanRoots.covers($0.path, url.path) }
-                    guard TagDiscoveryPolicy.isVisible(url, boundary: boundary) else { records[url.path] = [:]; return }
+                    // Preserve the conservative ancestor check for unusual
+                    // explicitly supplied paths outside the standard boundaries.
+                    let visible = visibility.contains(normalizedPath: url.path)
+                        ? visibility.isVisible(normalizedPath: url.path) : TagDiscoveryPolicy.isVisible(url)
+                    guard visible else { records[url.path] = [:]; return }
                     let metadata = url.withUnsafeFileSystemRepresentation { FinderTagMetadata.readColorIndexes(atPath: $0!) }
                     if metadata.complete { records[url.path] = metadata.colors }
                     else { complete = false; deferred.deferRetry(url) }

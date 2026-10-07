@@ -1,0 +1,186 @@
+{
+  "configuration": "Release",
+  "source_commit": "fd1baccaf9841b63cea1288c78c051445f17749a",
+  "source_overrides": [
+    "Zforge/Services/TagJournal.swift"
+  ],
+  "compile_commands": [
+    [
+      "xcrun",
+      "clang",
+      "-Os",
+      "-target",
+      "arm64-apple-macos26.0",
+      "-I",
+      "/private/tmp/zforge-zf42-equivalence-release-baseline/native",
+      "-c",
+      "/private/tmp/zforge-zf42-equivalence-release-baseline/native/TagDirectoryReader.c",
+      "-o",
+      "/private/tmp/zforge-zf42-equivalence-release-baseline/TagDirectoryReader.o"
+    ],
+    [
+      "xcrun",
+      "clang",
+      "-Os",
+      "-target",
+      "arm64-apple-macos26.0",
+      "-I",
+      "/private/tmp/zforge-zf42-equivalence-release-baseline/native",
+      "-c",
+      "/private/tmp/zforge-zf42-equivalence-release-baseline/metrics.c",
+      "-o",
+      "/private/tmp/zforge-zf42-equivalence-release-baseline/metrics.o"
+    ],
+    [
+      "xcrun",
+      "swiftc",
+      "-swift-version",
+      "6",
+      "-O",
+      "-whole-module-optimization",
+      "-target",
+      "arm64-apple-macos26.0",
+      "-default-isolation",
+      "MainActor",
+      "-enable-upcoming-feature",
+      "MemberImportVisibility",
+      "-enable-upcoming-feature",
+      "InferIsolatedConformances",
+      "-enable-upcoming-feature",
+      "NonisolatedNonsendingByDefault",
+      "-parse-as-library",
+      "-module-cache-path",
+      "/private/tmp/zforge-zf42-equivalence-release-baseline/modules",
+      "-I",
+      "/private/tmp/zforge-zf42-equivalence-release-baseline/native",
+      "-import-objc-header",
+      "/private/tmp/zforge-zf42-equivalence-release-baseline/metrics.h",
+      "/private/tmp/zforge-zf42-equivalence-release-baseline/measure.swift",
+      "/private/tmp/zforge-zf42-equivalence-release-baseline/TagDirectoryReader.o",
+      "/private/tmp/zforge-zf42-equivalence-release-baseline/metrics.o",
+      "-o",
+      "/private/tmp/zforge-zf42-equivalence-release-baseline/measure"
+    ]
+  ],
+  "source_sha256": {
+    "Zforge/Services/FinderTagCatalog.swift": "c3cb0a5e618101d108343fc3bf4866564b97410930fd894ac6ebeac2de996383",
+    "Zforge/Services/TaggedFileScanner.swift": "0d084178808f97b34a896de9e37d20e55c26aa13f11c20c9db7884ff0a4310c3",
+    "Zforge/Services/TagIndexStore.swift": "370a1f76b1bcc9bd6a4bde452f12708817ff81a2152810c7b271acfa559fb228",
+    "Zforge/Services/TagJournal.swift": "3338e54d1821a0a503d96ac9bd33252e2b74644b501414eac80a2b7a138aa4cf",
+    "Zforge/Services/UserDirectoryService.swift": "300f2a4587c32c91401be837c09cb25513a1bce9d6eed273bfdde9be45312e7d",
+    "Zforge/Services/ZforgeTemporaryStorage.swift": "cc356927251bffdac1dde880a402d6dab971022671c1d0d495261bd7581d1a92",
+    "Zforge/Native/TagDirectoryReader.c": "aa5901c4e00383fd1a1707c549316591a3942ca60a2f3885f1b30317a5b38329",
+    "Zforge/Native/TagDirectoryReader.h": "37b44201d83531cb74a9fc8040adb31e94bf0420319749a85b49e2ff1208e7cb"
+  },
+  "harness_sha256": "f2da6a77ef1e693e89c0b52d96e4b1b0181236f812c3062763b3a8d3f5e06708",
+  "diagnostic_harness_sha256": "fe171f5fbff20e15fbd69aa9a9b4e1354e25c6a719ae064d2295e939c2ff5d10",
+  "benchmark_script_sha256": "eb6a60868e3819f022012efccfd2c9bc438c56bb3e3d8f40e1c0ec2c1b7cc1cb",
+  "resource_helper_sha256": "fa12fd697d6d108a03665b2adba467fcdf0e2353754a101b416855bfff697a53",
+  "files": 100000,
+  "tagged_files": 10000,
+  "reused_checkpoint": "/private/tmp/zforge-zf42-batched/index-1.json",
+  "measurements": [
+    {
+      "fixture_root_utf8_bytes": 77,
+      "index_bytes": 1320326,
+      "verified_records": 10000,
+      "recursive_scan_calls": 0,
+      "measurements": [
+        {
+          "phase": "reopen",
+          "elapsed_seconds": 15.347398,
+          "footprint_start_bytes": 5816800,
+          "cpu_percent": 22.692423986137584,
+          "footprint_end_bytes": 30327432,
+          "resident_end_bytes": 36913152,
+          "cpu_seconds": 3.4826966249999995,
+          "lifetime_peak_footprint_bytes": 30327432
+        },
+        {
+          "phase": "idle",
+          "elapsed_seconds": 10.189462,
+          "footprint_start_bytes": 33604256,
+          "cpu_percent": 0.0030726188814812075,
+          "footprint_end_bytes": 33505952,
+          "resident_end_bytes": 40140800,
+          "cpu_seconds": 0.0003130833333333527,
+          "lifetime_peak_footprint_bytes": 33604256
+        }
+      ],
+      "phase": "reopen",
+      "repeat": 1,
+      "started_utc": "2026-10-07T01:03:07.270437+00:00",
+      "process_wall_seconds": 26.099256992340088,
+      "process_monotonic_seconds": 26.099249667000002,
+      "wall_minus_monotonic_seconds": 7.325340085628795e-06
+    },
+    {
+      "phase": "reopen",
+      "verified_records": 10000,
+      "index_bytes": 1320326,
+      "fixture_root_utf8_bytes": 77,
+      "measurements": [
+        {
+          "elapsed_seconds": 12.945905,
+          "footprint_start_bytes": 5816800,
+          "footprint_end_bytes": 27820728,
+          "cpu_seconds": 2.999307875,
+          "cpu_percent": 23.168004670202663,
+          "lifetime_peak_footprint_bytes": 27820728,
+          "resident_end_bytes": 34373632,
+          "phase": "reopen"
+        },
+        {
+          "elapsed_seconds": 10.495495,
+          "footprint_start_bytes": 31064760,
+          "footprint_end_bytes": 31015608,
+          "cpu_seconds": 0.00021008333333272233,
+          "cpu_percent": 0.0020016524550078136,
+          "lifetime_peak_footprint_bytes": 31064760,
+          "resident_end_bytes": 37601280,
+          "phase": "idle"
+        }
+      ],
+      "recursive_scan_calls": 0,
+      "repeat": 2,
+      "started_utc": "2026-10-07T01:03:33.371408+00:00",
+      "process_wall_seconds": 23.63929581642151,
+      "process_monotonic_seconds": 23.639289250000004,
+      "wall_minus_monotonic_seconds": 6.566421504317077e-06
+    },
+    {
+      "phase": "reopen",
+      "measurements": [
+        {
+          "cpu_seconds": 3.240776083333333,
+          "footprint_start_bytes": 5833184,
+          "cpu_percent": 22.79963779300954,
+          "resident_end_bytes": 34488320,
+          "lifetime_peak_footprint_bytes": 27919008,
+          "phase": "reopen",
+          "elapsed_seconds": 14.214156,
+          "footprint_end_bytes": 27919008
+        },
+        {
+          "cpu_seconds": 0.00028074999999994077,
+          "footprint_start_bytes": 31195832,
+          "cpu_percent": 0.0026527775454918585,
+          "resident_end_bytes": 37732352,
+          "lifetime_peak_footprint_bytes": 31195832,
+          "phase": "idle",
+          "elapsed_seconds": 10.583247,
+          "footprint_end_bytes": 31179448
+        }
+      ],
+      "fixture_root_utf8_bytes": 77,
+      "index_bytes": 1320326,
+      "recursive_scan_calls": 0,
+      "verified_records": 10000,
+      "repeat": 3,
+      "started_utc": "2026-10-07T01:03:57.012453+00:00",
+      "process_wall_seconds": 24.997167825698853,
+      "process_monotonic_seconds": 24.99716025,
+      "wall_minus_monotonic_seconds": 7.575698852235746e-06
+    }
+  ]
+}

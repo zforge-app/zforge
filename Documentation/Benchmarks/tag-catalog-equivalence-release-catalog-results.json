@@ -1,0 +1,472 @@
+{
+  "configuration": "Release",
+  "source_commit": null,
+  "source_overrides": [],
+  "compile_commands": [
+    [
+      "xcrun",
+      "clang",
+      "-Os",
+      "-target",
+      "arm64-apple-macos26.0",
+      "-I",
+      "/private/tmp/zforge-zf42-equivalence-release-catalog/native",
+      "-c",
+      "/private/tmp/zforge-zf42-equivalence-release-catalog/native/TagDirectoryReader.c",
+      "-o",
+      "/private/tmp/zforge-zf42-equivalence-release-catalog/TagDirectoryReader.o"
+    ],
+    [
+      "xcrun",
+      "clang",
+      "-Os",
+      "-target",
+      "arm64-apple-macos26.0",
+      "-I",
+      "/private/tmp/zforge-zf42-equivalence-release-catalog/native",
+      "-c",
+      "/private/tmp/zforge-zf42-equivalence-release-catalog/metrics.c",
+      "-o",
+      "/private/tmp/zforge-zf42-equivalence-release-catalog/metrics.o"
+    ],
+    [
+      "xcrun",
+      "swiftc",
+      "-swift-version",
+      "6",
+      "-O",
+      "-whole-module-optimization",
+      "-target",
+      "arm64-apple-macos26.0",
+      "-default-isolation",
+      "MainActor",
+      "-enable-upcoming-feature",
+      "MemberImportVisibility",
+      "-enable-upcoming-feature",
+      "InferIsolatedConformances",
+      "-enable-upcoming-feature",
+      "NonisolatedNonsendingByDefault",
+      "-parse-as-library",
+      "-module-cache-path",
+      "/private/tmp/zforge-zf42-equivalence-release-catalog/modules",
+      "-I",
+      "/private/tmp/zforge-zf42-equivalence-release-catalog/native",
+      "-import-objc-header",
+      "/private/tmp/zforge-zf42-equivalence-release-catalog/metrics.h",
+      "/private/tmp/zforge-zf42-equivalence-release-catalog/measure.swift",
+      "/private/tmp/zforge-zf42-equivalence-release-catalog/TagDirectoryReader.o",
+      "/private/tmp/zforge-zf42-equivalence-release-catalog/metrics.o",
+      "-o",
+      "/private/tmp/zforge-zf42-equivalence-release-catalog/measure"
+    ]
+  ],
+  "source_sha256": {
+    "Zforge/Services/FinderTagCatalog.swift": "96f77b6c526c6163864a466231c2af69026022370d855c51a24739e271e90cf9",
+    "Zforge/Services/TaggedFileScanner.swift": "341a1630b5f45cb00f2db1c0158422afcfac0a9a6ff7b88fe15a78108cf2963d",
+    "Zforge/Services/TagIndexStore.swift": "3cb2a769326a0421c81f370710cb36fd332169428da8c9dfda841e85fa341fe0",
+    "Zforge/Services/TagJournal.swift": "3338e54d1821a0a503d96ac9bd33252e2b74644b501414eac80a2b7a138aa4cf",
+    "Zforge/Services/UserDirectoryService.swift": "300f2a4587c32c91401be837c09cb25513a1bce9d6eed273bfdde9be45312e7d",
+    "Zforge/Services/ZforgeTemporaryStorage.swift": "cc356927251bffdac1dde880a402d6dab971022671c1d0d495261bd7581d1a92",
+    "Zforge/Native/TagDirectoryReader.c": "aa5901c4e00383fd1a1707c549316591a3942ca60a2f3885f1b30317a5b38329",
+    "Zforge/Native/TagDirectoryReader.h": "37b44201d83531cb74a9fc8040adb31e94bf0420319749a85b49e2ff1208e7cb"
+  },
+  "harness_sha256": "e59ac491f30321d83c5bf903221d7ce7b38d92884f69488d57489ccfbfbc7da2",
+  "diagnostic_harness_sha256": "fe171f5fbff20e15fbd69aa9a9b4e1354e25c6a719ae064d2295e939c2ff5d10",
+  "benchmark_script_sha256": "eb6a60868e3819f022012efccfd2c9bc438c56bb3e3d8f40e1c0ec2c1b7cc1cb",
+  "resource_helper_sha256": "fa12fd697d6d108a03665b2adba467fcdf0e2353754a101b416855bfff697a53",
+  "files": 100000,
+  "tagged_files": 10000,
+  "reused_checkpoint": null,
+  "measurements": [
+    {
+      "measurements": [
+        {
+          "cpu_seconds": 6.962909875,
+          "resident_end_bytes": 32505856,
+          "cpu_percent": 16.186736108035717,
+          "footprint_end_bytes": 22397600,
+          "lifetime_peak_footprint_bytes": 22397600,
+          "phase": "cold",
+          "elapsed_seconds": 43.016145,
+          "footprint_start_bytes": 5816800
+        }
+      ],
+      "phase": "cold",
+      "verified_records": 10000,
+      "recursive_scan_calls": 1,
+      "fixture_root_utf8_bytes": 77,
+      "index_bytes": 1320326,
+      "repeat": 1,
+      "started_utc": "2026-10-07T00:59:51.045763+00:00",
+      "process_wall_seconds": 43.73332595825195,
+      "process_monotonic_seconds": 43.733310875,
+      "wall_minus_monotonic_seconds": 1.5083251952319188e-05
+    },
+    {
+      "fixture_root_utf8_bytes": 77,
+      "verified_records": 10000,
+      "recursive_scan_calls": 0,
+      "index_bytes": 1320326,
+      "measurements": [
+        {
+          "cpu_percent": 21.91793231837314,
+          "lifetime_peak_footprint_bytes": 23069320,
+          "resident_end_bytes": 29687808,
+          "cpu_seconds": 0.1797412916666667,
+          "footprint_end_bytes": 23069320,
+          "footprint_start_bytes": 5784032,
+          "elapsed_seconds": 0.820065,
+          "phase": "reopen"
+        },
+        {
+          "cpu_percent": 0.0026870509780332562,
+          "lifetime_peak_footprint_bytes": 29508232,
+          "resident_end_bytes": 36110336,
+          "cpu_seconds": 0.0002751250000000427,
+          "footprint_end_bytes": 29491848,
+          "footprint_start_bytes": 29508232,
+          "elapsed_seconds": 10.23892,
+          "phase": "idle"
+        }
+      ],
+      "phase": "reopen",
+      "repeat": 1,
+      "started_utc": "2026-10-07T01:00:34.779406+00:00",
+      "process_wall_seconds": 11.23048996925354,
+      "process_monotonic_seconds": 11.230487416999999,
+      "wall_minus_monotonic_seconds": 2.5522535409550073e-06
+    },
+    {
+      "index_bytes": 1320326,
+      "fixture_root_utf8_bytes": 77,
+      "measurements": [
+        {
+          "footprint_end_bytes": 14139944,
+          "phase": "load",
+          "footprint_start_bytes": 5734880,
+          "cpu_seconds": 0.017523583333333342,
+          "resident_end_bytes": 19693568,
+          "elapsed_seconds": 0.017498,
+          "cpu_percent": 100.14620718558317,
+          "lifetime_peak_footprint_bytes": 14139944
+        }
+      ],
+      "phase": "load",
+      "verified_records": 10000,
+      "recursive_scan_calls": 0,
+      "repeat": 1,
+      "started_utc": "2026-10-07T01:00:46.010577+00:00",
+      "process_wall_seconds": 0.09374809265136719,
+      "process_monotonic_seconds": 0.09374708300000378,
+      "wall_minus_monotonic_seconds": 1.0096513634039184e-06
+    },
+    {
+      "fixture_root_utf8_bytes": 77,
+      "measurements": [
+        {
+          "phase": "save",
+          "lifetime_peak_footprint_bytes": 22807104,
+          "elapsed_seconds": 0.012339,
+          "footprint_end_bytes": 22807104,
+          "cpu_seconds": 0.010970791666666674,
+          "cpu_percent": 88.91151362887328,
+          "footprint_start_bytes": 22774336,
+          "resident_end_bytes": 28409856
+        }
+      ],
+      "phase": "save",
+      "verified_records": 10000,
+      "index_bytes": 1320326,
+      "recursive_scan_calls": 0,
+      "repeat": 1,
+      "started_utc": "2026-10-07T01:00:46.104595+00:00",
+      "process_wall_seconds": 0.11927294731140137,
+      "process_monotonic_seconds": 0.11927295800000337,
+      "wall_minus_monotonic_seconds": -1.0688602003483538e-08
+    },
+    {
+      "phase": "rewrite_one_record",
+      "verified_records": 10000,
+      "recursive_scan_calls": 0,
+      "index_bytes": 1320346,
+      "fixture_root_utf8_bytes": 77,
+      "measurements": [
+        {
+          "footprint_start_bytes": 23101992,
+          "phase": "rewrite_one_record",
+          "resident_end_bytes": 29081600,
+          "elapsed_seconds": 0.014936,
+          "footprint_end_bytes": 23462440,
+          "cpu_percent": 90.41661087305842,
+          "cpu_seconds": 0.013504625000000006,
+          "lifetime_peak_footprint_bytes": 23462440
+        }
+      ],
+      "repeat": 1,
+      "started_utc": "2026-10-07T01:00:46.224123+00:00",
+      "process_wall_seconds": 0.12499833106994629,
+      "process_monotonic_seconds": 0.12499766700000237,
+      "wall_minus_monotonic_seconds": 6.640699439230957e-07
+    },
+    {
+      "recursive_scan_calls": 1,
+      "index_bytes": 1320326,
+      "verified_records": 10000,
+      "fixture_root_utf8_bytes": 77,
+      "phase": "cold",
+      "measurements": [
+        {
+          "footprint_end_bytes": 22659744,
+          "elapsed_seconds": 33.061583,
+          "phase": "cold",
+          "footprint_start_bytes": 5784032,
+          "cpu_seconds": 6.136108416666667,
+          "resident_end_bytes": 32587776,
+          "lifetime_peak_footprint_bytes": 22659744,
+          "cpu_percent": 18.559632842343536
+        }
+      ],
+      "repeat": 2,
+      "started_utc": "2026-10-07T01:00:46.349383+00:00",
+      "process_wall_seconds": 33.23003697395325,
+      "process_monotonic_seconds": 33.230026249999995,
+      "wall_minus_monotonic_seconds": 1.0723953252522733e-05
+    },
+    {
+      "phase": "reopen",
+      "measurements": [
+        {
+          "cpu_percent": 23.119215697254567,
+          "phase": "reopen",
+          "lifetime_peak_footprint_bytes": 24003232,
+          "elapsed_seconds": 0.857169,
+          "cpu_seconds": 0.19817075,
+          "footprint_end_bytes": 24003232,
+          "resident_end_bytes": 30605312,
+          "footprint_start_bytes": 5784032
+        },
+        {
+          "cpu_percent": 0.0024864073195217974,
+          "phase": "idle",
+          "lifetime_peak_footprint_bytes": 30409400,
+          "elapsed_seconds": 10.401554,
+          "cpu_seconds": 0.0002586250000000123,
+          "footprint_end_bytes": 30376632,
+          "resident_end_bytes": 36962304,
+          "footprint_start_bytes": 30409400
+        }
+      ],
+      "verified_records": 10000,
+      "index_bytes": 1320326,
+      "fixture_root_utf8_bytes": 77,
+      "recursive_scan_calls": 0,
+      "repeat": 2,
+      "started_utc": "2026-10-07T01:01:19.579730+00:00",
+      "process_wall_seconds": 11.43303108215332,
+      "process_monotonic_seconds": 11.433029250000004,
+      "wall_minus_monotonic_seconds": 1.8321533161724801e-06
+    },
+    {
+      "recursive_scan_calls": 0,
+      "verified_records": 10000,
+      "phase": "load",
+      "index_bytes": 1320326,
+      "measurements": [
+        {
+          "cpu_seconds": 0.018298583333333326,
+          "phase": "load",
+          "cpu_percent": 100.11261261261257,
+          "footprint_start_bytes": 5800416,
+          "footprint_end_bytes": 14156328,
+          "elapsed_seconds": 0.018278,
+          "lifetime_peak_footprint_bytes": 14156328,
+          "resident_end_bytes": 19709952
+        }
+      ],
+      "fixture_root_utf8_bytes": 77,
+      "repeat": 2,
+      "started_utc": "2026-10-07T01:01:31.013669+00:00",
+      "process_wall_seconds": 0.09971380233764648,
+      "process_monotonic_seconds": 0.09971441699998707,
+      "wall_minus_monotonic_seconds": -6.146623405811624e-07
+    },
+    {
+      "index_bytes": 1320326,
+      "verified_records": 10000,
+      "fixture_root_utf8_bytes": 77,
+      "recursive_scan_calls": 0,
+      "measurements": [
+        {
+          "elapsed_seconds": 0.012934,
+          "phase": "save",
+          "cpu_percent": 88.48061955569297,
+          "cpu_seconds": 0.011444083333333327,
+          "lifetime_peak_footprint_bytes": 22790696,
+          "footprint_end_bytes": 22790696,
+          "footprint_start_bytes": 22757928,
+          "resident_end_bytes": 28409856
+        }
+      ],
+      "phase": "save",
+      "repeat": 2,
+      "started_utc": "2026-10-07T01:01:31.113726+00:00",
+      "process_wall_seconds": 0.11866903305053711,
+      "process_monotonic_seconds": 0.11866920800000003,
+      "wall_minus_monotonic_seconds": -1.7494946291662927e-07
+    },
+    {
+      "index_bytes": 1320346,
+      "fixture_root_utf8_bytes": 77,
+      "measurements": [
+        {
+          "resident_end_bytes": 29081600,
+          "lifetime_peak_footprint_bytes": 23462440,
+          "elapsed_seconds": 0.015607,
+          "cpu_seconds": 0.01423179166666666,
+          "phase": "rewrite_one_record",
+          "cpu_percent": 91.18851583691074,
+          "footprint_end_bytes": 23462440,
+          "footprint_start_bytes": 23101992
+        }
+      ],
+      "recursive_scan_calls": 0,
+      "verified_records": 10000,
+      "phase": "rewrite_one_record",
+      "repeat": 2,
+      "started_utc": "2026-10-07T01:01:31.232722+00:00",
+      "process_wall_seconds": 0.12598133087158203,
+      "process_monotonic_seconds": 0.12598095799999953,
+      "wall_minus_monotonic_seconds": 3.7287158249910135e-07
+    },
+    {
+      "index_bytes": 1320326,
+      "verified_records": 10000,
+      "recursive_scan_calls": 1,
+      "phase": "cold",
+      "fixture_root_utf8_bytes": 77,
+      "measurements": [
+        {
+          "cpu_seconds": 6.5842794583333335,
+          "phase": "cold",
+          "elapsed_seconds": 35.223706,
+          "lifetime_peak_footprint_bytes": 22594208,
+          "footprint_end_bytes": 22594208,
+          "cpu_percent": 18.692750440096603,
+          "resident_end_bytes": 32522240,
+          "footprint_start_bytes": 5784032
+        }
+      ],
+      "repeat": 3,
+      "started_utc": "2026-10-07T01:01:31.359035+00:00",
+      "process_wall_seconds": 35.392197132110596,
+      "process_monotonic_seconds": 35.392185707999985,
+      "wall_minus_monotonic_seconds": 1.1424110610391836e-05
+    },
+    {
+      "index_bytes": 1320326,
+      "phase": "reopen",
+      "measurements": [
+        {
+          "phase": "reopen",
+          "cpu_percent": 24.933168198761148,
+          "footprint_start_bytes": 5784032,
+          "resident_end_bytes": 30654464,
+          "elapsed_seconds": 0.733745,
+          "footprint_end_bytes": 24035976,
+          "cpu_seconds": 0.18294587499999998,
+          "lifetime_peak_footprint_bytes": 24035976
+        },
+        {
+          "phase": "idle",
+          "cpu_percent": 0.004034497124934167,
+          "footprint_start_bytes": 30442144,
+          "resident_end_bytes": 37027840,
+          "elapsed_seconds": 10.557904,
+          "footprint_end_bytes": 30409376,
+          "cpu_seconds": 0.00042595833333330946,
+          "lifetime_peak_footprint_bytes": 30442144
+        }
+      ],
+      "verified_records": 10000,
+      "recursive_scan_calls": 0,
+      "fixture_root_utf8_bytes": 77,
+      "repeat": 3,
+      "started_utc": "2026-10-07T01:02:06.751661+00:00",
+      "process_wall_seconds": 11.466068029403687,
+      "process_monotonic_seconds": 11.466065582999988,
+      "wall_minus_monotonic_seconds": 2.4464036982863036e-06
+    },
+    {
+      "recursive_scan_calls": 0,
+      "index_bytes": 1320326,
+      "fixture_root_utf8_bytes": 77,
+      "measurements": [
+        {
+          "elapsed_seconds": 0.018173,
+          "cpu_percent": 100.05754874447432,
+          "footprint_end_bytes": 14189096,
+          "lifetime_peak_footprint_bytes": 14189096,
+          "cpu_seconds": 0.01818345833333332,
+          "footprint_start_bytes": 5784032,
+          "phase": "load",
+          "resident_end_bytes": 19742720
+        }
+      ],
+      "phase": "load",
+      "verified_records": 10000,
+      "repeat": 3,
+      "started_utc": "2026-10-07T01:02:18.218955+00:00",
+      "process_wall_seconds": 0.09744000434875488,
+      "process_monotonic_seconds": 0.09744070800002191,
+      "wall_minus_monotonic_seconds": -7.036512670310913e-07
+    },
+    {
+      "verified_records": 10000,
+      "recursive_scan_calls": 0,
+      "fixture_root_utf8_bytes": 77,
+      "index_bytes": 1320326,
+      "measurements": [
+        {
+          "cpu_percent": 88.66804046459352,
+          "cpu_seconds": 0.011832750000000003,
+          "elapsed_seconds": 0.013345,
+          "phase": "save",
+          "resident_end_bytes": 28409856,
+          "footprint_start_bytes": 22774336,
+          "footprint_end_bytes": 22807104,
+          "lifetime_peak_footprint_bytes": 22807104
+        }
+      ],
+      "phase": "save",
+      "repeat": 3,
+      "started_utc": "2026-10-07T01:02:18.316825+00:00",
+      "process_wall_seconds": 0.12003302574157715,
+      "process_monotonic_seconds": 0.12003325000000586,
+      "wall_minus_monotonic_seconds": -2.2425842871598434e-07
+    },
+    {
+      "recursive_scan_calls": 0,
+      "index_bytes": 1320346,
+      "verified_records": 10000,
+      "fixture_root_utf8_bytes": 77,
+      "phase": "rewrite_one_record",
+      "measurements": [
+        {
+          "phase": "rewrite_one_record",
+          "footprint_start_bytes": 23101992,
+          "cpu_percent": 91.37333717677714,
+          "resident_end_bytes": 29081600,
+          "lifetime_peak_footprint_bytes": 23462440,
+          "elapsed_seconds": 0.015611,
+          "footprint_end_bytes": 23462440,
+          "cpu_seconds": 0.014264291666666679
+        }
+      ],
+      "repeat": 3,
+      "started_utc": "2026-10-07T01:02:18.437271+00:00",
+      "process_wall_seconds": 0.12445282936096191,
+      "process_monotonic_seconds": 0.12445404199999643,
+      "wall_minus_monotonic_seconds": -1.2126390345201798e-06
+    }
+  ]
+}

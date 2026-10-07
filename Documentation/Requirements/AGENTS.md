@@ -12,6 +12,7 @@ This directory holds the project's requirements. Start with this index and open 
 | [`OPEN-REQUIREMENTS.md`](OPEN-REQUIREMENTS.md) | Pending requirements and decisions, linked to tasks and divergences. Does not redefine completed features. |
 | [`DOCUMENTATION-REQUIREMENTS.md`](DOCUMENTATION-REQUIREMENTS.md) | Requirements for coverage, indexing, provenance, and updates to the local SwiftUI/macOS corpus. |
 | [`FINDER-TAG-RESEARCH.md`](FINDER-TAG-RESEARCH.md) | External Apple-source evidence on hidden files and Finder tag-search scope; distinguishes documentation from user observations without changing the production contract. |
+| [`TAG-CATALOG-OPTIMIZATION-ISSUE.md`](TAG-CATALOG-OPTIMIZATION-ISSUE.md) | Open ZF-42 issue: below-2-second cached readiness at 10,000 tagged records, below-1.5-MiB total storage, candidate designs and acceptance boundaries. |
 | [`SEVENZIP-STATIC-INTEGRATION-PLAN.md`](SEVENZIP-STATIC-INTEGRATION-PLAN.md) | ZF-21 plan: static 7-Zip build, native adapter, migration, validation, and distribution. Backend implemented; evidence and remaining checks are recorded in the plan and regression matrix. |
 | [`ARCHIVE-DRAG-DROP-PLAN.md`](ARCHIVE-DRAG-DROP-PLAN.md) | Current ZF-30 plan: visual parity with local items, keyboard confirmation, export, and reorganization within the same archive. Implementation and regression tests recorded; validation limits listed separately. |
 
