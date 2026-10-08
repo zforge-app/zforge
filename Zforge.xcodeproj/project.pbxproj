@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		A10000000000000000000002 /* 7-Zip-License.txt in Resources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000004 /* 7-Zip-License.txt */; };
+		A43000000000000000000001 /* MCP in Frameworks */ = {isa = PBXBuildFile; productRef = A43000000000000000000002 /* MCP */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -71,6 +72,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A43000000000000000000001 /* MCP in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -142,6 +144,7 @@
 			);
 			name = Zforge;
 			packageProductDependencies = (
+				A43000000000000000000002 /* MCP */,
 			);
 			productName = Zforge;
 			productReference = 55A3998430042A170038B088 /* Zforge.app */;
@@ -226,6 +229,9 @@
 			);
 			mainGroup = 55A3997B30042A170038B088;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				A43000000000000000000003 /* XCRemoteSwiftPackageReference "swift-sdk" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 55A3998530042A170038B088 /* Products */;
 			projectDirPath = "";
@@ -459,7 +465,7 @@
 				CODE_SIGN_ENTITLEMENTS = Zforge/Zforge.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 6;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = FL2Y9U53SS;
 				ENABLE_APP_SANDBOX = YES;
@@ -514,7 +520,7 @@
 				CODE_SIGN_ENTITLEMENTS = Zforge/Zforge.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 6;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = FL2Y9U53SS;
 				ENABLE_APP_SANDBOX = YES;
@@ -687,6 +693,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		A43000000000000000000003 /* XCRemoteSwiftPackageReference "swift-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/modelcontextprotocol/swift-sdk.git";
+			requirement = {
+				kind = exactVersion;
+				version = 0.12.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A43000000000000000000002 /* MCP */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A43000000000000000000003 /* XCRemoteSwiftPackageReference "swift-sdk" */;
+			productName = MCP;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 55A3997C30042A170038B088 /* Project object */;
 }

@@ -596,3 +596,17 @@ The [plan current](ARCHIVE-DRAG-DROP-PLAN.md) magnifies the ZF-30 for reorganiza
 ### Navigation after mutation of archive — D-34, 2026-10-04
 
 Addition, exclusion, exit by movement and internal reorganization share the restoration of navigation. Breadcrumbs, Back/Next and Columns must point to the same renewed session: preserve the history order and its surviving directories, discarding only removed paths or invalidated nested sessions. Revealing another directory is navigation and allows you to return to the displayed location before operation. If the directory displayed disappears, back to the nearest surviving ancestor without creating a duplicate stop. Reload items from each ancestor of columns, including the actual folder containing archive, and select the entry that opens the next level. Preserve the restoration of disclosures/selection of the result in List and the status of the others archives.
+
+## Automation setup — ZF-43, 2026-10-07
+
+Settings contains an Automation section with a plain-language explanation of read/write scope, the empty state, an allowed-folder list, Remove for each grant, Allow Folder through the native directory picker, and Copy MCP Configuration with copied feedback. Paths truncate in the middle and remain available in tooltips; removal accessibility labels identify their folder. Picker cancellation preserves grants. English and Brazilian Portuguese settings flows have executed UI coverage; broader themes, VoiceOver/reduced motion and long allowed-folder lists remain pending in OR-20. Native system-action titles, descriptions and summaries use the String Catalog. Localized guidance explains saved custom shortcuts for Siri/Spotlight and the current onscreen-reference limit; Open Shortcuts uses native AppKit application lookup/opening. Automatic App Shortcuts phrases are not a native macOS feature. Existing four-mode browser UI and selection semantics are retained.
+
+
+### Contextual automation authorization — 2026-10-07
+
+A missing automation scope opens a native folder picker at that requested folder, with localized title, action and explanation that consent persists read/write access for future local agent and shortcut requests. Confirm only the requested physical folder; selecting a different/broader folder must not authorize the action. Shortcuts requests dynamic foreground continuation when needed; supported background requests remain silent. Cancel stops the invocation without archive output. All required scopes precede archive work. Queue/coalescing limits apply within each process; independent stdio clients may each present a picker. Settings remains available for advance setup and revocation. Actual UI/system evidence and remaining accessibility conditions are tracked in REGRESSION-COVERAGE.
+
+
+### Automation permission list consolidation — 2026-10-07
+
+After successful folder authorization, show the usable covering parent once and remove redundant descendants from the automation list. Adding an already covered child or equivalent physical alias produces no extra row. Preserve independent outside symlink targets and unavailable entries whose coverage cannot be established. Consolidation must not interrupt active operations. Removing the displayed parent blocks future access to covered descendants; former child permissions do not silently return. Settings and contextual permission share this policy.

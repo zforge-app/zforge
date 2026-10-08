@@ -12,7 +12,6 @@ extension FocusedValues {
     }
 }
 
-@main
 struct ZforgeApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @State private var preferences = FileBrowserPreferences.shared
@@ -32,6 +31,12 @@ struct ZforgeApp: App {
         .commands {
             BrowserCommands()
             KeyboardShortcutHelpCommands()
+            if ProcessInfo.processInfo.arguments.contains("--ui-fixtures"),
+               ProcessInfo.processInfo.arguments.contains("--ui-contextual-permission") {
+                CommandMenu("Automation test") {
+                    Button("Disconnect test client") { AutomationPermissionUIFixture.disconnect() }
+                }
+            }
         }
 
         Settings {
@@ -80,6 +85,7 @@ private struct BrowserWindowRoot: View {
                     request = BrowserWindowRequest(initialURL: url)
                 }
                 hasAppeared = true
+                AutomationPermissionUIFixture.startIfRequested()
                 openPendingArchives()
             }
             .onReceive(NotificationCenter.default.publisher(for: AppDelegate.archiveURLsReceived)) { _ in
@@ -348,6 +354,8 @@ private struct ZforgeSettingsView: View {
             Toggle("Show hidden files", isOn: $preferences.showHiddenFiles)
             Toggle("Show previews in icon view", isOn: $preferences.showIconPreviews)
                 .accessibilityIdentifier("settings-show-icon-previews")
+
+            AutomationSettingsSection()
 
             Section("List Columns") {
                 Text("Choose the columns shown by default. Use the arrows to change their order. A folder can override this layout from a column header.")

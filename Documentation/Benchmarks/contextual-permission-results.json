@@ -1,0 +1,114 @@
+{
+  "workload": "Three fresh installed Release stdio initialize/discovery, capabilities, missing top-level scope refusal and typed argument checks; no permission UI or personal content reads",
+  "before_build": 2,
+  "after_build": 5,
+  "before": [
+    {
+      "checks": [
+        "initialize/discovery",
+        "capabilities",
+        "unapproved access denied",
+        "typed arguments"
+      ],
+      "initialize_seconds": 0.101507667,
+      "child_user_cpu_seconds": 0.014294999999999999,
+      "child_system_cpu_seconds": 0.007573,
+      "child_maxrss_bytes": 25280512,
+      "elapsed_seconds": 0.16718612500000002,
+      "exit_code": 0
+    },
+    {
+      "checks": [
+        "initialize/discovery",
+        "capabilities",
+        "unapproved access denied",
+        "typed arguments"
+      ],
+      "initialize_seconds": 0.015569541999999999,
+      "child_user_cpu_seconds": 0.011885,
+      "child_system_cpu_seconds": 0.00516,
+      "child_maxrss_bytes": 25231360,
+      "elapsed_seconds": 0.08114191700000001,
+      "exit_code": 0
+    },
+    {
+      "checks": [
+        "initialize/discovery",
+        "capabilities",
+        "unapproved access denied",
+        "typed arguments"
+      ],
+      "initialize_seconds": 0.015584125,
+      "child_user_cpu_seconds": 0.011968999999999999,
+      "child_system_cpu_seconds": 0.005274,
+      "child_maxrss_bytes": 25264128,
+      "elapsed_seconds": 0.08241366700000001,
+      "exit_code": 0
+    }
+  ],
+  "after": [
+    {
+      "checks": [
+        "initialize/discovery",
+        "capabilities",
+        "unapproved access denied",
+        "typed arguments"
+      ],
+      "initialize_seconds": 0.575139209,
+      "child_user_cpu_seconds": 0.037093999999999995,
+      "child_system_cpu_seconds": 0.016624,
+      "child_maxrss_bytes": 43614208,
+      "elapsed_seconds": 0.637926042,
+      "exit_code": 0
+    },
+    {
+      "checks": [
+        "initialize/discovery",
+        "capabilities",
+        "unapproved access denied",
+        "typed arguments"
+      ],
+      "initialize_seconds": 0.078657666,
+      "child_user_cpu_seconds": 0.027396,
+      "child_system_cpu_seconds": 0.010435,
+      "child_maxrss_bytes": 43548672,
+      "elapsed_seconds": 0.141522791,
+      "exit_code": 0
+    },
+    {
+      "checks": [
+        "initialize/discovery",
+        "capabilities",
+        "unapproved access denied",
+        "typed arguments"
+      ],
+      "initialize_seconds": 0.079661,
+      "child_user_cpu_seconds": 0.027413999999999997,
+      "child_system_cpu_seconds": 0.011028,
+      "child_maxrss_bytes": 43565056,
+      "elapsed_seconds": 0.140511042,
+      "exit_code": 0
+    }
+  ],
+  "disconnect": {
+    "exit_code": 0,
+    "disconnect_exit_seconds": 0.03894220799999992,
+    "stdout_after_disconnect": "",
+    "stderr": ""
+  },
+  "limitations": [
+    "Small startup characterization, not predeclared performance acceptance",
+    "Not a large-workload, cold filesystem, long-session or full browser frame-pacing measurement",
+    "Minimal AppKit event loop adds startup and memory costs"
+  ],
+  "final_source_sha256": {
+    "Zforge/Automation/AutomationAccess.swift": "a6ba8b5bc454c877c5b7f9e2227c5dd88239dafec9497519379abe3e4c543a49",
+    "Zforge/Automation/AutomationOperations.swift": "360ad7fde9ba54cde2cbcb91bc48c16d718e4bf5b517c4a5c5a72c79881c0708",
+    "Zforge/Automation/AutomationPermissionRequest.swift": "3b92bce777ba75438584d1e7ef1fe28ca3b3dbb33cd5380e19780f1b4135127d",
+    "Zforge/Automation/AutomationPermissionUIFixture.swift": "da80c0496bc2cf5721275fed4858b763193a816d4c778b615ef07663157fb41b",
+    "Zforge/Automation/AutomationSettingsSection.swift": "19c29d0c2d09c3add9510ba4dc3e0644215849f79a8c9f5c1b2ce38d51502b97",
+    "Zforge/Automation/ZforgeIntents.swift": "42c82803828fc147d317ccb961b8e110684a8c0783b55065b5489cca254f10e9",
+    "Zforge/Automation/ZforgeLauncher.swift": "344f993d98aedf25e1ab23dd2588049c11352ba5dd5636afc087d1494bbb42e6",
+    "Zforge/Automation/ZforgeMCPServer.swift": "edfdd5118e6f596fa3a827561b9f65a0673f9152727bd75bd9dc337afc51bbad"
+  }
+}

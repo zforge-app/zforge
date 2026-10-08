@@ -16,6 +16,10 @@ This directory holds the project's requirements. Start with this index and open 
 | [`SEVENZIP-STATIC-INTEGRATION-PLAN.md`](SEVENZIP-STATIC-INTEGRATION-PLAN.md) | ZF-21 plan: static 7-Zip build, native adapter, migration, validation, and distribution. Backend implemented; evidence and remaining checks are recorded in the plan and regression matrix. |
 | [`ARCHIVE-DRAG-DROP-PLAN.md`](ARCHIVE-DRAG-DROP-PLAN.md) | Current ZF-30 plan: visual parity with local items, keyboard confirmation, export, and reorganization within the same archive. Implementation and regression tests recorded; validation limits listed separately. |
 
+| [`AGENT-INTEGRATION-PLAN.md`](AGENT-INTEGRATION-PLAN.md) | ZF-43 / OR-20: implemented MCP/native-action architecture and pending acceptance boundaries. |
+
+| [`AGENT-USAGE.md`](AGENT-USAGE.md) | ZF-43: MCP setup, typed tool/job contracts, automation grants and native shortcut usage. |
+
 ## Precedence and updates
 
 1. The user's direct instruction takes precedence. All application rules must be documented and kept up to date in this directory. Whenever a request changes a requirement, adds a new one, or fixes incorrect behavior, update the corresponding document in the same interaction, without waiting for a separate documentation request. Record unimplemented work as pending; when implementing it, synchronize the contract with delivered behavior and available evidence.

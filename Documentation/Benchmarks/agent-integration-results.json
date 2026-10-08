@@ -1,0 +1,81 @@
+{
+  "date": "2026-10-07",
+  "configuration": "Release",
+  "xcode": "27.0 (27A266a)",
+  "runtime": "macOS 27.0.1 (26A434), arm64",
+  "workload": "Fresh process: initialize, discovery, capabilities, denied folder and typed argument error; no authorized filesystem workload",
+  "runs": [
+    {
+      "checks": [
+        "initialize/discovery",
+        "capabilities",
+        "unapproved access denied",
+        "typed arguments"
+      ],
+      "initialize_seconds": 0.5238508340000001,
+      "child_user_cpu_seconds": 0.01752,
+      "child_system_cpu_seconds": 0.01048,
+      "child_maxrss_bytes": 24281088,
+      "elapsed_seconds": 0.5912952090000001,
+      "exit_code": 0
+    },
+    {
+      "checks": [
+        "initialize/discovery",
+        "capabilities",
+        "unapproved access denied",
+        "typed arguments"
+      ],
+      "initialize_seconds": 0.017007959000000003,
+      "child_user_cpu_seconds": 0.011326,
+      "child_system_cpu_seconds": 0.004357,
+      "child_maxrss_bytes": 24231936,
+      "elapsed_seconds": 0.085258209,
+      "exit_code": 0
+    },
+    {
+      "checks": [
+        "initialize/discovery",
+        "capabilities",
+        "unapproved access denied",
+        "typed arguments"
+      ],
+      "initialize_seconds": 0.016348334,
+      "child_user_cpu_seconds": 0.011058,
+      "child_system_cpu_seconds": 0.004608,
+      "child_maxrss_bytes": 24215552,
+      "elapsed_seconds": 0.081201,
+      "exit_code": 0
+    }
+  ],
+  "authorized_native_picker_round_trip": {
+    "checks": [
+      "initialize/discovery",
+      "capabilities",
+      "unapproved access denied",
+      "typed arguments",
+      "UI grant -> real ZIP/7z round-trips and no replacement"
+    ],
+    "initialize_seconds": 0.119293167,
+    "child_user_cpu_seconds": 0.030858,
+    "child_system_cpu_seconds": 0.024638,
+    "child_maxrss_bytes": 32522240,
+    "elapsed_seconds": 0.384812709,
+    "exit_code": 0
+  },
+  "installed_release_revocation_check": {
+    "checks": [
+      "initialize/discovery",
+      "capabilities",
+      "removed UI grant denies the same synthetic folder",
+      "unapproved access denied",
+      "typed arguments"
+    ],
+    "initialize_seconds": 0.034982458,
+    "child_user_cpu_seconds": 0.01377,
+    "child_system_cpu_seconds": 0.010772,
+    "child_maxrss_bytes": 24215552,
+    "elapsed_seconds": 0.11348687500000001,
+    "exit_code": 0
+  }
+}

@@ -1,0 +1,317 @@
+{
+  "before": {
+    "devicesAndConfigurations": [
+      {
+        "device": {
+          "architecture": "arm64",
+          "deviceId": "00008142-000241D1346B401C",
+          "deviceName": "My Mac",
+          "modelName": "MacBook Air",
+          "osBuildNumber": "26A434",
+          "osVersion": "27.0.1",
+          "platform": "macOS"
+        },
+        "expectedFailures": 0,
+        "failedTests": 6,
+        "passedTests": 19,
+        "skippedTests": 0,
+        "testPlanConfiguration": {
+          "configurationId": "1",
+          "configurationName": "Test Scheme Action"
+        }
+      }
+    ],
+    "environmentDescription": "Zforge \u00b7 Built with macOS 27.0.1",
+    "expectedFailures": 0,
+    "failedTests": 6,
+    "finishTime": 1791426090.691,
+    "passedTests": 18,
+    "result": "Failed",
+    "runtimeWarnings": [],
+    "skippedTests": 0,
+    "startTime": 1791426076.825,
+    "statistics": [
+      {
+        "subtitle": "2 test runs",
+        "title": "1 test ran with dynamic parameters"
+      }
+    ],
+    "testFailures": [
+      {
+        "failureText": "Caught error: .invalidArguments",
+        "targetName": "ZforgeTests",
+        "testIdentifier": 6,
+        "testIdentifierString": "AutomationGrantConsolidationTests/capacityReplacement()",
+        "testIdentifierURL": "test://com.apple.xcode/Zforge/ZforgeTests/AutomationGrantConsolidationTests/capacityReplacement()",
+        "testName": "A parent can consolidate a full 128-folder grant list without exceeding the limit"
+      },
+      {
+        "failureText": "Expectation failed: await fixture.store.authorizedFolders() == [fixture.root.path]",
+        "targetName": "ZforgeTests",
+        "testIdentifier": 7,
+        "testIdentifierString": "AutomationGrantConsolidationTests/concurrentAdditions()",
+        "testIdentifierURL": "test://com.apple.xcode/Zforge/ZforgeTests/AutomationGrantConsolidationTests/concurrentAdditions()",
+        "testName": "Concurrent parent and child additions converge to one parent grant"
+      },
+      {
+        "failureText": "Caught error: .invalidArguments",
+        "targetName": "ZforgeTests",
+        "testIdentifier": 2,
+        "testIdentifierString": "AutomationGrantConsolidationTests/coveredChild()",
+        "testIdentifierURL": "test://com.apple.xcode/Zforge/ZforgeTests/AutomationGrantConsolidationTests/coveredChild()",
+        "testName": "An already covered child or physical alias does not add a redundant bookmark"
+      },
+      {
+        "failureText": "Caught error: .invalidArguments",
+        "targetName": "ZforgeTests",
+        "testIdentifier": 4,
+        "testIdentifierString": "AutomationGrantConsolidationTests/outsideSymlink()",
+        "testIdentifierURL": "test://com.apple.xcode/Zforge/ZforgeTests/AutomationGrantConsolidationTests/outsideSymlink()",
+        "testName": "A symlink inside the parent pointing outside retains its independent grant"
+      },
+      {
+        "failureText": "Expectation failed: await fixture.store.authorizedFolders() == [fixture.root.path]",
+        "targetName": "ZforgeTests",
+        "testIdentifier": 1,
+        "testIdentifierString": "AutomationGrantConsolidationTests/parentReplacement()",
+        "testIdentifierURL": "test://com.apple.xcode/Zforge/ZforgeTests/AutomationGrantConsolidationTests/parentReplacement()",
+        "testName": "A parent replaces child grants, persists and revokes all covered future access"
+      },
+      {
+        "failureText": "Expectation failed: await fixture.store.authorizedFolders() == [fixture.root.path, sibling.path].sorted()",
+        "targetName": "ZforgeTests",
+        "testIdentifier": 3,
+        "testIdentifierString": "AutomationGrantConsolidationTests/siblingBoundary()",
+        "testIdentifierURL": "test://com.apple.xcode/Zforge/ZforgeTests/AutomationGrantConsolidationTests/siblingBoundary()",
+        "testName": "Sibling folders with a shared string prefix keep independent access"
+      }
+    ],
+    "title": "Test - Zforge",
+    "topInsights": [
+      {
+        "category": "Common Failures",
+        "impact": "50% of failures",
+        "text": "3 runs of 3 tests failed with Caught error: .invalidArguments"
+      },
+      {
+        "category": "Common Failures",
+        "impact": "33% of failures",
+        "text": "2 runs of 2 tests failed with Expectation failed: await fixture.store.authorizedFolders() == [fixture.root.path]"
+      },
+      {
+        "category": "Longest Test Runs",
+        "impact": "52% of duration",
+        "text": "1 longest test run with outlier durations exceeding 0.10s (three standard deviations)"
+      }
+    ],
+    "totalTestCount": 24
+  },
+  "final": {
+    "devicesAndConfigurations": [
+      {
+        "device": {
+          "architecture": "arm64",
+          "deviceId": "00008142-000241D1346B401C",
+          "deviceName": "My Mac",
+          "modelName": "MacBook Air",
+          "osBuildNumber": "26A434",
+          "osVersion": "27.0.1",
+          "platform": "macOS"
+        },
+        "expectedFailures": 0,
+        "failedTests": 2,
+        "passedTests": 383,
+        "skippedTests": 0,
+        "testPlanConfiguration": {
+          "configurationId": "1",
+          "configurationName": "Test Scheme Action"
+        }
+      }
+    ],
+    "environmentDescription": "Zforge \u00b7 Built with macOS 27.0.1",
+    "expectedFailures": 0,
+    "failedTests": 2,
+    "finishTime": 1791426206.845,
+    "passedTests": 291,
+    "result": "Failed",
+    "runtimeWarnings": [
+      {
+        "issueType": "Runtime Warning",
+        "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions",
+        "sourceURL": "file:///Users/felipe/Documents/dev/Zforge/ZforgeTests/FileOperationServiceTests.swift"
+      }
+    ],
+    "skippedTests": 0,
+    "startTime": 1791426108.526,
+    "statistics": [
+      {
+        "subtitle": "114 test runs",
+        "title": "22 tests ran with dynamic parameters"
+      }
+    ],
+    "testFailures": [
+      {
+        "failureText": "Caught error: .invalidArguments",
+        "targetName": "ZforgeTests",
+        "testIdentifier": 28,
+        "testIdentifierString": "AutomationGrantConsolidationTests/coveredChild()",
+        "testIdentifierURL": "test://com.apple.xcode/Zforge/ZforgeTests/AutomationGrantConsolidationTests/coveredChild()",
+        "testName": "An already covered child or physical alias does not add a redundant bookmark"
+      },
+      {
+        "failureText": "Caught error: .invalidArguments",
+        "targetName": "ZforgeTests",
+        "testIdentifier": 30,
+        "testIdentifierString": "AutomationGrantConsolidationTests/outsideSymlink()",
+        "testIdentifierURL": "test://com.apple.xcode/Zforge/ZforgeTests/AutomationGrantConsolidationTests/outsideSymlink()",
+        "testName": "A symlink inside the parent pointing outside retains its independent grant"
+      }
+    ],
+    "title": "Test - Zforge",
+    "topInsights": [
+      {
+        "category": "Common Failures",
+        "impact": "100% of failures",
+        "text": "2 runs of 2 tests failed with Caught error: .invalidArguments"
+      },
+      {
+        "category": "Longest Test Runs",
+        "impact": "47% of duration",
+        "text": "4 longest test runs with outlier durations exceeding 1.61s (three standard deviations)"
+      }
+    ],
+    "totalTestCount": 293
+  },
+  "acceptance": {
+    "devicesAndConfigurations": [
+      {
+        "device": {
+          "architecture": "arm64",
+          "deviceId": "00008142-000241D1346B401C",
+          "deviceName": "My Mac",
+          "modelName": "MacBook Air",
+          "osBuildNumber": "26A434",
+          "osVersion": "27.0.1",
+          "platform": "macOS"
+        },
+        "expectedFailures": 0,
+        "failedTests": 1,
+        "passedTests": 385,
+        "skippedTests": 0,
+        "testPlanConfiguration": {
+          "configurationId": "1",
+          "configurationName": "Test Scheme Action"
+        }
+      }
+    ],
+    "environmentDescription": "Zforge \u00b7 Built with macOS 27.0.1",
+    "expectedFailures": 0,
+    "failedTests": 1,
+    "finishTime": 1791426307.291,
+    "passedTests": 293,
+    "result": "Failed",
+    "runtimeWarnings": [
+      {
+        "issueType": "Runtime Warning",
+        "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions",
+        "sourceURL": "file:///Users/felipe/Documents/dev/Zforge/ZforgeTests/FileOperationServiceTests.swift"
+      }
+    ],
+    "skippedTests": 0,
+    "startTime": 1791426212.679,
+    "statistics": [
+      {
+        "subtitle": "114 test runs",
+        "title": "22 tests ran with dynamic parameters"
+      }
+    ],
+    "testFailures": [
+      {
+        "failureText": "Caught error: Error Domain=NSCocoaErrorDomain Code=256 \"Could not open() the item\" UserInfo={NSURL=file:///Users/felipe/Library/Containers/io.libor.Zforge/Data/tmp/GrantConsolidation-092BAF80-0D38-4926-B71A-A59BFFC12FE2/Parent/External/, NSDebugDescription=Could not open() the item}",
+        "targetName": "ZforgeTests",
+        "testIdentifier": 30,
+        "testIdentifierString": "AutomationGrantConsolidationTests/outsideSymlink()",
+        "testIdentifierURL": "test://com.apple.xcode/Zforge/ZforgeTests/AutomationGrantConsolidationTests/outsideSymlink()",
+        "testName": "A symlink inside the parent pointing outside retains its independent grant"
+      }
+    ],
+    "title": "Test - Zforge",
+    "topInsights": [
+      {
+        "category": "Longest Test Runs",
+        "impact": "47% of duration",
+        "text": "6 longest test runs with outlier durations exceeding 1.08s (three standard deviations)"
+      }
+    ],
+    "totalTestCount": 294
+  },
+  "verified": {
+    "devicesAndConfigurations": [
+      {
+        "device": {
+          "architecture": "arm64",
+          "deviceId": "00008142-000241D1346B401C",
+          "deviceName": "My Mac",
+          "modelName": "MacBook Air",
+          "osBuildNumber": "26A434",
+          "osVersion": "27.0.1",
+          "platform": "macOS"
+        },
+        "expectedFailures": 0,
+        "failedTests": 0,
+        "passedTests": 386,
+        "skippedTests": 0,
+        "testPlanConfiguration": {
+          "configurationId": "1",
+          "configurationName": "Test Scheme Action"
+        }
+      }
+    ],
+    "environmentDescription": "Zforge \u00b7 Built with macOS 27.0.1",
+    "expectedFailures": 0,
+    "failedTests": 0,
+    "finishTime": 1791426425.064,
+    "passedTests": 294,
+    "result": "Passed",
+    "runtimeWarnings": [
+      {
+        "issueType": "Runtime Warning",
+        "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions",
+        "sourceURL": "file:///Users/felipe/Documents/dev/Zforge/ZforgeTests/FileOperationServiceTests.swift"
+      }
+    ],
+    "skippedTests": 0,
+    "startTime": 1791426328.234,
+    "statistics": [
+      {
+        "subtitle": "114 test runs",
+        "title": "22 tests ran with dynamic parameters"
+      }
+    ],
+    "testFailures": [],
+    "title": "Test - Zforge",
+    "topInsights": [
+      {
+        "category": "Longest Test Runs",
+        "impact": "44% of duration",
+        "text": "5 longest test runs with outlier durations exceeding 1.13s (three standard deviations)"
+      }
+    ],
+    "totalTestCount": 294
+  },
+  "source_sha256": {
+    "Zforge/Automation/AutomationAccess.swift": "1978806b69bb4cb88dffb4325050275b43cc4755e9af8fb4a64221290b0d06e1",
+    "ZforgeTests/AutomationGrantConsolidationTests.swift": "f0c380f3738387bce4aa46e66234f71a922facda8bc314dab863b355f5940f3c"
+  },
+  "native_ui": {
+    "installed_build": 6,
+    "scope": "Previously approved synthetic folder only",
+    "sequence": [
+      "Add child through native Settings picker: one child entry",
+      "Add parent through native Settings picker: child replaced with parent",
+      "Add child again: no redundant entry",
+      "Remove synthetic parent: only three original user grants remain"
+    ],
+    "boundaries": "English actual Settings sequence; unchanged localized Settings/contextual UI regression covers English and Brazilian Portuguese. Broader visual/accessibility matrix remains pending."
+  }
+}
