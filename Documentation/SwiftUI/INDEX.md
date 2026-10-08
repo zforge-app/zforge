@@ -231,3 +231,13 @@ To consult, first read this index and use `rg -n -i '<terms|symbols>' Documentat
 - [Configuring the runtime behavior of your app intents](contexts/appintents-runtime-behavior.md) — contextual automation permission.
 
 - [NSOpenPanel](contexts/appkit-contextual-folder-panel.md) — contextual automation permission.
+
+### Siri schema diagnosis — 2026-10-07
+
+- [Schema requirements for Siri](contexts/appintents-siri-discoverability.md) — captured primary-source boundary.
+- [Files schema surface limits](contexts/appintents-files-domain.md) — captured primary-source boundary.
+- [Open file schema](contexts/appintents-files-open-schema.md) — captured primary-source boundary.
+- [Build intelligent Siri experiences with App Schemas](contexts/wwdc2026-siri-app-schemas.md) — captured primary-source boundary.
+
+- [System content access](contexts/appintents-system-content-domain.md) — generic system opening supports Siri; SDK availability is checked separately.
+- [Generic Siri content opening](contexts/appintents-system-open-schema.md) — generic system opening supports Siri; SDK availability is checked separately.

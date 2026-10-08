@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "captured_at": "2026-10-08T01:33:31.368023+00:00",
+  "captured_at": "2026-10-08T02:56:08.083428+00:00",
   "seed_url": "https://developer.apple.com/documentation/SwiftUI",
   "scope": "home plus unique first-level links exposed by Overview, Featured samples, and Topics, with audited on-demand expansions",
-  "expected_contexts": 133,
-  "captured_contexts": 133,
+  "expected_contexts": 139,
+  "captured_contexts": 139,
   "failures": [],
   "captures": [
     {
@@ -1893,6 +1893,90 @@
       "local_path": "contexts/appkit-contextual-folder-panel.md",
       "categories": [
         "On-demand automation permission"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/appintents/making-actions-and-content-discoverable-by-apple-intelligence",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/appintents/making-actions-and-content-discoverable-by-apple-intelligence.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/appintents/making-actions-and-content-discoverable-by-apple-intelligence.json",
+      "local_path": "contexts/appintents-siri-discoverability.md",
+      "sha256": "32eddaf8bf67e73d0a0a14fc05ee3f9cabe9ab47d567527f6825b1b87168ee9c",
+      "etag": "\"88db-6590261350c53\"",
+      "last_modified": "Fri, 14 Aug 2026 14:10:15 GMT",
+      "bytes": 35035,
+      "categories": [
+        "On-demand Siri integration"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/appintents/app-schema-domain-files",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/appintents/app-schema-domain-files.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/appintents/app-schema-domain-files.json",
+      "local_path": "contexts/appintents-files-domain.md",
+      "sha256": "f51657defa9ed535c871d2519462248485298d95dcb1b58cde28415a5cb05385",
+      "etag": "\"3ced-65b3b3bb1371d\"",
+      "last_modified": "Fri, 11 Sep 2026 20:50:22 GMT",
+      "bytes": 15597,
+      "categories": [
+        "On-demand Siri integration"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/appintents/appschema/filesintent/openfile",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/appintents/appschema/filesintent/openfile.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/appintents/appschema/filesintent/openfile.json",
+      "local_path": "contexts/appintents-files-open-schema.md",
+      "sha256": "b3f07df656ad744a31bc1482e45329aca03007e7d6d95bc5db290af88ac69a41",
+      "etag": "\"34b8-6590261462313\"",
+      "last_modified": "Fri, 14 Aug 2026 14:10:17 GMT",
+      "bytes": 13496,
+      "categories": [
+        "On-demand Siri integration"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/videos/play/wwdc2026/240/",
+      "fetch_url": "https://developer.apple.com/videos/play/wwdc2026/240/",
+      "final_url": "https://developer.apple.com/videos/play/wwdc2026/240/",
+      "local_path": "contexts/wwdc2026-siri-app-schemas.md",
+      "sha256": "420da2559db45c4e439386f1175bfa7e5e32ccc3c0797f5d318cff8fc34659a5",
+      "etag": null,
+      "last_modified": "Thu, 08 Oct 2026 02:48:59 GMT",
+      "bytes": 177787,
+      "categories": [
+        "On-demand Siri integration"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/appintents/app-schema-domain-system-and-in-app-search",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/appintents/app-schema-domain-system-and-in-app-search.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/appintents/app-schema-domain-system-and-in-app-search.json",
+      "local_path": "contexts/appintents-system-content-domain.md",
+      "sha256": "1b5ce59bfd410f49f82eb0d89041fdaeb156ebb72da994e0422ddbd43720be3f",
+      "etag": "\"37ef-65c09d15b31e0\"",
+      "last_modified": "Tue, 22 Sep 2026 03:18:17 GMT",
+      "bytes": 14319,
+      "categories": [
+        "On-demand Siri integration"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/appintents/appschema/systemintent/open",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/appintents/appschema/systemintent/open.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/appintents/appschema/systemintent/open.json",
+      "local_path": "contexts/appintents-system-open-schema.md",
+      "sha256": "d4193ec4c9f5b2698f9df1d1ac0cf1cf36c715bedfd0df17ced2ffdaac68042a",
+      "etag": "\"2b26-65c09d157ec6b\"",
+      "last_modified": "Tue, 22 Sep 2026 03:18:16 GMT",
+      "bytes": 11046,
+      "categories": [
+        "On-demand Siri integration"
       ],
       "depth": 2
     }

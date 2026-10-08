@@ -28,7 +28,7 @@ System schemas describe the meaning and structure of intents, entities and enume
 
 ## Practical implications
 
-The local Xcode 27 macOS SDK Files domain offers openFile, moveFiles, createFolder, renameFile and deleteFiles; it has no compression or extraction action schema. Keep compression and extraction as truthful custom intents rather than mapping them to an unrelated schema.
+The local Xcode 27 macOS SDK Files domain offers openFile, moveFiles, createFolder, renameFile and deleteFiles; it has no compression or extraction action schema. The freshly captured Files page explicitly limits discovery to Shortcuts; the generic system.open schema supports content opening through Siri and Shortcuts on macOS 27. Keep compression and extraction as truthful custom intents rather than mapping them to an unrelated schema.
 
 ## Content map
 
@@ -45,7 +45,7 @@ The local Xcode 27 macOS SDK Files domain offers openFile, moveFiles, createFold
 - [Calendar](https://developer.apple.com/documentation/appintents/app-schema-domain-calendar) — expand on demand
 - [Camera](https://developer.apple.com/documentation/appintents/app-schema-domain-camera) — expand on demand
 - [Clock](https://developer.apple.com/documentation/appintents/app-schema-domain-clock) — expand on demand
-- [Files](https://developer.apple.com/documentation/appintents/app-schema-domain-files) — expand on demand
+- [Files](appintents-files-domain.md) — expand on demand
 - [Journaling](https://developer.apple.com/documentation/appintents/app-schema-domain-journaling) — expand on demand
 - [Mail](https://developer.apple.com/documentation/appintents/app-schema-domain-mail) — expand on demand
 - [Maps](https://developer.apple.com/documentation/appintents/app-schema-domain-maps) — expand on demand
@@ -57,7 +57,7 @@ The local Xcode 27 macOS SDK Files domain offers openFile, moveFiles, createFold
 - [Reader](https://developer.apple.com/documentation/appintents/app-schema-domain-reader) — expand on demand
 - [Reminders](https://developer.apple.com/documentation/appintents/app-schema-domain-reminders) — expand on demand
 - [Spreadsheet](https://developer.apple.com/documentation/appintents/app-schema-domain-spreadsheet) — expand on demand
-- [System and in-app search](https://developer.apple.com/documentation/appintents/app-schema-domain-system-and-in-app-search) — expand on demand
+- [System and in-app search](appintents-system-content-domain.md) — expand on demand
 - [Visual intelligence](https://developer.apple.com/documentation/appintents/app-schema-domain-visual-intelligence) — expand on demand
 - [Whiteboard](https://developer.apple.com/documentation/appintents/app-schema-domain-whiteboard) — expand on demand
 - [Word processor](https://developer.apple.com/documentation/appintents/app-schema-domain-word-processor) — expand on demand
@@ -66,7 +66,7 @@ The local Xcode 27 macOS SDK Files domain offers openFile, moveFiles, createFold
 - [AppIntent(schema:)](https://developer.apple.com/documentation/appintents/appintent(schema:)) — expand on demand
 - [Apple Intelligence and Siri AI](https://developer.apple.com/documentation/appintents/apple-intelligence-and-siri-ai) — expand on demand
 - [Donations and discovery](https://developer.apple.com/documentation/appintents/donations-and-discovery) — expand on demand
-- [Making actions and content discoverable by Apple Intelligence](https://developer.apple.com/documentation/appintents/making-actions-and-content-discoverable-by-apple-intelligence) — expand on demand
+- [Making actions and content discoverable by Apple Intelligence](appintents-siri-discoverability.md) — expand on demand
 - [Visual presentation](https://developer.apple.com/documentation/appintents/visual-presentation) — expand on demand
 - [Technologies](https://developer.apple.com/documentation/technologies) — expand on demand
 

@@ -28,7 +28,7 @@ Apple Intelligence uses app intents, entities and enums to understand app action
 
 ## Practical implications
 
-Zforge currently publishes generic file actions. It does not publish indexed file entities or associations with browser rows. Do not claim that a conversational reference to the first files onscreen can be resolved.
+Zforge publishes four generic file actions and a macOS 27 system.open action with on-demand archive entities. It does not publish indexed file entities or associations with browser rows. Do not claim that a conversational reference to the first files onscreen can be resolved.
 
 ## Content map
 
@@ -49,7 +49,7 @@ Zforge currently publishes generic file actions. It does not publish indexed fil
 - [Integrating your messaging app with Apple Intelligence](https://developer.apple.com/documentation/appintents/integrating-your-messaging-app-with-apple-intelligence) — expand on demand
 - [Integrating your music app with Apple Intelligence](https://developer.apple.com/documentation/appintents/integrating-your-music-app-with-apple-intelligence) — expand on demand
 - [Integrating your photo app with Apple Intelligence](https://developer.apple.com/documentation/appintents/integrating-your-photo-app-with-apple-intelligence) — expand on demand
-- [Making actions and content discoverable by Apple Intelligence](https://developer.apple.com/documentation/appintents/making-actions-and-content-discoverable-by-apple-intelligence) — expand on demand
+- [Making actions and content discoverable by Apple Intelligence](appintents-siri-discoverability.md) — expand on demand
 - [Making app entities available in Spotlight](https://developer.apple.com/documentation/appintents/making-app-entities-available-in-spotlight) — expand on demand
 - [NSCollectionViewAppIntentsDataSource](https://developer.apple.com/documentation/appintents/nscollectionviewappintentsdatasource) — expand on demand
 - [NSTableViewAppIntentsDataSource](https://developer.apple.com/documentation/appintents/nstableviewappintentsdatasource) — expand on demand

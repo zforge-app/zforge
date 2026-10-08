@@ -60,7 +60,7 @@ Zforge must expose actions in the Mac Shortcuts editor and guide people to save 
 - [Getting started with the App Intents framework](https://developer.apple.com/documentation/appintents/getting-started-with-the-app-intents-framework) — expand on demand
 - [init(full:supporting:systemImageName:)](https://developer.apple.com/documentation/appintents/intentdialog/init(full:supporting:systemimagename:)) — expand on demand
 - [LiveActivityIntent](https://developer.apple.com/documentation/appintents/liveactivityintent) — expand on demand
-- [Making actions and content discoverable by Apple Intelligence](https://developer.apple.com/documentation/appintents/making-actions-and-content-discoverable-by-apple-intelligence) — expand on demand
+- [Making actions and content discoverable by Apple Intelligence](appintents-siri-discoverability.md) — expand on demand
 - [SiriTipUIView](https://developer.apple.com/documentation/appintents/siritipuiview) — expand on demand
 - [SiriKit](https://developer.apple.com/documentation/sirikit) — expand on demand
 - [Technologies](https://developer.apple.com/documentation/technologies) — expand on demand
