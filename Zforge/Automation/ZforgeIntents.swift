@@ -138,8 +138,49 @@ struct OpenZforgeArchiveIntent: AppIntent {
         guard ArchiveFormatRegistry.recognizes(url.lastPathComponent), FileManager.default.fileExists(atPath: url.path) else {
             throw AutomationError.invalidArguments
         }
+        try await AutomationArchiveOpening.open(url, lease: lease)
+        return .result()
+    }
+}
+
+/// The generic system domain supports Siri content opening on macOS 27.
+/// The Files domain does not provide Siri discovery or archive operations.
+@available(macOS 27.0, *)
+@AppIntent(schema: .system.open)
+struct OpenZforgeContentIntent: OpenIntent {
+    static var title: LocalizedStringResource { "Open Archive" }
+    static var description: IntentDescription { "Open an authorized Zforge archive by name or absolute path." }
+    static var supportedModes: IntentModes { .foreground }
+    @Parameter(title: "Archive") var target: ZforgeArchiveEntity
+    var permissions: any AutomationPermissionRequesting = ContextualAutomationAccess.shared
+    var opener: @MainActor @Sendable (URL, AutomationAccessLease) async throws -> Void = { url, lease in
+        try await AutomationArchiveOpening.open(url, lease: lease)
+    }
+    static var parameterSummary: some ParameterSummary { Summary("Open \(\.$target) in Zforge") }
+
+    @MainActor func perform() async throws -> some IntentResult {
+        let url = try AutomationPath.url(target.id)
+        let lease = try await permissions.authorize([url], foreground: {})
+        defer { withExtendedLifetime(lease) {} }
+        guard ArchiveFormatRegistry.recognizes(url.lastPathComponent),
+              try AutomationPath.resolvedForAccess(url).resourceValues(forKeys: [.isRegularFileKey]).isRegularFile == true else {
+            throw AutomationError.invalidArguments
+        }
+        try await opener(url, lease)
+        return .result()
+    }
+}
+
+nonisolated enum AutomationArchiveOpening {
+    @MainActor static func open(_ url: URL, lease: AutomationAccessLease, delegate: AppDelegate? = AppDelegate.current) async throws {
+        if let delegate {
+            // Foreground intents already activate the app. Opening it again
+            // through Launch Services creates an unrelated default window.
+            delegate.receiveAutomationArchive(url, lease: lease)
+            return
+        }
+        defer { withExtendedLifetime(lease) {} }
         let configuration = NSWorkspace.OpenConfiguration()
         _ = try await NSWorkspace.shared.open([url], withApplicationAt: Bundle.main.bundleURL, configuration: configuration)
-        return .result()
     }
 }

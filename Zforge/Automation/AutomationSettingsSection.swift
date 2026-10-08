@@ -52,7 +52,7 @@ struct AutomationSettingsSection: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
-            Text("For Siri and Spotlight, add a Zforge action in Shortcuts and save the shortcut. Run it by its name. References to files shown onscreen are not supported yet.")
+            Text("Add a Zforge action in Shortcuts and save it to run from Shortcuts or Spotlight. Siri availability depends on macOS and system support. References to files shown onscreen are not supported yet.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)

@@ -5,11 +5,38 @@ nonisolated struct BrowserWindowRequest: Codable, Hashable {
     let id: UUID
     let initialURL: URL?
     let tabSourceWindowNumber: Int?
+    let automationAccess: BrowserOpeningAccess?
 
-    init(id: UUID = UUID(), initialURL: URL? = nil, tabSourceWindowNumber: Int? = nil) {
+    init(id: UUID = UUID(), initialURL: URL? = nil, tabSourceWindowNumber: Int? = nil, automationAccess: BrowserOpeningAccess? = nil) {
         self.id = id
         self.initialURL = initialURL
         self.tabSourceWindowNumber = tabSourceWindowNumber
+        self.automationAccess = automationAccess
+    }
+
+    private enum CodingKeys: String, CodingKey { case id, initialURL, tabSourceWindowNumber }
+    init(from decoder: any Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        id = try values.decode(UUID.self, forKey: .id)
+        initialURL = try values.decodeIfPresent(URL.self, forKey: .initialURL)
+        tabSourceWindowNumber = try values.decodeIfPresent(Int.self, forKey: .tabSourceWindowNumber)
+        automationAccess = nil
+    }
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.id == rhs.id && lhs.initialURL == rhs.initialURL && lhs.tabSourceWindowNumber == rhs.tabSourceWindowNumber
+    }
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id); hasher.combine(initialURL); hasher.combine(tabSourceWindowNumber)
+    }
+}
+
+/// A live opening scope can be consumed once; restoration never grants access.
+@MainActor final class BrowserOpeningAccess {
+    private var lease: AutomationAccessLease?
+    init(_ lease: AutomationAccessLease) { self.lease = lease }
+    func take() -> AutomationAccessLease? {
+        defer { lease = nil }
+        return lease
     }
 }
 

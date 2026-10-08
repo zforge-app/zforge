@@ -610,3 +610,10 @@ A missing automation scope opens a native folder picker at that requested folder
 ### Automation permission list consolidation — 2026-10-07
 
 After successful folder authorization, show the usable covering parent once and remove redundant descendants from the automation list. Adding an already covered child or equivalent physical alias produces no extra row. Preserve independent outside symlink targets and unavailable entries whose coverage cannot be established. Consolidation must not interrupt active operations. Removing the displayed parent blocks future access to covered descendants; former child permissions do not silently return. Settings and contextual permission share this policy.
+
+### Archive entity opening — 2026-10-08
+
+The macOS 27 Open Archive action exposes a localized archive picker backed by bounded on-demand authorized name queries and explicit path candidates. Discovery must not display a consent panel, silently authorize roots, recurse through folders or read archive contents. Actual opening uses the shared foreground exact-folder consent and existing URL-opening experience. Cancellation and revoked/missing targets must not open a stale selection. Native editor/selector/run and actual Siri routing are separate acceptance checks; the broader language, accessibility, display-size and resource matrix remains pending.
+
+
+**Automation opening handoff, 2026-10-08:** foreground archive actions transfer their active folder scope through the live window request into initial browser loading. They do not relaunch the already foreground app or create an unrelated Recents window for each archive. Password prompting and incorrect-password retries retain the opening scope until loading completes, the prompt is dismissed, or its window closes. Saved window restoration never restores a live permission lease. Native acceptance and infrastructure limits remain separately recorded in REGRESSION-COVERAGE.

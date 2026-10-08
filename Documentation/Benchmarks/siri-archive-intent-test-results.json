@@ -1,0 +1,797 @@
+{
+  "initial": {
+    "bundle": "/tmp/ZforgeSiriSchemaBefore.xcresult",
+    "summary": {
+      "devicesAndConfigurations": [
+        {
+          "device": {
+            "architecture": "arm64",
+            "deviceName": "My Mac",
+            "modelName": "MacBook Air",
+            "osBuildNumber": "26A434",
+            "osVersion": "27.0.1",
+            "platform": "macOS"
+          },
+          "expectedFailures": 0,
+          "failedTests": 1,
+          "passedTests": 0,
+          "skippedTests": 0,
+          "testPlanConfiguration": {
+            "configurationId": "1",
+            "configurationName": "Test Scheme Action"
+          }
+        }
+      ],
+      "environmentDescription": "Zforge \u00b7 Built with macOS 27.0.1",
+      "expectedFailures": 0,
+      "failedTests": 1,
+      "finishTime": 1791427898.905,
+      "passedTests": 0,
+      "result": "Failed",
+      "runtimeWarnings": [],
+      "skippedTests": 0,
+      "startTime": 1791427884.589,
+      "statistics": [],
+      "testFailures": [
+        {
+          "failureText": "Expectation failed: actions[\"OpenZforgeContentIntent\"]",
+          "targetName": "ZforgeTests",
+          "testIdentifier": 1,
+          "testIdentifierString": "SiriArchiveIntentTests/systemOpenMetadata()",
+          "testIdentifierURL": "test://com.apple.xcode/Zforge/ZforgeTests/SiriArchiveIntentTests/systemOpenMetadata()",
+          "testName": "The installed action metadata publishes the generic system-open schema"
+        }
+      ],
+      "title": "Test - Zforge",
+      "topInsights": [],
+      "totalTestCount": 1
+    }
+  },
+  "first_regression": {
+    "bundle": "/tmp/ZforgeSiriSchemaRegression.xcresult",
+    "summary": {
+      "devicesAndConfigurations": [
+        {
+          "device": {
+            "architecture": "arm64",
+            "deviceName": "My Mac",
+            "modelName": "MacBook Air",
+            "osBuildNumber": "26A434",
+            "osVersion": "27.0.1",
+            "platform": "macOS"
+          },
+          "expectedFailures": 0,
+          "failedTests": 0,
+          "passedTests": 396,
+          "skippedTests": 0,
+          "testPlanConfiguration": {
+            "configurationId": "1",
+            "configurationName": "Test Scheme Action"
+          }
+        }
+      ],
+      "environmentDescription": "Zforge \u00b7 Built with macOS 27.0.1",
+      "expectedFailures": 0,
+      "failedTests": 0,
+      "finishTime": 1791428237.106,
+      "passedTests": 304,
+      "result": "Passed",
+      "runtimeWarnings": [
+        {
+          "issueType": "Runtime Warning",
+          "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions",
+          "sourceURL": "file:///Users/felipe/Documents/dev/Zforge/ZforgeTests/FileOperationServiceTests.swift"
+        }
+      ],
+      "skippedTests": 0,
+      "startTime": 1791428142.429,
+      "statistics": [
+        {
+          "subtitle": "114 test runs",
+          "title": "22 tests ran with dynamic parameters"
+        }
+      ],
+      "testFailures": [],
+      "title": "Test - Zforge",
+      "topInsights": [
+        {
+          "category": "Longest Test Runs",
+          "impact": "44% of duration",
+          "text": "6 longest test runs with outlier durations exceeding 1.08s (three standard deviations)"
+        }
+      ],
+      "totalTestCount": 304
+    }
+  },
+  "rehydration_before": {
+    "bundle": "/tmp/ZforgeSiriRehydrationBefore.xcresult",
+    "summary": {
+      "devicesAndConfigurations": [
+        {
+          "device": {
+            "architecture": "arm64",
+            "deviceName": "My Mac",
+            "modelName": "MacBook Air",
+            "osBuildNumber": "26A434",
+            "osVersion": "27.0.1",
+            "platform": "macOS"
+          },
+          "expectedFailures": 0,
+          "failedTests": 2,
+          "passedTests": 8,
+          "skippedTests": 0,
+          "testPlanConfiguration": {
+            "configurationId": "1",
+            "configurationName": "Test Scheme Action"
+          }
+        }
+      ],
+      "environmentDescription": "Zforge \u00b7 Built with macOS 27.0.1",
+      "expectedFailures": 0,
+      "failedTests": 2,
+      "finishTime": 1791428673.334,
+      "passedTests": 8,
+      "result": "Failed",
+      "runtimeWarnings": [],
+      "skippedTests": 0,
+      "startTime": 1791428661.466,
+      "statistics": [],
+      "testFailures": [
+        {
+          "failureText": "Expectation failed: try await fixture.service.entities(for: [fixture.archive.path]).map(\\.id) == [fixture.archive.path]",
+          "targetName": "ZforgeTests",
+          "testIdentifier": 6,
+          "testIdentifierString": "SiriArchiveIntentTests/explicitPathCandidate()",
+          "testIdentifierURL": "test://com.apple.xcode/Zforge/ZforgeTests/SiriArchiveIntentTests/explicitPathCandidate()",
+          "testName": "An explicitly supplied path creates only a candidate and does not grant filesystem access"
+        },
+        {
+          "failureText": "Expectation failed: try await fixture.service.entities(for: [protected]).map(\\.id) == [protected]",
+          "targetName": "ZforgeTests",
+          "testIdentifier": 3,
+          "testIdentifierString": "SiriArchiveIntentTests/identifiersAndRevocation()",
+          "testIdentifierURL": "test://com.apple.xcode/Zforge/ZforgeTests/SiriArchiveIntentTests/identifiersAndRevocation()",
+          "testName": "Entity identifiers preserve protected paths and candidates while authorized missing content disappears"
+        }
+      ],
+      "title": "Test - Zforge",
+      "topInsights": [],
+      "totalTestCount": 10
+    }
+  },
+  "intermediate_rehydration": {
+    "bundle": "/tmp/ZforgeSiriRehydrationRegression.xcresult",
+    "summary": {
+      "devicesAndConfigurations": [
+        {
+          "device": {
+            "architecture": "arm64",
+            "deviceName": "My Mac",
+            "modelName": "MacBook Air",
+            "osBuildNumber": "26A434",
+            "osVersion": "27.0.1",
+            "platform": "macOS"
+          },
+          "expectedFailures": 0,
+          "failedTests": 1,
+          "passedTests": 395,
+          "skippedTests": 0,
+          "testPlanConfiguration": {
+            "configurationId": "1",
+            "configurationName": "Test Scheme Action"
+          }
+        }
+      ],
+      "environmentDescription": "Zforge \u00b7 Built with macOS 27.0.1",
+      "expectedFailures": 0,
+      "failedTests": 1,
+      "finishTime": 1791428808.353,
+      "passedTests": 303,
+      "result": "Failed",
+      "runtimeWarnings": [
+        {
+          "issueType": "Runtime Warning",
+          "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions",
+          "sourceURL": "file:///Users/felipe/Documents/dev/Zforge/ZforgeTests/FileOperationServiceTests.swift"
+        }
+      ],
+      "skippedTests": 0,
+      "startTime": 1791428713.588,
+      "statistics": [
+        {
+          "subtitle": "114 test runs",
+          "title": "22 tests ran with dynamic parameters"
+        }
+      ],
+      "testFailures": [
+        {
+          "failureText": "Expectation failed: try await fixture.service.entities(for: [escape.path, fixture.archive.path, alias.path]).map(\\.id) == [fixture.archive.path]",
+          "targetName": "ZforgeTests",
+          "testIdentifier": 179,
+          "testIdentifierString": "SiriArchiveIntentTests/entityBoundaries()",
+          "testIdentifierURL": "test://com.apple.xcode/Zforge/ZforgeTests/SiriArchiveIntentTests/entityBoundaries()",
+          "testName": "Outside symlinks are omitted and equivalent archive aliases resolve once"
+        }
+      ],
+      "title": "Test - Zforge",
+      "topInsights": [
+        {
+          "category": "Longest Test Runs",
+          "impact": "49% of duration",
+          "text": "7 longest test runs with outlier durations exceeding 1.11s (three standard deviations)"
+        }
+      ],
+      "totalTestCount": 304
+    }
+  },
+  "final_rehydration_ui_infrastructure_failure": {
+    "bundle": "/tmp/ZforgeSiriFinalRegression.xcresult",
+    "summary": {
+      "devicesAndConfigurations": [
+        {
+          "device": {
+            "architecture": "arm64",
+            "deviceName": "My Mac",
+            "modelName": "MacBook Air",
+            "osBuildNumber": "26A434",
+            "osVersion": "27.0.1",
+            "platform": "macOS"
+          },
+          "expectedFailures": 0,
+          "failedTests": 1,
+          "passedTests": 395,
+          "skippedTests": 0,
+          "testPlanConfiguration": {
+            "configurationId": "1",
+            "configurationName": "Test Scheme Action"
+          }
+        }
+      ],
+      "environmentDescription": "Zforge \u00b7 Built with macOS 27.0.1",
+      "expectedFailures": 0,
+      "failedTests": 1,
+      "finishTime": 1791453883.07,
+      "passedTests": 303,
+      "result": "Failed",
+      "runtimeWarnings": [
+        {
+          "issueType": "Runtime Warning",
+          "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions",
+          "sourceURL": "file:///Users/felipe/Documents/dev/Zforge/ZforgeTests/FileOperationServiceTests.swift"
+        }
+      ],
+      "skippedTests": 0,
+      "startTime": 1791453776.363,
+      "statistics": [
+        {
+          "subtitle": "114 test runs",
+          "title": "22 tests ran with dynamic parameters"
+        }
+      ],
+      "testFailures": [
+        {
+          "failureText": "The test runner failed to initialize for UI testing. (Underlying Error: Timed out while enabling automation mode.)",
+          "targetName": "ZforgeUITests",
+          "testIdentifier": 304,
+          "testIdentifierString": "ZforgeUITests-Runner (11026) encountered an error",
+          "testName": "ZforgeUITests-Runner (11026) encountered an error"
+        }
+      ],
+      "title": "Test - Zforge",
+      "topInsights": [
+        {
+          "category": "Longest Test Runs",
+          "impact": "47% of duration",
+          "text": "7 longest test runs with outlier durations exceeding 1.12s (three standard deviations)"
+        }
+      ],
+      "totalTestCount": 304
+    }
+  },
+  "final_opening_unit": {
+    "bundle": "/tmp/ZforgeSiriOpeningFinalUnit.xcresult",
+    "summary": {
+      "devicesAndConfigurations": [
+        {
+          "device": {
+            "architecture": "arm64",
+            "deviceName": "My Mac",
+            "modelName": "MacBook Air",
+            "osBuildNumber": "26A434",
+            "osVersion": "27.0.1",
+            "platform": "macOS"
+          },
+          "expectedFailures": 0,
+          "failedTests": 0,
+          "passedTests": 396,
+          "skippedTests": 0,
+          "testPlanConfiguration": {
+            "configurationId": "1",
+            "configurationName": "Test Scheme Action"
+          }
+        }
+      ],
+      "environmentDescription": "Zforge \u00b7 Built with macOS 27.0.1",
+      "expectedFailures": 0,
+      "failedTests": 0,
+      "finishTime": 1791454326.303,
+      "passedTests": 304,
+      "result": "Passed",
+      "runtimeWarnings": [
+        {
+          "issueType": "Runtime Warning",
+          "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions",
+          "sourceURL": "file:///Users/felipe/Documents/dev/Zforge/ZforgeTests/FileOperationServiceTests.swift"
+        }
+      ],
+      "skippedTests": 0,
+      "startTime": 1791454280.179,
+      "statistics": [
+        {
+          "subtitle": "114 test runs",
+          "title": "22 tests ran with dynamic parameters"
+        }
+      ],
+      "testFailures": [],
+      "title": "Test - Zforge",
+      "topInsights": [
+        {
+          "category": "Longest Test Runs",
+          "impact": "46% of duration",
+          "text": "6 longest test runs with outlier durations exceeding 1.13s (three standard deviations)"
+        }
+      ],
+      "totalTestCount": 304
+    }
+  },
+  "source_sha256": {
+    "Zforge/Automation/ZforgeArchiveEntity.swift": "3beaccd96da0deb95b1588a3a9085ae9f20a0addb2dae6adc5e61df43a66170a",
+    "Zforge/Automation/ZforgeIntents.swift": "345528c84d346dd04340b956444a867747da34b8c76970de89a8c5c7d02447c3",
+    "Zforge/Automation/AutomationSettingsSection.swift": "9c5a1ac126d8ebc7add35687022844fe619857a9d5c578a8ab3ef96dbd73b75c",
+    "Zforge/AppDelegate.swift": "8a70dc2fbb43d16e45b3373bb7d6172bf1691dd3abf6ffbdb7e9ab513b885dea",
+    "Zforge/Views/BrowserWindowSupport.swift": "a25011a1371ecb0bf4e65a94e1f82a3564417ec95b6b143ae2edc290fa48269c",
+    "Zforge/ZforgeApp.swift": "f6ac1facd966eb7550539d443ea28464186bb723c6a0db57df81b699cb792501",
+    "Zforge/ContentView.swift": "d587c5a9641deb0f1ffe2ddcb42978ec78d8e200312c8eb50cca34cb646a86b9",
+    "Zforge/State/FileBrowserState.swift": "983e88af66dd5e684d627648a3a26f7fa399927e4f5b9185b85521facd24548d",
+    "Zforge/Localizable.xcstrings": "bc9c16577c4a4e1e5e678a0d764964bd4fe2145978e1ffe458e291ce5a5a7eab",
+    "ZforgeTests/SiriArchiveIntentTests.swift": "894b3a02530d7bff696250e51d4ae1003672e1c0d96d4b0e3d8a0a8bc6b67001"
+  },
+  "scope_zero_test_filter": {
+    "bundle": "/tmp/ZforgeSiriScopeBefore.xcresult",
+    "summary": {
+      "devicesAndConfigurations": [],
+      "environmentDescription": "Zforge \u00b7 Built with macOS 27.0.1",
+      "expectedFailures": 0,
+      "failedTests": 0,
+      "finishTime": 1791455631.237,
+      "passedTests": 0,
+      "result": "unknown",
+      "runtimeWarnings": [],
+      "skippedTests": 0,
+      "startTime": 1791455600.546,
+      "statistics": [],
+      "testFailures": [],
+      "title": "Test - Zforge",
+      "topInsights": [],
+      "totalTestCount": 0
+    }
+  },
+  "scope_characterization": {
+    "bundle": "/tmp/ZforgeSiriScopeCharacterization.xcresult",
+    "summary": {
+      "devicesAndConfigurations": [
+        {
+          "device": {
+            "architecture": "arm64",
+            "deviceName": "My Mac",
+            "modelName": "MacBook Air",
+            "osBuildNumber": "26A434",
+            "osVersion": "27.0.1",
+            "platform": "macOS"
+          },
+          "expectedFailures": 0,
+          "failedTests": 3,
+          "passedTests": 14,
+          "skippedTests": 0,
+          "testPlanConfiguration": {
+            "configurationId": "1",
+            "configurationName": "Test Scheme Action"
+          }
+        }
+      ],
+      "environmentDescription": "Zforge \u00b7 Built with macOS 27.0.1",
+      "expectedFailures": 0,
+      "failedTests": 1,
+      "finishTime": 1791455673.142,
+      "passedTests": 14,
+      "result": "Failed",
+      "runtimeWarnings": [],
+      "skippedTests": 0,
+      "startTime": 1791455663.21,
+      "statistics": [
+        {
+          "subtitle": "3 test runs",
+          "title": "1 test ran with dynamic parameters"
+        }
+      ],
+      "testFailures": [
+        {
+          "failureText": "Expectation failed: observed == nil\nobserved \u2192 Zforge.AutomationAccessLease",
+          "targetName": "ZforgeTests",
+          "testIdentifier": 2,
+          "testIdentifierString": "SiriArchiveIntentTests/openingScopeLifetime(outcome:)",
+          "testIdentifierURL": "test://com.apple.xcode/Zforge/ZforgeTests/SiriArchiveIntentTests/openingScopeLifetime(outcome:)",
+          "testName": "Opening keeps access across suspension and releases it after success, error or cancellation"
+        }
+      ],
+      "title": "Test - Zforge",
+      "topInsights": [
+        {
+          "category": "Common Failures",
+          "impact": "100% of failures",
+          "text": "3 runs of 1 test failed with Expectation failed: observed == nil"
+        },
+        {
+          "category": "Common Failures",
+          "impact": "100% of failures",
+          "text": "2 runs of 1 test failed with Expectation failed: browser.error != nil"
+        },
+        {
+          "category": "Longest Test Runs",
+          "impact": "74% of duration",
+          "text": "1 longest test run with outlier durations exceeding 0.97s (three standard deviations)"
+        }
+      ],
+      "totalTestCount": 15
+    }
+  },
+  "scope_focused_fixed": {
+    "bundle": "/tmp/ZforgeSiriScopeFixed.xcresult",
+    "summary": {
+      "devicesAndConfigurations": [
+        {
+          "device": {
+            "architecture": "arm64",
+            "deviceName": "My Mac",
+            "modelName": "MacBook Air",
+            "osBuildNumber": "26A434",
+            "osVersion": "27.0.1",
+            "platform": "macOS"
+          },
+          "expectedFailures": 0,
+          "failedTests": 0,
+          "passedTests": 19,
+          "skippedTests": 0,
+          "testPlanConfiguration": {
+            "configurationId": "1",
+            "configurationName": "Test Scheme Action"
+          }
+        }
+      ],
+      "environmentDescription": "Zforge \u00b7 Built with macOS 27.0.1",
+      "expectedFailures": 0,
+      "failedTests": 0,
+      "finishTime": 1791455777.044,
+      "passedTests": 16,
+      "result": "Passed",
+      "runtimeWarnings": [],
+      "skippedTests": 0,
+      "startTime": 1791455758.65,
+      "statistics": [
+        {
+          "subtitle": "5 test runs",
+          "title": "2 tests ran with dynamic parameters"
+        }
+      ],
+      "testFailures": [],
+      "title": "Test - Zforge",
+      "topInsights": [
+        {
+          "category": "Longest Test Runs",
+          "impact": "60% of duration",
+          "text": "1 longest test run with outlier durations exceeding 0.92s (three standard deviations)"
+        }
+      ],
+      "totalTestCount": 16
+    }
+  },
+  "scope_full_unit": {
+    "bundle": "/tmp/ZforgeSiriScopeUnitRegression.xcresult",
+    "summary": {
+      "devicesAndConfigurations": [
+        {
+          "device": {
+            "architecture": "arm64",
+            "deviceName": "My Mac",
+            "modelName": "MacBook Air",
+            "osBuildNumber": "26A434",
+            "osVersion": "27.0.1",
+            "platform": "macOS"
+          },
+          "expectedFailures": 0,
+          "failedTests": 0,
+          "passedTests": 402,
+          "skippedTests": 0,
+          "testPlanConfiguration": {
+            "configurationId": "1",
+            "configurationName": "Test Scheme Action"
+          }
+        }
+      ],
+      "environmentDescription": "Zforge \u00b7 Built with macOS 27.0.1",
+      "expectedFailures": 0,
+      "failedTests": 0,
+      "finishTime": 1791455844.408,
+      "passedTests": 307,
+      "result": "Passed",
+      "runtimeWarnings": [
+        {
+          "issueType": "Runtime Warning",
+          "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions",
+          "sourceURL": "file:///Users/felipe/Documents/dev/Zforge/ZforgeTests/FileOperationServiceTests.swift"
+        }
+      ],
+      "skippedTests": 0,
+      "startTime": 1791455824.214,
+      "statistics": [
+        {
+          "subtitle": "119 test runs",
+          "title": "24 tests ran with dynamic parameters"
+        }
+      ],
+      "testFailures": [],
+      "title": "Test - Zforge",
+      "topInsights": [],
+      "totalTestCount": 307
+    }
+  },
+  "final_build11_unit": {
+    "bundle": "/tmp/ZforgeSiriFinal11Unit.xcresult",
+    "summary": {
+      "devicesAndConfigurations": [
+        {
+          "device": {
+            "architecture": "arm64",
+            "deviceName": "My Mac",
+            "modelName": "MacBook Air",
+            "osBuildNumber": "26A434",
+            "osVersion": "27.0.1",
+            "platform": "macOS"
+          },
+          "expectedFailures": 0,
+          "failedTests": 0,
+          "passedTests": 402,
+          "skippedTests": 0,
+          "testPlanConfiguration": {
+            "configurationId": "1",
+            "configurationName": "Test Scheme Action"
+          }
+        }
+      ],
+      "environmentDescription": "Zforge \u00b7 Built with macOS 27.0.1",
+      "expectedFailures": 0,
+      "failedTests": 0,
+      "finishTime": 1791456287.012,
+      "passedTests": 307,
+      "result": "Passed",
+      "runtimeWarnings": [
+        {
+          "issueType": "Runtime Warning",
+          "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions",
+          "sourceURL": "file:///Users/felipe/Documents/dev/Zforge/ZforgeTests/FileOperationServiceTests.swift"
+        }
+      ],
+      "skippedTests": 0,
+      "startTime": 1791456263.96,
+      "statistics": [
+        {
+          "subtitle": "119 test runs",
+          "title": "24 tests ran with dynamic parameters"
+        }
+      ],
+      "testFailures": [],
+      "title": "Test - Zforge",
+      "topInsights": [],
+      "totalTestCount": 307
+    }
+  },
+  "isolated_ui_cancelled": {
+    "bundle": "/tmp/ZforgeSiriIsolatedUI.xcresult",
+    "executed_ui_scenarios": 0,
+    "result": "Inconclusive infrastructure attempt; owned runner cancelled, xcodebuild terminated after internal abort assertion",
+    "exit_code": 143,
+    "raw_log": "/tmp/zforge-siri-isolated-ui.log"
+  },
+  "native_build10": {
+    "opening": "Cold foreground launch and repeated granted opening succeed; Stdio Input.txt (21 bytes) visible; one Recents window remains and each repeat adds only the requested archive window",
+    "contextual_permission": "Revocation, native cancellation, cancelled-action feedback, retry, exact synthetic-root consent and same-invocation opening succeed",
+    "mode_continuity": "Same opened archive remains accessible across List, Icons, Columns and Gallery, including Gallery text materialization; List restored",
+    "siri_shortcut": "Fresh conversation refuses to run saved Zforge Siri Open Archive",
+    "siri_direct_action": "Fresh full-path and action-name request refuses to open; no matching native action invocation observed",
+    "settings_siri_access": "Zforge appears and Learn from this application is already on; no Siri setting changed",
+    "permission_cleanup": "Synthetic root revoked. Existing Documents and Music entries preserved. Downloads was absent before this retry mutated any permission; no personal entry added or removed",
+    "diagnostic_limit": "Core Spotlight donation errors (-1000 / Cocoa 4099) observed; no proven connection to Siri refusal",
+    "logs": [
+      "/tmp/zforge-siri-build10-actions.log",
+      "/tmp/zforge-siri-build10-native-runtime.log"
+    ]
+  },
+  "final_window_close_matrix": {
+    "bundle": "/tmp/ZforgeSiriFinalLeaseMatrix.xcresult",
+    "summary": {
+      "devicesAndConfigurations": [
+        {
+          "device": {
+            "architecture": "arm64",
+            "deviceName": "My Mac",
+            "modelName": "MacBook Air",
+            "osBuildNumber": "26A434",
+            "osVersion": "27.0.1",
+            "platform": "macOS"
+          },
+          "expectedFailures": 0,
+          "failedTests": 0,
+          "passedTests": 403,
+          "skippedTests": 0,
+          "testPlanConfiguration": {
+            "configurationId": "1",
+            "configurationName": "Test Scheme Action"
+          }
+        }
+      ],
+      "environmentDescription": "Zforge \u00b7 Built with macOS 27.0.1",
+      "expectedFailures": 0,
+      "failedTests": 0,
+      "finishTime": 1791456514.922,
+      "passedTests": 307,
+      "result": "Passed",
+      "runtimeWarnings": [
+        {
+          "issueType": "Runtime Warning",
+          "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions",
+          "sourceURL": "file:///Users/felipe/Documents/dev/Zforge/ZforgeTests/FileOperationServiceTests.swift"
+        }
+      ],
+      "skippedTests": 0,
+      "startTime": 1791456494.639,
+      "statistics": [
+        {
+          "subtitle": "120 test runs",
+          "title": "24 tests ran with dynamic parameters"
+        }
+      ],
+      "testFailures": [],
+      "title": "Test - Zforge",
+      "topInsights": [],
+      "totalTestCount": 307
+    }
+  },
+  "native_build11": {
+    "installed": true,
+    "version": "11",
+    "strict_signature": "Passed before and after installation",
+    "production_change_from_build10": "Settings guidance and build number only",
+    "localization": "English and pt-BR live Settings text verified, English dark screenshot inspected, System Default restored",
+    "synthetic_permission": "Revoked; no personal grant changed"
+  },
+  "password_close_before": {
+    "bundle": "/tmp/ZforgeSiriPasswordCloseBefore.xcresult",
+    "summary": {
+      "devicesAndConfigurations": [
+        {
+          "device": {
+            "architecture": "arm64",
+            "deviceName": "My Mac",
+            "modelName": "MacBook Air",
+            "osBuildNumber": "26A434",
+            "osVersion": "27.0.1",
+            "platform": "macOS"
+          },
+          "expectedFailures": 0,
+          "failedTests": 1,
+          "passedTests": 20,
+          "skippedTests": 0,
+          "testPlanConfiguration": {
+            "configurationId": "1",
+            "configurationName": "Test Scheme Action"
+          }
+        }
+      ],
+      "environmentDescription": "Zforge \u00b7 Built with macOS 27.0.1",
+      "expectedFailures": 0,
+      "failedTests": 1,
+      "finishTime": 1791456726.223,
+      "passedTests": 15,
+      "result": "Failed",
+      "runtimeWarnings": [],
+      "skippedTests": 0,
+      "startTime": 1791456713.618,
+      "statistics": [
+        {
+          "subtitle": "7 test runs",
+          "title": "2 tests ran with dynamic parameters"
+        }
+      ],
+      "testFailures": [
+        {
+          "failureText": "Expectation failed: observed != nil\nobserved \u2192 nil",
+          "targetName": "ZforgeTests",
+          "testIdentifier": 7,
+          "testIdentifierString": "SiriArchiveIntentTests/encryptedOpeningScope(outcome:)",
+          "testIdentifierURL": "test://com.apple.xcode/Zforge/ZforgeTests/SiriArchiveIntentTests/encryptedOpeningScope(outcome:)",
+          "testName": "Encrypted opening retains its scope through incorrect passwords and releases it after completion or dismissal"
+        }
+      ],
+      "title": "Test - Zforge",
+      "topInsights": [
+        {
+          "category": "Longest Test Runs",
+          "impact": "45% of duration",
+          "text": "1 longest test run with outlier durations exceeding 1.01s (three standard deviations)"
+        }
+      ],
+      "totalTestCount": 16
+    }
+  },
+  "final_build12_unit": {
+    "bundle": "/tmp/ZforgeSiriFinal12Unit.xcresult",
+    "summary": {
+      "devicesAndConfigurations": [
+        {
+          "device": {
+            "architecture": "arm64",
+            "deviceName": "My Mac",
+            "modelName": "MacBook Air",
+            "osBuildNumber": "26A434",
+            "osVersion": "27.0.1",
+            "platform": "macOS"
+          },
+          "expectedFailures": 0,
+          "failedTests": 0,
+          "passedTests": 405,
+          "skippedTests": 0,
+          "testPlanConfiguration": {
+            "configurationId": "1",
+            "configurationName": "Test Scheme Action"
+          }
+        }
+      ],
+      "environmentDescription": "Zforge \u00b7 Built with macOS 27.0.1",
+      "expectedFailures": 0,
+      "failedTests": 0,
+      "finishTime": 1791456825.524,
+      "passedTests": 307,
+      "result": "Passed",
+      "runtimeWarnings": [
+        {
+          "issueType": "Runtime Warning",
+          "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions",
+          "sourceURL": "file:///Users/felipe/Documents/dev/Zforge/ZforgeTests/FileOperationServiceTests.swift"
+        }
+      ],
+      "skippedTests": 0,
+      "startTime": 1791456799.019,
+      "statistics": [
+        {
+          "subtitle": "122 test runs",
+          "title": "24 tests ran with dynamic parameters"
+        }
+      ],
+      "testFailures": [],
+      "title": "Test - Zforge",
+      "topInsights": [],
+      "totalTestCount": 307
+    }
+  },
+  "native_build12": {
+    "installed_version": "12",
+    "strict_signature": "Passed before and after installation",
+    "running_executable": "/Applications/Zforge.app/Contents/MacOS/Zforge",
+    "action_metadata": "Five actions; system/OpenIntent; deployment floor 26; new action available 27+",
+    "contextual_opening": "Exact synthetic root requested, authorized and same invocation opened Stdio Output.7z with Stdio Input.txt (21 bytes)",
+    "siri": "Fresh named-archive and exact-folder conversation refuses direct opening; no new folder authorization prompt",
+    "permission_cleanup": "Synthetic grant revoked; existing personal entries unchanged",
+    "action_log": "/tmp/zforge-siri-build12-actions.log",
+    "non_archive_probes": "Two WritingToolsCanPerformIntent calls occur at the Siri request; they are not archive opening."
+  }
+}

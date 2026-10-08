@@ -2124,18 +2124,18 @@
         }
       }
     },
-    "For Siri and Spotlight, add a Zforge action in Shortcuts and save the shortcut. Run it by its name. References to files shown onscreen are not supported yet." : {
+    "Add a Zforge action in Shortcuts and save it to run from Shortcuts or Spotlight. Siri availability depends on macOS and system support. References to files shown onscreen are not supported yet." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "For Siri and Spotlight, add a Zforge action in Shortcuts and save the shortcut. Run it by its name. References to files shown onscreen are not supported yet."
+            "value" : "Add a Zforge action in Shortcuts and save it to run from Shortcuts or Spotlight. Siri availability depends on macOS and system support. References to files shown onscreen are not supported yet."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Para Siri e Spotlight, adicione uma ação do Zforge no Atalhos e salve o atalho. Execute-o pelo nome. Referências a arquivos exibidos na tela ainda não são compatíveis."
+            "value" : "Adicione uma ação do Zforge no Atalhos e salve-a para executar pelo Atalhos ou Spotlight. A disponibilidade na Siri depende do macOS e do suporte do sistema. Referências a arquivos exibidos na tela ainda não são compatíveis."
           }
         }
       }
@@ -3058,7 +3058,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Abrir Arquivo"
+            "value" : "Abrir arquivo compactado"
           }
         }
       }
@@ -4497,6 +4497,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Diminuir zoom"
+          }
+        }
+      }
+    },
+    "Open an authorized Zforge archive by name or absolute path." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open an authorized Zforge archive by name or absolute path."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abra um arquivo compactado autorizado no Zforge pelo nome ou caminho absoluto."
+          }
+        }
+      }
+    },
+    "Open ${target} in Zforge" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open ${target} in Zforge"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir ${target} no Zforge"
           }
         }
       }

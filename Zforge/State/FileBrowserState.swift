@@ -180,6 +180,7 @@ final class FileBrowserState {
     @ObservationIgnored private var pendingValidationItems: [BrowserItem] = []
     @ObservationIgnored private var pendingValidationIndex = 0
     @ObservationIgnored private let initialURL: URL?
+    @ObservationIgnored private var initialAutomationAccessLease: AutomationAccessLease?
     @ObservationIgnored private let quickLookPanel = QuickLookPanelCoordinator()
     @ObservationIgnored private var pendingAuthorizationPurpose: AuthorizationPurpose?
     @ObservationIgnored private var openWindowHandler: ((URL?) -> Void)?
@@ -236,7 +237,11 @@ final class FileBrowserState {
     var isLoading = false
     var error: BrowserError?
     var pendingAuthorizationURL: URL?
-    var passwordOperation: PasswordOperation?
+    var passwordOperation: PasswordOperation? {
+        didSet {
+            if passwordOperation == nil { initialAutomationAccessLease = nil }
+        }
+    }
     var passwordError: String?
     var previewURL: URL?
     var previewRequiresManualLoad = false
@@ -691,7 +696,7 @@ final class FileBrowserState {
         ProcessInfo.processInfo.arguments.contains("--ui-archive-drag-fixtures") ? initialURL : nil
     }
 
-    convenience init(initialURL: URL? = nil) {
+    convenience init(initialURL: URL? = nil, automationAccessLease: AutomationAccessLease? = nil) {
         if ProcessInfo.processInfo.arguments.contains("--ui-icon-preview-fixtures") {
             self.init(preferences: FileBrowserPreferences.shared, fileSystem: FileSystemService(),
                 recentItems: UIFixtureRecentItemsService(), grants: UIFixtureAccessGrantStore(),
@@ -726,7 +731,8 @@ final class FileBrowserState {
             recentItems: SpotlightRecentItemsService(),
             grants: AccessGrantStore(),
             archives: NativeSevenZipArchiveEngine(),
-            initialURL: initialURL
+            initialURL: initialURL,
+            automationAccessLease: automationAccessLease
         )
     }
 
@@ -738,7 +744,8 @@ final class FileBrowserState {
         taggedItems: (any TaggedItemsServing)? = nil,
         grants: any AccessGrantStoring,
         archives: any ArchiveServing,
-        initialURL: URL? = nil
+        initialURL: URL? = nil,
+        automationAccessLease: AutomationAccessLease? = nil
     ) {
         self.preferences = preferences
         self.viewMode = preferences.viewMode
@@ -749,6 +756,7 @@ final class FileBrowserState {
         self.grants = grants
         self.archives = archives
         self.initialURL = initialURL
+        initialAutomationAccessLease = automationAccessLease
         location = .recents
         pathComponents = [
             BrowserPathComponent(
@@ -760,6 +768,11 @@ final class FileBrowserState {
     }
 
     func start() async {
+        let openingAccess = initialAutomationAccessLease
+        defer {
+            if passwordOperation == nil { initialAutomationAccessLease = nil }
+            withExtendedLifetime(openingAccess) {}
+        }
         await archives.cleanupStaleSessions()
         if ProcessInfo.processInfo.arguments.contains("--ui-icon-preview-fixtures"), let initialURL {
             do {
@@ -1067,6 +1080,11 @@ final class FileBrowserState {
             pendingLargeOperation = .openNested(item)
             return
         }
+        let openingAccess = initialAutomationAccessLease
+        defer {
+            if passwordOperation == nil { initialAutomationAccessLease = nil }
+            withExtendedLifetime(openingAccess) {}
+        }
         archiveOperationDescription = AppLocalization.string(
             "Loading…",
             locale: preferences.language.locale
@@ -1128,10 +1146,13 @@ final class FileBrowserState {
 
     func submitPassword(_ password: String) async {
         guard let operation = passwordOperation else { return }
+        let openingAccess = initialAutomationAccessLease
+        defer { withExtendedLifetime(openingAccess) {} }
         switch operation {
         case let .openFile(url):
             do {
                 let item = try await fileSystem.item(at: url)
+                guard !isClosed, !Task.isCancelled, passwordOperation != nil else { return }
                 await openArchive(item, password: password)
             } catch {
                 self.error = mapError(error)
@@ -3536,6 +3557,7 @@ final class FileBrowserState {
     }
 
     func close() {
+        initialAutomationAccessLease = nil
         isClosed = true
         undoManager?.removeAllActions(withTarget: self)
         monitor.stop()

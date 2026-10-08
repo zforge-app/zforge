@@ -421,3 +421,19 @@ Contextual authorization follow-up: the user explicitly selected both Shortcuts 
 ### ZF-43 consolidation follow-up — resolved within the recorded matrix, 2026-10-07
 
 The previous store retained redundant parent/child scopes and applied the 128-entry limit before consolidation. The user approves replacing covered descendants and avoiding covered children; the shared store implements this contract. New characterization fails before the change. Symlink scenarios expose directory metadata and scoped bookmark creation limitations at an explicit directory link; physical-target selection/validation fixes these while preserving independent outside scopes and native protected operational URLs. Final regression passes 294 cases / 386 executions. Actual signed build 6 Settings child/parent/repeated-child/removal sequence passes; personal grants remain untouched. Unknown/unavailable bookmarks are conservatively retained, and wider OR-20 verification remains pending. See REGRESSION-COVERAGE for failed intermediates, actual counts and boundaries.
+
+### D-47 schema and routing distinction — 2026-10-08
+
+Apple's freshly captured Files-domain page explicitly says conforming types are not made discoverable to Apple Intelligence or Siri; older search summaries must not override this current primary-source restriction. `system.open` is a supported macOS 27 content-opening route and is now implemented with archive entities. No compatible public schema exists for compression/extraction.
+
+The saved **Zforge Siri Control** diagnostic contains only Apple's Current Date action and completes manually. A fresh Siri conversation refuses to run this saved shortcut, establishing a problem independent of Zforge in this conversational surface. The earlier Zforge Contextual Permission Test request is not counted as a current saved-name discovery probe because the library does not contain it. New-action metadata, native editor execution, conversational routing and voice behavior remain separate evidence. No unsupported schema, cache reset or privacy expansion is used.
+
+
+Build 9 direct native URL routing initially released its scope before asynchronous browser loading, producing a copy-permission alert. This introduced regression blocks that build's acceptance. Build 10 carries a one-use live scope through the queued window request and password lifecycle; serialization excludes permission leases. Executed and native results remain separately recorded in REGRESSION-COVERAGE.
+
+
+Build-10 native opening/permission continuation and repeated-window behavior pass after lease handoff. Fresh Siri saved-shortcut and full-path/action-name attempts still refuse before invoking the archive action. The Siri app lists Zforge with learning on already; approval is not requested by those failed Siri attempts. Build 11 corrects the user-visible promise of Siri shortcut execution. Pending system routing remains D-47 / OR-20, distinct from successful manual Shortcuts execution.
+
+### D-48 — Automation Settings list remains stale after contextual consent (2026-10-08)
+
+**Preexisting refresh gap, pending:** with Settings already open, authorizing a folder through the native Shortcuts picker persists the grant and opens the archive, but the list updates only after Settings closes/reopens. AutomationSettingsSection reloads on its initial task and its own buttons; this predates the system-open/lease changes. The expected shared permission list must reflect contextual Shortcuts/MCP updates without reopening. No runtime persistence failure or automatic revocation is inferred from a stale row. Characterize the concurrent UI flow before a subsequent correction; OR-20 retains this gap.
