@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "captured_at": "2026-10-06T12:01:05.635002+00:00",
+  "captured_at": "2026-10-08T01:33:31.368023+00:00",
   "seed_url": "https://developer.apple.com/documentation/SwiftUI",
   "scope": "home plus unique first-level links exposed by Overview, Featured samples, and Topics, with audited on-demand expansions",
-  "expected_contexts": 118,
-  "captured_contexts": 118,
+  "expected_contexts": 133,
+  "captured_contexts": 133,
   "failures": [],
   "captures": [
     {
@@ -1680,6 +1680,221 @@
         "On-demand CoreServices"
       ],
       "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/appintents",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/appintents.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/appintents.json",
+      "local_path": "contexts/appintents.md",
+      "sha256": "37015077373f781363ca3a723d824d022a9e4f0d3672d2dc8e92f8e0c05a68ab",
+      "etag": null,
+      "last_modified": "Fri, 11 Sep 2026 20:50:27 GMT",
+      "bytes": 32322,
+      "categories": [
+        "On-demand expansion"
+      ],
+      "depth": 0
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/foundationmodels",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/foundationmodels.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/foundationmodels.json",
+      "local_path": "contexts/foundationmodels.md",
+      "sha256": "0e9cc2d95d14c0ec179ddfcf34c4499397118db04c87960c80554f57518521b4",
+      "etag": null,
+      "last_modified": "Mon, 14 Sep 2026 22:33:35 GMT",
+      "bytes": 60675,
+      "categories": [
+        "On-demand expansion"
+      ],
+      "depth": 0
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/appintents/app-intents",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/appintents/app-intents.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/appintents/app-intents.json",
+      "local_path": "contexts/appintents-app-intents.md",
+      "sha256": "ee7a0538f2bf77d1275b9dc0195cdecfa722085d1b65ddfc8de2f1016cc06ebe",
+      "etag": null,
+      "last_modified": "Fri, 11 Sep 2026 20:50:22 GMT",
+      "bytes": 41773,
+      "categories": [
+        "On-demand expansion"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/appintents/app-shortcuts",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/appintents/app-shortcuts.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/appintents/app-shortcuts.json",
+      "local_path": "contexts/appintents-app-shortcuts.md",
+      "sha256": "c952170c359851f92dedbef0d852dda2bdc80dc9bf57b8a37219bc3ab4ca33ea",
+      "etag": null,
+      "last_modified": "Fri, 14 Aug 2026 14:10:15 GMT",
+      "bytes": 29952,
+      "categories": [
+        "On-demand expansion"
+      ],
+      "depth": 1
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/appintents/acceleratingappinteractionswithappintents",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/appintents/acceleratingappinteractionswithappintents.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/appintents/acceleratingappinteractionswithappintents.json",
+      "sha256": "2627d9eca8bb532467445734df58afaabe6c6eceecd3738a0a3f9585bde989c9",
+      "etag": null,
+      "last_modified": "Fri, 11 Sep 2026 20:50:23 GMT",
+      "bytes": 62706,
+      "local_path": "contexts/appintents-system-registration.md",
+      "categories": [
+        "On-demand App Intents"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/appintents/apple-intelligence-and-siri-ai",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/appintents/apple-intelligence-and-siri-ai.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/appintents/apple-intelligence-and-siri-ai.json",
+      "sha256": "2dc26a77b18ce11ce1cbb1fa8cccbc28f84b4e43f23fe8f422e21cf02116e6b3",
+      "etag": null,
+      "last_modified": "Fri, 14 Aug 2026 14:10:22 GMT",
+      "bytes": 23109,
+      "local_path": "contexts/appintents-siri-ai.md",
+      "categories": [
+        "On-demand App Intents"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/appintents/app-schema-domains",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/appintents/app-schema-domains.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/appintents/app-schema-domains.json",
+      "sha256": "9076bc3da34611a8edff963a297bd1c088f412d28a92fcf6e6b0bbc3fa4872d8",
+      "etag": null,
+      "last_modified": "Fri, 11 Sep 2026 20:50:26 GMT",
+      "bytes": 24438,
+      "local_path": "contexts/appintents-schema-domains.md",
+      "categories": [
+        "On-demand App Intents"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/design/human-interface-guidelines/app-shortcuts",
+      "fetch_url": "https://developer.apple.com/tutorials/data/design/human-interface-guidelines/app-shortcuts.json",
+      "final_url": "https://developer.apple.com/tutorials/data/design/human-interface-guidelines/app-shortcuts.json",
+      "sha256": "26ffd9677b5c4e62efcb480d40e5748180ebf18755fdf9ee26295b7981ecf3df",
+      "etag": null,
+      "last_modified": "Thu, 06 Aug 2026 02:58:13 GMT",
+      "bytes": 43253,
+      "local_path": "contexts/hig-app-shortcuts.md",
+      "categories": [
+        "On-demand App Intents"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/appintents/shortcutslink",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/appintents/shortcutslink.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/appintents/shortcutslink.json",
+      "sha256": "45e55b68f416a27ab2b53d48bad6de1ce93658d83602d5d7380754e16160c510",
+      "etag": null,
+      "last_modified": "Fri, 14 Aug 2026 14:10:21 GMT",
+      "bytes": 9239,
+      "local_path": "contexts/appintents-shortcutslink.md",
+      "categories": [
+        "On-demand App Intents"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/forums/thread/798402",
+      "fetch_url": "https://developer.apple.com/forums/thread/798402",
+      "final_url": "https://developer.apple.com/forums/thread/798402",
+      "sha256": "127de9089f42a9f5697f298b20d8756f2684c3f8e45b57bb51e09d3756a534be",
+      "etag": null,
+      "last_modified": null,
+      "bytes": 32935,
+      "local_path": "contexts/foundation-protected-file-paths.md",
+      "categories": [
+        "On-demand Foundation"
+      ],
+      "depth": 2,
+      "source_format": "text/plain; web-tool-normalized-excerpt",
+      "capture_note": "Direct HTML verification page discarded; normalized primary-source excerpt used. Secondary-link enumeration incomplete."
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/appintents/intentfile/fileurl",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/appintents/intentfile/fileurl.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/appintents/intentfile/fileurl.json",
+      "sha256": "806824378b1c99729d2250b95909a523e6e45a599f147a80132321bf012088ac",
+      "etag": "\"24d2-6590261350c53\"",
+      "last_modified": "Fri, 14 Aug 2026 14:10:15 GMT",
+      "bytes": 9426,
+      "local_path": "contexts/appintents-intentfile-file-url.md",
+      "categories": [
+        "On-demand App Intents"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://support.apple.com/guide/shortcuts-mac/apd07c25bb38/mac",
+      "fetch_url": "https://support.apple.com/guide/shortcuts-mac/apd07c25bb38/mac",
+      "final_url": "https://support.apple.com/guide/shortcuts-mac/run-shortcuts-with-siri-apd07c25bb38/mac",
+      "sha256": "edb70d8817764a69ff5db3ef8ee60967b276226541d8b66cd660e081c2667ce8",
+      "etag": "\"0d4d4c4461202bdc0b07957305abddaa--gzip\"",
+      "last_modified": "Thu, 17 Sep 2026 16:21:33 GMT",
+      "bytes": 630073,
+      "local_path": "contexts/shortcuts-mac-siri-invocation.md",
+      "categories": [
+        "On-demand App Intents"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/appintents/appintent/continueinforeground(_:alwaysconfirm:)",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/appintents/appintent/continueinforeground%28_%3Aalwaysconfirm%3A%29.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/appintents/appintent/continueinforeground%28_%3Aalwaysconfirm%3A%29.json",
+      "sha256": "1c661a564a6eed5ea3723b1c61eca70a3832017f0e5470d80bf746761e302c0c",
+      "etag": "\"40a7-65b3b3ba24187\"",
+      "last_modified": "Fri, 11 Sep 2026 20:50:21 GMT",
+      "bytes": 16551,
+      "captured_at": "2026-10-08T01:33:30.969341+00:00",
+      "local_path": "contexts/appintents-foreground-permission.md",
+      "categories": [
+        "On-demand automation permission"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/appintents/configuring-the-runtime-behavior-of-your-app-intents",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/appintents/configuring-the-runtime-behavior-of-your-app-intents.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/appintents/configuring-the-runtime-behavior-of-your-app-intents.json",
+      "sha256": "19210fa629dd0d8d6fb53cf3c10e0268aefd9861e4e252db5020ff3dc3e4c94d",
+      "etag": "\"95cd-65bb964ada882\"",
+      "last_modified": "Fri, 18 Sep 2026 03:21:16 GMT",
+      "bytes": 38349,
+      "captured_at": "2026-10-08T01:33:31.369109+00:00",
+      "local_path": "contexts/appintents-runtime-behavior.md",
+      "categories": [
+        "On-demand automation permission"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/appkit/nsopenpanel",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/appkit/nsopenpanel.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/appkit/nsopenpanel.json",
+      "sha256": "a912eb6de192cbac4fd5e5ab084157467ff15cd3c460dabd64b1e486601112d3",
+      "etag": "\"9cf7-659026d673eca\"",
+      "last_modified": "Fri, 14 Aug 2026 14:13:40 GMT",
+      "bytes": 40183,
+      "captured_at": "2026-10-08T01:33:31.368023+00:00",
+      "local_path": "contexts/appkit-contextual-folder-panel.md",
+      "categories": [
+        "On-demand automation permission"
+      ],
+      "depth": 2
     }
   ]
 }

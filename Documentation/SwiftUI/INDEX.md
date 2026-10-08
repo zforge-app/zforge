@@ -202,3 +202,32 @@ To consult, first read this index and use `rg -n -i '<terms|symbols>' Documentat
 - [Extended attribute presence](contexts/darwin-extended-attribute-presence.md) — skip confirmed attribute-free inodes.
 
 - [Device-relative FSEvents streams](contexts/coreservices-device-relative-event-stream.md) — one native path per stream, historical cursors and SDK/DocC evidence.
+
+## Agent and Apple Intelligence integration — 2026-10-07
+
+- [App Intents](contexts/appintents.md).
+- [Foundation Models](contexts/foundationmodels.md).
+- [App intents](contexts/appintents-app-intents.md).
+- [App Shortcuts](contexts/appintents-app-shortcuts.md).
+
+- [Accelerating app interactions with App Intents](contexts/appintents-system-registration.md) — native action registration and Siri integration boundaries.
+
+- [Apple Intelligence and Siri AI](contexts/appintents-siri-ai.md) — native action registration and Siri integration boundaries.
+
+- [App schema domains](contexts/appintents-schema-domains.md) — native action registration and Siri integration boundaries.
+
+- [App Shortcuts](contexts/hig-app-shortcuts.md) — platform-specific native action support.
+
+- [ShortcutsLink](contexts/appintents-shortcutslink.md) — platform-specific native action support.
+
+- [Protected file paths](contexts/foundation-protected-file-paths.md) — native bookmark/IPC paths and no-follow semantics.
+
+- [IntentFile.fileURL](contexts/appintents-intentfile-file-url.md) — local native file inputs and scoped access.
+
+- [Run saved shortcuts with Siri on Mac](contexts/shortcuts-mac-siri-invocation.md) — supported invocation and observed discovery failure.
+
+- [continueInForeground(_:alwaysConfirm:)](contexts/appintents-foreground-permission.md) — contextual automation permission.
+
+- [Configuring the runtime behavior of your app intents](contexts/appintents-runtime-behavior.md) — contextual automation permission.
+
+- [NSOpenPanel](contexts/appkit-contextual-folder-panel.md) — contextual automation permission.
