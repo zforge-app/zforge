@@ -381,24 +381,106 @@ nonisolated enum AppLanguagePreference: String, CaseIterable, Identifiable {
     case system
     case english
     case portugueseBrazil
+    case chineseSimplified
+    case chineseTraditional
+    case japanese
+    case german
+    case french
+    case spanish
+    case korean
+    case italian
+    case russian
+    case polish
+    case ukrainian
+    case turkish
+    case thai
+    case danish
+    case czech
+    case dutch
+    case swedish
+    case hindi
+    case bengali
 
     static let defaultsKey = "appLanguagePreference"
 
     var id: Self { self }
 
-    var locale: Locale {
+    static var supportedLanguages: [Self] { allCases.filter { $0 != .system } }
+
+    /// Autonyms remain recognizable even when the current interface language is unfamiliar.
+    var titleKey: String.LocalizationValue {
         switch self {
-        case .system:
-            for identifier in Locale.preferredLanguages {
-                switch Locale(identifier: identifier).language.languageCode?.identifier {
-                case "pt": return Locale(identifier: "pt-BR")
-                case "en": return Locale(identifier: "en")
-                default: continue
-                }
-            }
-            return Locale(identifier: "en")
-        case .english: return Locale(identifier: "en")
-        case .portugueseBrazil: return Locale(identifier: "pt-BR")
+        case .system: "System Default"
+        case .english: "English"
+        case .portugueseBrazil: "Português (Brasil)"
+        case .chineseSimplified: "简体中文"
+        case .chineseTraditional: "繁體中文"
+        case .japanese: "日本語"
+        case .german: "Deutsch"
+        case .french: "Français"
+        case .spanish: "Español"
+        case .korean: "한국어"
+        case .italian: "Italiano"
+        case .russian: "Русский"
+        case .polish: "Polski"
+        case .ukrainian: "Українська"
+        case .turkish: "Türkçe"
+        case .thai: "ไทย"
+        case .danish: "Dansk"
+        case .czech: "Čeština"
+        case .dutch: "Nederlands"
+        case .swedish: "Svenska"
+        case .hindi: "हिन्दी"
+        case .bengali: "বাংলা"
+        }
+    }
+
+    var localizationIdentifier: String? {
+        switch self {
+        case .system: nil
+        case .english: "en"
+        case .portugueseBrazil: "pt-BR"
+        case .chineseSimplified: "zh-Hans"
+        case .chineseTraditional: "zh-Hant"
+        case .japanese: "ja"
+        case .german: "de"
+        case .french: "fr"
+        case .spanish: "es"
+        case .korean: "ko"
+        case .italian: "it"
+        case .russian: "ru"
+        case .polish: "pl"
+        case .ukrainian: "uk"
+        case .turkish: "tr"
+        case .thai: "th"
+        case .danish: "da"
+        case .czech: "cs"
+        case .dutch: "nl"
+        case .swedish: "sv"
+        case .hindi: "hi"
+        case .bengali: "bn"
+        }
+    }
+
+    var locale: Locale {
+        let resolved = self == .system ? Self.resolve(preferredLanguages: Locale.preferredLanguages) : self
+        return Locale(identifier: resolved.localizationIdentifier ?? "en")
+    }
+
+    static func resolve(preferredLanguages: [String]) -> Self {
+        preferredLanguages.lazy.compactMap { supportedPreference(for: $0) }.first ?? .english
+    }
+
+    /// Match regional variants to the shipped translation without crossing Chinese scripts.
+    static func supportedPreference(for identifier: String) -> Self? {
+        let language = Locale(identifier: identifier).language
+        guard let code = language.languageCode?.identifier else { return nil }
+        switch code {
+        case "pt": return .portugueseBrazil
+        case "zh":
+            return language.script?.identifier == "Hant" ? .chineseTraditional : .chineseSimplified
+        default:
+            return supportedLanguages.first { $0.localizationIdentifier == code }
         }
     }
 }

@@ -482,12 +482,9 @@ The current scale ranges from 70% to 160%, in steps of 10%.
 - The combinations use the native glyphs of macOS (`⌃`, `⌥`, `⇧` and `⌘`) and maintain the corresponding action readable and traceable.
 - When a single action accepts more than one equivalent combination, such as Quick Look with `Space` or `Command + Y`, it occupies a single line and presents the combinations in separate capsules side by side.
 
-Idiomas atuais:
+Supported languages: the 21 localizations in [LOCALIZATION.md](LOCALIZATION.md) are implemented in the catalog. Settings lists stable language autonyms so users can recover from an unfamiliar interface. System Default remains first; existing saved choices remain compatible. Chinese regional matching preserves the explicit or inferred script. Full interface acceptance and evidence remain separate in REGRESSION-COVERAGE.
 
-- English;
-- Brazilian Portuguese.
-
-Regras:
+Language rules:
 
 - The default preference is the system language.
 - Walk `Locale.preferredLanguages` until you find a supported language.

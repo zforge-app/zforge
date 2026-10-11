@@ -34,14 +34,10 @@ private extension Bundle {
             return bundle
         }
 
-        guard let languageCode = locale.language.languageCode?.identifier else {
-            return self
-        }
-
-        let matchingLocalization = localizations.first {
-            Locale(identifier: $0).language.languageCode?.identifier == languageCode
-        }
-        guard let matchingLocalization,
+        // Canonicalize regions using the same rules as Settings. Matching only
+        // the language code would select an arbitrary Chinese script.
+        let preference = AppLanguagePreference.supportedPreference(for: locale.identifier) ?? .english
+        guard let matchingLocalization = preference.localizationIdentifier,
               let path = path(forResource: matchingLocalization, ofType: "lproj"),
               let bundle = Bundle(path: path) else {
             return self

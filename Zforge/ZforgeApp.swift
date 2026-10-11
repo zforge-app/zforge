@@ -340,10 +340,12 @@ private struct ZforgeSettingsView: View {
     var body: some View {
         Form {
             Picker("Language", selection: $preferences.language) {
-                Text("System Default").tag(AppLanguagePreference.system)
-                Text("English").tag(AppLanguagePreference.english)
-                Text("Português (Brasil)").tag(AppLanguagePreference.portugueseBrazil)
+                ForEach(AppLanguagePreference.allCases) { language in
+                    Text(AppLocalization.string(language.titleKey, locale: preferences.language.locale))
+                        .tag(language)
+                }
             }
+            .accessibilityIdentifier("settings-language")
             Picker("Default View", selection: $preferences.viewMode) {
                 ForEach(BrowserViewMode.allCases) { mode in
                     Label(

@@ -8,6 +8,7 @@ This directory holds the project's requirements. Start with this index and open 
 | --- | --- |
 | [`CURRENT-STATE.md`](CURRENT-STATE.md) | Source of truth for implemented observable contracts, their evidence, and code locations. Consult before changing any feature. |
 | [`UI-UX-GUIDE.md`](UI-UX-GUIDE.md) | Requirements for presentation, native interaction, keyboard support, responsiveness, and accessibility. Prototype notes identified in `DIVERGENCES.md` do not replace the current contract. |
+| [`LOCALIZATION.md`](LOCALIZATION.md) | Implemented 21-language scope, autonyms, system/script resolution, substitutions, plural grammar, translation-review workflow and verification boundaries. |
 | [`PRODUCT-REQUIREMENTS.md`](PRODUCT-REQUIREMENTS.md) | Vision, platform, security, 7-Zip integration, licenses, distribution, and functional direction. Identifies the initial read-only milestone as historical and future stages as planned. |
 | [`OPEN-REQUIREMENTS.md`](OPEN-REQUIREMENTS.md) | Pending requirements and decisions, linked to tasks and divergences. Does not redefine completed features. |
 | [`DOCUMENTATION-REQUIREMENTS.md`](DOCUMENTATION-REQUIREMENTS.md) | Requirements for coverage, indexing, provenance, and updates to the local SwiftUI/macOS corpus. |

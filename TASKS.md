@@ -1,5 +1,9 @@
 # Zforge — tracking of activities
 
+## 21-language localization expansion — 2026-10-11 (implemented; UI acceptance blocked)
+
+Implement the 21 user-approved localizations recorded in LOCALIZATION.md. Delivered: complete 415-key catalog in all 21 languages, persisted autonym-based language choices, regional/system matching, Chinese script selection, service bundle mapping, project declarations, readable English symbolic errors and grammatical variations for ten count/confirmation keys in five languages. Own drafts were completed before authorized Google/DeepL refinement; native terminology and critical warnings were reviewed. Exact-final focused tests pass 11 cases / 87 executions. Full regression executes 335 cases / 509 executions; the seven failing tag-persistence cases also reproduce with localization changes excluded in a temporary control. Native Settings/menu/relaunch acceptance is blocked before execution by macOS Enable UI Automation authentication. Exact results and verification gaps are recorded in REGRESSION-COVERAGE. The user authorized a local localization commit on 2026-10-11; unrelated concurrent changes are preserved outside its scope. No claim of independent native linguistic review or complete visual/accessibility polish.
+
 Updated at **2026-10-07**. This list preserves the requests raised in this conversation. `Documentation/Requirements/CURRENT-STATE.md` describes the existing behavior; `Documentation/Requirements/OPEN-REQUIREMENTS.md` meets still open requirements; `DIVERGENCES.md` has gaps and conflicts. The user confirmed D-01, D-03, D-05 and D-06 as OK. Column drag and preview was exercised in the app; the remaining to-dos remain identified below.
 
 | ID | Activity | State | Divergence |
