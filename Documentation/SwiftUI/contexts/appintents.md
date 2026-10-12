@@ -74,8 +74,8 @@ This overview is conceptual evidence; no Zforge integration or target-SDK compil
 - [Siri](https://developer.apple.com/design/human-interface-guidelines/siri) — expand on demand
 - [Spotlight integration](https://developer.apple.com/documentation/appintents/spotlight) — expand on demand
 - [Technologies](https://developer.apple.com/documentation/technologies) — expand on demand
-- [Testing your App Intents code](https://developer.apple.com/documentation/appintentstesting/testing-your-app-intents-code) — expand on demand
-- [Verifying your App Intents implementation](https://developer.apple.com/documentation/appintents/verifying-your-app-intents-implementation) — expand on demand
+- [Testing your App Intents code](appintents-testing-code.md) — expand on demand
+- [Verifying your App Intents implementation](appintents-integration-verification.md) — expand on demand
 - [Visual intelligence](https://developer.apple.com/documentation/appintents/visual-intelligence) — expand on demand
 - [Visual presentation](https://developer.apple.com/documentation/appintents/visual-presentation) — expand on demand
 - [WidgetKit](https://developer.apple.com/documentation/widgetkit) — expand on demand

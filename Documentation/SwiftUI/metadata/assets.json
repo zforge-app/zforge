@@ -7768,5 +7768,89 @@
         "url": "/images/com.apple.SwiftUI/SwiftUI-PageImage-card~dark@2x.png"
       }
     ]
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/appintents/providing-contextual-cues-to-apple-intelligence-and-siri",
+    "identifier": "Making-on-screen-content-available-to-Siri-and-Apple-Intelligence-PageImage-card.png",
+    "alt": "A stylized iPhone device frame with Apple Intelligence and Siri artwork in the background.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.AppIntents/Making-on-screen-content-available-to-Siri-and-Apple-Intelligence-PageImage-card@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.AppIntents/Making-on-screen-content-available-to-Siri-and-Apple-Intelligence-PageImage-card~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/appintents/providing-contextual-cues-to-apple-intelligence-and-siri",
+    "identifier": "UserNotifications-PageImage-card.png",
+    "alt": "[A notification interface displayed on the lock screen of an iOS device.]",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.usernotifications/UserNotifications-PageImage-card@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.usernotifications/UserNotifications-PageImage-card~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/appintents/providing-contextual-cues-to-apple-intelligence-and-siri",
+    "identifier": "providing-contextual-cues-to-apple-intelligence-and-siri",
+    "alt": "An illustration of iPhone that shows an app with a single note onscreen and an association with one app entity.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.AppIntents/providing-contextual-cues-to-apple-intelligence-and-siri@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.AppIntents/providing-contextual-cues-to-apple-intelligence-and-siri~dark@2x.png"
+      }
+    ]
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/appintents/providing-contextual-cues-to-apple-intelligence-and-siri",
+    "identifier": "providing-contextual-cues-to-apple-intelligence-and-siri-2",
+    "alt": "An illustration of iPhone that shows an app with a chat onscreen. Each message in the chat has an associated message entity.",
+    "variants": [
+      {
+        "traits": [
+          "2x",
+          "light"
+        ],
+        "url": "/images/com.apple.AppIntents/providing-contextual-cues-to-apple-intelligence-and-siri-2@2x.png"
+      },
+      {
+        "traits": [
+          "2x",
+          "dark"
+        ],
+        "url": "/images/com.apple.AppIntents/providing-contextual-cues-to-apple-intelligence-and-siri-2~dark@2x.png"
+      }
+    ]
   }
 ]

@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "captured_at": "2026-10-08T02:56:08.083428+00:00",
+  "captured_at": "2026-10-11T20:50:41.282439+00:00",
   "seed_url": "https://developer.apple.com/documentation/SwiftUI",
   "scope": "home plus unique first-level links exposed by Overview, Featured samples, and Topics, with audited on-demand expansions",
-  "expected_contexts": 139,
-  "captured_contexts": 139,
+  "expected_contexts": 151,
+  "captured_contexts": 151,
   "failures": [],
   "captures": [
     {
@@ -1977,6 +1977,174 @@
       "bytes": 11046,
       "categories": [
         "On-demand Siri integration"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/appintents/making-app-entities-available-in-spotlight",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/appintents/making-app-entities-available-in-spotlight.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/appintents/making-app-entities-available-in-spotlight.json",
+      "local_path": "contexts/appintents-spotlight-entity-indexing.md",
+      "sha256": "af0a34cfe558f44f1cc8c179b113249d0469abd5930fbaf05a4f28f22bf6eb64",
+      "etag": "\"b739-65b3b3ba24187\"",
+      "last_modified": "Fri, 11 Sep 2026 20:50:21 GMT",
+      "bytes": 46905,
+      "categories": [
+        "On-demand Apple Intelligence discovery"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/appintents/providing-contextual-cues-to-apple-intelligence-and-siri",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/appintents/providing-contextual-cues-to-apple-intelligence-and-siri.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/appintents/providing-contextual-cues-to-apple-intelligence-and-siri.json",
+      "local_path": "contexts/appintents-onscreen-entity-context.md",
+      "sha256": "0b1e3fce975037899b3b1ad51314bd0a4f91050a55471d051983da5bbbe6f636",
+      "etag": "\"d3df-65bb964a3bb8a\"",
+      "last_modified": "Fri, 18 Sep 2026 03:21:15 GMT",
+      "bytes": 54239,
+      "categories": [
+        "On-demand Apple Intelligence discovery"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/appintents/verifying-your-app-intents-implementation",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/appintents/verifying-your-app-intents-implementation.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/appintents/verifying-your-app-intents-implementation.json",
+      "local_path": "contexts/appintents-integration-verification.md",
+      "sha256": "8053cbcde45975c7d7cf1e15d71f47005a9b8299e6bbafab5c283cf7f05a18d5",
+      "etag": "\"4acc-65b3b3bd6e34a\"",
+      "last_modified": "Fri, 11 Sep 2026 20:50:25 GMT",
+      "bytes": 19148,
+      "categories": [
+        "On-demand Siri routing diagnosis"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/appintents/fileentity",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/appintents/fileentity.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/appintents/fileentity.json",
+      "local_path": "contexts/appintents-file-entity.md",
+      "sha256": "beb699c4ddf9ea0ae534937392b2b558af06bfffbd209a2387174bf939967356",
+      "etag": "\"4d7f-65bb9648f76b8\"",
+      "last_modified": "Fri, 18 Sep 2026 03:21:14 GMT",
+      "bytes": 19839,
+      "categories": [
+        "On-demand Siri routing diagnosis"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/appintents/appschema/filesentity/file",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/appintents/appschema/filesentity/file.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/appintents/appschema/filesentity/file.json",
+      "local_path": "contexts/appintents-file-entity-schema.md",
+      "sha256": "12d096efdeece5b7189285309e19e5ce9bdb4af7090510cf255cb90a02a1a5cd",
+      "etag": "\"2976-659026142a8e9\"",
+      "last_modified": "Fri, 14 Aug 2026 14:10:16 GMT",
+      "bytes": 10614,
+      "categories": [
+        "On-demand Siri routing diagnosis"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/appintentstesting/testing-your-app-intents-code",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/appintentstesting/testing-your-app-intents-code.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/appintentstesting/testing-your-app-intents-code.json",
+      "local_path": "contexts/appintents-testing-code.md",
+      "sha256": "f746bba57822bebf2fe4f5c2c514243baff0c1ee7540c3eb2eb050ca59df4ac4",
+      "etag": "\"955a-65b3b323e7ba2\"",
+      "last_modified": "Fri, 11 Sep 2026 20:47:44 GMT",
+      "bytes": 38234,
+      "categories": [
+        "On-demand Siri dispatch diagnosis"
+      ],
+      "depth": 3
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/view/appentityidentifier(_:)",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/view/appentityidentifier(_:).json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/view/appentityidentifier(_:).json",
+      "local_path": "contexts/swiftui-app-entity-identifier.md",
+      "sha256": "0784e0292f529cfa88efda69b53a3e4c6224878774d6a7b11380cc45093dec48",
+      "etag": "\"3c40-65b7916b33bea\"",
+      "last_modified": "Mon, 14 Sep 2026 22:38:10 GMT",
+      "bytes": 15424,
+      "categories": [
+        "On-demand native context diagnosis"
+      ],
+      "depth": 3
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/swiftui/view/appentityuielements(_:)",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/view/appentityuielements(_:).json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/swiftui/view/appentityuielements(_:).json",
+      "local_path": "contexts/swiftui-app-entity-ui-elements.md",
+      "sha256": "3908f83fa502a33da272d6d6bebd9a2a176fb95b2758b826d113d3c2f31ed3da",
+      "etag": "\"4d46-65b79169fcae0\"",
+      "last_modified": "Mon, 14 Sep 2026 22:38:09 GMT",
+      "bytes": 19782,
+      "categories": [
+        "On-demand native context diagnosis"
+      ],
+      "depth": 3
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/appintentstesting/appentitydefinition/viewannotations()",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/appintentstesting/appentitydefinition/viewannotations().json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/appintentstesting/appentitydefinition/viewannotations().json",
+      "local_path": "contexts/appintents-test-view-annotations.md",
+      "sha256": "72ef9cbb5c45388cc8583677f57c8223c6ff45f3293b75e450f0f1259106fdee",
+      "etag": "\"1c38-65b3b3240decf\"",
+      "last_modified": "Fri, 11 Sep 2026 20:47:44 GMT",
+      "bytes": 7224,
+      "categories": [
+        "On-demand native context diagnosis"
+      ],
+      "depth": 3
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/appintents/appintent/isdiscoverable",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/appintents/appintent/isdiscoverable.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/appintents/appintent/isdiscoverable.json",
+      "local_path": "contexts/appintents-intent-discoverability.md",
+      "sha256": "be1a8a758352c88098ed224467d6e5649268729e552cde9f28447e2972ab7f9c",
+      "etag": "\"2701-6590261383182\"",
+      "last_modified": "Fri, 14 Aug 2026 14:10:16 GMT",
+      "bytes": 9985,
+      "categories": [
+        "On-demand Siri metadata diagnosis"
+      ],
+      "depth": 3
+    },
+    {
+      "source_url": "https://support.apple.com/en-gb/guide/mac-help/mchl4e4b758d/mac",
+      "fetch_url": "https://support.apple.com/en-gb/guide/mac-help/mchl4e4b758d/mac",
+      "final_url": "https://support.apple.com/en-gb/guide/mac-help/mchl4e4b758d/mac",
+      "local_path": "contexts/macos-siri-troubleshooting.md",
+      "sha256": "ce7a37458a017206539181c934178e197c52b9337dbb857ff4e33d2f431ac07f",
+      "etag": null,
+      "last_modified": null,
+      "bytes": 715935,
+      "categories": [
+        "On-demand Siri system diagnosis"
+      ],
+      "depth": 2
+    },
+    {
+      "source_url": "https://support.apple.com/en-us/127893",
+      "fetch_url": "https://support.apple.com/en-us/127893",
+      "final_url": "https://support.apple.com/en-us/127893",
+      "local_path": "contexts/macos-siri-ai-availability.md",
+      "sha256": "c60c8a7746917b63f32cc919fe4bc6432443e4f2716b229ff3e466c93c601ba5",
+      "etag": "\"39efc6917880993b8ad4b0cc87359f59--gzip\"",
+      "last_modified": "Tue, 22 Sep 2026 18:28:50 GMT",
+      "bytes": 158564,
+      "categories": [
+        "On-demand Siri system diagnosis"
       ],
       "depth": 2
     }

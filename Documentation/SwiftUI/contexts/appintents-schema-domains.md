@@ -28,7 +28,7 @@ System schemas describe the meaning and structure of intents, entities and enume
 
 ## Practical implications
 
-The local Xcode 27 macOS SDK Files domain offers openFile, moveFiles, createFolder, renameFile and deleteFiles; it has no compression or extraction action schema. The freshly captured Files page explicitly limits discovery to Shortcuts; the generic system.open schema supports content opening through Siri and Shortcuts on macOS 27. Keep compression and extraction as truthful custom intents rather than mapping them to an unrelated schema.
+The local Xcode 27 macOS SDK Files domain offers openFile, moveFiles, createFolder, renameFile and deleteFiles; it has no compression or extraction action schema. The Files action overview lists Shortcuts; the separately captured [file entity schema](appintents-file-entity-schema.md) lists Siri and Shortcuts. The generic system.open schema supports content opening through Siri and Shortcuts on macOS 27. Keep compression and extraction as truthful custom intents rather than mapping them to an unrelated schema.
 
 ## Content map
 
