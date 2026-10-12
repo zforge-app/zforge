@@ -21,6 +21,8 @@ This directory holds the project's requirements. Start with this index and open 
 
 | [`AGENT-USAGE.md`](AGENT-USAGE.md) | ZF-43: MCP setup, typed tool/job contracts, automation grants and native shortcut usage. |
 
+| [`SIRI-DISCOVERY-ISSUE.md`](SIRI-DISCOVERY-ISSUE.md) | Deferred ZF-43 / D-47 Siri issue, historical evidence and `codex/apple-intelligence` continuation branch. |
+
 ## Precedence and updates
 
 1. The user's direct instruction takes precedence. All application rules must be documented and kept up to date in this directory. Whenever a request changes a requirement, adds a new one, or fixes incorrect behavior, update the corresponding document in the same interaction, without waiting for a separate documentation request. Record unimplemented work as pending; when implementing it, synchronize the contract with delivered behavior and available evidence.

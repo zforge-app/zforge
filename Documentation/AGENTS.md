@@ -14,6 +14,8 @@ This directory combines the versioned requirements of Zforge and the local techn
 
 8. [`Requirements/ARCHIVE-DRAG-DROP-PLAN.md`](Requirements/ARCHIVE-DRAG-DROP-PLAN.md) — plan in force from ZF-30 for exit and reorganization of internal items, with confirmation and visual parity.
 
+9. [`Requirements/SIRI-DISCOVERY-ISSUE.md`](Requirements/SIRI-DISCOVERY-ISSUE.md) — deferred Apple Intelligence issue and continuation branch; not part of the MCP delivery.
+
 ## Technical documentation SwiftUI
 
 - [`SwiftUI/AGENTS.md`](SwiftUI/AGENTS.md) — own rules of query, incremental update and provenance of the Apple corpus.

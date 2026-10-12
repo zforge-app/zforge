@@ -1,0 +1,197 @@
+{
+  "date": "2026-10-12",
+  "scope": "MCP-only mainline delivery; native Apple development deferred",
+  "original_main": "2b35eb9733348f1c7a6ddd3723014b1b1a6706da",
+  "apple_continuation_branch": "codex/apple-intelligence",
+  "apple_preservation_commit": "ffee8fb",
+  "apple_api_corpus_commit": "2314342",
+  "build": 24,
+  "environment": {
+    "os": "macOS 27.0.1",
+    "os_build": "26A434",
+    "xcode": "27",
+    "architecture": "arm64"
+  },
+  "baseline_focused": {
+    "bundle": "/tmp/ZforgeMCPDeliveryBaseline24.xcresult",
+    "distinct_cases": 34,
+    "executions": 35,
+    "failed": 0,
+    "skipped": 0,
+    "includes_two_deferred_native_cases": true
+  },
+  "distribution_characterization": {
+    "original_native_action_count": 5,
+    "expected_mcp_only_absence_check_against_original_bundle": "Failed as expected",
+    "boundary": "Static artifact characterization, not an executed new test before the change"
+  },
+  "initial_delivery_compile": {
+    "bundle": "/tmp/ZforgeMCPOnlyUnit24.xcresult",
+    "executed_tests": 0,
+    "result": "Failed",
+    "cause": "Mixed protected-path assertion still referenced the deferred AutomationIntentRunner/IntentFile adapter",
+    "correction": "Use the MCP AutomationPath mapper against the same protected URL; all authorization, compression and boundary assertions retained; original adapter assertion preserved on Apple branch"
+  },
+  "final_unit": {
+    "bundle": "/tmp/ZforgeMCPOnlyUnitFinal24.xcresult",
+    "result": "Failed",
+    "distinct_cases": 301,
+    "passed_cases": 300,
+    "failed_cases": 1,
+    "skipped_cases": 0,
+    "executions": 469,
+    "passed_executions": 468,
+    "failed_executions": 1,
+    "failures": [
+      {
+        "failureText": "Expectation failed: buttons.first { $0.finderTag.name == \"Red\" }",
+        "testIdentifierString": "TagCatalogTests/nativeMenuAppliedState()",
+        "testName": "Native menu circles share the current selection's applied tag state"
+      }
+    ],
+    "runtime_warnings": [
+      "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions"
+    ]
+  },
+  "affected_automation_suites": {
+    "Agent automation contracts": {
+      "distinct_cases": 16,
+      "executions": 17,
+      "failed": 0
+    },
+    "Contextual automation folder permission": {
+      "distinct_cases": 9,
+      "executions": 9,
+      "failed": 0
+    },
+    "Automation grant consolidation": {
+      "distinct_cases": 8,
+      "executions": 8,
+      "failed": 0
+    }
+  },
+  "unchanged_main_comparison": {
+    "bundle": "/tmp/ZforgeMCPUnchangedBaselineUnit24.xcresult",
+    "source": "Immutable git archive of exact original main, without delivery edits",
+    "result": "Failed",
+    "distinct_cases": 318,
+    "passed_cases": 317,
+    "failed_cases": 1,
+    "skipped_cases": 0,
+    "executions": 492,
+    "passed_executions": 491,
+    "failed_executions": 1,
+    "failures": [
+      {
+        "failureText": "Expectation failed: buttons.first { $0.finderTag.name == \"Red\" }",
+        "testIdentifierString": "TagCatalogTests/nativeMenuAppliedState()",
+        "testName": "Native menu circles share the current selection's applied tag state"
+      }
+    ],
+    "runtime_warnings": [
+      "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions"
+    ]
+  },
+  "failure_attribution": "The same TagCatalogTests/nativeMenuAppliedState Red-button assertion fails in both complete runs; preexisting and unresolved, with no test expectation changed",
+  "ui": {
+    "bundle": "/tmp/ZforgeMCPOnlyUI24.xcresult",
+    "result": "Passed",
+    "distinct_cases": 2,
+    "passed_cases": 2,
+    "failed_cases": 0,
+    "skipped_cases": 0,
+    "executions": 2,
+    "passed_executions": 2,
+    "failed_executions": 0,
+    "failures": [],
+    "runtime_warnings": [],
+    "languages": [
+      "English",
+      "Portuguese (Brazil)"
+    ],
+    "scenarios": [
+      "Configuration JSON copy and clipboard preservation, deferred controls absent, native Allow Folder cancellation",
+      "Contextual MCP permission cancellation and client-disconnect dismissal with no grant/output"
+    ],
+    "screenshots_exported": 6,
+    "visual_review": "Settings captures show coherent layout and localized MCP-only guidance. Contextual picker captures show long-path message/CTA extending beyond the display; cancellation/disconnect pass, but broad picker polish is not established.",
+    "screenshots_retained_only_in_temporary_xcresult": true
+  },
+  "release": {
+    "result": "Build succeeded",
+    "strict_deep_signature": "Passed before and after installation",
+    "installed_bundle": "/Applications/Zforge.app",
+    "native_metadata": "Absent",
+    "entitlements": "Unchanged",
+    "processor_diagnostic": "Metadata extraction skipped, no AppIntents.framework dependency found",
+    "rollback_bundle": "/tmp/ZforgeMCPOnlyRollback23/Zforge.app"
+  },
+  "temporary_stdio_attempts": {
+    "attempts": 2,
+    "result": "Failed strict stderr assertion",
+    "captured_cause": "sandbox_extension_issue_file_to_process failed for temporary Release bundle: Operation not permitted",
+    "assertion_weakened": false
+  },
+  "installed_stdio": {
+    "source": "Unmodified BuildSupport/Automation/mcp-smoke.py",
+    "checks": [
+      "initialize/discovery",
+      "capabilities",
+      "unapproved access denied",
+      "typed arguments"
+    ],
+    "initialize_seconds": 0.5878059999999999,
+    "child_user_cpu_seconds": 0.038047,
+    "child_system_cpu_seconds": 0.017935,
+    "child_maxrss_bytes": 44122112,
+    "elapsed_seconds": 0.649633459,
+    "exit_code": 0,
+    "discovered_tools": 8,
+    "stderr": "Empty",
+    "stdout": "Pure JSON-RPC",
+    "boundary": "Fresh-process discovery, capabilities, denied access and typed errors. Real ZIP/7z round trips pass through affected unit adapter tests; this installed probe does not repeat archive work."
+  },
+  "unchanged_mcp_core": {
+    "Zforge/Automation/ZforgeLauncher.swift": {
+      "unchanged_from_original_main": true,
+      "sha256": "344f993d98aedf25e1ab23dd2588049c11352ba5dd5636afc087d1494bbb42e6"
+    },
+    "Zforge/Automation/ZforgeMCPServer.swift": {
+      "unchanged_from_original_main": true,
+      "sha256": "edfdd5118e6f596fa3a827561b9f65a0673f9152727bd75bd9dc337afc51bbad"
+    },
+    "Zforge/Automation/AutomationOperations.swift": {
+      "unchanged_from_original_main": true,
+      "sha256": "360ad7fde9ba54cde2cbcb91bc48c16d718e4bf5b517c4a5c5a72c79881c0708"
+    },
+    "Zforge/Automation/AutomationAccess.swift": {
+      "unchanged_from_original_main": true,
+      "sha256": "1978806b69bb4cb88dffb4325050275b43cc4755e9af8fb4a64221290b0d06e1"
+    }
+  },
+  "localization": {
+    "removed_keys": [
+      "Allow folders that agents and Zforge shortcuts may read and write. Existing browser permissions are separate. Removing a folder blocks new requests; running operations must be cancelled by their caller.",
+      "Zforge needs access to %@ for this action. Authorizing this folder also permits future agent and shortcut requests to read and write inside it."
+    ],
+    "replacement_keys": [
+      "Allow folders that agents may read and write. Existing browser permissions are separate. Removing a folder blocks new requests; running operations must be cancelled by their caller.",
+      "Zforge needs access to %@ for this action. Authorizing this folder also permits future agent requests to read and write inside it."
+    ],
+    "replacement_localizations_each": 21,
+    "unrelated_catalog_entries_unchanged": true
+  },
+  "preservation": {
+    "user_grants": "No new grant or revocation",
+    "browser_password_guard": "Retained",
+    "history": "Forward separation, no history rewrite",
+    "remote": "No configured remote; local delivery only"
+  },
+  "limits": [
+    "Full regression is not green because of the reproduced baseline tag failure",
+    "Broader themes, sizes, accessibility, external volumes, independent-process consent coordination and large workload coverage remain open",
+    "Contextual native picker long-path layout requires future polish; the displayed evidence is not universal UI acceptance",
+    "Apple branch retains open Siri, selected-context and saved-compatibility acceptance",
+    "Installed stdio timing is one characterization sample, not a matched performance comparison"
+  ]
+}

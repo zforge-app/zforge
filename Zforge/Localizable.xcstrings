@@ -5462,133 +5462,133 @@
         }
       }
     },
-    "Allow folders that agents and Zforge shortcuts may read and write. Existing browser permissions are separate. Removing a folder blocks new requests; running operations must be cancelled by their caller." : {
+    "Allow folders that agents may read and write. Existing browser permissions are separate. Removing a folder blocks new requests; running operations must be cancelled by their caller." : {
       "extractionState" : "manual",
       "localizations" : {
         "bn" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "এজেন্ট ও Zforge শর্টকাট যে ফোল্ডার পড়তে ও লিখতে পারবে, সেগুলির অনুমতি দিন। ব্রাউজারের বর্তমান অনুমতি আলাদা। কোনও ফোল্ডার সরালে নতুন অনুরোধ বন্ধ হয়; চলমান কাজ অনুরোধকারীকে বাতিল করতে হবে।"
+            "value" : "এজেন্ট যে ফোল্ডার পড়তে ও লিখতে পারবে, সেগুলির অনুমতি দিন। ব্রাউজারের বর্তমান অনুমতি আলাদা। কোনও ফোল্ডার সরালে নতুন অনুরোধ বন্ধ হয়; চলমান কাজ অনুরোধকারীকে বাতিল করতে হবে।"
           }
         },
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Povolte složky, ve kterých mohou agenti a zkratky Zforge číst a zapisovat. Stávající oprávnění prohlížeče jsou oddělená. Odebrání složky zablokuje nové požadavky; běžící operace musí zrušit jejich volající."
+            "value" : "Povolte složky, ve kterých mohou agenti číst a zapisovat. Stávající oprávnění prohlížeče jsou oddělená. Odebrání složky zablokuje nové požadavky; běžící operace musí zrušit jejich volající."
           }
         },
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tillad mapper, som agenter og Zforge-genveje må læse og skrive i. Eksisterende tilladelser i browseren er adskilte. Fjernes en mappe, blokeres nye anmodninger; igangværende handlinger skal annulleres af den, der startede dem."
+            "value" : "Tillad mapper, som agenter må læse og skrive i. Eksisterende tilladelser i browseren er adskilte. Fjernes en mappe, blokeres nye anmodninger; igangværende handlinger skal annulleres af den, der startede dem."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Gib Ordner frei, in denen Agenten und Zforge-Kurzbefehle lesen und schreiben dürfen. Vorhandene Zugriffsrechte des Browsers sind davon unabhängig. Das Entfernen eines Ordners blockiert neue Anfragen; laufende Vorgänge müssen von ihrem Aufrufer abgebrochen werden."
+            "value" : "Gib Ordner frei, in denen Agenten lesen und schreiben dürfen. Vorhandene Zugriffsrechte des Browsers sind davon unabhängig. Das Entfernen eines Ordners blockiert neue Anfragen; laufende Vorgänge müssen von ihrem Aufrufer abgebrochen werden."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Allow folders that agents and Zforge shortcuts may read and write. Existing browser permissions are separate. Removing a folder blocks new requests; running operations must be cancelled by their caller."
+            "value" : "Allow folders that agents may read and write. Existing browser permissions are separate. Removing a folder blocks new requests; running operations must be cancelled by their caller."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Permite las carpetas en las que los agentes y los atajos de Zforge pueden leer y escribir. Los permisos existentes del explorador son independientes. Eliminar una carpeta bloquea las nuevas solicitudes; quien inició las operaciones en curso debe cancelarlas."
+            "value" : "Permite las carpetas en las que los agentes pueden leer y escribir. Los permisos existentes del explorador son independientes. Eliminar una carpeta bloquea las nuevas solicitudes; quien inició las operaciones en curso debe cancelarlas."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Autorisez les dossiers dans lesquels les agents et les raccourcis Zforge peuvent lire et écrire. Les autorisations existantes du navigateur sont distinctes. Supprimer un dossier bloque les nouvelles demandes ; les opérations en cours doivent être annulées par leur initiateur."
+            "value" : "Autorisez les dossiers dans lesquels les agents peuvent lire et écrire. Les autorisations existantes du navigateur sont distinctes. Supprimer un dossier bloque les nouvelles demandes ; les opérations en cours doivent être annulées par leur initiateur."
           }
         },
         "hi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "उन फ़ोल्डरों की अनुमति दें जिन्हें एजेंट और Zforge शॉर्टकट पढ़ और लिख सकते हैं। मौजूदा ब्राउज़र अनुमतियाँ अलग हैं। फ़ोल्डर हटाने पर नए अनुरोध रुक जाते हैं; चल रहे कार्यों को अनुरोध करने वाले को रद्द करना होगा।"
+            "value" : "उन फ़ोल्डरों की अनुमति दें जिन्हें एजेंट पढ़ और लिख सकते हैं। मौजूदा ब्राउज़र अनुमतियाँ अलग हैं। फ़ोल्डर हटाने पर नए अनुरोध रुक जाते हैं; चल रहे कार्यों को अनुरोध करने वाले को रद्द करना होगा।"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Consenti le cartelle in cui gli agenti e i comandi rapidi di Zforge possono leggere e scrivere. I permessi esistenti del browser sono separati. La rimozione di una cartella blocca le nuove richieste; le operazioni in corso devono essere annullate da chi le ha avviate."
+            "value" : "Consenti le cartelle in cui gli agenti possono leggere e scrivere. I permessi esistenti del browser sono separati. La rimozione di una cartella blocca le nuove richieste; le operazioni in corso devono essere annullate da chi le ha avviate."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "エージェントと Zforge のショートカットによるフォルダの読み書きを許可します。ブラウザのアクセス権とは別に管理されます。フォルダを削除すると新しいリクエストは拒否されます。実行中の操作は呼び出し元でキャンセルする必要があります。"
+            "value" : "エージェントによるフォルダの読み書きを許可します。ブラウザのアクセス権とは別に管理されます。フォルダを削除すると新しいリクエストは拒否されます。実行中の操作は呼び出し元でキャンセルする必要があります。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "에이전트와 Zforge 단축어가 읽고 쓸 수 있는 폴더를 허용합니다. 기존 브라우저 접근 권한은 별개입니다. 폴더를 제거하면 새 요청이 차단됩니다. 실행 중인 작업은 호출한 쪽에서 취소해야 합니다."
+            "value" : "에이전트가 읽고 쓸 수 있는 폴더를 허용합니다. 기존 브라우저 접근 권한은 별개입니다. 폴더를 제거하면 새 요청이 차단됩니다. 실행 중인 작업은 호출한 쪽에서 취소해야 합니다."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sta mappen toe waarin agents en Zforge-opdrachten mogen lezen en schrijven. Bestaande toegangsrechten van de browser staan hier los van. Een map verwijderen blokkeert nieuwe verzoeken; lopende bewerkingen moeten door hun aanvrager worden geannuleerd."
+            "value" : "Sta mappen toe waarin agents mogen lezen en schrijven. Bestaande toegangsrechten van de browser staan hier los van. Een map verwijderen blokkeert nieuwe verzoeken; lopende bewerkingen moeten door hun aanvrager worden geannuleerd."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zezwól agentom i skrótom Zforge na odczyt i zapis w folderach. Istniejące uprawnienia przeglądarki są niezależne. Usunięcie folderu blokuje nowe żądania; trwające operacje musi anulować ich inicjator."
+            "value" : "Zezwól agentom na odczyt i zapis w folderach. Istniejące uprawnienia przeglądarki są niezależne. Usunięcie folderu blokuje nowe żądania; trwające operacje musi anulować ich inicjator."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Autorize pastas que agentes e atalhos do Zforge podem ler e alterar. As permissões do navegador são separadas. Remover uma pasta bloqueia novas solicitações; operações em andamento devem ser canceladas por quem as iniciou."
+            "value" : "Autorize pastas que agentes podem ler e alterar. As permissões do navegador são separadas. Remover uma pasta bloqueia novas solicitações; operações em andamento devem ser canceladas por quem as iniciou."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Разрешите агентам и командам Zforge читать и записывать данные в папках. Существующие разрешения браузера действуют отдельно. Удаление папки блокирует новые запросы; выполняющиеся операции должен отменить их инициатор."
+            "value" : "Разрешите агентам читать и записывать данные в папках. Существующие разрешения браузера действуют отдельно. Удаление папки блокирует новые запросы; выполняющиеся операции должен отменить их инициатор."
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tillåt mappar som agenter och Zforge-genvägar får läsa och skriva i. Befintliga behörigheter i filbläddraren är separata. Om en mapp tas bort blockeras nya förfrågningar. Pågående åtgärder måste avbrytas av den som begärde dem."
+            "value" : "Tillåt mappar som agenter får läsa och skriva i. Befintliga behörigheter i filbläddraren är separata. Om en mapp tas bort blockeras nya förfrågningar. Pågående åtgärder måste avbrytas av den som begärde dem."
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "อนุญาตโฟลเดอร์ที่เอเจนต์และคำสั่งลัดของ Zforge สามารถอ่านและเขียนได้ สิทธิ์ของเบราว์เซอร์ที่มีอยู่จะแยกต่างหาก การเอาโฟลเดอร์ออกจะปิดกั้นคำขอใหม่ ส่วนงานที่กำลังทำอยู่ต้องยกเลิกโดยผู้เรียกใช้"
+            "value" : "อนุญาตโฟลเดอร์ที่เอเจนต์ สามารถอ่านและเขียนได้ สิทธิ์ของเบราว์เซอร์ที่มีอยู่จะแยกต่างหาก การเอาโฟลเดอร์ออกจะปิดกั้นคำขอใหม่ ส่วนงานที่กำลังทำอยู่ต้องยกเลิกโดยผู้เรียกใช้"
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ajanların ve Zforge kestirmelerinin okuyup yazabileceği klasörlere izin verin. Mevcut tarayıcı izinleri ayrıdır. Bir klasörün kaldırılması yeni istekleri engeller; çalışan işlemler, onları başlatan tarafından iptal edilmelidir."
+            "value" : "Ajanların okuyup yazabileceği klasörlere izin verin. Mevcut tarayıcı izinleri ayrıdır. Bir klasörün kaldırılması yeni istekleri engeller; çalışan işlemler, onları başlatan tarafından iptal edilmelidir."
           }
         },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Дозвольте агентам і швидким командам Zforge читати та записувати дані в папках. Наявні дозволи браузера діють окремо. Видалення папки блокує нові запити; поточні операції має скасувати їхній ініціатор."
+            "value" : "Дозвольте агентам читати та записувати дані в папках. Наявні дозволи браузера діють окремо. Видалення папки блокує нові запити; поточні операції має скасувати їхній ініціатор."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "允许代理和 Zforge 快捷指令读写这些文件夹。浏览器权限另行管理。移除文件夹会阻止新的请求；正在运行的操作须由调用方取消。"
+            "value" : "允许代理读写这些文件夹。浏览器权限另行管理。移除文件夹会阻止新的请求；正在运行的操作须由调用方取消。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "允許代理和 Zforge 捷徑讀寫這些資料夾。瀏覽器權限另行管理。移除資料夾會阻止新的請求；正在執行的操作須由呼叫端取消。"
+            "value" : "允許代理讀寫這些資料夾。瀏覽器權限另行管理。移除資料夾會阻止新的請求；正在執行的操作須由呼叫端取消。"
           }
         }
       }
@@ -52917,132 +52917,132 @@
         }
       }
     },
-    "Zforge needs access to %@ for this action. Authorizing this folder also permits future agent and shortcut requests to read and write inside it." : {
+    "Zforge needs access to %@ for this action. Authorizing this folder also permits future agent requests to read and write inside it." : {
       "localizations" : {
         "bn" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "এই অ্যাকশনের জন্য Zforge-এর %@ অ্যাক্সেস প্রয়োজন। এই ফোল্ডারের অনুমতি দিলে ভবিষ্যতে এজেন্ট ও শর্টকাটের অনুরোধও এর ভিতরে পড়তে ও লিখতে পারবে।"
+            "value" : "এই অ্যাকশনের জন্য Zforge-এর %@ অ্যাক্সেস প্রয়োজন। এই ফোল্ডারের অনুমতি দিলে ভবিষ্যতে এজেন্টের অনুরোধও এর ভিতরে পড়তে ও লিখতে পারবে।"
           }
         },
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zforge potřebuje pro tuto akci přístup k %@. Povolení této složky umožní i budoucím požadavkům agentů a zkratek číst a zapisovat uvnitř ní."
+            "value" : "Zforge potřebuje pro tuto akci přístup k %@. Povolení této složky umožní i budoucím požadavkům agentů číst a zapisovat uvnitř ní."
           }
         },
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zforge skal have adgang til %@ for at udføre denne handling. Godkendelse af denne mappe giver også fremtidige anmodninger fra agenter og genveje mulighed for at læse og skrive i den."
+            "value" : "Zforge skal have adgang til %@ for at udføre denne handling. Godkendelse af denne mappe giver også fremtidige anmodninger fra agenter mulighed for at læse og skrive i den."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zforge benötigt für diese Aktion Zugriff auf %@. Wenn du diesen Ordner freigibst, können auch zukünftige Agenten- und Kurzbefehlanfragen darin lesen und schreiben."
+            "value" : "Zforge benötigt für diese Aktion Zugriff auf %@. Wenn du diesen Ordner freigibst, können auch zukünftige Agentenanfragen darin lesen und schreiben."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zforge needs access to %@ for this action. Authorizing this folder also permits future agent and shortcut requests to read and write inside it."
+            "value" : "Zforge needs access to %@ for this action. Authorizing this folder also permits future agent requests to read and write inside it."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zforge necesita acceder a %@ para esta acción. Autorizar esta carpeta también permite que las futuras solicitudes de agentes y atajos lean y escriban en ella."
+            "value" : "Zforge necesita acceder a %@ para esta acción. Autorizar esta carpeta también permite que las futuras solicitudes de agentes lean y escriban en ella."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zforge doit accéder à %@ pour cette action. L’autorisation de ce dossier permet aussi aux futures demandes d’agents et de raccourcis d’y lire et d’y écrire."
+            "value" : "Zforge doit accéder à %@ pour cette action. L’autorisation de ce dossier permet aussi aux futures demandes d’agents d’y lire et d’y écrire."
           }
         },
         "hi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "इस ऐक्शन के लिए Zforge को %@ का ऐक्सेस चाहिए। इस फ़ोल्डर की अनुमति देने से आगे एजेंट और शॉर्टकट अनुरोध भी इसमें पढ़ और लिख सकेंगे।"
+            "value" : "इस ऐक्शन के लिए Zforge को %@ का ऐक्सेस चाहिए। इस फ़ोल्डर की अनुमति देने से आगे एजेंट अनुरोध भी इसमें पढ़ और लिख सकेंगे।"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zforge deve accedere a %@ per questa azione. Autorizzare questa cartella consente anche alle future richieste di agenti e comandi rapidi di leggere e scrivere al suo interno."
+            "value" : "Zforge deve accedere a %@ per questa azione. Autorizzare questa cartella consente anche alle future richieste di agenti di leggere e scrivere al suo interno."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "このアクションには Zforge が%@にアクセスする必要があります。このフォルダを許可すると、今後のエージェントやショートカットからのリクエストでも、フォルダ内の読み書きが許可されます。"
+            "value" : "このアクションには Zforge が%@にアクセスする必要があります。このフォルダを許可すると、今後のエージェントからのリクエストでも、フォルダ内の読み書きが許可されます。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "이 동작을 수행하려면 Zforge가 %@에 접근해야 합니다. 이 폴더에 권한을 부여하면 향후 에이전트와 단축어 요청에서도 내부 항목을 읽고 쓸 수 있습니다."
+            "value" : "이 동작을 수행하려면 Zforge가 %@에 접근해야 합니다. 이 폴더에 권한을 부여하면 향후 에이전트 요청에서도 내부 항목을 읽고 쓸 수 있습니다."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zforge heeft voor deze actie toegang tot %@ nodig. Als je deze map toestaat, mogen toekomstige verzoeken van agents en opdrachten er ook lezen en schrijven."
+            "value" : "Zforge heeft voor deze actie toegang tot %@ nodig. Als je deze map toestaat, mogen toekomstige verzoeken van agents er ook lezen en schrijven."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zforge potrzebuje dostępu do %@ dla tej czynności. Zezwolenie na ten folder pozwala też przyszłym żądaniom agentów i skrótów na odczyt i zapis w nim."
+            "value" : "Zforge potrzebuje dostępu do %@ dla tej czynności. Zezwolenie na ten folder pozwala też przyszłym żądaniom agentów na odczyt i zapis w nim."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O Zforge precisa acessar %@ para esta ação. Autorizar esta pasta também permite que futuras solicitações de agentes e atalhos leiam e gravem nela."
+            "value" : "O Zforge precisa acessar %@ para esta ação. Autorizar esta pasta também permite que futuras solicitações de agentes leiam e gravem nela."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zforge требуется доступ к %@ для этого действия. Разрешение этой папки также позволяет будущим запросам агентов и команд читать и записывать данные в ней."
+            "value" : "Zforge требуется доступ к %@ для этого действия. Разрешение этой папки также позволяет будущим запросам агентов читать и записывать данные в ней."
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zforge behöver åtkomst till %@ för den här åtgärden. Om du godkänner den här mappen tillåts även framtida förfrågningar från agenter och genvägar att läsa och skriva i den."
+            "value" : "Zforge behöver åtkomst till %@ för den här åtgärden. Om du godkänner den här mappen tillåts även framtida förfrågningar från agenter att läsa och skriva i den."
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zforge ต้องเข้าถึง %@ สำหรับการทำงานนี้ การอนุญาตโฟลเดอร์นี้ยังอนุญาตให้คำขอจากเอเจนต์และคำสั่งลัดในอนาคตอ่านและเขียนภายในโฟลเดอร์ได้ด้วย"
+            "value" : "Zforge ต้องเข้าถึง %@ สำหรับการทำงานนี้ การอนุญาตโฟลเดอร์นี้ยังอนุญาตให้คำขอจากเอเจนต์ในอนาคตอ่านและเขียนภายในโฟลเดอร์ได้ด้วย"
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zforge bu eylem için %@ konumuna erişim gerektiriyor. Bu klasöre izin verilmesi, gelecekteki ajan ve kestirme isteklerinin de klasörün içinde okuma ve yazma yapmasına izin verir."
+            "value" : "Zforge bu eylem için %@ konumuna erişim gerektiriyor. Bu klasöre izin verilmesi, gelecekteki ajan isteklerinin de klasörün içinde okuma ve yazma yapmasına izin verir."
           }
         },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zforge потрібен доступ до %@ для цієї дії. Дозвіл для цієї папки також дає майбутнім запитам агентів і швидких команд змогу читати та записувати дані в ній."
+            "value" : "Zforge потрібен доступ до %@ для цієї дії. Дозвіл для цієї папки також дає майбутнім запитам агентів змогу читати та записувати дані в ній."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zforge 需要访问 %@ 才能执行此操作。授权此文件夹也将允许未来的代理和快捷指令请求读写其中的内容。"
+            "value" : "Zforge 需要访问 %@ 才能执行此操作。授权此文件夹也将允许未来的代理请求读写其中的内容。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zforge 需要取用 %@ 才能執行此操作。授權此資料夾也將允許未來的代理和捷徑請求讀寫其中的內容。"
+            "value" : "Zforge 需要取用 %@ 才能執行此操作。授權此資料夾也將允許未來的代理請求讀寫其中的內容。"
           }
         }
       }

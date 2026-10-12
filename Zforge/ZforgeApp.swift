@@ -24,7 +24,7 @@ struct ZforgeApp: App {
         ) { request in
             BrowserWindowRoot(request: request, appDelegate: appDelegate)
         } defaultValue: {
-            appDelegate.takeNextArchiveRequest() ?? BrowserWindowRequest()
+            BrowserWindowRequest(initialURL: appDelegate.takeNextArchiveURL())
         }
         .defaultSize(width: defaultWindowWidth, height: 720)
         .environment(\.locale, preferences.language.locale)
@@ -74,16 +74,15 @@ private struct BrowserWindowRoot: View {
     var body: some View {
         ContentView(
             initialURL: request.initialURL,
-            tabSourceWindowNumber: request.tabSourceWindowNumber,
-            automationAccess: request.automationAccess
+            tabSourceWindowNumber: request.tabSourceWindowNumber
         )
             .id(request.id)
             .onAppear {
                 // A file can arrive after SwiftUI computes the default scene value.
                 // In that case, use the first new window for the archive.
                 if !hasAppeared && request.initialURL == nil,
-                   let pending = appDelegate.takeNextArchiveRequest() {
-                    request = pending
+                   let url = appDelegate.takeNextArchiveURL() {
+                    request = BrowserWindowRequest(initialURL: url)
                 }
                 hasAppeared = true
                 AutomationPermissionUIFixture.startIfRequested()
@@ -95,8 +94,8 @@ private struct BrowserWindowRoot: View {
     }
 
     private func openPendingArchives() {
-        for pending in appDelegate.takePendingArchiveRequests() {
-            openWindow(id: "browser", value: pending)
+        for url in appDelegate.takePendingArchiveURLs() {
+            openWindow(id: "browser", value: BrowserWindowRequest(initialURL: url))
         }
     }
 }

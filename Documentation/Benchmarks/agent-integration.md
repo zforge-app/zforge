@@ -1,4 +1,6 @@
-# Zforge — Initial agent integration evidence
+# Zforge — Agent integration evidence
+
+The initial records below are historical. Current mainline delivery is MCP-only; native Apple development remains on `codex/apple-intelligence`.
 
 Measured on 2026-10-07 using Xcode 27/macOS 27 SDK on macOS 27.0.1, Apple Silicon. Sources are the uncommitted ZF-43 implementation; Release is locally Apple Development signed and passes strict codesign verification. This is a characterization baseline, not a claim of performance improvement.
 
@@ -28,3 +30,10 @@ All three final installed probes exit 0 with clean stderr and pure JSON-RPC stdo
 The real final installed stdio process requests the revoked synthetic folder. Its native picker is observed with the physical folder explanation and exact-folder CTA. Closing client stdin while that panel is open dismisses it, returns no late response, writes no stderr and exits 0 in 38.942 ms. The application inventory confirms it is no longer running. A diagnostic script syntax error is corrected before this executed probe; no failed process behavior is reclassified as passing. No consent is granted by the disconnect probe. Documents, Downloads and Music remain the only user-created automation grants; the synthetic test scope was removed through Settings before the probe.
 
 [All before/after samples, final source fingerprints and disconnect record](contextual-permission-results.json). [Final 286-case / 378-execution regression summary](contextual-permission-test-results.json). Installed native Shortcuts cancellation and same-invocation integrity completion were checked on signed Release build 4; build 5 changes display-path presentation and is independently covered by final unit/UI, signed installation and actual stdio disconnection. Siri and Spotlight routing remain separate unresolved system checks.
+
+
+## MCP-only delivery split — 2026-10-12
+
+Signed Release build 24 delivers the existing MCP core without native action/entity metadata or Shortcuts setup controls. Four MCP core files are byte-for-byte unchanged from original main. Installed actual stdio discovery of eight tools, capabilities, denied access and typed errors passes with clean stderr/exit. A single fresh-process sample initializes in 0.587806 s, uses 0.038047 s user / 0.017935 s system CPU, peaks at 44,122,112 bytes child RSS and completes in 0.649633459 s. These figures are characterization, not a matched before/after comparison or performance improvement. Strict temporary-location attempts retain their sandbox stderr failures; no assertion is weakened.
+
+Affected automation suites pass 33 distinct cases / 34 executions, including real ZIP/7z round trips and consolidation/consent contracts. Both serial UI cases pass English/Brazilian Portuguese Settings/configuration cancellation and contextual cancellation/disconnect. The complete delivery run has one tag-menu failure in 301 cases / 469 executions; unchanged original main reproduces the identical failure in 318 cases / 492 executions. Full regression remains failed. Release/signature, executed tests, screenshot review and installed small stdio workload are distinct evidence; broader picker layout, language/accessibility/volume and large-resource acceptance remains open. [Structured current results and source fingerprints](mcp-only-delivery-results.json).

@@ -1,4 +1,4 @@
-# Zforge — Using MCP and native shortcuts
+# Zforge — Using MCP
 
 ## Local agent setup
 
@@ -35,7 +35,7 @@ The bundled executable runs its MCP mode without opening browser windows. No Nod
 | `operation_status` | `operation_id` | State, available progress, output path and failure code. |
 | `cancel_operation` | `operation_id` | Requests cancellation; poll for the terminal state. |
 
-All filesystem paths are absolute and must remain inside an explicitly allowed folder after physical symlink resolution, including an output that does not yet exist. Missing grants open a native picker for the requested folder. The caller waits for human consent; confirmation persists the read/write scope for future local agents and shortcuts, then resumes the same invocation. All input/output scopes must be authorized before archive work starts. Cancelling returns `cancelled` without starting a job or creating output; any earlier separately confirmed folder grants remain. Selecting a different or broader folder is rejected. Requests for one scope coalesce within each process; separate MCP processes do not share a dialog queue. A missing top-level path never requests a whole-disk grant. Already-authorized calls do not prompt. Required inputs, types, optional inputs and unknown fields are validated. Tool results include serialized JSON text and MCP structured content. Stable error codes include `authorizationRequired`, `invalidArguments`, `destinationExists`, `busy`, `notFound`, `passwordRequired`, `invalidPassword`, `unsafePath`, `archiveFailed`, `operationFailed`, and `cancelled`.
+All filesystem paths are absolute and must remain inside an explicitly allowed folder after physical symlink resolution, including an output that does not yet exist. Missing grants open a native picker for the requested folder. The caller waits for human consent; confirmation persists the read/write scope for future local agents, then resumes the same invocation. All input/output scopes must be authorized before archive work starts. Cancelling returns `cancelled` without starting a job or creating output; any earlier separately confirmed folder grants remain. Selecting a different or broader folder is rejected. Requests for one scope coalesce within each process; separate MCP processes do not share a dialog queue. A missing top-level path never requests a whole-disk grant. Already-authorized calls do not prompt. Required inputs, types, optional inputs and unknown fields are validated. Tool results include serialized JSON text and MCP structured content. Stable error codes include `authorizationRequired`, `invalidArguments`, `destinationExists`, `busy`, `notFound`, `passwordRequired`, `invalidPassword`, `unsafePath`, `archiveFailed`, `operationFailed`, and `cancelled`.
 
 Compression accepts 1–256 sources and uses the native engine's standard compression options. Automated archive creation is currently unencrypted ZIP/7z; archive reading/testing/extraction accepts an optional password. Existing output files, folders and dangling symlinks are refused. Extraction claims a new folder exclusively; it never merges into an existing destination. Archive editing, removal, overwrite and general filesystem mutation are not exposed.
 
@@ -43,26 +43,9 @@ Each connection permits one active job and one active listing; the last 64 job r
 
 Pages contain at most 200 items (default 100); listings over 10,000 direct children are refused. Pagination is a live offset over paths, not an immutable snapshot. If the directory/archive changes between pages, restart at offset zero. The engine's existing full archive parsing is not a total memory cap. Removing a grant requires renewed human consent for subsequent requests, including after reconnect; it does not forcibly stop already authorized work. Cancel that work through its connection before removing access if immediate interruption is needed.
 
-## Siri, Shortcuts and Spotlight
+## Deferred Apple integration
 
-The app publishes four App Intents actions in the Mac Shortcuts editor:
-
-- **Compress Files**: input files, destination folder, archive name and ZIP/7z format; returns the created archive file.
-- **Extract Archive**: archive, destination folder, new folder name and optional password; returns the extracted folder.
-- **Test Archive Integrity**: archive and optional password; finishes successfully only after integrity testing succeeds.
-- **Open Archive in Zforge**: an authorized archive; opens it using the existing app/Finder URL flow.
-
-Use file/folder parameters backed by local file URLs inside the automation grants. Data-only shortcut files are currently refused; save them to an allowed folder first. Compression, extraction and testing run in the background and use the same native engine/services as MCP. Shortcuts wait for completion and return failure instead of claiming success for a submitted job. Opening an archive brings Zforge forward; its browser retains its existing authorization/navigation rules.
-
-On native macOS, automatic App Shortcuts phrases are [unsupported](../SwiftUI/contexts/hig-app-shortcuts.md). Save a custom shortcut containing a Zforge action, then invoke that shortcut by its name with Siri or Spotlight. Settings includes **Open Shortcuts** and this setup guidance. English and Brazilian Portuguese titles, descriptions, summaries and setup text are in the String Catalog.
-
-The initial generic AppShortcutsProvider was removed after actual Mac discovery investigation. A registration update from the general Apple sample produced a native refresh error; it does not enable unsupported Mac App Shortcuts. Build 2 was installed at `/Applications/Zforge.app`; all four actions then appeared in the Mac editor, where the earlier build search returned no actions. This Mac has 104 historical registered copies; none were removed or globally reset.
-
-Conversational references such as “the first two files from this list” remain a pending requirement, including ordering, window identity, explicit targets and confirmation. The app does not publish indexed file entities or onscreen entity associations; the macOS 27 action below uses on-demand archive entities. The Xcode 27 SDK's Files schema has no compression or extraction action; do not assign an unrelated schema to those intents. Reading a screen or documentation does not grant executable access to that content.
-
-Availability also depends on OS, registration/indexing, language and Siri configuration. Extracted metadata, direct intent execution, editor discovery, saved-shortcut execution and actual Siri invocation are separate evidence; see REGRESSION-COVERAGE.
-
-Current Mac verification: a saved Test Archive Integrity action completed against a synthetic authorized 7z archive. Native `/.nofollow/` URLs are accepted for authorization comparison while operations retain their protected paths. The test grant was revoked afterward. **Compactar com Zforge** is saved with Compress Files, 7z and Ask Each Time for files, name and destination; no test-folder paths remain in it. The user personally validated this shortcut after authorizing a previously omitted folder. Both source and destination require explicit automation grants; missing access now requests foreground continuation and a contextual folder picker. Selecting an input in Shortcuts does not silently create that grant. Three Siri queries failed to find the saved name, including after closing the editor; a fourth query in a new conversation after personal validation responded that Siri cannot run shortcuts directly. This installation therefore has confirmed editor discovery, integrity execution and user-reported personal compression validation, with Siri and Spotlight acceptance still pending.
+This mainline delivery exposes MCP only. Native Shortcuts/App Intents, Siri actions, archive Spotlight donation and onscreen context are preserved on `codex/apple-intelligence` for future continuation. [Open issue and branch reference](SIRI-DISCOVERY-ISSUE.md). These features are not advertised by the current Settings flow.
 
 ## Troubleshooting and developer reproduction
 
@@ -70,7 +53,6 @@ Current Mac verification: a saved Test Archive Integrity action completed agains
 - `destinationExists`: use a new archive/folder name; automatic replacement is deliberately unavailable.
 - `busy`: finish or cancel the current job, or wait for the current listing to finish.
 - An invalid or unavailable archive: inspect `error_code`, confirm the path, and supply the correct password when needed. Native diagnostic text and passwords are not returned to agents.
-- Missing native actions: use the installed build 2 or later, reopen the Shortcuts editor and search for Zforge. Save a custom shortcut; automatic App Shortcuts phrases do not apply to native macOS. Keep distribution build numbers increasing so older development copies do not compete with the current release. Do not infer Siri readiness from compilation alone.
 
 The application depends on official Swift MCP SDK 0.12.0, pinned in Xcode with resolved transitive revisions. SDK 0.11.0 fails Xcode 27 concurrency checking in its NetworkTransport implementation; no SDK sources or compiler checks were weakened.
 
@@ -79,13 +61,4 @@ For developers, `BuildSupport/Automation/mcp-smoke.py --executable <bundle execu
 
 ### Redundant folder grants
 
-The automation list keeps usable covering parents instead of redundant descendants. Authorizing Downloads after a subfolder replaces the subfolder entry; authorizing a child of an already allowed parent adds nothing. Re-adding a parent cleans usable redundant entries from earlier versions. Physical boundaries govern coverage: a symlink leading outside the parent keeps its independent permission. Unknown/unavailable bookmarks are retained conservatively. Failed authorization preserves the previous list, and active operations keep their existing leases. Removing the consolidated parent blocks future access to its covered descendants; old child grants are not restored automatically. This shared policy applies to Settings, MCP and Shortcuts.
-
-### Direct archive opening on macOS 27
-
-Build 12 provides **Open Archive**, a `system.open` action with an archive entity target, alongside the original four file actions. Foreground opening uses the existing app URL queue without relaunching the app. An ephemeral scope is transferred into the window and retained through initial loading and any password prompt; completion, error, cancellation or prompt dismissal releases it. Window restoration does not serialize authorization. It accepts an explicitly supplied absolute archive path or resolves a name among visible direct archives in already allowed automation folders. Name resolution is nonrecursive, limited to 10,000 candidates total and 100 choices; discovery never adds grants. Explicit path candidates reveal only caller-supplied text; opening still checks shared contextual permission and file metadata. Original protected URLs are preserved. No entities are suggested automatically or indexed in Spotlight.
-
-The schema is officially eligible for Siri/Shortcuts on macOS 27; actual routing must be verified independently. Files schemas are explicitly Shortcuts-only for discovery and contain no compatible compression/extraction schema. A saved Apple Current Date control shortcut also fails through this conversational Siri surface despite completing manually. Existing custom-shortcut guidance is a setup route, not confirmed Siri execution on this installation. Voice/Spotlight/onscreen references and query resource measurements remain pending.
-
-
-Installed native opening has passed granted repetition, missing-folder cancellation and consent/continuation on the synthetic fixture. Fresh conversational Siri requests still refuse both the saved diagnostic shortcut and the action with its full path before invoking Zforge. Settings therefore describes Siri availability as dependent on macOS/system support. This does not promise compression/extraction or onscreen file understanding through Siri.
+The automation list keeps usable covering parents instead of redundant descendants. Authorizing Downloads after a subfolder replaces the subfolder entry; authorizing a child of an already allowed parent adds nothing. Re-adding a parent cleans usable redundant entries from earlier versions. Physical boundaries govern coverage: a symlink leading outside the parent keeps its independent permission. Unknown/unavailable bookmarks are retained conservatively. Failed authorization preserves the previous list, and active operations keep their existing leases. Removing the consolidated parent blocks future access to its covered descendants; old child grants are not restored automatically. This shared policy applies to Settings and MCP.

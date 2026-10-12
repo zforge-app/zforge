@@ -26,10 +26,9 @@ final class AutomationUITests: XCTestCase {
             app.typeKey(",", modifierFlags: .command)
             let button = app.buttons["automation-copy-mcp"]
             XCTAssertTrue(button.waitForExistence(timeout: 5), app.debugDescription)
-            let openShortcuts = app.buttons["automation-open-shortcuts"]
-            XCTAssertTrue(openShortcuts.exists, app.debugDescription)
-            XCTAssertEqual(openShortcuts.label, language == "english" ? "Open Shortcuts" : "Abrir Atalhos")
-            XCTAssertTrue(app.staticTexts["automation-shortcuts-instructions"].exists)
+            // The delivery contract includes MCP setup; native Apple automation is deferred.
+            XCTAssertFalse(app.buttons["automation-open-shortcuts"].exists)
+            XCTAssertFalse(app.staticTexts["automation-shortcuts-instructions"].exists)
             button.click()
             ownChangeCount = pasteboard.changeCount
             let text = try XCTUnwrap(pasteboard.string(forType: .string))

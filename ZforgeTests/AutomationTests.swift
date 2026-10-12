@@ -1,5 +1,4 @@
 import Foundation
-import AppIntents
 import MCP
 import Testing
 @testable import Zforge
@@ -111,7 +110,8 @@ struct AutomationTests {
         let protectedOutput = URL(fileURLWithPath: "/.nofollow" + physical.appendingPathComponent("Protected.zip").path)
         let lease = try await store.authorize([protectedSource, protectedOutput])
         withExtendedLifetime(lease) {}
-        #expect(try AutomationIntentRunner.path(IntentFile(fileURL: protectedSource)) == protectedSource.path)
+        // MCP input mapping retains the protected operational URL; the native adapter assertion remains on the Apple branch.
+        #expect(try AutomationPath.url(protectedSource.path).path == protectedSource.path)
         let operations = AutomationOperations(access: store)
         let job = try await operations.compress(sources: [protectedSource.path], destination: protectedOutput.path, format: .zip)
         #expect(job.outputPath == protectedOutput.path)
@@ -259,16 +259,6 @@ struct AutomationTests {
         #expect(try await service.wait(unlocked.id).state == .succeeded)
     }
 
-    @Test("Native intent input mapping rejects data-only files and returns file URLs without loading contents")
-    func intentParameters() throws {
-        #expect(throws: AutomationError.invalidArguments) {
-            try AutomationIntentRunner.path(IntentFile(data: Data(), filename: "Input.txt"))
-        }
-        #expect(try AutomationIntentRunner.path(IntentFile(fileURL: URL(fileURLWithPath: "/Allowed/Input.txt"))) == "/Allowed/Input.txt")
-        #expect(ZforgeIntentFormat.zip.format == .zip)
-        #expect(ZforgeIntentFormat.sevenZip.format == .sevenZip)
-    }
-
     @Test("An actual SDK client initializes, discovers tools and receives tool results")
     func sdkClient() async throws {
         let fixture = try AutomationFixture()
@@ -292,38 +282,15 @@ struct AutomationTests {
         await operations.shutdown()
     }
 
-    @Test("Native compression, extraction and integrity actions execute through the same real services")
-    func nativeActions() async throws {
-        let fixture = try AutomationFixture()
-        defer { fixture.remove() }
-        try await AutomationGrantStore.shared.add(fixture.root)
-        do {
-            let compress = CompressZforgeFilesIntent()
-            compress.files = [IntentFile(fileURL: fixture.source)]
-            compress.destinationFolder = IntentFile(fileURL: fixture.root)
-            compress.archiveName = "Native.zip"
-            compress.format = .zip
-            _ = try await compress.perform()
-            let output = fixture.root.appendingPathComponent("Native.zip")
-            #expect(FileManager.default.fileExists(atPath: output.path))
-            var test = TestZforgeArchiveIntent()
-            test.archive = IntentFile(fileURL: output)
-            _ = try await test.perform()
-            let extract = ExtractZforgeArchiveIntent()
-            extract.archive = IntentFile(fileURL: output)
-            extract.destinationFolder = IntentFile(fileURL: fixture.root)
-            extract.folderName = "Native Extracted"
-            _ = try await extract.perform()
-            #expect(try Data(contentsOf: fixture.root.appendingPathComponent("Native Extracted/Input.txt")) == Data("Automation fixture".utf8))
-            await #expect(throws: AutomationError.destinationExists) { try await compress.perform() }
-            await AutomationGrantStore.shared.remove(fixture.root.path)
-            // Denied consent/noninteractive execution must preserve the original no-grant boundary.
-            test.permissions = NonInteractiveAutomationPermissions()
-            await #expect(throws: AutomationError.authorizationRequired) { try await test.perform() }
-        } catch {
-            await AutomationGrantStore.shared.remove(fixture.root.path)
-            throw error
+    @Test("The MCP-only distribution exports no native Apple automation actions or entities")
+    func mcpOnlyDistribution() throws {
+        let metadata = Bundle.main.bundleURL.appendingPathComponent("Contents/Resources/Metadata.appintents/extract.actionsdata")
+        guard FileManager.default.fileExists(atPath: metadata.path) else { return }
+        let payload = try #require(JSONSerialization.jsonObject(with: Data(contentsOf: metadata)) as? [String: Any])
+        for key in ["actions", "entities", "queries"] {
+            #expect((payload[key] as? [String: Any] ?? [:]).isEmpty)
         }
+        #expect((payload["autoShortcuts"] as? [Any] ?? []).isEmpty)
     }
 
     @Test("MCP configuration safely encodes executable paths with spaces and quotes")

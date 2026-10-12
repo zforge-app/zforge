@@ -2,14 +2,9 @@ import AppKit
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
-    static weak var current: AppDelegate?
     static let archiveURLsReceived = Notification.Name("ZforgeArchiveURLsReceived")
 
-    private var pendingArchives: [BrowserWindowRequest] = []
-
-    func applicationDidFinishLaunching(_ notification: Notification) {
-        Self.current = self
-    }
+    private var pendingArchiveURLs: [URL] = []
 
     func applicationWillTerminate(_ notification: Notification) {
         BrowserWindowLifecycle.shared.applicationWillTerminate(orderedWindows: NSApp.orderedWindows)
@@ -19,31 +14,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let archives = urls.filter { ArchiveFormatRegistry.recognizes($0.lastPathComponent) }
         guard !archives.isEmpty else { return }
 
-        pendingArchives.append(contentsOf: archives.map { BrowserWindowRequest(initialURL: $0) })
+        pendingArchiveURLs.append(contentsOf: archives)
         NotificationCenter.default.post(name: Self.archiveURLsReceived, object: self)
-    }
-
-    func receiveAutomationArchive(_ url: URL, lease: AutomationAccessLease) {
-        guard ArchiveFormatRegistry.recognizes(url.lastPathComponent) else { return }
-        pendingArchives.append(BrowserWindowRequest(initialURL: url, automationAccess: BrowserOpeningAccess(lease)))
-        NotificationCenter.default.post(name: Self.archiveURLsReceived, object: self)
-    }
-
-    func takeNextArchiveRequest() -> BrowserWindowRequest? {
-        guard !pendingArchives.isEmpty else { return nil }
-        return pendingArchives.removeFirst()
-    }
-
-    func takePendingArchiveRequests() -> [BrowserWindowRequest] {
-        defer { pendingArchives.removeAll() }
-        return pendingArchives
     }
 
     func takeNextArchiveURL() -> URL? {
-        takeNextArchiveRequest()?.initialURL
+        guard !pendingArchiveURLs.isEmpty else { return nil }
+        return pendingArchiveURLs.removeFirst()
     }
 
     func takePendingArchiveURLs() -> [URL] {
-        takePendingArchiveRequests().compactMap(\.initialURL)
+        defer { pendingArchiveURLs.removeAll() }
+        return pendingArchiveURLs
     }
 }

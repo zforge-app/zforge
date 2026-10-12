@@ -8,7 +8,7 @@ struct AutomationSettingsSection: View {
 
     var body: some View {
         Section("Automation") {
-            Text("Allow folders that agents and Zforge shortcuts may read and write. Existing browser permissions are separate. Removing a folder blocks new requests; running operations must be cancelled by their caller.")
+            Text("Allow folders that agents may read and write. Existing browser permissions are separate. Removing a folder blocks new requests; running operations must be cancelled by their caller.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -52,19 +52,7 @@ struct AutomationSettingsSection: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
-            Text("Add a Zforge action in Shortcuts and save it to run from Shortcuts or Spotlight. Siri availability depends on macOS and system support. References to files shown onscreen are not supported yet.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-                .accessibilityIdentifier("automation-shortcuts-instructions")
-            Button("Open Shortcuts") {
-                guard let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: "com.apple.shortcuts"),
-                      NSWorkspace.shared.open(url) else {
-                    error = AppLocalization.string("Shortcuts is unavailable on this Mac.")
-                    return
-                }
-            }
-            .accessibilityIdentifier("automation-open-shortcuts")
+
         }
         .task { await reload() }
         .alert("Automation", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) {

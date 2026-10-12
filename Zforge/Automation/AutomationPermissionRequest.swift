@@ -206,7 +206,7 @@ final class AutomationFolderPermissionPanel: NSObject, NSOpenSavePanelDelegate {
         self.panel = panel
         panel.title = AppLocalization.string("Authorize Folder to Continue")
         panel.prompt = AppLocalization.string("Authorize and Continue")
-        panel.message = String.localizedStringWithFormat(AppLocalization.string("Zforge needs access to %@ for this action. Authorizing this folder also permits future agent and shortcut requests to read and write inside it."), AutomationPath.resolvedForAccess(request.folder).path)
+        panel.message = String.localizedStringWithFormat(AppLocalization.string("Zforge needs access to %@ for this action. Authorizing this folder also permits future agent requests to read and write inside it."), AutomationPath.resolvedForAccess(request.folder).path)
         panel.directoryURL = AutomationPath.resolvedForAccess(request.folder)
         panel.canChooseFiles = false
         panel.canChooseDirectories = true
