@@ -132,5 +132,6 @@ private struct BrowserIconCell: View {
         .contentShape(Rectangle())
         .accessibilityElement(children: state.renamingItemID == item.id ? .contain : .combine)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
+        .browserArchiveContext(item, isSelected: { state.selection.contains(item.id) })
     }
 }

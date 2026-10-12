@@ -48,6 +48,7 @@ nonisolated struct AutomationFolder: Identifiable, Sendable {
 
 actor AutomationGrantStore: AutomationAuthorizing {
     static let shared = AutomationGrantStore()
+    nonisolated static let changed = Notification.Name("ZforgeAutomationGrantsChanged")
     private let defaults: UserDefaults
     private let key = "automationSecurityScopedFolders"
 
@@ -99,7 +100,7 @@ actor AutomationGrantStore: AutomationAuthorizing {
         }
         guard values.count < 128 || values[retainedID] != nil else { throw AutomationError.invalidArguments }
         values[retainedID] = bookmark
-        if values != original { defaults.set(values, forKey: key) }
+        if values != original { persist(values) }
     }
 
     private static func activePhysicalPath(for bookmark: Data) -> String? {
@@ -113,8 +114,18 @@ actor AutomationGrantStore: AutomationAuthorizing {
 
     func remove(_ id: String) {
         var values = bookmarks()
-        values.removeValue(forKey: id)
+        guard values.removeValue(forKey: id) != nil else { return }
+        persist(values)
+    }
+
+    private func persist(_ values: [String: Data]) {
         defaults.set(values, forKey: key)
+        NotificationCenter.default.post(name: Self.changed, object: self)
+        // A stdio client is a separate process. No paths or bookmarks leave it.
+        if defaults === UserDefaults.standard {
+            DistributedNotificationCenter.default().postNotificationName(Self.changed, object: Bundle.main.bundleIdentifier,
+                                                                          userInfo: nil, deliverImmediately: true)
+        }
     }
 
     func authorize(_ urls: [URL]) throws -> AutomationAccessLease {

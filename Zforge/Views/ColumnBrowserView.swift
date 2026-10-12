@@ -384,6 +384,7 @@ private struct FinderColumn: View {
                                 dragSession: dragSession
                             )
                             .browserItemContextMenu(state: state, item: item)
+                            .browserArchiveContext(item, isSelected: { state.location == component.location && state.selection.contains(item.id) })
                         }
                     }
 

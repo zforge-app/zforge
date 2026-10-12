@@ -1,0 +1,1521 @@
+{
+  "date": "2026-10-11",
+  "platform": {
+    "os": "macOS 27.0.1 (26A434)",
+    "xcode": "27 (27A266a)",
+    "sdk": "macOS 27",
+    "mainline": "2b35eb9",
+    "deploymentFloor": "macOS 26"
+  },
+  "contract": {
+    "modernEntity": "ZforgeFileArchiveEntity / files.file / FileEntityIdentifier",
+    "modernAction": "OpenZforgeFileContentIntent / system.open",
+    "authorization": "Identifiers and explicit-path drafts confer no automation grant. Opening uses live contextual consent and the shared window lease.",
+    "identity": "Queries retain the exact incoming identity; Spotlight and onscreen context use the same cached published identity.",
+    "compatibility": "Original four actions and the macOS 26 legacy route remain. The old String-target action remains executable and is hidden from new discovery."
+  },
+  "unitResults": [
+    {
+      "name": "baseline",
+      "path": "/tmp/ZforgeFileSchemaBaseline.xcresult",
+      "result": "Passed",
+      "distinct": {
+        "passed": 50,
+        "failed": 0,
+        "skipped": 0,
+        "total": 50
+      },
+      "executions": 57,
+      "failures": [],
+      "runtimeWarnings": []
+    },
+    {
+      "name": "metadataBefore",
+      "path": "/tmp/ZforgeFileSchemaBefore2.xcresult",
+      "result": "Failed",
+      "distinct": {
+        "passed": 16,
+        "failed": 1,
+        "skipped": 0,
+        "total": 17
+      },
+      "executions": 23,
+      "failures": [
+        {
+          "test": "SiriArchiveIntentTests/fileSchemaMetadata()",
+          "text": "Expectation failed: entities[\"ZforgeFileArchiveEntity\"]"
+        }
+      ],
+      "runtimeWarnings": []
+    },
+    {
+      "name": "adapterIntermediate",
+      "path": "/tmp/ZforgeFileSchemaAdapter4.xcresult",
+      "result": "Failed",
+      "distinct": {
+        "passed": 79,
+        "failed": 1,
+        "skipped": 0,
+        "total": 80
+      },
+      "executions": 89,
+      "failures": [
+        {
+          "test": "FileArchiveIntentTests/contextualConsent()",
+          "text": "Expectation failed: folder == fixture.root\nfolder → file:///Users/felipe/Library/Containers/io.libor.Zforge/Data/tmp/FileArchive-CEDF1C51-04F4-4CDE-A344-BCC49324356C/\nfixture.root → file:///Users/felipe/Library/Containers/io.libor.Zforge/Data/tmp/FileArchive-CEDF1C51-04F4-4CDE-A344-BCC49324356C"
+        }
+      ],
+      "runtimeWarnings": []
+    },
+    {
+      "name": "fullIntermediate",
+      "path": "/tmp/ZforgeFileSchemaRegression1.xcresult",
+      "result": "Failed",
+      "distinct": {
+        "passed": 346,
+        "failed": 2,
+        "skipped": 0,
+        "total": 348
+      },
+      "executions": 524,
+      "failures": [
+        {
+          "test": "FileArchiveIntentTests/contextualConsent()",
+          "text": "Expectation failed: folder == fixture.root\nfolder → file:///Users/felipe/Library/Containers/io.libor.Zforge/Data/tmp/FileArchive-7D87D7FF-A96F-4ADA-9C29-EEC7D1CFAD39/\nfixture.root → file:///Users/felipe/Library/Containers/io.libor.Zforge/Data/tmp/FileArchive-7D87D7FF-A96F-4ADA-9C29-EEC7D1CFAD39"
+        },
+        {
+          "test": "TagCatalogTests/unreadableSubtreePreventsCheckpoint()",
+          "text": "Expectation failed: await probe.scans.map { $0.map(\\.path) } == [[denied.path]]"
+        }
+      ],
+      "runtimeWarnings": [
+        {
+          "issueType": "Runtime Warning",
+          "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions",
+          "sourceURL": "file:///Users/felipe/Documents/dev/Zforge/ZforgeTests/FileOperationServiceTests.swift"
+        }
+      ]
+    },
+    {
+      "name": "replacementBefore",
+      "path": "/tmp/ZforgeFileReplacementBefore.xcresult",
+      "result": "Failed",
+      "distinct": {
+        "passed": 16,
+        "failed": 1,
+        "skipped": 0,
+        "total": 17
+      },
+      "executions": 17,
+      "failures": [
+        {
+          "test": "ArchiveIndexTests/replacedFileIdentity()",
+          "text": "Expectation failed: await writer.writeCount == 2"
+        }
+      ],
+      "runtimeWarnings": []
+    },
+    {
+      "name": "publicationReplacementBefore",
+      "path": "/tmp/ZforgeFilePublicationReplacementBefore.xcresult",
+      "result": "Failed",
+      "distinct": {
+        "passed": 12,
+        "failed": 1,
+        "skipped": 0,
+        "total": 13
+      },
+      "executions": 15,
+      "failures": [
+        {
+          "test": "FileArchiveIntentTests/publishedReplacement()",
+          "text": "Expectation failed: await writer.removed == [previous]"
+        }
+      ],
+      "runtimeWarnings": []
+    },
+    {
+      "name": "fullBeforePublicationCleanup",
+      "path": "/tmp/ZforgeFileSchemaRegression2.xcresult",
+      "result": "Passed",
+      "distinct": {
+        "passed": 349,
+        "failed": 0,
+        "skipped": 0,
+        "total": 349
+      },
+      "executions": 525,
+      "failures": [],
+      "runtimeWarnings": [
+        {
+          "issueType": "Runtime Warning",
+          "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions",
+          "sourceURL": "file:///Users/felipe/Documents/dev/Zforge/ZforgeTests/FileOperationServiceTests.swift"
+        }
+      ]
+    },
+    {
+      "name": "final",
+      "path": "/tmp/ZforgeFileSchemaFinalRegression.xcresult",
+      "result": "Passed",
+      "distinct": {
+        "passed": 350,
+        "failed": 0,
+        "skipped": 0,
+        "total": 350
+      },
+      "executions": 526,
+      "failures": [],
+      "runtimeWarnings": [
+        {
+          "issueType": "Runtime Warning",
+          "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions",
+          "sourceURL": "file:///Users/felipe/Documents/dev/Zforge/ZforgeTests/FileOperationServiceTests.swift"
+        }
+      ]
+    }
+  ],
+  "fullBuild16": {
+    "path": "/tmp/ZforgeFileContextFullRegression16.xcresult",
+    "summary": {
+      "devicesAndConfigurations": [
+        {
+          "device": {
+            "architecture": "arm64",
+            "deviceId": "00008142-000241D1346B401C",
+            "deviceName": "My Mac",
+            "modelName": "MacBook Air",
+            "osBuildNumber": "26A434",
+            "osVersion": "27.0.1",
+            "platform": "macOS"
+          },
+          "expectedFailures": 0,
+          "failedTests": 0,
+          "passedTests": 526,
+          "skippedTests": 0,
+          "testPlanConfiguration": {
+            "configurationId": "1",
+            "configurationName": "Test Scheme Action"
+          }
+        }
+      ],
+      "environmentDescription": "Zforge · Built with macOS 27.0.1",
+      "expectedFailures": 0,
+      "failedTests": 0,
+      "finishTime": 1791755267.439,
+      "passedTests": 350,
+      "result": "Passed",
+      "runtimeWarnings": [
+        {
+          "issueType": "Runtime Warning",
+          "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions",
+          "sourceURL": "file:///Users/felipe/Documents/dev/Zforge/ZforgeTests/FileOperationServiceTests.swift"
+        }
+      ],
+      "skippedTests": 0,
+      "startTime": 1791755225.919,
+      "statistics": [
+        {
+          "subtitle": "207 test runs",
+          "title": "31 tests ran with dynamic parameters"
+        }
+      ],
+      "testFailures": [],
+      "title": "Test - Zforge",
+      "topInsights": [
+        {
+          "category": "Longest Test Runs",
+          "impact": "54% of duration",
+          "text": "9 longest test runs with outlier durations exceeding 0.92s (three standard deviations)"
+        }
+      ],
+      "totalTestCount": 350
+    }
+  },
+  "compileIntermediates": [
+    {
+      "path": "/tmp/ZforgeFileSchemaBefore.xcresult",
+      "executed": 0,
+      "note": "Invalid method selector; not counted as characterization."
+    },
+    {
+      "log": "/tmp/ZforgeFileSchemaAdapter1.log",
+      "executed": 0,
+      "note": "Metadata export requires supportedContentTypes to be compile-time constants."
+    },
+    {
+      "log": "/tmp/ZforgeFileSchemaAdapter2.log",
+      "executed": 0,
+      "note": "Swift Testing rejected availability on the enclosing suite; individual test availability preserves the macOS 26 test floor."
+    },
+    {
+      "log": "/tmp/ZforgeFileSchemaAdapter3.log",
+      "executed": 0,
+      "note": "Added defining-module imports for CoreSpotlight and AppIntents members."
+    }
+  ],
+  "fixtureCorrection": "Directory URL equality retains the exact-folder assertion. The fixture now constructs an explicit directory URL after resolving its physical path; resolvingSymlinksInPath had removed the trailing directory marker.",
+  "performanceBuild16": {
+    "children": 10000,
+    "archives": 100,
+    "nameSeconds": 0.038304125,
+    "snapshotSeconds": 0.038810208,
+    "snapshotUserCPUSeconds": 0.05747,
+    "snapshotSystemCPUSeconds": 0.028005,
+    "snapshotProcessPeakRSSBytes": 263225344,
+    "fileAssociationSeconds": 0.036383625,
+    "fileAssociationUserCPUSeconds": 0.038783,
+    "fileAssociationSystemCPUSeconds": 0.03833,
+    "fileAssociationProcessPeakRSSBytes": 263667712,
+    "wireIdentifierBytes": 182506,
+    "thresholdsSeconds": {
+      "name": 0.1,
+      "snapshot": 0.25,
+      "fileAssociations": 0.25,
+      "nativeInitialPublication": 2
+    },
+    "log": "/tmp/ZforgeFileContextFullRegression16.log",
+    "limits": "Process peak RSS and CPU include the test host; no exclusive idle/index memory claim."
+  },
+  "nativeBuild15": {
+    "installed": "/Applications/Zforge.app",
+    "strictSignature": true,
+    "rollback": "/tmp/ZforgeFileSchemaRollback14/Zforge.app",
+    "initialPublication": {
+      "entities": 100,
+      "seconds": 0.21341225,
+      "pid": 44390,
+      "time": "2026-10-11 18:41:36.863",
+      "ownedAdditionalFiles": 97,
+      "cleanup": "97 hash-verified owned additions removed; original three synthetic archives retained.",
+      "cleanupReconciliationSeconds": 0.022076041
+    },
+    "systemTests": {
+      "path": "/tmp/ZforgeFileSchemaInstalledDispatch15.xcresult",
+      "passed": 2,
+      "failed": 1,
+      "skipped": 0,
+      "namePerform": {
+        "pid": 44434,
+        "time": "18:42:29.986"
+      },
+      "spotlightPerform": {
+        "pid": 44442,
+        "time": "18:42:33.968"
+      },
+      "contextFailure": "Provider-only cells return zero annotations in Icons/List. The initial harness also incorrectly retained a folder-title query across the archive-opening Columns transition.",
+      "log": "/tmp/ZforgeFileSchemaSystem15Routing.log"
+    }
+  },
+  "nativeBuild16": {
+    "installed": "/Applications/Zforge.app",
+    "strictSignature": true,
+    "rollback": "/tmp/ZforgeFileContextRollback15/Zforge.app",
+    "systemTests": {
+      "path": "/tmp/ZforgeFileContextInstalledDispatch16.xcresult",
+      "result": "Failed",
+      "distinct": {
+        "total": 3,
+        "passed": 2,
+        "failed": 1,
+        "skipped": 0
+      },
+      "executions": 3,
+      "failures": [
+        {
+          "test": "ZforgeDispatchTests/testAllBrowserModesExposeTheSelectedPublishedFileIdentity()",
+          "text": "XCTAssertTrue failed - The selected archive must retain its published identity in view-mode-icons."
+        }
+      ]
+    },
+    "controls": {
+      "path": "/tmp/ZforgeFileContextControl16.xcresult",
+      "result": "Failed",
+      "distinct": {
+        "total": 2,
+        "passed": 1,
+        "failed": 1,
+        "skipped": 0
+      },
+      "executions": 2,
+      "failures": [
+        {
+          "test": "ZforgeDispatchTests/testCanonicalRootProvidesSelectedArchiveAnnotation()",
+          "text": "XCTAssertTrue failed"
+        }
+      ]
+    }
+  },
+  "siri": {
+    "probeBuild3": "User reports The OpenIntent ran for fresh English Open Lyra Control.zip in Intent Probe, with own perform trace at 18:14:18.886 (PID 40699).",
+    "production": {
+      "build": 22,
+      "date": "2026-10-12",
+      "utterance": "Open Orion Demo.zip in Zforge",
+      "userResult": "Refused or file not found",
+      "nativeResponse": "I couldn’t find the file “Orion Demo.zip” on your Mac. Please make sure the name is correct and try again.",
+      "authoredLog": "/tmp/ZforgeSiri22-latest-routing.log",
+      "traceFinding": "The retained interval shows publication at 07:37:21.836 (PID 48112), two archives, 122.505 ms; no authored name/identifier query or perform is retained. Info-level absence alone does not prove no query ran."
+    }
+  },
+  "remainingLimits": [
+    "Actual Siri language routing and contextual utterances are separate from AppIntentsTesting dispatch.",
+    "macOS 26 runtime, full localization/accessibility/theme/size matrix and exclusive index idle/memory remain unverified.",
+    "The intermediate TagCatalog unreadable-subtree failure is retained. Passing final runs do not resolve the previously recorded intermittent D-49 behavior."
+  ],
+  "nativeBuild17": {
+    "systemTests": {
+      "path": "/tmp/ZforgeFileContextDiagnostic17.xcresult",
+      "result": "Failed",
+      "distinct": {
+        "total": 1,
+        "passed": 0,
+        "failed": 1,
+        "skipped": 0
+      },
+      "executions": 1,
+      "failures": [
+        {
+          "test": "ZforgeDispatchTests/testCanonicalRootProvidesSelectedArchiveAnnotation()",
+          "text": "XCTAssertTrue failed"
+        }
+      ]
+    },
+    "eligibilityLog": "/tmp/ZforgeFileContextEligibility17.log",
+    "finding": "Three archives published, all eligible archive lookups unmatched before the cached physical-identity correction."
+  },
+  "presentationCorrection": {
+    "before": {
+      "path": "/tmp/ZforgeFilePresentationBefore.xcresult",
+      "result": "Failed",
+      "distinct": {
+        "total": 19,
+        "passed": 18,
+        "failed": 1,
+        "skipped": 0
+      },
+      "executions": 19,
+      "failures": [
+        {
+          "test": "ArchiveIndexTests/contextDifferentPresentation()",
+          "text": "Expectation failed: catalog.identifier(for: item) == associations[fixture.archive.path]\ncatalog.identifier(for: item) → nil\nassociations[fixture.archive.path] → ZforgeFileArchiveEntity/<redacted>"
+        }
+      ]
+    },
+    "after": {
+      "path": "/tmp/ZforgeFilePresentationAfter.xcresult",
+      "distinctPassed": 50,
+      "executionsPassed": 58,
+      "failed": 0,
+      "skipped": 0
+    },
+    "contract": "Match a published presentation path first, then a unique cached file-resource identity; no disk access during cell lookup, no file symlinks or ambiguous hard-link fallback."
+  },
+  "fullBuild18": {
+    "path": "/tmp/ZforgeFilePresentationFull18.xcresult",
+    "result": "Passed",
+    "distinct": {
+      "total": 352,
+      "passed": 352,
+      "failed": 0,
+      "skipped": 0
+    },
+    "executions": 528,
+    "failures": []
+  },
+  "performanceBuild18": {
+    "children": 10000,
+    "archives": 100,
+    "nameSeconds": 0.040968083,
+    "snapshotSeconds": 0.041254208,
+    "snapshotUserCPUSeconds": 0.058081,
+    "snapshotSystemCPUSeconds": 0.030979,
+    "snapshotProcessPeakRSSBytes": 262782976,
+    "fileAssociationSeconds": 0.038682666,
+    "fileAssociationUserCPUSeconds": 0.039701,
+    "fileAssociationSystemCPUSeconds": 0.048073,
+    "fileAssociationProcessPeakRSSBytes": 263077888,
+    "wireIdentifierBytes": 182504,
+    "thresholdsSeconds": {
+      "name": 0.1,
+      "snapshot": 0.25,
+      "fileAssociations": 0.25,
+      "nativeInitialPublication": 2
+    },
+    "log": "/tmp/ZforgeFilePresentationFull18.log",
+    "limits": "Whole test-process peak RSS is not exclusive index memory. This sample is not a matched resource improvement claim."
+  },
+  "nativeBuild18": {
+    "installed": "/Applications/Zforge.app",
+    "strictSignature": true,
+    "rollback": "/tmp/ZforgeFileContextRollback17/Zforge.app",
+    "systemTests": {
+      "path": "/tmp/ZforgeFileContextInstalled18.xcresult",
+      "result": "Failed",
+      "distinct": {
+        "total": 4,
+        "passed": 2,
+        "failed": 2,
+        "skipped": 0
+      },
+      "executions": 4,
+      "failures": [
+        {
+          "test": "ZforgeDispatchTests/testAllBrowserModesExposeTheSelectedPublishedFileIdentity()",
+          "text": "XCTAssertTrue failed - The selected archive must retain its published identity in view-mode-icons."
+        },
+        {
+          "test": "ZforgeDispatchTests/testCanonicalRootProvidesSelectedArchiveAnnotation()",
+          "text": "XCTAssertTrue failed"
+        }
+      ]
+    },
+    "identityDiagnostic": {
+      "path": "/tmp/ZforgeFileContextIdentity18.xcresult",
+      "result": "Failed",
+      "distinct": {
+        "total": 1,
+        "passed": 0,
+        "failed": 1,
+        "skipped": 0
+      },
+      "executions": 1,
+      "failures": [
+        {
+          "test": "ZforgeDispatchTests/testCanonicalRootProvidesSelectedArchiveAnnotation()",
+          "text": "XCTAssertTrue failed"
+        }
+      ],
+      "finding": "count=6, selected=0, matching=2, selectedMatching=0."
+    }
+  },
+  "nativeBuild19": {
+    "providerOnly": {
+      "path": "/tmp/ZforgeFileContextProvider19.xcresult",
+      "result": "Failed",
+      "distinct": {
+        "total": 4,
+        "passed": 2,
+        "failed": 2,
+        "skipped": 0
+      },
+      "executions": 4,
+      "failures": [
+        {
+          "test": "ZforgeDispatchTests/testAllBrowserModesExposeTheSelectedPublishedFileIdentity()",
+          "text": "XCTAssertTrue failed - The selected archive must retain its published identity in view-mode-icons."
+        },
+        {
+          "test": "ZforgeDispatchTests/testCanonicalRootProvidesSelectedArchiveAnnotation()",
+          "text": "XCTAssertTrue failed - Selecting the archive must enable its contextual toolbar action."
+        }
+      ]
+    },
+    "synchronizedGestures": {
+      "path": "/tmp/ZforgeFileContextSynchronized19.xcresult",
+      "result": "Failed",
+      "distinct": {
+        "total": 4,
+        "passed": 2,
+        "failed": 2,
+        "skipped": 0
+      },
+      "executions": 4,
+      "failures": [
+        {
+          "test": "ZforgeDispatchTests/testAllBrowserModesExposeTheSelectedPublishedFileIdentity()",
+          "text": "XCTAssertTrue failed - The selected archive must retain its published identity in view-mode-icons."
+        },
+        {
+          "test": "ZforgeDispatchTests/testCanonicalRootProvidesSelectedArchiveAnnotation()",
+          "text": "XCTAssertTrue failed"
+        }
+      ]
+    },
+    "finding": "Removing duplicate annotations produces three view entities. Explicit selected-cell and enabled-toolbar synchronization passes, but the selected-annotation assertion still fails."
+  },
+  "nativeBuild20": {
+    "path": "/tmp/ZforgeFileContextLive20.xcresult",
+    "passed": 2,
+    "failed": 2,
+    "skipped": 0,
+    "executed": 4,
+    "providerLog": "/tmp/ZforgeFileContextLive20-provider.log",
+    "finding": "Visible selection synchronization passes. The authored provider reports selected=true; AppIntentsTesting reports selected=0 for three matching visible archives. Name and Spotlight opening pass. No unique platform cause is inferred."
+  },
+  "fullBuild22": {
+    "path": "/tmp/ZforgeFileSchemaFinal22.xcresult",
+    "result": "Passed",
+    "distinct": {
+      "passed": 352,
+      "failed": 0,
+      "skipped": 0,
+      "total": 352
+    },
+    "executions": 528,
+    "runtimeWarnings": [
+      {
+        "issueType": "Runtime Warning",
+        "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions",
+        "sourceURL": "file:///Users/felipe/Documents/dev/Zforge/ZforgeTests/FileOperationServiceTests.swift"
+      }
+    ]
+  },
+  "performanceBuild22": {
+    "children": 10000,
+    "archives": 100,
+    "nameSeconds": 0.035420084,
+    "snapshotSeconds": 0.034843875,
+    "snapshotUserCPUSeconds": 0.025398,
+    "snapshotSystemCPUSeconds": 0.012383,
+    "snapshotProcessPeakRSSBytes": 262619136,
+    "fileAssociationSeconds": 0.023283292,
+    "fileAssociationUserCPUSeconds": 0.010147,
+    "fileAssociationSystemCPUSeconds": 0.018649,
+    "fileAssociationProcessPeakRSSBytes": 262946816,
+    "wireIdentifierBytes": 182606,
+    "thresholdsSeconds": {
+      "name": 0.1,
+      "snapshot": 0.25,
+      "fileAssociations": 0.25,
+      "nativeInitialPublication": 2
+    },
+    "log": "/tmp/ZforgeFileSchemaFinal22.log",
+    "limits": "Whole test-host peak RSS; no exclusive index CPU or memory claim. A separate diagnostic compiler may overlap the overall test session."
+  },
+  "installedBuild22": {
+    "path": "/Applications/Zforge.app",
+    "strictSignature": true,
+    "releaseWarnings": 0,
+    "rollback": "/tmp/ZforgeFileContextRollback21/Zforge.app",
+    "selectedAnnotationAcceptance": "Pending: authored provider selection true while AppIntentsTesting reports false; standard association comparison also fails and is reverted.",
+    "nativeTests": {
+      "path": "/tmp/ZforgeFileSchemaInstalled22.xcresult",
+      "result": "Failed",
+      "distinct": {
+        "total": 3,
+        "passed": 2,
+        "failed": 1,
+        "skipped": 0
+      },
+      "executions": 3,
+      "failures": [
+        {
+          "test": "ProbeDispatchTests/testNativeListReportsItsSelectedSyntheticEntity()",
+          "text": "XCTAssertEqual failed: (\"0\") is not equal to (\"1\")"
+        }
+      ],
+      "finding": "Two Zforge name/Spotlight opening scenarios pass with visible Readme.txt. One independent native List control fails: its row is visibly selected, but zero annotations are retrieved. The control does not establish a unique platform cause."
+    },
+    "routing": {
+      "log": "/tmp/ZforgeFileSchemaInstalled22-routing.log",
+      "namedPerform": "2026-10-12 06:54:56.783 -0300; PID 47706",
+      "spotlightPerform": "2026-10-12 06:55:00.494 -0300; PID 47712",
+      "manualSessionPID": 47728,
+      "manualPublicationSeconds": 0.154680041,
+      "publishedArchives": 2
+    },
+    "mcp": {
+      "checks": [
+        "initialize/discovery",
+        "capabilities",
+        "unapproved access denied",
+        "typed arguments",
+        "UI grant -> real ZIP/7z round-trips and no replacement"
+      ],
+      "initialize_seconds": 0.264442958,
+      "child_user_cpu_seconds": 0.057520999999999996,
+      "child_system_cpu_seconds": 0.035146,
+      "child_maxrss_bytes": 45973504,
+      "elapsed_seconds": 0.5299121250000001,
+      "exit_code": 0
+    },
+    "providerBehaviorRestoredToBuild20": true
+  },
+  "sourceSHA256Build16": {
+    "Zforge/Automation/ZforgeArchiveEntity.swift": "813e7d7e362dfb99042700f17192f4a9fe6b5aeab15c2b046afa519f469518f8",
+    "Zforge/Automation/ZforgeFileArchiveEntity.swift": "964de5a1cded44716de8d25a591201d2d8115cf21ebfe5a0832d64e05f51213a",
+    "Zforge/Automation/ZforgeIntents.swift": "7afa380d695046c38e8e7d44367a337a5764732e5a8d9cc3114a12f97a53ebac",
+    "Zforge/Automation/ArchiveSpotlightIndex.swift": "d40ef801aebc85a48cfbcd6ea324dbb6822a8486a9fd298f835131adbcd6d5a3",
+    "Zforge/Automation/ArchiveFilePublication.swift": "230104882ecc7cb94df502796f69c6e94efa5c99c5cb3d05c1a55697c186931f",
+    "Zforge/Views/BrowserArchiveContext.swift": "9a0b422fade4926053a89d0a5138fa623b5481088493094d0d1e5a78ddd01fd0",
+    "Zforge/Views/IconBrowserView.swift": "39438bc4a82ec11149587b862563aed567e32217549758331378375f3a85ce7f",
+    "Zforge/Views/ListBrowserView.swift": "2e3880dcfcce74b097ba0d9a06522a50809095711bd9c8fc9a1c96e4aa1f6938",
+    "Zforge/Views/ColumnBrowserView.swift": "3f8f8134be77107479434c4ae7978ccfb861092cfd0a14f733c5337a3aa52a18",
+    "Zforge/Views/GalleryBrowserView.swift": "4e510dd7b9116ca27e341fb240692be3ea228c701e330c26d664b49e2d4daee7",
+    "ZforgeTests/SiriArchiveIntentTests.swift": "e8ffe0a77c0b67dd8b7f1f8b3a7f9080c86c8a6568b4149403d9fed017f22553",
+    "ZforgeTests/ArchiveIndexTests.swift": "4d8de0258f39bf5613f3e467a6e07164cb8ebafc715aa02364e4f8dbaac364a4",
+    "ZforgeTests/FileArchiveIntentTests.swift": "fd19ac687d244d176c1e9d15b54a4f3c854a1123816dc4ad751e31e38c077277",
+    "ZforgeTests/ArchiveDiscoveryPerformanceTests.swift": "6f284772f556a5ab31c83f3dabce5485b07f38002fbe454e73d6e39742817856",
+    "BuildSupport/Automation/IntentProbe/ProbeSystemTests/ZforgeDispatchTests.swift": "b7da99d79c0cd1edd1ce2968076dfa0f54e195214df08dcd14e0cdf8fc793e21"
+  },
+  "sourceSHA256Build22": {
+    "Zforge/Automation/ZforgeArchiveEntity.swift": "813e7d7e362dfb99042700f17192f4a9fe6b5aeab15c2b046afa519f469518f8",
+    "Zforge/Automation/ZforgeFileArchiveEntity.swift": "964de5a1cded44716de8d25a591201d2d8115cf21ebfe5a0832d64e05f51213a",
+    "Zforge/Automation/ZforgeIntents.swift": "7afa380d695046c38e8e7d44367a337a5764732e5a8d9cc3114a12f97a53ebac",
+    "Zforge/Automation/ArchiveSpotlightIndex.swift": "82c95e52ad107479e1cd49f378650450cee9861862665be38e4d6cffde689cc9",
+    "Zforge/Automation/ArchiveFilePublication.swift": "230104882ecc7cb94df502796f69c6e94efa5c99c5cb3d05c1a55697c186931f",
+    "Zforge/Views/BrowserArchiveContext.swift": "8cdeeddce069661873bcbff4936f7a0e7a009904beb3d02b4d690116c73b76b3",
+    "Zforge/Views/IconBrowserView.swift": "6e49ee19c3173010775d0ad54a565f06234c45eb50b7cd456b445ddae479da14",
+    "Zforge/Views/ListBrowserView.swift": "2f39a3cfac6befcbefd43edeaa7189c3ed7f12524f6a6321a81551e48659e629",
+    "Zforge/Views/ColumnBrowserView.swift": "faab78c5782979be0c4781f8680c0c6361b044fa81f6dce4050ad5a6363b6d20",
+    "Zforge/Views/GalleryBrowserView.swift": "a19ad87c148f3c18309b30613149634ebbe22e4b298fee5abdabc2022b633760",
+    "ZforgeTests/SiriArchiveIntentTests.swift": "e8ffe0a77c0b67dd8b7f1f8b3a7f9080c86c8a6568b4149403d9fed017f22553",
+    "ZforgeTests/ArchiveIndexTests.swift": "d821325300f4176c5cf19a4d9e67bd9f3f0182f8a5793a693ef1812fbc340873",
+    "ZforgeTests/FileArchiveIntentTests.swift": "fd19ac687d244d176c1e9d15b54a4f3c854a1123816dc4ad751e31e38c077277",
+    "ZforgeTests/ArchiveDiscoveryPerformanceTests.swift": "6f284772f556a5ab31c83f3dabce5485b07f38002fbe454e73d6e39742817856",
+    "BuildSupport/Automation/IntentProbe/ProbeSystemTests/ZforgeDispatchTests.swift": "c6726bee8784238e9c3bbbbf2cb226d7349a2f444369788a1dc6d7e6f6da7aaa",
+    "Zforge/Models/BrowserModels.swift": "0376ec854e1da33261ddafa38e020c310fa129b0aea59f528e0622e68d90d313",
+    "Zforge/Services/FileSystemService.swift": "bf93317f66079b81651a81317f2ddd1d061f74052b5cf0cf6c5999c21fee8c5b",
+    "Zforge.xcodeproj/project.pbxproj": "b055120ee1eb9511fbfa20cde00178352918df016f7a7f0bae3fffee841db519",
+    "BuildSupport/Automation/IntentProbe/ProbeSystemTests/ProbeDispatchTests.swift": "1d9d95143ffe3304c125c576671afcbf932321cb1b25746e337b0fb4e63a1901",
+    "BuildSupport/Automation/IntentProbe/ProbeSources/IntentProbeApp.swift": "06f6d5d99024c932ef5a332dc993f98610ca8707dd70dcb8ad85d3f612b51eaa"
+  },
+  "lastVerifiedDate": "2026-10-12",
+  "nativeBuild21Comparison": {
+    "path": "/tmp/ZforgeFileContextStandard21.xcresult",
+    "result": "Failed",
+    "distinct": {
+      "total": 4,
+      "passed": 2,
+      "failed": 2,
+      "skipped": 0
+    },
+    "executions": 4,
+    "failures": [
+      {
+        "test": "ZforgeDispatchTests/testAllBrowserModesExposeTheSelectedPublishedFileIdentity()",
+        "text": "XCTAssertTrue failed - The selected archive must retain its published identity in view-mode-icons."
+      },
+      {
+        "test": "ZforgeDispatchTests/testCanonicalRootProvidesSelectedArchiveAnnotation()",
+        "text": "XCTAssertTrue failed"
+      }
+    ],
+    "outcome": "Unsuccessful standard association and accessibility-trait comparison, reverted in build 22. The Columns selection predicate regression is not retained."
+  },
+  "probeSelectedControl4": {
+    "source": "BuildSupport/Automation/IntentProbe/ProbeSources/IntentProbeApp.swift",
+    "baseline": "BuildSupport/Automation/IntentProbe/Variants/AcceptedBuild3/IntentProbeApp.swift",
+    "rollback": "/tmp/ZforgeIntentProbeSelectedRollback3/Intent Probe.app",
+    "flag": "--probe-selected-context",
+    "executedResult": "Included in /tmp/ZforgeFileSchemaInstalled22.xcresult",
+    "finding": "Native List row selection assertion passes; selected/visible entity assertions fail with zero annotations. Earlier .row/.TableRow compile attempts execute zero cases. The tableRow mismatch executes one failing scenario and does not reach annotation checks. Corrected outlineRow preserves the same selection requirement."
+  },
+  "siriLocationComparison": {
+    "ownership": {
+      "source": "/tmp/ZforgeAutomationSmoke-20261007/Orion Demo.zip",
+      "target": "/Users/felipe/Documents/Vega Demo.zip",
+      "sha256": "2d61fb60522979437018014b296ef2d75f5ed0ba8917a6146f92c7d9620e2082",
+      "bytes": 179,
+      "createdExclusively": true,
+      "date": "2026-10-12",
+      "grant": "Preexisting Documents automation grant observed in Settings; no grant added."
+    },
+    "purpose": "Compare a synthetic ZIP in a normal preauthorized folder with the existing /tmp comparison; the filename differs, so this is not single-variable causal proof.",
+    "metadataAudit": "Zforge has one discoverable files.file/system.open action and one nondiscoverable legacy system.open action; Probe has one files.file/system.open action. No metadata contract is changed based solely on this difference.",
+    "systemTest": {
+      "path": "/tmp/ZforgeSiriDocuments22.xcresult",
+      "distinct": 1,
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "result": "Passed"
+    },
+    "siri": {
+      "mode": "Typed English, fresh conversation",
+      "utterance": "Open Vega Demo.zip in Zforge",
+      "response": "I couldn’t find the file Vega Demo.zip on your device. Please make sure the name is correct and that the file is saved locally.",
+      "result": "Refused/file not found",
+      "trace": "Only the preceding native-harness name/identifier queries and two performs are retained; no subsequent authored Siri event in the captured interval.",
+      "fullPathFollowup": {
+        "request": "The file is at /Users/felipe/Documents/Vega Demo.zip. Open it in Zforge.",
+        "response": "I still can’t find the file Vega Demo.zip in your Documents folder. Please double-check the name and location, and make sure it’s saved locally on your device.",
+        "result": "Typed refusal/file not found"
+      }
+    },
+    "typedProbeControl": {
+      "utterance": "Open Lyra Control.zip in Intent Probe",
+      "response": "I can’t find a file named Lyra Control.zip on your device. If you have the file open or selected in another app, please let me know, or try opening it directly from Intent Probe.",
+      "result": "Typed refusal; distinct from the earlier accepted spoken control",
+      "trace": "/tmp/ZforgeSiri22-probe-typed-routing.log; no retained authored event"
+    }
+  },
+  "registrationAudit": {
+    "raw": "/tmp/ZforgeSiri22-registration-audit.json",
+    "registered": 125,
+    "existing": 23,
+    "currentFileEntityCopies": 3,
+    "nsWorkspacePreferred": "/Applications/Zforge.app",
+    "changes": "None; no registration removed or cache reset.",
+    "inference": "Duplicate records alone do not establish stale Siri metadata or a routing cause."
+  },
+  "installedBuild23": {
+    "installed": "/Applications/Zforge.app",
+    "strictSignature": true,
+    "releaseWarnings": 0,
+    "rollback": "/tmp/ZforgeSiriDiagnosticsRollback22/Zforge.app",
+    "scope": "Path-free retained diagnostics only; lookup, empty suggestions, schemas, authorization and opening contracts unchanged.",
+    "unit": {
+      "path": "/tmp/ZforgeSiriDiagnostics23.xcresult",
+      "result": "Passed",
+      "distinct": {
+        "total": 49,
+        "passed": 49,
+        "failed": 0,
+        "skipped": 0
+      },
+      "executions": 57
+    },
+    "native": {
+      "path": "/tmp/ZforgeSiriDocuments23.xcresult",
+      "result": "Passed",
+      "distinct": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      },
+      "executions": 1
+    },
+    "nativeRoutingLog": "/tmp/ZforgeSiriDocuments23-routing.log",
+    "spokenComparison": {
+      "status": "Production content opening failed; Probe build-4 voice execution accepted",
+      "baseline": {
+        "date": "2026-10-12T18:30:49.671105+00:00",
+        "zforgeBuild": "23",
+        "zforgePID": 48770,
+        "probeBuild": "4",
+        "probePID": 50812,
+        "zforgeWindow": "Recents",
+        "probeMarker": "No OpenIntent has run.",
+        "fixture": "Vega Demo.zip",
+        "fixtureSHA256": "2d61fb60522979437018014b296ef2d75f5ed0ba8917a6146f92c7d9620e2082",
+        "actionsRunDuringPreparation": false
+      },
+      "baselinePath": "/tmp/ZforgeSiriVoice23-baseline.json",
+      "requestedUtterances": [
+        "Open Vega Demo.zip in Zforge",
+        "Open Lyra Control.zip in Intent Probe"
+      ],
+      "modality": "Spoken English in separate fresh Siri conversations",
+      "automaticOpeningDuringPreparation": false,
+      "permissionsOrRegistrationsChanged": false,
+      "zforge": {
+        "installedPID": 51075,
+        "executable": "/Applications/Zforge.app/Contents/MacOS/Zforge",
+        "initialUserResult": "Only opens the application",
+        "correctZIP": {
+          "transcription": "Open Vega demo.zip in Zforge",
+          "response": "I can’t find a file named “Vega demo.zip” on your Mac. If you can tell me where it’s saved, I can try again."
+        },
+        "extensionless": {
+          "transcription": "Open Vega demo in Zforge",
+          "response": "I can’t search inside Zforge, but I can open the app for you."
+        },
+        "initialHistoryTranscription": "Open Vega demo.Z in Zforge",
+        "retainedPublication": {
+          "localTime": "2026-10-12 15:32:36.905",
+          "entities": 3,
+          "seconds": 0.152287333
+        },
+        "retainedQueryOrPerform": false,
+        "routingLog": "/tmp/ZforgeSiriVoice23-zforge-routing.log",
+        "limits": "No retained query/perform in this captured notice-level interval; no unique internal routing cause established."
+      },
+      "probe": {
+        "build": "4",
+        "pid": 50812,
+        "userResult": "The OpenIntent ran.",
+        "nativeAXConfirmed": true,
+        "retainedPerformLocalTime": "2026-10-12 15:33:58.531",
+        "routingLog": "/tmp/ZforgeSiriVoice23-probe-routing.log"
+      },
+      "screenshots": [
+        "/var/folders/33/1jv7m78s66v3d4qz087p5jsm0000gn/T/codex-clipboard-ed7ed4f7-7fc0-42d3-8848-0c7ed0da2adf.png",
+        "/var/folders/33/1jv7m78s66v3d4qz087p5jsm0000gn/T/codex-clipboard-9bc00d0d-26c6-4643-be3f-c9d7e4e057b8.png"
+      ]
+    },
+    "fullRegressionBaseline": "Build 22, 352 distinct / 528 executions, not relabeled as a full build-23 run."
+  },
+  "sourceSHA256Build23": {
+    "Zforge/Automation/ZforgeArchiveEntity.swift": "ce67fe19311fcfe8cde9488a4b78d32baaf9a218fe2746d7fdd5f5cd188a0f6b",
+    "Zforge/Automation/ZforgeFileArchiveEntity.swift": "b47fe44c786b0c1d5de464ccc090695b01ae700cb503c982b5eb5159de0abb98",
+    "Zforge/Automation/ZforgeIntents.swift": "7afa380d695046c38e8e7d44367a337a5764732e5a8d9cc3114a12f97a53ebac",
+    "Zforge/Automation/ArchiveSpotlightIndex.swift": "82c95e52ad107479e1cd49f378650450cee9861862665be38e4d6cffde689cc9",
+    "Zforge/Automation/ArchiveFilePublication.swift": "230104882ecc7cb94df502796f69c6e94efa5c99c5cb3d05c1a55697c186931f",
+    "Zforge/Views/BrowserArchiveContext.swift": "8cdeeddce069661873bcbff4936f7a0e7a009904beb3d02b4d690116c73b76b3",
+    "Zforge/Views/IconBrowserView.swift": "6e49ee19c3173010775d0ad54a565f06234c45eb50b7cd456b445ddae479da14",
+    "Zforge/Views/ListBrowserView.swift": "2f39a3cfac6befcbefd43edeaa7189c3ed7f12524f6a6321a81551e48659e629",
+    "Zforge/Views/ColumnBrowserView.swift": "faab78c5782979be0c4781f8680c0c6361b044fa81f6dce4050ad5a6363b6d20",
+    "Zforge/Views/GalleryBrowserView.swift": "a19ad87c148f3c18309b30613149634ebbe22e4b298fee5abdabc2022b633760",
+    "ZforgeTests/SiriArchiveIntentTests.swift": "e8ffe0a77c0b67dd8b7f1f8b3a7f9080c86c8a6568b4149403d9fed017f22553",
+    "ZforgeTests/ArchiveIndexTests.swift": "d821325300f4176c5cf19a4d9e67bd9f3f0182f8a5793a693ef1812fbc340873",
+    "ZforgeTests/FileArchiveIntentTests.swift": "fd19ac687d244d176c1e9d15b54a4f3c854a1123816dc4ad751e31e38c077277",
+    "ZforgeTests/ArchiveDiscoveryPerformanceTests.swift": "6f284772f556a5ab31c83f3dabce5485b07f38002fbe454e73d6e39742817856",
+    "BuildSupport/Automation/IntentProbe/ProbeSystemTests/ZforgeDispatchTests.swift": "27de319f97c3a123a27484d655b395306b4750041e10310286cadefe0b770eea",
+    "Zforge/Models/BrowserModels.swift": "0376ec854e1da33261ddafa38e020c310fa129b0aea59f528e0622e68d90d313",
+    "Zforge/Services/FileSystemService.swift": "bf93317f66079b81651a81317f2ddd1d061f74052b5cf0cf6c5999c21fee8c5b",
+    "Zforge.xcodeproj/project.pbxproj": "183b53b79a23925a13a7200064ba14fd49bece402dfd8b5b43ed2202e5b3fb37",
+    "BuildSupport/Automation/IntentProbe/ProbeSystemTests/ProbeDispatchTests.swift": "1d9d95143ffe3304c125c576671afcbf932321cb1b25746e337b0fb4e63a1901",
+    "BuildSupport/Automation/IntentProbe/ProbeSources/IntentProbeApp.swift": "06f6d5d99024c932ef5a332dc993f98610ca8707dd70dcb8ad85d3f612b51eaa"
+  },
+  "probeCompatibilitySchemaControl": {
+    "build": "5",
+    "date": "2026-10-12",
+    "condition": "PROBE_COMPATIBILITY_SCHEMA",
+    "scope": "Extra hidden String-target system.open action, never donated; separate compatibility diagnostics/marker. No production change.",
+    "modernMetadataContractUnchanged": true,
+    "verifiedModernMetadataProjection": {
+      "action": {
+        "identifier": "OpenProbeContentIntent",
+        "fullyQualifiedTypeName": "Intent_Probe.OpenProbeContentIntent",
+        "assistantDefinedSchemas": [
+          {
+            "domain": "system",
+            "name": "OpenIntent",
+            "version": "1.0.0"
+          }
+        ],
+        "visibilityMetadata": {
+          "assistantOnly": false,
+          "isDiscoverable": true
+        },
+        "availabilityAnnotations": {
+          "LNPlatformNameWildcard": {
+            "introducedVersion": "*"
+          }
+        },
+        "supportedModes": 2,
+        "openAppWhenRun": true,
+        "parameters": [
+          {
+            "capabilities": 0,
+            "dynamicOptionsSupport": 2,
+            "inputConnectionBehavior": 0,
+            "isInput": false,
+            "isOptional": false,
+            "name": "target",
+            "resolvableInputTypes": [],
+            "title": {
+              "alternatives": [],
+              "key": "Archive"
+            },
+            "typeSpecificMetadata": [],
+            "valueType": {
+              "entity": {
+                "wrapper": {
+                  "typeName": "ProbeEntity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "entity": {
+        "typeName": "ProbeEntity",
+        "fullyQualifiedTypeName": "Intent_Probe.ProbeEntity",
+        "assistantDefinedSchemas": [
+          {
+            "domain": "files",
+            "name": "FileEntity",
+            "version": "1.0.0"
+          }
+        ],
+        "defaultQueryIdentifier": "Intent_Probe.ProbeQuery",
+        "visibilityMetadata": {
+          "assistantOnly": false,
+          "isDiscoverable": true
+        },
+        "availabilityAnnotations": {
+          "LNPlatformNameWildcard": {
+            "introducedVersion": "*"
+          }
+        },
+        "properties": [
+          {
+            "capabilities": 0,
+            "identifier": "creationDate",
+            "isOptional": true,
+            "spotlightAttributeKey": "contentCreationDate",
+            "title": {
+              "alternatives": [],
+              "key": ""
+            },
+            "valueType": {
+              "primitive": {
+                "wrapper": {
+                  "typeIdentifier": 8
+                }
+              }
+            }
+          },
+          {
+            "capabilities": 0,
+            "identifier": "fileModificationDate",
+            "isOptional": true,
+            "spotlightAttributeKey": "contentModificationDate",
+            "title": {
+              "alternatives": [],
+              "key": ""
+            },
+            "valueType": {
+              "primitive": {
+                "wrapper": {
+                  "typeIdentifier": 8
+                }
+              }
+            }
+          }
+        ]
+      },
+      "query": {
+        "identifier": "ProbeQuery",
+        "entityType": "ProbeEntity",
+        "capabilities": 70,
+        "defaultQueryForEntity": true,
+        "availabilityAnnotations": {
+          "LNPlatformNameWildcard": {
+            "introducedVersion": "*"
+          }
+        },
+        "visibilityMetadata": {
+          "assistantOnly": false,
+          "isDiscoverable": true
+        }
+      }
+    },
+    "releaseWarnings": 0,
+    "strictSignature": true,
+    "signatureCheckLimit": "Restricted keychain check reports CSSMERR_TP_NOT_TRUSTED; escalated local trust-chain verification passes. No signing setting changed.",
+    "entitlements": {
+      "com.apple.security.app-sandbox": true
+    },
+    "installed": "/Applications/Intent Probe.app",
+    "rollback": "/tmp/ZforgeIntentProbeCompatibilityRollback4/Intent Probe.app",
+    "unitInitial": {
+      "path": "/tmp/ZforgeIntentProbeCompatibilityUnit5.xcresult",
+      "distinct": 9,
+      "executions": 11,
+      "passed": true,
+      "compilerWarnings": 1,
+      "warningResolution": "Immutable local binding uses let; scenarios and assertions preserved."
+    },
+    "unitFinal": {
+      "path": "/tmp/ZforgeIntentProbeCompatibilityUnit5Final.xcresult",
+      "distinct": 9,
+      "executions": 11,
+      "passed": true,
+      "failed": 0,
+      "skipped": 0,
+      "runtimeWarnings": 0,
+      "compilerWarnings": 0
+    },
+    "native": {
+      "path": "/tmp/ZforgeIntentProbeCompatibilitySystem5.xcresult",
+      "distinct": 2,
+      "executions": 2,
+      "passed": true,
+      "failed": 0,
+      "skipped": 0,
+      "runtimeWarnings": 0,
+      "cases": [
+        "testNamedEntityRunsOpenIntentThroughSystem",
+        "testSpotlightEntityRunsOpenIntentThroughSystem"
+      ],
+      "performEvents": [
+        {
+          "pid": 52698,
+          "localTime": "2026-10-12 15:46:58.938"
+        },
+        {
+          "pid": 52703,
+          "localTime": "2026-10-12 15:47:03.751"
+        }
+      ],
+      "routingLog": "/tmp/ZforgeIntentProbeCompatibilitySystem5-routing.log",
+      "limits": "System dispatch tests do not establish Siri voice execution; selected-annotation failures remain unchanged."
+    },
+    "spokenComparison": {
+      "status": "Superseded at user request: pronunciation barrier; no accepted build-5 voice outcome.",
+      "baseline": {
+        "date": "2026-10-12T18:48:01.868249+00:00",
+        "build": "5",
+        "installed": "/Applications/Intent Probe.app",
+        "pid": 52717,
+        "marker": "No OpenIntent has run.",
+        "indexed": true,
+        "scope": "Extra hidden String-target system.open action; modern file entity, query and publication unchanged.",
+        "excludedAutomaticPerformEvents": [
+          {
+            "pid": 52698,
+            "localTime": "2026-10-12 15:46:58.938"
+          },
+          {
+            "pid": 52703,
+            "localTime": "2026-10-12 15:47:03.751"
+          }
+        ]
+      },
+      "requestedUtterance": "Open Lyra Control.zip in Intent Probe",
+      "automaticActionAfterBaseline": false
+    },
+    "sourceSHA256": {
+      "BuildSupport/Automation/IntentProbe/ProbeSources/IntentProbeApp.swift": "a66b28c7c665ba6d415276a1237869930bb0d4b524fe41981fa3a96f3b1229e0",
+      "BuildSupport/Automation/IntentProbe/ProbeSources/ProbeCompatibilitySchema.swift": "de7563a172c6a58f9dd56b231e32279fe43678dfc29784d601af755f3f14a73c",
+      "BuildSupport/Automation/IntentProbe/ProbeTests/ProbeQueryTests.swift": "dae5103fccf1a0b208261c0b23687447b4f0a68d9c94d5eb7dc8e82df882cd7b",
+      "BuildSupport/Automation/IntentProbe/ProbeTests/ProbeCompatibilitySchemaTests.swift": "5ed519e1ca78abd36210b345c6be47dfc8588a9022d5d8c5c749a27075b05d89",
+      "BuildSupport/Automation/IntentProbe/Variants/AcceptedBuild4/IntentProbeApp.swift": "06f6d5d99024c932ef5a332dc993f98610ca8707dd70dcb8ad85d3f612b51eaa"
+    }
+  },
+  "probeRenamedFixture6": {
+    "date": "2026-10-12",
+    "build": "6",
+    "request": "Use an easier English phrase because Siri does not recognize the previous fixture name pronunciation.",
+    "phrase": "Open Test Archive in Intent Probe",
+    "fixture": "Test Archive.zip",
+    "fixtureBytes": 22,
+    "fixtureSHA256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85",
+    "fixtureBytesUnchanged": true,
+    "condition": "PROBE_COMPATIBILITY_SCHEMA",
+    "schemasAndModernMetadataProjectionUnchangedFrom5": true,
+    "scope": "Fixture/display/query name and matching test inputs only; both actions preserved; no production Zforge change.",
+    "before": {
+      "path": "/tmp/ZforgeIntentProbeRenameBefore6.xcresult",
+      "distinct": 6,
+      "executions": 8,
+      "passedCases": 5,
+      "failedCases": 1,
+      "issues": 4,
+      "expectedFailure": "The refined naming contract runs against the previous fixture name; test expectations are not relaxed."
+    },
+    "unit": {
+      "path": "/tmp/ZforgeIntentProbeRenameFinal6.xcresult",
+      "distinct": 9,
+      "executions": 11,
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "compilerWarnings": 0
+    },
+    "releaseWarnings": 0,
+    "strictSignature": true,
+    "installed": "/Applications/Intent Probe.app",
+    "rollback": "/tmp/ZforgeIntentProbeRenameRollback5/Intent Probe.app",
+    "preservedSource5": "BuildSupport/Automation/IntentProbe/Variants/CompatibilityBuild5",
+    "native": {
+      "path": "/tmp/ZforgeIntentProbeRenameSystem6.xcresult",
+      "distinct": 2,
+      "executions": 2,
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "checks": [
+        "Named dispatch for Test Archive",
+        "Visible Test Archive.zip title",
+        "No exposed Spotlight entity for the retired name",
+        "Spotlight dispatch for Test Archive"
+      ],
+      "routingLog": "/tmp/ZforgeIntentProbeRenameSystem6-routing.log",
+      "performEvents": [
+        {
+          "pid": 54260,
+          "localTime": "2026-10-12 15:59:54.978"
+        },
+        {
+          "pid": 54275,
+          "localTime": "2026-10-12 16:00:00.809"
+        }
+      ],
+      "limits": "The retired name exposes no entity; this is not a guarantee that every internal cache or historical app copy is purged."
+    },
+    "voice": {
+      "status": "Accepted with the app already open after user-driven Siri language change and restart",
+      "baseline": {
+        "date": "2026-10-12T19:02:16.855391+00:00",
+        "build": "6",
+        "installed": "/Applications/Intent Probe.app",
+        "pid": 54337,
+        "fixture": "Test Archive.zip",
+        "fixtureBytes": 22,
+        "fixtureSHA256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85",
+        "marker": "No OpenIntent has run.",
+        "indexed": true,
+        "requestedUtterance": "Open Test Archive in Intent Probe",
+        "condition": "PROBE_COMPATIBILITY_SCHEMA",
+        "excludedAutomaticPerformEvents": [
+          {
+            "pid": 54260,
+            "localTime": "2026-10-12 15:59:54.978"
+          },
+          {
+            "pid": 54275,
+            "localTime": "2026-10-12 16:00:00.809"
+          }
+        ]
+      },
+      "automaticInvocationAfterBaseline": false,
+      "limits": "Already-open modern action execution accepted. No cold-start acceptance or unique recovery cause established. Both opening schemas remain installed; their coexistence alone does not universally prevent Siri execution. Production voice comparison remains independent.",
+      "postRestartObservation": {
+        "date": "2026-10-12",
+        "bootLocalTime": "17:11:48",
+        "build": "6",
+        "pid": 2139,
+        "nativeMarker": "The OpenIntent ran.",
+        "nativeTitle": "Test Archive.zip",
+        "indexed": true,
+        "performLocalTime": "17:20:23.048",
+        "identifierReturnCount": 1,
+        "routingLog": "/tmp/ZforgeSiriRecovered-probe-routing.log",
+        "userReportedVoiceExecution": true,
+        "automaticInvocationInObservationInterval": false,
+        "successfulUtteranceIndependentlyCaptured": false,
+        "currentSiriLanguageIndependentlyCaptured": false
+      },
+      "postRecoveryTypedControl": {
+        "request": "Open Test Archive in Intent Probe",
+        "result": "No assistant response or new authored query/perform observed in the initial captured interval",
+        "pid": 2139,
+        "markerAlreadyAcceptedBeforeRequest": true,
+        "classification": "Full-name typed execution accepted through new authored perform; prior marker is not used as proof",
+        "fullNameRequest": "Open Test Archive.zip in Intent Probe",
+        "fullNameResult": "Accepted modern action dispatch",
+        "identifierQueryReturnPairs": 7,
+        "identifierReturnCount": 1,
+        "queryIntervalLocal": [
+          "17:42:42.265",
+          "17:42:48.480"
+        ],
+        "newPerformLocalTime": "17:42:48.480",
+        "routingLog": "/tmp/ZforgeSiriTypedRecovered23-final-routing.log"
+      }
+    },
+    "sourceSHA256": {
+      "BuildSupport/Automation/IntentProbe/ProbeSources/IntentProbeApp.swift": "958b23adc42c780865890077505b1a3ba817e3c907f94f6acb94ea29a7148a26",
+      "BuildSupport/Automation/IntentProbe/ProbeSources/ProbeCompatibilitySchema.swift": "4ace7c9883c5bc4d212a99ee0c983ba932a2cc09d1baba5e51de500714848c8e",
+      "BuildSupport/Automation/IntentProbe/ProbeSources/Test Archive.zip": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85",
+      "BuildSupport/Automation/IntentProbe/ProbeTests/ProbeQueryTests.swift": "e053281195c620f77727bd1edb82361318248eb8beebc6809961b0cc71291a7d",
+      "BuildSupport/Automation/IntentProbe/ProbeTests/ProbeCompatibilitySchemaTests.swift": "eb2a8ae8036766934745a0ae4c03a758fbc4865b229efa1dff059f0613ae8a12",
+      "BuildSupport/Automation/IntentProbe/ProbeSystemTests/ProbeDispatchTests.swift": "0820058943b8b60e2592f835dbe0bc00c1110d874b01f3cea27845131c27485c"
+    }
+  },
+  "siriGeneralHealth20261012": {
+    "status": "Prior phrase-dependent typed failures reproduced; user reports recovery after independent language change and restart",
+    "controls": [
+      {
+        "request": "Open Calculator",
+        "result": "Inconclusive; already running and no assistant text"
+      },
+      {
+        "request": "What is two plus two?",
+        "result": "Pass; math response and card"
+      },
+      {
+        "request": "Open Dictionary",
+        "result": "Pass; process launch",
+        "pid": 2678,
+        "localTime": "16:48:01"
+      },
+      {
+        "request": "What is the weather in London, England?",
+        "result": "Pass; response and card"
+      },
+      {
+        "request": "Open the Photos app",
+        "result": "Failure; retry response, Photos stopped",
+        "localTime": "16:59:38"
+      },
+      {
+        "request": "Dollar to yen",
+        "result": "Failure; retry response",
+        "localTime": "17:00:32"
+      },
+      {
+        "request": "Open Photos",
+        "result": "Pass; process launch",
+        "pid": 2929,
+        "localTime": "17:02:53"
+      },
+      {
+        "request": "Convert one US dollar to Japanese yen",
+        "result": "Failure; retry response",
+        "localTime": "17:04:55"
+      }
+    ],
+    "planningErrors": [
+      "GenerativeError 1010000",
+      "PlannerError 3",
+      "PCCPlannerAgentError 2"
+    ],
+    "limits": "Typed manual diagnostics, not automated tests or voice acceptance. Private error codes, absent registrations and recovery sequence do not establish a unique cause. No assistant-initiated settings changes, registration/cache resets or reboot."
+  },
+  "productionPostRecoveryVoice23": {
+    "status": "Typed post-recovery comparison did not open the archive; spoken acceptance remains independent",
+    "baselineUTC": "2026-10-12T20:25:28Z",
+    "build": "23",
+    "pid": 2329,
+    "installed": "/Applications/Zforge.app",
+    "visibleState": "Recents",
+    "fixture": "Documents/Vega Demo.zip",
+    "fixtureBytes": 179,
+    "fixtureSHA256": "2d61fb60522979437018014b296ef2d75f5ed0ba8917a6146f92c7d9620e2082",
+    "requestedUtterance": "Open Vega Demo in Zforge",
+    "acceptance": "Archive opens and Readme.txt is visible",
+    "automaticInvocationAfterBaseline": false,
+    "allowedInputModes": [
+      "typed in the native Siri app",
+      "spoken"
+    ],
+    "inputModeLimits": "Record tested mode. Typed input removes transcription uncertainty and counts as typed acceptance; spoken recognition/routing still needs independent acceptance. Historical outcomes do not isolate modality.",
+    "typedObservation": {
+      "date": "2026-10-12",
+      "baselineUTC": "2026-10-12T20:40:32Z",
+      "build": "23",
+      "pid": 2329,
+      "entryPoint": "Native Siri app, fresh conversations, English typed requests",
+      "requests": [
+        {
+          "text": "Open Vega Demo in Zforge",
+          "result": "No assistant response observed; no archive opening",
+          "classification": "Inconclusive conversational result; not an action pass"
+        },
+        {
+          "text": "Open Vega Demo.zip in Zforge",
+          "result": "I couldn't find the file \"Vega Demo.zip\" on your Mac. Please check the name and try again.",
+          "classification": "Reproduced file-not-found refusal"
+        }
+      ],
+      "fixtureExistenceAndSHA256Verified": true,
+      "visibleArchive": false,
+      "readmeVisible": false,
+      "installedAppVisibleState": "Recents",
+      "authoredQueryOrPerformInCapturedInterval": false,
+      "routingLog": "/tmp/ZforgeSiriTypedRecovered23-final-routing.log",
+      "limits": "No recognition error in typed text. Does not establish a unique Siri routing cause or a modality difference from earlier voice acceptance.",
+      "capturedIntervalLocal": [
+        "2026-10-12 17:40:30",
+        "2026-10-12 17:43:20"
+      ],
+      "matchedTypedControlAccepted": true,
+      "manualRequestsExecuted": 4,
+      "codeOrPermissionChanges": false
+    }
+  },
+  "probeExplicitAvailability7": {
+    "date": "2026-10-12",
+    "build": "7",
+    "condition": "PROBE_COMPATIBILITY_SCHEMA PROBE_RUNTIME_AVAILABILITY",
+    "purpose": "Isolate explicit macOS 27 availability declarations found in production but absent in the accepted control",
+    "baseline": {
+      "path": "/tmp/ZforgeProbeAvailabilityBefore7.xcresult",
+      "distinct": 9,
+      "executions": 11,
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "limits": "Preparation used the wrong relative source path before this run; only the original nine contracts executed. No new metadata assertion executed in this baseline."
+    },
+    "characterization": {
+      "path": "/tmp/ZforgeProbeAvailabilityCharacterization7.xcresult",
+      "distinct": 10,
+      "executions": 12,
+      "passed": 9,
+      "failed": 1,
+      "issues": 3,
+      "skipped": 0,
+      "expectedFailure": "Separate opt-in characterization detects three missing availability declarations; original expectations preserved."
+    },
+    "unit": {
+      "path": "/tmp/ZforgeProbeAvailabilityFinal7.xcresult",
+      "distinct": 10,
+      "executions": 12,
+      "passed": 10,
+      "failed": 0,
+      "skipped": 0,
+      "compilerWarnings": 0,
+      "runtimeWarnings": 0
+    },
+    "native": {
+      "path": "/tmp/ZforgeProbeAvailabilitySystem7.xcresult",
+      "distinct": 3,
+      "executions": 3,
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "cases": [
+        "Probe named dispatch",
+        "Probe Spotlight dispatch",
+        "Zforge Documents name and Spotlight opening with Readme.txt"
+      ]
+    },
+    "releaseWarnings": 0,
+    "strictSignature": true,
+    "installed": "/Applications/Intent Probe.app",
+    "rollback": "/tmp/ZforgeProbeAvailabilityRollback6/Intent Probe.app",
+    "acceptedSourceSnapshot": "BuildSupport/Automation/IntentProbe/Variants/AcceptedBuild6",
+    "metadataChanges": [
+      {
+        "path": "/actions/OpenProbeContentIntent/availabilityAnnotations/LNPlatformNameMACOS",
+        "before": null,
+        "after": {
+          "introducedVersion": "27.0"
+        }
+      },
+      {
+        "path": "/actions/OpenProbeContentIntent/typeSpecificMetadata/LNActionTypeMetadataKeyEntityMetadata/entityMetadata/wrapper/availabilityAnnotations/LNPlatformNameMACOS",
+        "before": null,
+        "after": {
+          "introducedVersion": "27.0"
+        }
+      },
+      {
+        "path": "/entities/ProbeEntity/availabilityAnnotations/LNPlatformNameMACOS",
+        "before": null,
+        "after": {
+          "introducedVersion": "27.0"
+        }
+      },
+      {
+        "path": "/queries/ProbeQuery/availabilityAnnotations/LNPlatformNameMACOS",
+        "before": null,
+        "after": {
+          "introducedVersion": "27.0"
+        }
+      }
+    ],
+    "metadataSHA256": "a792eb8db9f6b0d82829e9a1bf33afdbc8c39d584f035566154431edf0f59ac5",
+    "siri": {
+      "status": "Refused; native marker remains No OpenIntent has run.",
+      "requestedUtterance": "Open Test Archive.zip in Intent Probe",
+      "freshPID": 5939,
+      "baselineUTC": "2026-10-12T20:50:26Z",
+      "baselineMarker": "No OpenIntent has run.",
+      "indexed": true,
+      "response": "I couldn’t find a file named “Test Archive.zip” to open in Intent Probe.",
+      "limits": "One controlled metadata comparison; restore accepted build and repeat the same request before assigning a cause.",
+      "routingLog": "/tmp/ZforgeProbeAvailability7-siri-routing.log",
+      "authoredQueryOrPerform": false
+    },
+    "limits": "Explicit availability changes do not isolate a cause: restored build 6 and a newer build 8 with wildcard metadata also refuse. Native dispatch passes. Test-bundle registration pollution is a separate hypothesis, not established causation.",
+    "metadataComparisonNormalization": "Name/value metadata pairs normalized by key; systemProtocols sorted; generated constantIndex references omitted. Only explicit availability changes remain.",
+    "restoredBuild6Comparison": {
+      "pid": 6037,
+      "requestedUtterance": "Open Test Archive.zip in Intent Probe",
+      "status": "Same file-not-found refusal; marker unchanged and no query/perform",
+      "routingLog": "/tmp/ZforgeProbeRestored6-siri-routing.log",
+      "limits": "A/B/A recovery did not succeed; explicit availability is not isolated as a cause. A monotonic wildcard-metadata control follows."
+    },
+    "preservedSource": "BuildSupport/Automation/IntentProbe/Variants/ExplicitAvailabilityBuild7"
+  },
+  "probeWildcardRecovery8": {
+    "date": "2026-10-12",
+    "build": "8",
+    "condition": "PROBE_COMPATIBILITY_SCHEMA PROBE_WILDCARD_AVAILABILITY",
+    "scope": "Accepted build-6 behavior and modern wildcard metadata with a newer bundle version; explicit availability variant disabled",
+    "unit": {
+      "path": "/tmp/ZforgeProbeWildcardFinal8.xcresult",
+      "distinct": 10,
+      "executions": 12,
+      "passed": 10,
+      "failed": 0,
+      "skipped": 0,
+      "runtimeWarnings": 0,
+      "compilerWarnings": 0
+    },
+    "releaseWarnings": 0,
+    "strictSignature": true,
+    "installed": "/Applications/Intent Probe.app",
+    "siri": {
+      "status": "Refused in initial fresh comparison",
+      "pid": 6240,
+      "request": "Open Test Archive.zip in Intent Probe",
+      "response": "I couldn't find \"Test Archive.zip\" in your files. Could you tell me where it's located or double-check the name?",
+      "marker": "No OpenIntent has run.",
+      "routingLog": "/tmp/ZforgeProbeWildcard8-siri-routing.log",
+      "alternativeRequest": "Use Intent Probe to open Test Archive.zip",
+      "alternativeResponse": "I can’t find a file named “Test Archive.zip” to open with Intent Probe."
+    },
+    "native": {
+      "path": "/tmp/ZforgeProbeWildcardSystem8.xcresult",
+      "distinct": 2,
+      "executions": 2,
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0
+    },
+    "sourceSHA256": {
+      "BuildSupport/Automation/IntentProbe/ProbeSources/IntentProbeApp.swift": "a80d92189bc359e06fff2802828dd13e1d67103dd89c72eb4fb55641d6064ee5",
+      "BuildSupport/Automation/IntentProbe/ProbeTests/ProbeQueryTests.swift": "a71479661171bbc1d493f2b5849b68f2dc625f5361f263eaeb4b678c7704ffb2"
+    }
+  },
+  "temporaryDiagnosticRegistrationAudit": {
+    "date": "2026-10-12",
+    "existingRegisteredPaths": [
+      "/Applications/Intent Probe.app",
+      "/private/tmp/ZforgeProbeAvailability7/Build/Products/Debug/Intent Probe.app",
+      "/private/tmp/ZforgeProbeAvailability7/Build/Products/Debug/IntentProbeSystemTests-Runner.app",
+      "/private/tmp/ZforgeProbeAvailabilityRelease7/Build/Products/Release/Intent Probe.app"
+    ],
+    "testHostBundleIdentifier": "io.libor.ZforgeIntentProbe.TestHost",
+    "testHostInternalName": "Intent Probe",
+    "testHostDisplayName": "Intent Probe Test Host",
+    "plannedScopedUnregistrationTargets": [
+      "/tmp/ZforgeProbeAvailability7/Build/Products/Debug/Intent Probe.app",
+      "/tmp/ZforgeProbeAvailability7/Build/Products/Debug/IntentProbeSystemTests-Runner.app",
+      "/tmp/ZforgeProbeAvailabilityRelease7/Build/Products/Release/Intent Probe.app"
+    ],
+    "unregistrationPerformed": false,
+    "approvalReview": "Rejected before execution: command mutates the global Launch Services database; rejection explicitly applies even to narrow temporary targets. No indirect cleanup or global reset attempted.",
+    "limits": "Name collision and timing are observed; Siri selection of the wrong bundle and unique causation are not established.",
+    "userApproval": "Explicitly approved the three exact temporary registrations on 2026-10-12",
+    "approvalReviewAfterUserAuthorization": "Rejected again before execution: policy prohibits global Launch Services mutation even with explicit user approval. No retry through another route or indirect cleanup attempted.",
+    "status": "This operation is blocked by approval review; independent native Siri testing continues.",
+    "independentTestsAfterRejection": {
+      "date": "2026-10-12",
+      "inputMode": "English typed, separate fresh native Siri conversations",
+      "requests": [
+        {
+          "app": "Intent Probe",
+          "build": "8",
+          "pid": 6787,
+          "text": "Open the archive shown in Intent Probe",
+          "response": "I can’t find a file named “Test Archive.zip” to open. If the file is inside an app or a specific folder, try opening it directly from there.",
+          "marker": "No OpenIntent has run.",
+          "limits": "Filename identification does not establish entity annotation or action binding."
+        },
+        {
+          "app": "Zforge",
+          "build": "23",
+          "pid": 6836,
+          "text": "In Zforge, open the archive named Vega Demo.zip",
+          "response": "I can’t search within Zforge, and I couldn’t find a file named Vega Demo.zip on your device.",
+          "recentsVisible": true,
+          "archiveVisible": false,
+          "readmeVisible": false
+        }
+      ],
+      "routingLog": "/tmp/ZforgeSiriRegistryBlocked-independent-routing.log",
+      "publicationEventsLocal": [
+        "18:08:06.170",
+        "18:08:47.662"
+      ],
+      "authoredQueryOrPerformInCapturedInterval": false,
+      "manualRequests": 2,
+      "newAutomatedTests": 0,
+      "registrationMutation": false,
+      "productionCodeChange": false
+    }
+  },
+  "trackedIssue": {
+    "path": "Documentation/Requirements/SIRI-DISCOVERY-ISSUE.md",
+    "title": "Direct Siri archive discovery fails before App Intent dispatch",
+    "related": [
+      "ZF-43",
+      "OR-20",
+      "D-47"
+    ],
+    "created": "2026-10-12",
+    "status": "open; root cause unconfirmed",
+    "newTestExecutionOnRecording": false
+  }
+}

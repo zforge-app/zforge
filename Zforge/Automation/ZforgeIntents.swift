@@ -143,14 +143,15 @@ struct OpenZforgeArchiveIntent: AppIntent {
     }
 }
 
-/// The generic system domain supports Siri content opening on macOS 27.
-/// The Files domain does not provide Siri discovery or archive operations.
+/// Retained for saved shortcuts whose target uses the original path entity.
+/// New discovery uses the file-schema action below.
 @available(macOS 27.0, *)
 @AppIntent(schema: .system.open)
 struct OpenZforgeContentIntent: OpenIntent {
     static var title: LocalizedStringResource { "Open Archive" }
     static var description: IntentDescription { "Open an authorized Zforge archive by name or absolute path." }
     static var supportedModes: IntentModes { .foreground }
+    static var isDiscoverable: Bool { false }
     @Parameter(title: "Archive") var target: ZforgeArchiveEntity
     var permissions: any AutomationPermissionRequesting = ContextualAutomationAccess.shared
     var opener: @MainActor @Sendable (URL, AutomationAccessLease) async throws -> Void = { url, lease in
@@ -159,7 +160,57 @@ struct OpenZforgeContentIntent: OpenIntent {
     static var parameterSummary: some ParameterSummary { Summary("Open \(\.$target) in Zforge") }
 
     @MainActor func perform() async throws -> some IntentResult {
-        let url = try AutomationPath.url(target.id)
+        try await AutomationArchiveOpening.openEntity(target, permissions: permissions, opener: opener)
+        return .result()
+    }
+}
+
+/// The file entity schema describes archive content to Siri; system.open
+/// describes the opening action. Archive mutation has no matching public schema.
+@available(macOS 27.0, *)
+@AppIntent(schema: .system.open)
+struct OpenZforgeFileContentIntent: OpenIntent {
+    static var title: LocalizedStringResource { "Open Archive" }
+    static var description: IntentDescription { "Open an authorized Zforge archive by name or absolute path." }
+    static var supportedModes: IntentModes { .foreground }
+    @Parameter(title: "Archive") var target: ZforgeFileArchiveEntity
+    var permissions: any AutomationPermissionRequesting = ContextualAutomationAccess.shared
+    var opener: @MainActor @Sendable (URL, AutomationAccessLease) async throws -> Void = { url, lease in
+        try await AutomationArchiveOpening.open(url, lease: lease)
+    }
+    static var parameterSummary: some ParameterSummary { Summary("Open \(\.$target) in Zforge") }
+
+    @MainActor func perform() async throws -> some IntentResult {
+        // Rehydrate the actual reference, rather than trusting a stale embedded
+        // path. The shared action rechecks live consent and regular-file status.
+        let url = try await ZforgeFileArchiveEntity.url(for: target.id)
+        try await AutomationArchiveOpening.openEntity(ZforgeArchiveEntity(url: url), permissions: permissions, opener: opener)
+        return .result()
+    }
+}
+
+/// Spotlight needs an entity-based OpenIntent at the macOS 26 floor too.
+/// macOS 27 replaces this action with the assistant system-open schema above.
+@available(macOS, introduced: 26.0, obsoleted: 27.0)
+struct OpenZforgeIndexedArchiveIntent: OpenIntent {
+    static var title: LocalizedStringResource { "Open Archive" }
+    static var description: IntentDescription { "Open an authorized Zforge archive by name or absolute path." }
+    static var supportedModes: IntentModes { .foreground }
+    @Parameter(title: "Archive") var target: ZforgeLegacyArchiveEntity
+    static var parameterSummary: some ParameterSummary { Summary("Open \(\.$target) in Zforge") }
+    @MainActor func perform() async throws -> some IntentResult {
+        try await AutomationArchiveOpening.openEntity(target.archive, permissions: ContextualAutomationAccess.shared) { url, lease in
+            try await AutomationArchiveOpening.open(url, lease: lease)
+        }
+        return .result()
+    }
+}
+
+nonisolated enum AutomationArchiveOpening {
+    @MainActor static func openEntity(_ entity: ZforgeArchiveEntity, permissions: any AutomationPermissionRequesting,
+                                     opener: @MainActor @Sendable (URL, AutomationAccessLease) async throws -> Void) async throws {
+        let url = try AutomationPath.url(entity.id)
+        Logger(subsystem: "io.libor.Zforge", category: "ArchiveDiscovery").notice("Entity archive open action invoked.")
         let lease = try await permissions.authorize([url], foreground: {})
         defer { withExtendedLifetime(lease) {} }
         guard ArchiveFormatRegistry.recognizes(url.lastPathComponent),
@@ -167,11 +218,7 @@ struct OpenZforgeContentIntent: OpenIntent {
             throw AutomationError.invalidArguments
         }
         try await opener(url, lease)
-        return .result()
     }
-}
-
-nonisolated enum AutomationArchiveOpening {
     @MainActor static func open(_ url: URL, lease: AutomationAccessLease, delegate: AppDelegate? = AppDelegate.current) async throws {
         if let delegate {
             // Foreground intents already activate the app. Opening it again

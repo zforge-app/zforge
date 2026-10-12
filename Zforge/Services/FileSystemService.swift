@@ -153,6 +153,7 @@ actor FileSystemService: FileSystemServing {
             checksum: nil,
             compressionMethod: nil
         )
+        item.fileIdentity = values.fileResourceIdentifier as? Data
         if includeExtendedMetadata,
            let metadataItem = MDItemCreateWithURL(kCFAllocatorDefault, url as CFURL) {
             item.extendedMetadata = BrowserExtendedMetadata(

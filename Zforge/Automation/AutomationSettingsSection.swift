@@ -52,11 +52,23 @@ struct AutomationSettingsSection: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
-            Text("Add a Zforge action in Shortcuts and save it to run from Shortcuts or Spotlight. Siri availability depends on macOS and system support. References to files shown onscreen are not supported yet.")
+            Text("Archive names directly inside allowed folders are shared with Spotlight and Siri. Siri availability depends on macOS. Save shortcuts for compression and extraction.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
                 .accessibilityIdentifier("automation-shortcuts-instructions")
+            if ArchiveContextCatalog.shared.unavailable {
+                HStack {
+                    Text("Archive search is unavailable. Try again.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    Button("Try Again") {
+                        Task { try? await ArchiveIndexRuntime.shared.reindex() }
+                    }
+                    .accessibilityIdentifier("automation-retry-index")
+                }
+            }
             Button("Open Shortcuts") {
                 guard let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: "com.apple.shortcuts"),
                       NSWorkspace.shared.open(url) else {
@@ -67,6 +79,12 @@ struct AutomationSettingsSection: View {
             .accessibilityIdentifier("automation-open-shortcuts")
         }
         .task { await reload() }
+        .onReceive(NotificationCenter.default.publisher(for: AutomationGrantStore.changed)) { _ in
+            Task { await reload() }
+        }
+        .onReceive(DistributedNotificationCenter.default().publisher(for: AutomationGrantStore.changed, object: Bundle.main.bundleIdentifier.map { $0 as NSString })) { _ in
+            Task { await reload() }
+        }
         .alert("Automation", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) {
             Button("OK", role: .cancel) { error = nil }
         } message: { Text(error ?? "") }

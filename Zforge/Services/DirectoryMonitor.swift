@@ -7,10 +7,10 @@ final class DirectoryMonitor {
     private var fileDescriptor: Int32 = -1
     private var debounceTask: Task<Void, Never>?
 
-    func watch(_ url: URL, onChange: @escaping @MainActor () -> Void) {
+    @discardableResult func watch(_ url: URL, onChange: @escaping @MainActor () -> Void) -> Bool {
         stop()
         fileDescriptor = open(url.path, O_EVTONLY)
-        guard fileDescriptor >= 0 else { return }
+        guard fileDescriptor >= 0 else { return false }
 
         let source = DispatchSource.makeFileSystemObjectSource(
             fileDescriptor: fileDescriptor,
@@ -31,6 +31,7 @@ final class DirectoryMonitor {
         }
         self.source = source
         source.resume()
+        return true
     }
 
     func stop() {

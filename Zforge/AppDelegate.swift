@@ -6,12 +6,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     static let archiveURLsReceived = Notification.Name("ZforgeArchiveURLsReceived")
 
     private var pendingArchives: [BrowserWindowRequest] = []
+    private var archiveIndexRuntime: ArchiveIndexRuntime?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         Self.current = self
+        if !ProcessInfo.processInfo.arguments.contains("--ui-fixtures"),
+           ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil,
+           NSClassFromString("XCTestCase") == nil {
+            archiveIndexRuntime = .shared
+            archiveIndexRuntime?.start()
+        }
     }
 
     func applicationWillTerminate(_ notification: Notification) {
+        archiveIndexRuntime?.stop()
         BrowserWindowLifecycle.shared.applicationWillTerminate(orderedWindows: NSApp.orderedWindows)
     }
 

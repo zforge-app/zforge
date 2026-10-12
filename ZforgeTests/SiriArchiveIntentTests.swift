@@ -5,6 +5,31 @@ import Testing
 
 @Suite("Siri archive action contracts")
 struct SiriArchiveIntentTests {
+    @Test("Modern archive metadata pairs the file schema with its system-open action")
+    func fileSchemaMetadata() throws {
+        let file = Bundle.main.bundleURL.appendingPathComponent("Contents/Resources/Metadata.appintents/extract.actionsdata")
+        let payload = try #require(JSONSerialization.jsonObject(with: Data(contentsOf: file)) as? [String: Any])
+        let entities = try #require(payload["entities"] as? [String: [String: Any]])
+        let entity = try #require(entities["ZforgeFileArchiveEntity"])
+        let schemas = try #require(entity["assistantDefinedSchemas"] as? [[String: Any]])
+        #expect(schemas.count == 1)
+        #expect(schemas.first?["domain"] as? String == "files")
+        #expect(schemas.first?["name"] as? String == "FileEntity")
+        let actions = try #require(payload["actions"] as? [String: [String: Any]])
+        let action = try #require(actions["OpenZforgeFileContentIntent"])
+        let actionSchemas = try #require(action["assistantDefinedSchemas"] as? [[String: Any]])
+        #expect(actionSchemas.first?["domain"] as? String == "system")
+        #expect(actionSchemas.first?["name"] as? String == "OpenIntent")
+        let parameters = try #require(action["parameters"] as? [[String: Any]])
+        let valueType = try #require(parameters.first?["valueType"] as? [String: Any])
+        let target = try #require(valueType["entity"] as? [String: Any])
+        let wrapper = try #require(target["wrapper"] as? [String: Any])
+        #expect(wrapper["typeName"] as? String == "ZforgeFileArchiveEntity")
+        #expect(action["isDiscoverable"] as? Bool == true)
+        #expect(actions["OpenZforgeContentIntent"]?["isDiscoverable"] as? Bool == false)
+        #expect(actions["OpenZforgeIndexedArchiveIntent"] != nil)
+    }
+
     @Test("The installed action metadata publishes the generic system-open schema")
     func systemOpenMetadata() throws {
         let file = Bundle.main.bundleURL.appendingPathComponent("Contents/Resources/Metadata.appintents/extract.actionsdata")
