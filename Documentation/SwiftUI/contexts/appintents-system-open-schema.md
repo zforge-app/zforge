@@ -46,7 +46,7 @@ The domain applies to apps that search or open content. Its open action supports
 
 ### Actions
 
-- [searchInApp](https://developer.apple.com/documentation/appintents/appschema/systemintent/searchinapp) — An intent schema that navigates to search results. _(Apple Developer; expand on demand)_
+- [searchInApp](appintents-system-search-in-app-schema.md) — An intent schema that navigates to search results. _(local context)_
 - [AppSchema.SystemIntent](https://developer.apple.com/documentation/appintents/appschema/systemintent) — Identifies intent schemas in the system domain. _(Apple Developer; expand on demand)_
 
 ## Provenance

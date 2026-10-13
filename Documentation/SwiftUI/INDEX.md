@@ -241,6 +241,7 @@ To consult, first read this index and use `rg -n -i '<terms|symbols>' Documentat
 
 - [System content access](contexts/appintents-system-content-domain.md) — generic system opening supports Siri; SDK availability is checked separately.
 - [Generic Siri content opening](contexts/appintents-system-open-schema.md) — generic system opening supports Siri; SDK availability is checked separately.
+- [In-app search schema](contexts/appintents-system-search-in-app-schema.md) — macOS 27 searchInApp action; Siri's fallback when its own entity search finds nothing.
 
 ## Apple Intelligence content discovery — 2026-10-11
 

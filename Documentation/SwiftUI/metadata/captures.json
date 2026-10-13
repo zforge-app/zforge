@@ -4,7 +4,7 @@
   "seed_url": "https://developer.apple.com/documentation/SwiftUI",
   "scope": "home plus unique first-level links exposed by Overview, Featured samples, and Topics, with audited on-demand expansions",
   "expected_contexts": 151,
-  "captured_contexts": 151,
+  "captured_contexts": 152,
   "failures": [],
   "captures": [
     {
@@ -2147,6 +2147,20 @@
         "On-demand Siri system diagnosis"
       ],
       "depth": 2
+    },
+    {
+      "source_url": "https://developer.apple.com/documentation/appintents/appschema/systemintent/searchinapp",
+      "fetch_url": "https://developer.apple.com/tutorials/data/documentation/appintents/appschema/systemintent/searchinapp.json",
+      "final_url": "https://developer.apple.com/tutorials/data/documentation/appintents/appschema/systemintent/searchinapp.json",
+      "local_path": "contexts/appintents-system-search-in-app-schema.md",
+      "sha256": "03640560fa1a15ccb46059fcbb56a9f8c85400c5a1d0a0af0d27e4edcaa2981f",
+      "etag": "\"2bc7-65c09d157ec6b\"",
+      "last_modified": "Tue, 22 Sep 2026 03:18:16 GMT",
+      "bytes": 11207,
+      "categories": [
+        "On-demand Siri routing diagnosis"
+      ],
+      "depth": 3
     }
   ]
 }

@@ -509,5 +509,12 @@
     "line_count": 43,
     "syntax": "swift",
     "ordinal": 1
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/appintents/appschema/systemintent/searchinapp",
+    "sha256": "52064c7b709205304450999a40b02182c1704bf33130cf52f266aa65b1b60d3b",
+    "line_count": 10,
+    "syntax": "swift",
+    "ordinal": 1
   }
 ]
