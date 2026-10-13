@@ -455,5 +455,6 @@ The preparation baseline for the fresh spoken Vega/Probe comparison is captured 
 - [x] A request that launches Zforge reuses the untouched launch window, so the launch shows one window; with a window already open, one new window opens (build 26).
 - [ ] Spoken Siri acceptance; four-mode/language/size/theme/accessibility visual matrix of the results window; UI-test automation of the window.
 - [ ] Single-utterance opening (blocked by Siri's app-entity search; revisit on later macOS releases or report to Apple with a sysdiagnose).
+- [x] Resolve the two `TagCatalogTests` failures: a machine-dependent quick-tag test and redundant replay of deferred retry scopes; full unit regression 362/362.
 - [ ] Reconcile the branch with MCP-only `main` before integration.
 

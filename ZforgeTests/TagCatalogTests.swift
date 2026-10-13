@@ -535,13 +535,23 @@ struct TagCatalogTests {
         await state.start()
         let file = try #require(state.items.first { $0.name == "Welcome.txt" })
         state.select(file)
-        let menu = BrowserNativeContextMenu.make(state: state, item: file)
+        let contextMenu = BrowserNativeContextMenu.make(state: state, item: file)
+        #expect(contextMenu.items.contains { $0.identifier?.rawValue == "quick-tags-Welcome.txt" })
+        // The Mac's own Finder tags would decide which seven circles appear, so
+        // the circle states are checked against a fixed catalog.
+        let menu = NSMenu()
+        FinderTagQuickMenu.append(to: menu, state: state, items: [file],
+            catalogTags: [FinderTag(name: "Blue", colorIndex: 4), FinderTag(name: "Red", colorIndex: 6)])
         let row = try #require(menu.items.first { $0.identifier?.rawValue == "quick-tags-Welcome.txt" })
         let buttons = row.view?.subviews.compactMap { $0 as? FinderTagQuickButton } ?? []
+        #expect(buttons.map(\.finderTag.name) == ["Blue", "Red"])
         let red = try #require(buttons.first { $0.finderTag.name == "Red" })
         #expect(red.applied)
         #expect(red.symbolName == "checkmark")
         #expect(red.accessibilityValue() as? String == "1")
+        let blue = try #require(buttons.first { $0.finderTag.name == "Blue" })
+        #expect(!blue.applied)
+        #expect(blue.accessibilityValue() as? String == "0")
     }
 
     @Test("Completed discovery is reused by repeated refreshes and descendant scopes")
@@ -1291,6 +1301,9 @@ struct TagCatalogTests {
         try FileManager.default.createDirectory(at: denied, withIntermediateDirectories: true)
         defer { chmod(denied.path, 0o700); try? FileManager.default.removeItem(at: root) }
         #expect(chmod(denied.path, 0) == 0)
+        // Unsettled setup events would legitimately be replayed after the
+        // checkpoint and rescan accessible fixture folders.
+        try await settleFileEvents(in: root)
         let result = ScanResults()
         let complete = await TaggedFileScanner.scan([root]) { await result.append($0) }
         #expect(!complete)
@@ -1370,6 +1383,39 @@ struct TagCatalogTests {
         }
         try Data("unmarked".utf8).write(to: root.appendingPathComponent("A/unmarked.txt"))
         return root
+    }
+
+    /// Changes made just before an FSEvents stream starts can still be delivered
+    /// to it, with later event IDs. Waits until a hidden marker written after the
+    /// fixture arrives; events are ordered, so every earlier change has arrived too.
+    private func settleFileEvents(in root: URL) async throws {
+        final class Marker: @unchecked Sendable {
+            let lock = NSLock()
+            var continuation: CheckedContinuation<Bool, Never>?
+            func finish(_ delivered: Bool) {
+                lock.lock(); let continuation = self.continuation; self.continuation = nil; lock.unlock()
+                continuation?.resume(returning: delivered)
+            }
+        }
+        let marker = Marker()
+        let unmanaged = Unmanaged.passRetained(marker)
+        defer { unmanaged.release() }
+        var context = FSEventStreamContext(version: 0, info: unmanaged.toOpaque(), retain: nil, release: nil, copyDescription: nil)
+        let stream = try #require(FSEventStreamCreate(nil, { _, info, count, paths, _, _ in
+            let paths = unsafeBitCast(paths, to: NSArray.self) as? [String] ?? []
+            guard let info, paths.prefix(count).contains(where: { $0.hasSuffix("/.events-settled") }) else { return }
+            Unmanaged<Marker>.fromOpaque(info).takeUnretainedValue().finish(true)
+        }, &context, [root.path] as CFArray, FSEventStreamEventId(kFSEventStreamEventIdSinceNow), 0,
+            FSEventStreamCreateFlags(kFSEventStreamCreateFlagUseCFTypes | kFSEventStreamCreateFlagFileEvents)))
+        FSEventStreamSetDispatchQueue(stream, DispatchQueue(label: "TagCatalogTests.settle"))
+        defer { FSEventStreamStop(stream); FSEventStreamInvalidate(stream); FSEventStreamRelease(stream) }
+        #expect(FSEventStreamStart(stream))
+        let delivered = await withCheckedContinuation { continuation in
+            marker.lock.lock(); marker.continuation = continuation; marker.lock.unlock()
+            do { try Data().write(to: root.appendingPathComponent(".events-settled")) } catch { marker.finish(false) }
+            DispatchQueue.global().asyncAfter(deadline: .now() + 8) { marker.finish(false) }
+        }
+        #expect(delivered, "The fixture's file events were not delivered")
     }
 
     private func writeTags(_ names: [String], to url: URL) throws {
