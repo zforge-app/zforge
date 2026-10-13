@@ -18,7 +18,7 @@ Zforge adds a macOS 27 `@AppIntent(schema: .system.searchInApp)` action, **Searc
 
 ## Remaining limit
 
-A single utterance such as “Open Vega Demo.zip in Zforge” still depends on Siri's app-entity search returning the donated entity, which it currently does not for Zforge or the minimal Probe. No public API or documented requirement explains the exclusion; record it as an Apple-side boundary, revisit on later macOS releases, and consider a Feedback Assistant report with a sysdiagnose captured immediately after a refusal.
+A single utterance such as “Open Vega Demo.zip in Zforge” depends on Siri's app-entity search returning the donated entity, which it did not for Zforge or the minimal Probe in the assistant's typed runs. On 2026-10-13 the user reports that this single utterance opened the archive with build 26; Siri then stopped responding after a spoken attempt, so the result is not independently captured and further Siri tests are paused. No public API or documented requirement explains the exclusion; record it as an Apple-side boundary, revisit on later macOS releases, and consider a Feedback Assistant report with a sysdiagnose captured immediately after a refusal.
 
 ## Continuation branch and delivery decision
 
