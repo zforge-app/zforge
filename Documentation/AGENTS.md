@@ -2,6 +2,10 @@
 
 This directory combines the versioned requirements of Zforge and the local technical documentation used to implement them. General instructions for the agent are [`../AGENTS.md`](../AGENTS.md).
 
+## Local workspace organization — 2026-10-12
+
+The user's local checkouts are grouped under `~/Documents/dev/zforge`: the application is in `Zforge/` and the website project is in `zforge-website/`. Reference repositories UIDemo, 7z2602-mac and 7zip remain directly under `~/Documents/dev`, two directory levels above the application checkout. The engine build remains self-contained through `Vendor/7zip`; no sibling-source path is required. Historical benchmark paths describe their original runs and are not rewritten by relocation. Linked Git worktree administration is repaired after moving the main checkout. Saved editor/project registrations must use the new checkout paths independently of the filesystem move. Both local Codex project registrations were verified at the new paths on 2026-10-12; the main checkout and linked Apple Intelligence worktree resolve the relocated Git administration directory.
+
 ## Project requirements
 
 1. [`Requirements/AGENTS.md`](Requirements/AGENTS.md) — index of required documents, precedence and maintenance routine. Read first when working on requirements or functionality.

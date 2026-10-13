@@ -54,5 +54,5 @@ Zforge values polished UX/UI, transition flows, performance, and code quality. *
 ## Technical sources and references
 
 - For SwiftUI and macOS APIs, follow [`Documentation/SwiftUI/AGENTS.md`](Documentation/SwiftUI/AGENTS.md), start with [`INDEX.md`](Documentation/SwiftUI/INDEX.md), and search the local corpus before using the web. Its specialized `AGENTS.md` defines the capture and expansion policy.
-- The sibling projects `../UIDemo`, `../7z2602-mac`, and `../7zip` are references for UI, macOS binaries, and official 7-Zip source code. Consult them when useful; do not modify them without an explicit request.
+- The sibling projects `../../UIDemo`, `../../7z2602-mac`, and `../../7zip` are references for UI, macOS binaries, and official 7-Zip source code. Consult them when useful; do not modify them without an explicit request.
 - Preserve native macOS technology and interaction, localization of every visible string in the String Catalog, appropriately authorized file access, 7-Zip engine isolation, and the other requirements detailed in the documents indexed above.
