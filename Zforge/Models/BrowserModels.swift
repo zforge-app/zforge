@@ -299,6 +299,8 @@ nonisolated struct BrowserPathComponent: Identifiable, Hashable, Sendable {
     let location: BrowserLocation
     let name: String
     let isArchive: Bool
+    /// Overrides the location's symbol, for example for archive search results.
+    var systemImage: String? = nil
 
     var id: BrowserLocation { location }
 }

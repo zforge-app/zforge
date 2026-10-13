@@ -170,4 +170,37 @@ Two additional requests use separate fresh native Siri conversations, English ty
 
 Installed Zforge 23 starts as PID 6836 on Recents. In Zforge, open the archive named Vega Demo.zip receives I can’t search within Zforge, and I couldn’t find a file named Vega Demo.zip on your device. A complete native AX check after the response confirms Recents and absence of Vega archive content/Readme.txt. Own traces in /tmp/ZforgeSiriRegistryBlocked-independent-routing.log retain Probe publication at 18:08:06.170 and Zforge one-entity publication at 18:08:47.662, without a query/perform through the captured interval. This is two manual native Siri requests, not additional automated execution. No production code or permission change is made. The blocked cleanup prevents that specific causal comparison; registration is still an unproven hypothesis.
 
+## Planner traces and in-app search — 2026-10-12 to 2026-10-13
+
+**Method.** Read-only `log show` queries over Siri's planner (`intelligenceflowd`: `ToolRetriever`, `PlannerSupport`, `CandidateGeneration`, `Executor`) and search service (`searchtoold`, `corespotlightd`, `spotlightknowledged`) for the recorded intervals. Private values remain redacted; no logging profile, registration, privacy or cache change is made.
+
+**Decision sequence for every recorded request.** `extractToolContext` reports `onScreenEntities`; with an entity the `Open` tool logs `Success via Tier 1 (system.open schema)`; otherwise `SearchToolExecutor` calls `agenticSearch`, then either `SearchInApp@call` for the named app or `Success via Tier 2 (nonstandard intents)`, which launches only the app.
+
+| Request (local time) | onScreenEntities | Path | Outcome |
+| --- | --- | --- | --- |
+| Probe 6, already open (17:20:22) | 1 | Tier 1 | Probe perform 17:20:23.048 |
+| “Open Test Archive.zip in Intent Probe” (17:42:46) | 1 | Tier 1 | Probe perform 17:42:48.480 |
+| “Open Vega Demo.zip in Zforge” (17:41:40) | 0 | agenticSearch; app-entity search `isAppEntitySearch=1` returns 0 items | File-not-found; no Zforge query |
+| “In Zforge, open the archive named Vega Demo.zip” (18:09:02) | 0 | agenticSearch empty → SearchInApp: “No search-in-app schema … registered for bundleId: io.libor.Zforge” | “I can't search within Zforge” |
+| “Open Vega Demo in Zforge” (17:40:37) | 0 | Tier 2 | Application launch only |
+
+The search tool's first filter is `(_kMDItemBundleID="com.apple.*" || _kMDItemAppEntitySchema=* || kMDItemFileProviderID=* || _kMDItemFileName=*)`; five further filters are redacted. Probe builds 10–15 add `--probe-inspect-index`: the Probe's own item reads back `_kMDItemAppEntitySchema=files.file`, `_kMDItemAppEntityTypeIdentifier=ProbeEntity`, `_kMDItemBundleID=io.libor.ZforgeIntentProbe`, title/displayName `Test Archive.zip`, content type `public.archive` and a 1,312-character bookmark-based unique identifier. `spotlightknowledged` scans these donations without queuing embedding work. The exclusion is therefore inside Siri's search service; its exact criterion is not observable.
+
+**Probe controls (builds 9–15, `PROBE_SEARCH_IN_APP`).** Ten unit tests in three suites pass in `/tmp/ZforgeProbeSearch9Unit2.xcresult`; Release builds are warning-free, strict-signed with only App Sandbox, and build 8 is retained at `/tmp/ZforgeProbeSearchRollback8`. User-run fresh typed requests with the Probe closed:
+
+- “Open Test Archive.zip in Intent Probe” (23:31:47): app-entity search 0 items, no SearchInApp, refusal.
+- “In Intent Probe, open the archive named Test Archive.zip” (23:39:25): `Found 1 search-in-app tool(s)`, search action at 23:39:29.575 (`matched=true`), Probe launched; no opening chained.
+- “Search for Test Archive in Intent Probe” (23:40:31): same path, search action at 23:40:33.965.
+- “Open it” with the result visible (23:41:46): `onScreenEntities: 1`, Tier 1, `Probe open action invoked` at 23:41:48.983.
+
+**Production build 25.** `SearchZforgeArchivesIntent` (`system.searchInApp`) and the results window are implemented on `codex/apple-intelligence`. Signed Release build 25 (entitlements identical to build 24) is installed; MCP-only build 24 is retained at `/tmp/ZforgeSearchRollback24/Zforge.app`. Launch registration logs `LNMetadataChangedNotification added: ["io.libor.Zforge"]` and the index reconciles one entity (Documents/Vega Demo.zip, SHA-256 unchanged). A delegated computer-use run drives native Siri with Zforge closed, typed English, screenshots in `/tmp/ZforgeSiriSearch25/`:
+
+| Submitted | Request | Planner / Zforge trace | Visible result |
+| --- | --- | --- | --- |
+| 23:55:22 | “In Zforge, open the archive named Vega Demo.zip” (new conversation) | `onScreenEntities: 0` → `Found 1 search-in-app tool(s) for bundle: io.libor.Zforge` → `Archive search-in-app action invoked` 23:55:28.570 (cold launch; index reconciled 23:55:28.766) | Window `Search: “Vega Demo.zip”`, Vega Demo.zip selected with preview |
+| 23:55:56 | “Open it” (same conversation) | `onScreenEntities: 1` → `Success via Tier 1 (system.open schema)` → `Entity archive open action invoked` 23:55:58.277 | Window `Vega Demo.zip` listing `Readme.txt` (61 bytes) |
+| 23:56:25 | “Search for Vega Demo in Zforge” (new conversation) | search-in-app action | Window `Search: “Vega Demo”`, Vega Demo.zip selected |
+
+Siri displayed no textual acknowledgement for these requests; acceptance rests on the planner/app traces and visible content. This establishes typed two-step opening and in-app search on macOS 27.0.1; spoken input, longer result lists, other languages and the single-utterance phrase remain separate checks.
+
 The open product issue and closure criteria are recorded in [SIRI-DISCOVERY-ISSUE.md](../Requirements/SIRI-DISCOVERY-ISSUE.md), linked to ZF-43 / OR-20 / D-47.

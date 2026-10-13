@@ -189,6 +189,29 @@ struct OpenZforgeFileContentIntent: OpenIntent {
     }
 }
 
+/// Siri's planner calls the app's searchInApp action when its own entity search
+/// finds nothing for a request such as "In Zforge, open the archive named …".
+/// The results window annotates its rows, so a follow-up "Open it" resolves the
+/// onscreen archive through the system-open action above.
+@available(macOS 27.0, *)
+@AppIntent(schema: .system.searchInApp)
+struct SearchZforgeArchivesIntent: ShowInAppSearchResultsIntent {
+    static var title: LocalizedStringResource { "Search Archives" }
+    static var description: IntentDescription { "Show the archives in allowed folders whose names contain the search text." }
+    static var searchScopes: [StringSearchScope] { [.general] }
+    var criteria: StringSearchCriteria
+    var presenter: @MainActor @Sendable (String) -> Void = { term in
+        AppDelegate.current?.receiveArchiveSearch(term)
+    }
+
+    @MainActor func perform() async throws -> some IntentResult {
+        guard let term = AuthorizedArchiveSearch.normalizedTerm(criteria.term) else { throw AutomationError.invalidArguments }
+        Logger(subsystem: "io.libor.Zforge", category: "ArchiveDiscovery").notice("Archive search-in-app action invoked.")
+        presenter(term)
+        return .result()
+    }
+}
+
 /// Spotlight needs an entity-based OpenIntent at the macOS 26 floor too.
 /// macOS 27 replaces this action with the assistant system-open schema above.
 @available(macOS, introduced: 26.0, obsoleted: 27.0)

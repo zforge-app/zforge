@@ -22,7 +22,17 @@ struct ProbeCompatibilitySchemaTests {
             #expect(schemas.first?["name"] as? String == "OpenIntent")
             #expect(action["openAppWhenRun"] as? Bool == true)
         }
+        #if PROBE_SEARCH_IN_APP
+        // The search control adds exactly one discoverable searchInApp action.
+        let search = try #require(actions["ProbeSearchInAppIntent"])
+        let searchSchemas = try #require(search["assistantDefinedSchemas"] as? [[String: Any]])
+        #expect(searchSchemas.count == 1)
+        #expect(searchSchemas.first?["domain"] as? String == "system")
+        #expect(search["isDiscoverable"] as? Bool == true)
+        #expect(actions.count == 3)
+        #else
         #expect(actions.count == 2)
+        #endif
         let queries = try #require(metadata["queries"] as? [String: [String: Any]])
         #expect(queries["ProbeQuery"]?["capabilities"] as? Int == 70)
         let entities = try #require(metadata["entities"] as? [String: [String: Any]])

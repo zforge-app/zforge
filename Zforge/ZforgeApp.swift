@@ -24,7 +24,7 @@ struct ZforgeApp: App {
         ) { request in
             BrowserWindowRoot(request: request, appDelegate: appDelegate)
         } defaultValue: {
-            appDelegate.takeNextArchiveRequest() ?? BrowserWindowRequest()
+            appDelegate.makeDefaultWindowRequest()
         }
         .defaultSize(width: defaultWindowWidth, height: 720)
         .environment(\.locale, preferences.language.locale)
@@ -75,14 +75,16 @@ private struct BrowserWindowRoot: View {
         ContentView(
             initialURL: request.initialURL,
             tabSourceWindowNumber: request.tabSourceWindowNumber,
-            automationAccess: request.automationAccess
+            automationAccess: request.automationAccess,
+            archiveSearch: request.archiveSearch
         )
             .id(request.id)
             .onAppear {
                 // A file can arrive after SwiftUI computes the default scene value.
                 // In that case, use the first new window for the archive.
-                if !hasAppeared && request.initialURL == nil,
+                if !hasAppeared && request.initialURL == nil && request.archiveSearch == nil,
                    let pending = appDelegate.takeNextArchiveRequest() {
+                    appDelegate.releaseLaunchWindow(request.id)
                     request = pending
                 }
                 hasAppeared = true
@@ -90,8 +92,14 @@ private struct BrowserWindowRoot: View {
                 openPendingArchives()
             }
             .onReceive(NotificationCenter.default.publisher(for: AppDelegate.archiveURLsReceived)) { _ in
+                // A request that launched Zforge replaces its untouched launch
+                // window, so the launch shows one window instead of two.
+                if let pending = appDelegate.takeRequest(forLaunchWindow: request.id) {
+                    request = pending
+                }
                 openPendingArchives()
             }
+            .onDisappear { appDelegate.releaseLaunchWindow(request.id) }
     }
 
     private func openPendingArchives() {

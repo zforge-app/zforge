@@ -446,3 +446,14 @@ The preparation baseline for the fresh spoken Vega/Probe comparison is captured 
 **ZF-43 issue recorded — 2026-10-12:** [Direct Siri archive discovery fails before App Intent dispatch](Documentation/Requirements/SIRI-DISCOVERY-ISSUE.md) is open under ZF-43 / OR-20 / D-47. It consolidates reproduction, passing native/Spotlight controls, intermittent Probe routing, unconfirmed hypotheses, the blocked registration comparison and closure criteria. Recording the issue adds no new execution result and does not close the integration gates.
 
 **Delivery split requested — 2026-10-12:** the user requests a validated MCP-only `main` and preserves native Apple integration, including its initial shortcut actions, modern file entity/index/context development, diagnostics and unresolved tests, on `codex/apple-intelligence` for future continuation. This branch retains the full implementation and historical evidence; its unresolved acceptance gates remain open. Shared MCP operations, contextual permissions and grant consolidation remain deliverable. No user grants or unrelated localization work are discarded. The issue records the continuation branch.
+### ZF-43 — Siri in-app archive search (implemented on `codex/apple-intelligence`; 2026-10-13)
+
+- [x] Identify the Siri routing boundary from planner traces (`intelligenceflowd`, `searchtoold`) and confirm it with Probe controls.
+- [x] Add the macOS 27 Search Archives action (`system.searchInApp`) and a `Search: “term”` results window over authorized direct archives, with onscreen annotations, single-result selection, empty/error states, history and restoration.
+- [x] Localize five new strings in all 21 languages; add unit coverage; capture the searchInApp API page in the local corpus.
+- [x] Native typed Siri on installed build 25: search, “Open it” with Readme.txt, and “Search for … in Zforge”.
+- [x] A request that launches Zforge reuses the untouched launch window, so the launch shows one window; with a window already open, one new window opens (build 26).
+- [ ] Spoken Siri acceptance; four-mode/language/size/theme/accessibility visual matrix of the results window; UI-test automation of the window.
+- [ ] Single-utterance opening (blocked by Siri's app-entity search; revisit on later macOS releases or report to Apple with a sysdiagnose).
+- [ ] Reconcile the branch with MCP-only `main` before integration.
+

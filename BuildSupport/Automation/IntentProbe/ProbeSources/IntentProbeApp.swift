@@ -87,6 +87,9 @@ struct OpenProbeContentIntent: OpenIntent {
     #if PROBE_COMPATIBILITY_SCHEMA
     var compatibilityOpened = false
     #endif
+    #if PROBE_SEARCH_IN_APP
+    var searchMatched: Bool?
+    #endif
     var entity: ProbeEntity?
     var indexStatus = "Publishing the synthetic entity…"
 }
@@ -116,6 +119,11 @@ struct OpenProbeContentIntent: OpenIntent {
                 Text(ProbeState.shared.opened ? "The OpenIntent ran." : "No OpenIntent has run.")
                     .accessibilityIdentifier("probe.openStatus")
                 #endif
+                #if PROBE_SEARCH_IN_APP
+                Text(ProbeState.shared.searchMatched.map { $0 ? "The search ran and matched Test Archive.zip." : "The search ran without a match." }
+                     ?? "No search has run.")
+                    .accessibilityIdentifier("probe.searchStatus")
+                #endif
                 Text(ProbeState.shared.indexStatus).font(.caption)
                     .accessibilityIdentifier("probe.indexStatus")
             }
@@ -138,6 +146,7 @@ struct OpenProbeContentIntent: OpenIntent {
                     try await index.indexAppEntities([entity])
                     ProbeState.shared.indexStatus = "The synthetic entity is indexed."
                     Logger(subsystem: "io.libor.ZforgeIntentProbe", category: "Routing").notice("Probe entity indexed.")
+                    if CommandLine.arguments.contains("--probe-inspect-index") { await ProbeIndexInspection.run() }
                 } catch {
                     ProbeState.shared.indexStatus = "Indexing failed."
                 }
