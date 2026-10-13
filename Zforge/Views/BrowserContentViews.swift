@@ -94,6 +94,13 @@ struct BrowserContent: View {
                 ProgressView("Loading…")
                     .padding(22)
                     .glassEffect(.regular, in: .rect(cornerRadius: 18))
+            } else if let term = state.archiveSearchTerm, state.items.isEmpty, state.error == nil {
+                ContentUnavailableView {
+                    Label("No Archives Found", systemImage: "magnifyingglass")
+                } description: {
+                    Text("No archive directly inside your allowed folders has a name containing “\(term)”.")
+                }
+                .accessibilityIdentifier("archive-search-empty")
             }
         }
     }

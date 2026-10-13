@@ -21,7 +21,7 @@ This directory holds the project's requirements. Start with this index and open 
 
 | [`AGENT-USAGE.md`](AGENT-USAGE.md) | ZF-43: MCP setup, typed tool/job contracts, automation grants and native shortcut usage. |
 
-| [`SIRI-DISCOVERY-ISSUE.md`](SIRI-DISCOVERY-ISSUE.md) | Deferred ZF-43 / D-47 Siri issue, historical evidence and `codex/apple-intelligence` continuation branch. |
+| [`SIRI-DISCOVERY-ISSUE.md`](SIRI-DISCOVERY-ISSUE.md) | Open ZF-43 / D-47 issue: direct Siri archive discovery refusals, confirmed controls, hypotheses and closure criteria. |
 
 ## Precedence and updates
 

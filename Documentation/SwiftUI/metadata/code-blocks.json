@@ -306,5 +306,215 @@
     "sha256": "0ef6c5f1e74f2a76dab8e2f3023c5a0f11814644bcab24116f1dc85fabeb6274",
     "line_count": 26,
     "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/appintents/making-app-entities-available-in-spotlight",
+    "ordinal": 1,
+    "sha256": "a29712635c3e89cd3c348f39c29ac35a208cd3f26f1085cb2712f94a99002082",
+    "line_count": 3,
+    "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/appintents/making-app-entities-available-in-spotlight",
+    "ordinal": 2,
+    "sha256": "5cabbac66601d5a3362ac4a533e9a4b68664e2787d9a14fcded5e52c172b7760",
+    "line_count": 21,
+    "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/appintents/making-app-entities-available-in-spotlight",
+    "ordinal": 3,
+    "sha256": "92ba723f38a462ba79a8a68f09c9f45c983c0e188df3fa72479dcd7a10d6236b",
+    "line_count": 11,
+    "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/appintents/making-app-entities-available-in-spotlight",
+    "ordinal": 4,
+    "sha256": "fc7176e5962eecff2f87593b2c7450b18fe95333b59792a5a1ff469db043b6b8",
+    "line_count": 7,
+    "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/appintents/making-app-entities-available-in-spotlight",
+    "ordinal": 5,
+    "sha256": "b011ad62bbfaf6ef77e39c7333a8f84a5eddeea1acdf7d832522b3cb085b4483",
+    "line_count": 14,
+    "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/appintents/making-app-entities-available-in-spotlight",
+    "ordinal": 6,
+    "sha256": "e4169ef3fcd4f1cae66d32a29c8410fa72bf7c87d0bcdd57540026351bc44679",
+    "line_count": 13,
+    "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/appintents/making-app-entities-available-in-spotlight",
+    "ordinal": 7,
+    "sha256": "d57ab24df2bfbe66b26dafa4a59c1055e62116a12e2a822a2c262d5d990dce2a",
+    "line_count": 6,
+    "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/appintents/providing-contextual-cues-to-apple-intelligence-and-siri",
+    "ordinal": 1,
+    "sha256": "f60c41731a413dbff3e33777e5be227fe61ad451e7547bcfbfe156192ea30ad7",
+    "line_count": 40,
+    "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/appintents/providing-contextual-cues-to-apple-intelligence-and-siri",
+    "ordinal": 2,
+    "sha256": "d802147d7f5d67266ffb1f43e2d26346a4c5f579cadfd82334bdbf6da1a4744f",
+    "line_count": 49,
+    "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/appintents/providing-contextual-cues-to-apple-intelligence-and-siri",
+    "ordinal": 3,
+    "sha256": "9894ea17dc56239d8aa3fc45356e19510dd8b786163e0c6be17f103de4790e48",
+    "line_count": 42,
+    "syntax": "swift"
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/appintents/appschema/filesentity/file",
+    "sha256": "9e4e56e574c240a826e2b469864582973d262e87346e180e60de5ccb3676cbf4",
+    "line_count": 26,
+    "syntax": "swift",
+    "ordinal": 0
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/appintentstesting/testing-your-app-intents-code",
+    "sha256": "51228180b87aba0ff0814312405b3f2e49f19073714ea0f4e63a8421ca17527e",
+    "line_count": 9,
+    "syntax": "swift",
+    "ordinal": 0
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/appintentstesting/testing-your-app-intents-code",
+    "sha256": "0a3aca51dee260151c00aac54cc583eef4b21608a8a11d2b62c55028680658f8",
+    "line_count": 6,
+    "syntax": "swift",
+    "ordinal": 1
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/appintentstesting/testing-your-app-intents-code",
+    "sha256": "635d9e4a817aa35b6af466cba2bacc070581701e981942531b235f02a23a2249",
+    "line_count": 10,
+    "syntax": "swift",
+    "ordinal": 2
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/appintentstesting/testing-your-app-intents-code",
+    "sha256": "1da1ed0510af9e33d956a5173f2ac13b29ab22e12a3cc8de3d75c1494ab18e03",
+    "line_count": 3,
+    "syntax": "swift",
+    "ordinal": 3
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/appintentstesting/testing-your-app-intents-code",
+    "sha256": "cfe1a4f955aca8813ac8b89feb584d93769f98f7354652cbf42e203c9d9b9221",
+    "line_count": 3,
+    "syntax": "swift",
+    "ordinal": 4
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/appintentstesting/testing-your-app-intents-code",
+    "sha256": "5b4f832e2fde5284bbcb374789eebab0e28e6ab94c04611d0788d7c5fb216b3b",
+    "line_count": 6,
+    "syntax": "swift",
+    "ordinal": 5
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/appintentstesting/testing-your-app-intents-code",
+    "sha256": "38fcc7e8de99fe114f65471e908e3fe030c3c8d60bb22ea5b172d6a466392b1a",
+    "line_count": 7,
+    "syntax": "swift",
+    "ordinal": 6
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/appintentstesting/testing-your-app-intents-code",
+    "sha256": "0ba4987147011c61474f28074e4b1f4de15c3c8b2e9c0fbdbed7baa515b1b23c",
+    "line_count": 11,
+    "syntax": "swift",
+    "ordinal": 7
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/appintentstesting/testing-your-app-intents-code",
+    "sha256": "8339fc44b9779a02df59d894d6a8d30bf23043d24efc6f658311c5f58301440a",
+    "line_count": 11,
+    "syntax": "swift",
+    "ordinal": 8
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/appintentstesting/testing-your-app-intents-code",
+    "sha256": "ade260dea5d553f7b19233a42e924b09395e248ebb86541d6025638e1f461a2c",
+    "line_count": 7,
+    "syntax": "swift",
+    "ordinal": 9
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/appintentstesting/testing-your-app-intents-code",
+    "sha256": "f44606c1ef9de4c987f3588594eea9e5827a5db79828fc7830a49c4fef7fc097",
+    "line_count": 19,
+    "syntax": "swift",
+    "ordinal": 10
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/appintentstesting/testing-your-app-intents-code",
+    "sha256": "86dfd7665046a93f0422ce4ba4a42a43e411e1f032d40319cbb6a04204932b97",
+    "line_count": 8,
+    "syntax": "swift",
+    "ordinal": 11
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/appintentstesting/testing-your-app-intents-code",
+    "sha256": "0f10a4dac8e9d116e1ffd2ad01d69f6369309d872b2b747d6ecb490d847a8539",
+    "line_count": 6,
+    "syntax": "swift",
+    "ordinal": 12
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/appintentstesting/testing-your-app-intents-code",
+    "sha256": "0d9a89e80f65139dec6a7001c64c2244dec4af71cf526f845a24925f77082810",
+    "line_count": 9,
+    "syntax": "swift",
+    "ordinal": 13
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/appintentstesting/testing-your-app-intents-code",
+    "sha256": "e78e2b4ecf0707abce6669d69b1365d194a9f6235147b96b20c60316e1a13073",
+    "line_count": 5,
+    "syntax": "swift",
+    "ordinal": 14
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/swiftui/view/appentityidentifier(_:)",
+    "sha256": "f73c30a4f60c088ae241595604eb42e7293b07b9dd0722ee20767df69c2b87d7",
+    "line_count": 13,
+    "syntax": "swift",
+    "ordinal": 0
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/swiftui/view/appentityuielements(_:)",
+    "sha256": "36f0885f912927b7096549201123efe0457da9f5e5e894274845ea59455c43cd",
+    "line_count": 24,
+    "syntax": "swift",
+    "ordinal": 0
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/swiftui/view/appentityuielements(_:)",
+    "sha256": "cec88ac04568d7626958a8cad0f2c6fb181f479ec12ebe7049e5e83946a9cd09",
+    "line_count": 43,
+    "syntax": "swift",
+    "ordinal": 1
+  },
+  {
+    "source_url": "https://developer.apple.com/documentation/appintents/appschema/systemintent/searchinapp",
+    "sha256": "52064c7b709205304450999a40b02182c1704bf33130cf52f266aa65b1b60d3b",
+    "line_count": 10,
+    "syntax": "swift",
+    "ordinal": 1
   }
 ]

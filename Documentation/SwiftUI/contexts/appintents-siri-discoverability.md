@@ -57,7 +57,7 @@ Use schemas only when the action and content match the defined purpose. Some dom
 - [AppEnum(schema:)](https://developer.apple.com/documentation/appintents/appenum(schema:)) — A Swift macro you use to make sure your app enum conforms to a schema. _(Apple Developer; expand on demand)_
 - [isAssistantOnly](https://developer.apple.com/documentation/appintents/assistantschemaintent/isassistantonly) — _Apple Developer; expand on demand_
 - [Donations and discovery](https://developer.apple.com/documentation/appintents/donations-and-discovery) — Donate your app’s intents and entities to the system to help it identify trends and predict future behaviors. _(Apple Developer; expand on demand)_
-- [Providing contextual cues to Apple Intelligence and Siri](https://developer.apple.com/documentation/appintents/providing-contextual-cues-to-apple-intelligence-and-siri) — Annotate your interface with app entities to offer contextual information about your app’s onscreen content. _(Apple Developer; expand on demand)_
+- [Providing contextual cues to Apple Intelligence and Siri](appintents-onscreen-entity-context.md) — Annotate your interface with app entities to offer contextual information about your app’s onscreen content. _(Apple Developer; expand on demand)_
 
 ## Provenance
 

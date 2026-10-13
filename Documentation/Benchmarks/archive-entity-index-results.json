@@ -1,0 +1,765 @@
+{
+  "date": "2026-10-11",
+  "base": "72a9ab7",
+  "sourceManifest": {
+    "base": "72a9ab7",
+    "sources": {
+      "Zforge/AppDelegate.swift": "8a600e45713461533a9bb2b40054080193f0b79e7b56c6cda73177c3fe84d52c",
+      "Zforge/Automation/AutomationAccess.swift": "ea89a26cdc18a24839976dd46838a3ec851544065b2bb9e9203320db15a9d6d3",
+      "Zforge/Automation/AutomationSettingsSection.swift": "6471ff7286505ae1c426553fe8a683341412664b049ae2e7d8d49e65b925405a",
+      "Zforge/Automation/ZforgeArchiveEntity.swift": "95c4ae122c70dccd5c179bd9052264d94a1d9fb035884358700130c4552e0c67",
+      "Zforge/Automation/ZforgeIntents.swift": "0ed5bc599f3b9a39e71ede1a9ba025f4feaad566c0fb130bcbf9cc09967e30c3",
+      "Zforge/Automation/ArchiveSpotlightIndex.swift": "b6b8ac18da375520b1e36347cff3ebb9b6ffa9adf796a099111d83eca0c6e474",
+      "Zforge/Services/DirectoryMonitor.swift": "5781a50d58f18204949c8933dd34845fca01663b9ced44207eeeec04649939d7",
+      "Zforge/Models/BrowserModels.swift": "99b7f77911704711645cfb33a9a11f02a69983ddb9d73d7525c855635786dd6b",
+      "Zforge/Views/BrowserArchiveContext.swift": "6cdeb7eebf0cc3eeb5cec9f74079a1cde0ce147cd7d4ef139a2ad71c16d629fc",
+      "Zforge/Views/IconBrowserView.swift": "39438bc4a82ec11149587b862563aed567e32217549758331378375f3a85ce7f",
+      "Zforge/Views/ListBrowserView.swift": "2e3880dcfcce74b097ba0d9a06522a50809095711bd9c8fc9a1c96e4aa1f6938",
+      "Zforge/Views/ColumnBrowserView.swift": "3f8f8134be77107479434c4ae7978ccfb861092cfd0a14f733c5337a3aa52a18",
+      "Zforge/Views/GalleryBrowserView.swift": "4e510dd7b9116ca27e341fb240692be3ea228c701e330c26d664b49e2d4daee7",
+      "ZforgeTests/ArchiveDiscoveryPerformanceTests.swift": "81c37cd4f6018d5406f7fb21bc01c8acb8418a2eaf8a4853deff59e08553cdcb",
+      "ZforgeTests/ArchiveIndexTests.swift": "36b097608683c72419a88e9413e9772431f576d1201e56586487e8df7a536a60"
+    },
+    "note": "Native integration validation isolates concurrent localization changes; shared checkout is preserved.",
+    "build": 14
+  },
+  "results": {
+    "ZforgeAIEntitiesRegression2": {
+      "result": "Failed",
+      "totalTestCount": 329,
+      "passedTests": 324,
+      "failedTests": 5,
+      "skippedTests": 0,
+      "devicesAndConfigurations": [
+        {
+          "device": {
+            "architecture": "arm64",
+            "deviceId": "<DEVICE_ID>",
+            "deviceName": "My Mac",
+            "modelName": "MacBook Air",
+            "osBuildNumber": "26A434",
+            "osVersion": "27.0.1",
+            "platform": "macOS"
+          },
+          "expectedFailures": 0,
+          "failedTests": 38,
+          "passedTests": 445,
+          "skippedTests": 0,
+          "testPlanConfiguration": {
+            "configurationId": "1",
+            "configurationName": "Test Scheme Action"
+          }
+        }
+      ],
+      "testFailures": [
+        {
+          "failureText": "Expectation failed: Set(localized.keys) == Set(english.keys)\nSet(localized.keys) \u2192 [\"\u0e44\u0e17\u0e22\", \"English\", \"Nederlands\", \"\ud55c\uad6d\uc5b4\", \"\u09ac\u09be\u0982\u09b2\u09be\", \"Italiano\", \"\u010ce\u0161tina\", \"\u7e41\u9ad4\u4e2d\u6587\", \"T\u00fcrk\u00e7e\", \"Remove automation access to %@\", \"Svenska\", \"\u65e5\u672c\u8a9e\", \"\u0420\u0443\u0441\u0441\u043a\u0438\u0439\", \"\u0939\u093f\u0928\u094d\u0926\u0940\", \"Polski\", \"Fran\u00e7ais\", \"\u7b80\u4f53\u4e2d\u6587\", \"Deutsch\", \"Espa\u00f1ol\", \"\u0423\u043a\u0440\u0430\u0457\u043d\u0441\u044c\u043a\u0430\", \"Dansk\", \"Portugu\u00eas (Brasil)\"]\nSet(english.keys) \u2192 [\"Default View\", \"Deflate64\", \"Keep\", \"Enclosing Folder\", \"Move to Trash\", \"Select an item\", \"archive.password_required\", \"Favorites\", \"Validating archives\u2026\", \"Dansk\", \"Open ${archive} in Zforge\", \"Extract selected items.\", \"Select the requested folder to continue. A different or broader folder cannot authorize this request.\", \"Automation\", \"New Folder Name\", \"Remove from Sidebar\", \"Extracting %@ may require more than 1 GB of temporary disk space.\", \"Language\", \"Nederlands\", \"Remove automation access to %@\", \"Zforge needs your permission to access a folder.\", \"New Tag\", \"Shared\", \"Remote\", \"Show previews in icon view\", \"Modify Archive?\", \"Use an smb://, afp://, or nfs:// address.\", \"Copy pathname\", \"Add\", \"Paste\", \"View Options\", \"Allow Zforge to Access This Folder\", \"Allow\", \"System Default\", \"Info: %lld Items\", \"Home\", \"BZip2\", \"List Columns\", \"Gallery\", \"Creating aliases\u2026\", \"/path/to/folder\", \"Go to Folder\u2026\", \"Apply this decision to all conflicts\", \"Adding to archive\u2026\", \"Show Original\", \"Make an alias\", \"Last opened\", \"Shared By\", \"The path is not a folder.\", \"Archive search is unavailable. Try again.\", \"%lld documents\", \"Profile name\", \"Info: %@\", \"error.permission %@\", \"Open Archive\", \"None\", \"\ud55c\uad6d\uc5b4\", \"Save\", \"Compress Selected\", \"Keyboard Shortcuts\", \"New tab\", \"Dictionary size\", \"Rename\", \"\u0420\u0443\u0441\u0441\u043a\u0438\u0439\", \"Automatic\", \"LZMA2\", \"Select items from the same folder to create a folder with selection.\", \"OK\", \"Selected items extracted successfully.\", \"Password for Compression\", \"Columns\", \"Confirm password\", \"Enter an SMB, AFP, or NFS address.\", \"Configuration copied\", \"Forward\", \"Commands and gestures available in Zforge\", \"Fast\", \"Allow this folder in Zforge Settings > Automation before running this action.\", \"Save as New Profile\", \"Show the folders that contain the current folder\", \"copy\", \"The archive itself cannot be the extraction destination.\", \"%lld\", \"Default\", \"Extract\u2026\", \"The server could not be opened.\", \"Choose Folder\u2026\", \"archive.insufficient_space\", \"Network\", \"Large Archive Item\", \"ZipCrypto\", \"Authorize and Continue\", \"Toggle Sidebar\", \"Documents\", \"TAR\", \"Add %lld items to %@? The archive will be modified.\", \"No folders allowed\", \"Drag to resize preview\", \"Kind\", \"Default compression format\", \"Open Archive in Zforge\", \"Add to Sidebar\", \"Comments\", \"Transferring items\u2026\", \"No Preview\", \"Slideshow\", \"Archive names directly inside allowed folders are shared with Spotlight and Siri. Siri availability depends on macOS. Save shortcuts for compression and extraction.\", \"view.list\", \"\u2318 + drag\", \"Cannot complete this operation because an item named %@ already exists.\", \"The operation failed: %@ Some items could not be restored: %@\", \"Zoom In\", \"Choose the columns shown by default. Use the arrows to change their order. A folder can override this layout from a column header.\", \"Shortcuts is unavailable on this Mac.\", \"Preview not loaded\", \"Version\", \"Paste and Match Style\", \"Expanded\", \"\u2325 + drag\", \"Expand or collapse the entire hierarchy\", \"Extract All\", \"Keyboard Shortcuts\u2026\", \"Removing from archive\u2026\", \"Create a new ZIP or 7z archive in a folder allowed in Zforge Settings > Automation.\", \"Undo\", \"Extract an archive into a new folder inside a folder allowed in Zforge Settings > Automation.\", \"Extract\", \"Cannot undo because an item named %@ already exists.\", \"smb://server/share\", \"Show or Hide Preview\", \"Size\", \"Open Enclosing Folder in New Window\", \"archive.helper_unavailable\", \"Automation test\", \"Hide Preview\", \"Copying items\u2026\", \"Compression profile\", \"Italiano\", \"Another automation operation is running. Wait for it to finish or cancel it.\", \"Only ZIP and 7z archives can be updated.\", \"List\", \"alias\", \"Maximum\", \"Portugu\u00eas (Brasil)\", \"WIM\", \"Archive Format\", \"\u010ce\u0161tina\", \"Red\", \"Extract to \\\"%@\\\"\", \"Information\", \"Fast bytes\", \"Preview\", \"New Folder with Selection\", \"Polski\", \"This listing exceeds the automation limit of 10,000 items. Choose a smaller folder.\", \"Fran\u00e7ais\", \"Desktop\", \"Locations\", \"Help\", \"Encrypted\", \"archive.size_limit\", \"Tag name\", \"Add %lld item to %@? The archive will be modified.\", \"The selected item will be deleted immediately. This action cannot be undone.\", \"%@\", \"Other\u2026\", \"Create a new ZIP or 7z archive. Authorize source and destination folders when requested.\", \"Modified\", \"7z\", \"Archives extracted successfully.\", \"New Zforge Window\", \"Add to Archive\u2026\", \"Validate\", \"Extracting items\u2026\", \"Creating folder with selection\u2026\", \"%lld items\", \"Zforge needs your permission to browse this location. Access is remembered securely for future windows.\", \"English\", \"Last Modified By\", \"Applications\", \"Allow Folder for Automation\", \"Show Preview\", \"Downloads\", \"Extract an archive into a new folder. Authorize source and destination folders when requested.\", \"Folder\", \"Add a Zforge action in Shortcuts and save it to run from Shortcuts or Spotlight. Siri availability depends on macOS and system support. References to files shown onscreen are not supported yet.\", \"Auto\", \"Edit Tags\", \"Adding to nested archives is not supported.\", \"\u0e44\u0e17\u0e22\", \"Archive created successfully.\", \"Return\", \"Deleting items\u2026\", \"Compress Custom\u2026\", \"Test ${archive}\", \"Quick Look Slideshow\", \"Changes apply to all selected items. Other tags are preserved.\", \"ZIP encryption\", \"Limits how many compressed files can be opened inside one another. The root archive is not counted.\", \"Where\", \"Calculating\u2026\", \"error.cancelled\", \"Delete Profile\", \"Open an authorized Zforge archive by name or absolute path.\", \"Extract ${archive} to ${folderName} in ${destinationFolder}\", \"Share\", \"Extracting selected items\u2026\", \"Store\", \"Cannot undo because the contents of %@ have changed.\", \"Recents\", \"Zoom Out\", \"Collapsed\", \"An archive with that name already exists.\", \"view.columns\", \"Replace existing item?\", \"archive.unsafe_path\", \"The archive changed since it was opened. Reopen it before removing items.\", \"%lld document\", \"More\", \"Use the copied configuration in a local MCP client. Zforge runs without windows and needs no additional runtime. Disconnecting cancels that connection\\'s running job.\", \"Remove\", \"Orange\", \"Extracting archives\u2026\", \"Yellow\", \"Zforge needs access to %@ for this action. Authorizing this folder also permits future agent and shortcut requests to read and write inside it.\", \"Svenska\", \"archive.invalid_password\", \"Move\", \"%lld MB\", \"Encrypt file names\", \"Archive format\", \"Tags\", \"\u0423\u043a\u0440\u0430\u0457\u043d\u0441\u044c\u043a\u0430\", \"Only folders can be added to Favorites.\", \"Enter and confirm a password. It remains in memory for this session.\", \"Archive\", \"Loading\u2026\", \"Navigation\", \"Save Profile\", \"No tags\", \"Zforge\", \"Apply\", \"Moving %lld item(s) to %@ will modify the original archive %@. The source entries will be removed only after the transfer succeeds.\", \"Remove from Archive?\", \"%lld folders\", \"%lld GB\", \"Extract Archive\", \"Sub-archives are only navigable when the combined size of the root archive and its volumes is below this limit.\", \"Created\", \"Date Last Opened\", \"The nested archive navigation limit has been reached.\", \"Delete Immediately\u2026\", \"The automation operation failed. Check the path, permissions and archive password.\", \"Show or Hide Tab Bar\", \"Make Alias\", \"Archive created, but tags could not be applied.\", \"Authorize Folder to Continue\", \"Open a folder in a separate window\", \"Moving out of archive\u2026\", \"Compress ${files} as ${archiveName} in ${destinationFolder}\", \"Copying %lld item(s) to %@ will modify the original archive %@. The source entries will be preserved.\", \"Go\", \"Encrypted Archive\", \"untitled folder\", \"Destination Folder\", \"Continue\", \"archive.session_closed\", \"Changes apply to this archive only.\", \"Get Info\", \"Normal\", \"\u2318 + click window title\", \"Modify the Original Archive?\", \"archive.empty_or_unsupported\", \"Drag to resize column\", \"Incorrect password. Try again.\", \"The destination already exists. Choose a new name; automation never replaces existing items.\", \"Compress selected items.\", \"Green\", \"Purple\", \"LZMA\", \"Some selected items\", \"The requested item or operation is no longer available.\", \"Remove from Archive\u2026\", \"Archive Navigation\", \"ZIP\", \"Choose an Archive\", \"Mouse and Drag\", \"Disconnect test client\", \"\u0939\u093f\u0928\u094d\u0926\u0940\", \"Allow folders that agents and Zforge shortcuts may read and write. Existing browser permissions are separate. Removing a folder blocks new requests; running operations must be cancelled by their caller.\", \"Open with\", \"Files\", \"XZ\", \"\u2325 + click disclosure\", \"Copy MCP Configuration\", \"Extract all selected archives.\", \"Save As\", \"This archive item is larger than 10 MB.\", \"Open\", \"Computer\", \"Open ${target} in Zforge\", \"The automation request was cancelled.\", \"Always open with\", \"Choose\", \"Choose the requested folder or one of its parents.\", \"A symbolic-link cycle was prevented.\", \"Delete Immediately?\", \"Color\", \"Espa\u00f1ol\", \"T\u00fcrk\u00e7e\", \"Compression\", \"Extract Here\", \"\u7e41\u9ad4\u4e2d\u6587\", \"The selected items will be deleted immediately. This action cannot be undone.\", \"Delete\", \"error.preview_too_large %@\", \"Archive Password\", \"New Profile\", \"BZIP2\", \"No selected items\", \"Archive Name\", \"Go to Folder\", \"Open Shortcuts\", \"New Folder\", \"\u09ac\u09be\u0982\u09b2\u09be\", \"Date Created\", \"Protect with password\", \"Connect\", \"Working with archive\u2026\", \"Blue\", \"Fastest\", \"Compress Files\", \"View\", \"Items removed from archive successfully.\", \"Replace\", \"Invalid automation parameters. Use absolute paths and valid options.\", \"Name\", \"Extract Selected\", \"Compress\", \"Ultra\", \"Copy\", \"\u2318 + double-click\", \"Use the copied configuration in a local MCP client. Missing folder access is requested when needed. Zforge needs no additional runtime. Disconnecting cancels pending authorization and that connection\\'s running job.\", \"Icons\", \"Folder Access Required\", \"Space\", \"\", \"error.invalid_server\", \"Compressing selected items\u2026\", \"Move Items Here\", \"Add to Archive\", \"Password\", \"Multi-volume archives cannot be updated.\", \"The archive cannot be added to itself.\", \"Back\", \"%lld folder\", \"The selected items will be permanently removed from the archive.\", \"Maximum nesting depth\", \"Move to Trash / Remove from Archive\", \"Unlock\", \"Copy an item\", \"Passwords stay in memory for this session and are never saved in profiles.\", \"Restore defaults\", \"Check an archive for errors using Zforge\\'s native 7-Zip engine.\", \"Default compression profile\", \"Show Hidden Files\", \"Quick Look\", \"Date Added\", \"Test Archive Integrity\", \"\u2325\u2318 + drag\", \"Passwords do not match.\", \"Items extracted successfully.\", \"The dropped file URLs could not be loaded.\", \"Enter an absolute path or start with ~ for your home folder.\", \"view.gallery\", \"view.icons\", \"Move to another volume\", \"\u7b80\u4f53\u4e2d\u6587\", \"Deutsch\", \"Move column right\", \"Compression level\", \"Date Modified\", \"Items moved out of archive successfully.\", \"The folder size could not be calculated.\", \"Enter a valid file name without slashes or colons.\", \"Add Tag\", \"Open an authorized archive in a Zforge browser window.\", \"AES-256\", \"ZipCrypto offers weaker protection than AES-256.\", \"Eject\", \"Document\", \"Moving items\u2026\", \"Duplicate\", \"Compression method\", \"\u65e5\u672c\u8a9e\", \"Actual Size\", \"Root archive size limit\", \"All selected items\", \"Archives validated successfully.\", \"Enter the password to update this archive.\", \"Files and Items\", \"Move column left\", \"Deflate\", \"CPU threads\", \"Load Preview\", \"Enter the password to browse this archive. It stays in memory only for this window.\", \"Search Shortcuts\", \"GZIP\", \"Solid archive\", \"Allow Folder\u2026\", \"archive.item_not_found\", \"Gray\", \"Items added to archive successfully.\", \"Show hidden files\", \"Cancel\"]: Missing catalog keys in de",
+          "targetName": "ZforgeTests",
+          "testIdentifier": 33,
+          "testIdentifierString": "LocalizationTests/bundledCatalogCoverage()",
+          "testIdentifierURL": "test://com.apple.xcode/Zforge/ZforgeTests/LocalizationTests/bundledCatalogCoverage()",
+          "testName": "All 21 localizations are bundled and preserve format arguments and intent parameters"
+        },
+        {
+          "failureText": "Expectation failed: AppLocalization.string(\"Open\", locale: Locale(identifier: identifier), bundle: applicationBundle) == expectedOpen\nAppLocalization.string(\"Open\", locale: Locale(identifier: identifier), bundle: applicationBundle) \u2192 \"Open\"\nexpectedOpen \u2192 \"\u6253\u5f00\"",
+          "targetName": "ZforgeTests",
+          "testIdentifier": 29,
+          "testIdentifierString": "LocalizationTests/chineseScript(identifier:expected:)",
+          "testIdentifierURL": "test://com.apple.xcode/Zforge/ZforgeTests/LocalizationTests/chineseScript(identifier:expected:)",
+          "testName": "Regional Chinese preferences keep the correct writing system"
+        },
+        {
+          "failureText": "Expectation failed: !message.contains(\"error.permission\")\nmessage.contains(\"error.permission\") \u2192 false",
+          "targetName": "ZforgeTests",
+          "testIdentifier": 35,
+          "testIdentifierString": "LocalizationTests/interpolatedError(language:)",
+          "testIdentifierURL": "test://com.apple.xcode/Zforge/ZforgeTests/LocalizationTests/interpolatedError(language:)",
+          "testName": "Interpolated service errors preserve the user's file name across languages"
+        },
+        {
+          "failureText": "Expectation failed: AppLocalization.string(\"Open\", locale: Locale(identifier: identifier), bundle: applicationBundle) == expected\nAppLocalization.string(\"Open\", locale: Locale(identifier: identifier), bundle: applicationBundle) \u2192 \"Open\"\nexpected \u2192 \"\u958b\u304f\"",
+          "targetName": "ZforgeTests",
+          "testIdentifier": 37,
+          "testIdentifierString": "LocalizationTests/localizedOpen(identifier:expected:)",
+          "testIdentifierURL": "test://com.apple.xcode/Zforge/ZforgeTests/LocalizationTests/localizedOpen(identifier:expected:)",
+          "testName": "Service strings use the requested language even when the system uses another"
+        },
+        {
+          "failureText": "Expectation failed: condition(): Initial discovery: elapsed=9.85250198841095, polls=1, longest suspension=9.852471947669983, paths=[], idle=false, revision=0",
+          "targetName": "ZforgeTests",
+          "testIdentifier": 115,
+          "testIdentifierString": "TagCatalogTests/updatesGlobalCatalogueLive()",
+          "testIdentifierURL": "test://com.apple.xcode/Zforge/ZforgeTests/TagCatalogTests/updatesGlobalCatalogueLive()",
+          "testName": "File events update tags and results without navigating or refreshing"
+        }
+      ]
+    },
+    "ZforgeAIEntitiesIsolatedRegression": {
+      "result": "Passed",
+      "totalTestCount": 322,
+      "passedTests": 322,
+      "failedTests": 0,
+      "skippedTests": 0,
+      "devicesAndConfigurations": [
+        {
+          "device": {
+            "architecture": "arm64",
+            "deviceId": "<DEVICE_ID>",
+            "deviceName": "My Mac",
+            "modelName": "MacBook Air",
+            "osBuildNumber": "26A434",
+            "osVersion": "27.0.1",
+            "platform": "macOS"
+          },
+          "expectedFailures": 0,
+          "failedTests": 0,
+          "passedTests": 420,
+          "skippedTests": 0,
+          "testPlanConfiguration": {
+            "configurationId": "1",
+            "configurationName": "Test Scheme Action"
+          }
+        }
+      ],
+      "testFailures": []
+    },
+    "ZforgeAIEntitiesFinalRegression": {
+      "result": "Failed",
+      "totalTestCount": 324,
+      "passedTests": 322,
+      "failedTests": 2,
+      "skippedTests": 0,
+      "devicesAndConfigurations": [
+        {
+          "device": {
+            "architecture": "arm64",
+            "deviceId": "<DEVICE_ID>",
+            "deviceName": "My Mac",
+            "modelName": "MacBook Air",
+            "osBuildNumber": "26A434",
+            "osVersion": "27.0.1",
+            "platform": "macOS"
+          },
+          "expectedFailures": 0,
+          "failedTests": 2,
+          "passedTests": 420,
+          "skippedTests": 0,
+          "testPlanConfiguration": {
+            "configurationId": "1",
+            "configurationName": "Test Scheme Action"
+          }
+        }
+      ],
+      "testFailures": [
+        {
+          "failureText": "Caught error: Error Domain=NSCocoaErrorDomain Code=256 \"The file \u201cRootAlias\u201d couldn\u2019t be opened.\" UserInfo={NSURL=file://<USER_HOME>/Library/Containers/io.libor.Zforge/Data/tmp/ArchiveIndex-4931B26F-6218-4A70-B401-25E6EB0AD423/RootAlias, NSFilePath=<USER_HOME>/Library/Containers/io.libor.Zforge/Data/tmp/ArchiveIndex-4931B26F-6218-4A70-B401-25E6EB0AD423/RootAlias, NSUnderlyingError=0x750cd57960 {Error Domain=NSPOSIXErrorDomain Code=20 \"Not a directory\"}}",
+          "targetName": "ZforgeTests",
+          "testIdentifier": 16,
+          "testIdentifierString": "ArchiveIndexTests/contextDirectoryAlias()",
+          "testIdentifierURL": "test://com.apple.xcode/Zforge/ZforgeTests/ArchiveIndexTests/contextDirectoryAlias()",
+          "testName": "Canonical Spotlight identifiers also identify authorized archive views reached through a directory alias"
+        },
+        {
+          "failureText": "Expectation failed: await probe.scans.map { $0.map(\\.path) } == [[denied.path]]",
+          "targetName": "ZforgeTests",
+          "testIdentifier": 263,
+          "testIdentifierString": "TagCatalogTests/unreadableSubtreePreventsCheckpoint()",
+          "testIdentifierURL": "test://com.apple.xcode/Zforge/ZforgeTests/TagCatalogTests/unreadableSubtreePreventsCheckpoint()",
+          "testName": "A partial index retries its inaccessible subtree without rescanning accessible items"
+        }
+      ]
+    },
+    "ZforgeAIEntitiesFinalRegression2": {
+      "result": "Failed",
+      "totalTestCount": 324,
+      "passedTests": 323,
+      "failedTests": 1,
+      "skippedTests": 0,
+      "devicesAndConfigurations": [
+        {
+          "device": {
+            "architecture": "arm64",
+            "deviceId": "<DEVICE_ID>",
+            "deviceName": "My Mac",
+            "modelName": "MacBook Air",
+            "osBuildNumber": "26A434",
+            "osVersion": "27.0.1",
+            "platform": "macOS"
+          },
+          "expectedFailures": 0,
+          "failedTests": 1,
+          "passedTests": 421,
+          "skippedTests": 0,
+          "testPlanConfiguration": {
+            "configurationId": "1",
+            "configurationName": "Test Scheme Action"
+          }
+        }
+      ],
+      "testFailures": [
+        {
+          "failureText": "Expectation failed: elapsed < .milliseconds(100)\nelapsed \u2192 0.107476875 seconds\n.milliseconds(100) \u2192 0.1 seconds",
+          "targetName": "ZforgeTests",
+          "testIdentifier": 1,
+          "testIdentifierString": "ArchiveDiscoveryPerformanceTests/mixedDirectChildren()",
+          "testIdentifierURL": "test://com.apple.xcode/Zforge/ZforgeTests/ArchiveDiscoveryPerformanceTests/mixedDirectChildren()",
+          "testName": "A bounded 10000-child workload discovers 100 archives without recursive traversal"
+        }
+      ]
+    },
+    "ZforgeAIEntitiesFinalRegression3": {
+      "result": "Failed",
+      "totalTestCount": 324,
+      "passedTests": 317,
+      "failedTests": 7,
+      "skippedTests": 0,
+      "devicesAndConfigurations": [
+        {
+          "device": {
+            "architecture": "arm64",
+            "deviceId": "<DEVICE_ID>",
+            "deviceName": "My Mac",
+            "modelName": "MacBook Air",
+            "osBuildNumber": "26A434",
+            "osVersion": "27.0.1",
+            "platform": "macOS"
+          },
+          "expectedFailures": 0,
+          "failedTests": 9,
+          "passedTests": 413,
+          "skippedTests": 0,
+          "testPlanConfiguration": {
+            "configurationId": "1",
+            "configurationName": "Test Scheme Action"
+          }
+        }
+      ],
+      "testFailures": [
+        {
+          "failureText": "Expectation failed: await store.load()?.records[file.path] == [\"Unicode Boundary\": 6]",
+          "targetName": "ZforgeTests",
+          "testIdentifier": 212,
+          "testIdentifierString": "TagCatalogTests/discoveryRetainsLeadingCombiningFilename()",
+          "testIdentifierURL": "test://com.apple.xcode/Zforge/ZforgeTests/TagCatalogTests/discoveryRetainsLeadingCombiningFilename()",
+          "testName": "Initial discovery and cached reopening retain a filename beginning with a combining mark"
+        },
+        {
+          "failureText": "Expectation failed: await store.load()?.records[file.path] == [\"Quiet Cached\": 6]",
+          "targetName": "ZforgeTests",
+          "testIdentifier": 250,
+          "testIdentifierString": "TagCatalogTests/quietCheckpointDoesNotRereadTaggedRecords()",
+          "testIdentifierURL": "test://com.apple.xcode/Zforge/ZforgeTests/TagCatalogTests/quietCheckpointDoesNotRereadTaggedRecords()",
+          "testName": "A valid quiet checkpoint restores unchanged tags without scheduling metadata rereads"
+        },
+        {
+          "failureText": "Expectation failed: await store.load() != nil",
+          "targetName": "ZforgeTests",
+          "testIdentifier": 249,
+          "testIdentifierString": "TagCatalogTests/reopensCompletedIndexWithoutRecursiveScan()",
+          "testIdentifierURL": "test://com.apple.xcode/Zforge/ZforgeTests/TagCatalogTests/reopensCompletedIndexWithoutRecursiveScan()",
+          "testName": "A completed persistent catalog reopens without scanning the same authorized tree"
+        },
+        {
+          "failureText": "Expectation failed: await store.load() != nil",
+          "targetName": "ZforgeTests",
+          "testIdentifier": 253,
+          "testIdentifierString": "TagCatalogTests/replaysOfflineChanges()",
+          "testIdentifierURL": "test://com.apple.xcode/Zforge/ZforgeTests/TagCatalogTests/replaysOfflineChanges()",
+          "testName": "Persistent replay discovers offline edits, moves, additions and deletions without a full rescan"
+        },
+        {
+          "failureText": "Expectation failed: await store.load()?.records[alias.path] == [\"Linked Updated\": 4]",
+          "targetName": "ZforgeTests",
+          "testIdentifier": 251,
+          "testIdentifierString": "TagCatalogTests/restoredLinksRevalidateExternalTargets(hardLink:)",
+          "testIdentifierURL": "test://com.apple.xcode/Zforge/ZforgeTests/TagCatalogTests/restoredLinksRevalidateExternalTargets(hardLink:)",
+          "testName": "Restored linked items revalidate target metadata changed outside the watched scope"
+        },
+        {
+          "failureText": "Expectation failed: await store.load()?.scopes.count == 2",
+          "targetName": "ZforgeTests",
+          "testIdentifier": 252,
+          "testIdentifierString": "TagCatalogTests/restoresStagedAuthorization(quitBetweenGrants:)",
+          "testIdentifierURL": "test://com.apple.xcode/Zforge/ZforgeTests/TagCatalogTests/restoresStagedAuthorization(quitBetweenGrants:)",
+          "testName": "Staged authorization restores each cached scope without replacing the other scope's checkpoint"
+        },
+        {
+          "failureText": "Expectation failed: await store.load()",
+          "targetName": "ZforgeTests",
+          "testIdentifier": 263,
+          "testIdentifierString": "TagCatalogTests/unreadableSubtreePreventsCheckpoint()",
+          "testIdentifierURL": "test://com.apple.xcode/Zforge/ZforgeTests/TagCatalogTests/unreadableSubtreePreventsCheckpoint()",
+          "testName": "A partial index retries its inaccessible subtree without rescanning accessible items"
+        }
+      ]
+    },
+    "ZforgeAIEntitiesUnchangedTags": {
+      "result": "Failed",
+      "totalTestCount": 57,
+      "passedTests": 50,
+      "failedTests": 7,
+      "skippedTests": 0,
+      "devicesAndConfigurations": [
+        {
+          "device": {
+            "architecture": "arm64",
+            "deviceId": "<DEVICE_ID>",
+            "deviceName": "My Mac",
+            "modelName": "MacBook Air",
+            "osBuildNumber": "26A434",
+            "osVersion": "27.0.1",
+            "platform": "macOS"
+          },
+          "expectedFailures": 0,
+          "failedTests": 9,
+          "passedTests": 62,
+          "skippedTests": 0,
+          "testPlanConfiguration": {
+            "configurationId": "1",
+            "configurationName": "Test Scheme Action"
+          }
+        }
+      ],
+      "testFailures": [
+        {
+          "failureText": "Expectation failed: await store.load()?.records[file.path] == [\"Unicode Boundary\": 6]",
+          "targetName": "ZforgeTests",
+          "testIdentifier": 4,
+          "testIdentifierString": "TagCatalogTests/discoveryRetainsLeadingCombiningFilename()",
+          "testIdentifierURL": "test://com.apple.xcode/Zforge/ZforgeTests/TagCatalogTests/discoveryRetainsLeadingCombiningFilename()",
+          "testName": "Initial discovery and cached reopening retain a filename beginning with a combining mark"
+        },
+        {
+          "failureText": "Expectation failed: await store.load()?.records[file.path] == [\"Quiet Cached\": 6]",
+          "targetName": "ZforgeTests",
+          "testIdentifier": 42,
+          "testIdentifierString": "TagCatalogTests/quietCheckpointDoesNotRereadTaggedRecords()",
+          "testIdentifierURL": "test://com.apple.xcode/Zforge/ZforgeTests/TagCatalogTests/quietCheckpointDoesNotRereadTaggedRecords()",
+          "testName": "A valid quiet checkpoint restores unchanged tags without scheduling metadata rereads"
+        },
+        {
+          "failureText": "Expectation failed: await store.load() != nil",
+          "targetName": "ZforgeTests",
+          "testIdentifier": 41,
+          "testIdentifierString": "TagCatalogTests/reopensCompletedIndexWithoutRecursiveScan()",
+          "testIdentifierURL": "test://com.apple.xcode/Zforge/ZforgeTests/TagCatalogTests/reopensCompletedIndexWithoutRecursiveScan()",
+          "testName": "A completed persistent catalog reopens without scanning the same authorized tree"
+        },
+        {
+          "failureText": "Expectation failed: await store.load() != nil",
+          "targetName": "ZforgeTests",
+          "testIdentifier": 45,
+          "testIdentifierString": "TagCatalogTests/replaysOfflineChanges()",
+          "testIdentifierURL": "test://com.apple.xcode/Zforge/ZforgeTests/TagCatalogTests/replaysOfflineChanges()",
+          "testName": "Persistent replay discovers offline edits, moves, additions and deletions without a full rescan"
+        },
+        {
+          "failureText": "Expectation failed: await store.load()?.records[alias.path] == [\"Linked Updated\": 4]",
+          "targetName": "ZforgeTests",
+          "testIdentifier": 43,
+          "testIdentifierString": "TagCatalogTests/restoredLinksRevalidateExternalTargets(hardLink:)",
+          "testIdentifierURL": "test://com.apple.xcode/Zforge/ZforgeTests/TagCatalogTests/restoredLinksRevalidateExternalTargets(hardLink:)",
+          "testName": "Restored linked items revalidate target metadata changed outside the watched scope"
+        },
+        {
+          "failureText": "Expectation failed: await store.load()?.scopes.count == 2",
+          "targetName": "ZforgeTests",
+          "testIdentifier": 44,
+          "testIdentifierString": "TagCatalogTests/restoresStagedAuthorization(quitBetweenGrants:)",
+          "testIdentifierURL": "test://com.apple.xcode/Zforge/ZforgeTests/TagCatalogTests/restoresStagedAuthorization(quitBetweenGrants:)",
+          "testName": "Staged authorization restores each cached scope without replacing the other scope's checkpoint"
+        },
+        {
+          "failureText": "Expectation failed: await store.load()",
+          "targetName": "ZforgeTests",
+          "testIdentifier": 55,
+          "testIdentifierString": "TagCatalogTests/unreadableSubtreePreventsCheckpoint()",
+          "testIdentifierURL": "test://com.apple.xcode/Zforge/ZforgeTests/TagCatalogTests/unreadableSubtreePreventsCheckpoint()",
+          "testName": "A partial index retries its inaccessible subtree without rescanning accessible items"
+        }
+      ]
+    },
+    "ZforgeAIEntitiesAutomationUI14": {
+      "result": "Failed",
+      "totalTestCount": 1,
+      "passedTests": 0,
+      "failedTests": 1,
+      "skippedTests": 0,
+      "testFailures": [
+        {
+          "failureText": "The test runner failed to initialize for UI testing. (Underlying Error: Timed out while enabling automation mode.)",
+          "targetName": "ZforgeUITests",
+          "testIdentifier": 1,
+          "testIdentifierString": "ZforgeUITests-Runner (32843) encountered an error",
+          "testName": "ZforgeUITests-Runner (32843) encountered an error"
+        }
+      ]
+    }
+  },
+  "performance": {
+    "baselineNameMs": 45.119042,
+    "finalNameMs": 49.019791,
+    "finalSnapshotMs": 51.102,
+    "snapshotUserCpuSeconds": 0.041807,
+    "snapshotSystemCpuSeconds": 0.019972,
+    "wholeTestHostPeakRssBytes": 261734400,
+    "thresholds": {
+      "nameMs": 100,
+      "snapshotMs": 250,
+      "nativeInitial100EntitiesMs": 2000
+    }
+  },
+  "native": {
+    "installedBuild": 14,
+    "priorBuild13Index": {
+      "entities": 3,
+      "durationMs": 112.130583
+    },
+    "spotlightBuild13": "User reports discovery and opening; native archive content subsequently observed.",
+    "siriVoiceBuild13": "User reports English name resolution refusal.",
+    "probe": {
+      "bundle": "io.libor.ZforgeIntentProbe",
+      "build": "Signed installed Release build 3; warning-free compilation and strict verification pass. Build 2 retained for rollback.",
+      "execution": "Authorized by the user and executed; baseline Spotlight opening is user-confirmed, visible in native AX and logged. Direct Siri acceptance remains unresolved.",
+      "signedEntitlements": {
+        "com.apple.security.app-sandbox": true
+      },
+      "sourceSha256": "d0a6278849220a7813b7b6e6d550393565f4211a2527f15d0350a235409a59cf",
+      "baseline": {
+        "sourceSha256": "7b8b509ca43b84bd46a7d77407772dd30bc3a1c98ba32be917b6d9a12a701bdc",
+        "pid": 35893,
+        "indexedAt": "2026-10-11 12:11:03.914 America/Recife",
+        "spotlightPerformedAt": "2026-10-11 12:12:44.790 America/Recife",
+        "spotlight": "User corrected an accidental answer: result appears and opens. Attached screenshot and native AX display The OpenIntent ran.; identifier queries and perform logged.",
+        "typedNominal": {
+          "request": "Open Lyra Control.zip in Intent Probe",
+          "response": "I couldn\u2019t find the file \u201cLyra Control.zip\u201d on your device, so I wasn't able to open it in Intent Probe.",
+          "result": "Refused; window still showed No OpenIntent has run. before Spotlight opening."
+        },
+        "typedContextual": {
+          "request": "Open this archive in Intent Probe",
+          "response": "I can\u2019t find the file \u201cLyra Control.zip\u201d on your Mac. If you know where it\u2019s located, you can open it directly in Intent Probe.",
+          "result": "Refused; no additional query/perform in the captured baseline process."
+        },
+        "appOnlyControl": "Open Intent Probe: no returned response captured; inconclusive."
+      },
+      "draftFileSchema": {
+        "sourceSha256": "b55142421f00aad973ffcf9cdd9bad0e7beca693ac56aa48dc8826ae1de8cbb4",
+        "pid": 36341,
+        "entitySchema": {
+          "domain": "files",
+          "name": "FileEntity",
+          "version": "1.0.0"
+        },
+        "identity": "FileEntityIdentifier.draft(identifier: lyra-control)",
+        "indexedAt": "2026-10-11 12:18:54.413 America/Recife",
+        "typedRequest": "Open Lyra Control.zip in Intent Probe",
+        "typedResponse": "I can\u2019t find the file \u201cLyra Control.zip\u201d. If you can locate it in the Finder, you can drag it into Intent Probe to open it.",
+        "result": "Refused; no query or perform logged for this process."
+      },
+      "bundledFileSchema": {
+        "pid": 37266,
+        "fixtureBytes": 22,
+        "fixtureSha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85",
+        "identity": "FileEntityIdentifier.file(url:) for the bundled synthetic ZIP",
+        "contentURL": "The same synthetic bundle resource",
+        "indexedAt": "2026-10-11 17:15:03.159 America/Recife",
+        "build": "Release build succeeds without warnings; strict installed signature and sandbox-only entitlements pass.",
+        "typedRequest": "Open Lyra Control.zip in Intent Probe",
+        "result": "Typed final response not captured before voice UI. Subsequent voice app activation is observed by the user; supplied marker and logs do not establish OpenIntent execution.",
+        "spokenResult": "User first selected Executed, then supplied a screenshot showing No OpenIntent has run. App opening is confirmed; action execution is not.",
+        "nativeRouting": "PIDs 37266, 37500 and 38431 publish the entity and receive identifier queries between 17:15 and 17:18. No authored perform occurs in this captured interval."
+      },
+      "routingLimits": [
+        "Distinct metadata and identifiers change between variants; shared registration/timing conditions are not isolated.",
+        "No native Spotlight result is yet claimed for the draft or bundled variants.",
+        "No platform defect or production fix is established by a control refusal.",
+        "No user file access, network entitlement, permission reset or global index reset is used."
+      ],
+      "fileIdentifierTransport": {
+        "before": {
+          "bundle": "/tmp/ZforgeIntentProbeQueryBefore4.xcresult",
+          "distinct": 3,
+          "executions": 5,
+          "passedExecutions": 4,
+          "failedExecutions": 1,
+          "skipped": 0,
+          "failure": "The system entityIdentifierString round-trip resolves the fixture URL, but direct FileEntityIdentifier equality returns no entity.",
+          "queryVariantSha256": "406dfca74f2d584e5e128f9b362074f330e5748e58885c806dca2aa5f538b1b2",
+          "queryVariant": "Variants/BundledEquality preserves the failing query with the characterization test-host guards."
+        },
+        "after": {
+          "bundle": "/tmp/ZforgeIntentProbeQueryAfter.xcresult",
+          "distinct": 4,
+          "executions": 6,
+          "failed": 0,
+          "skipped": 0
+        },
+        "final": {
+          "bundle": "/tmp/ZforgeIntentProbeQueryFinal.xcresult",
+          "distinct": 5,
+          "executions": 7,
+          "failed": 0,
+          "skipped": 0
+        },
+        "fix": "Resolve incoming fileURL and accept only the exact published fixture URL; return the entity once.",
+        "release": "Build 2 installed and signature verified; only com.apple.security.app-sandbox=true.",
+        "nativeResult": {
+          "pid": 39211,
+          "indexedAt": "2026-10-11 17:29:58.231 America/Recife",
+          "typedResponse": "I can\u2019t find the file \u201cLyra Control.zip\u201d on your device. If you can locate it, you can open it directly in Intent Probe.",
+          "typedResult": "Refused; no corresponding query/perform in installed-process trace.",
+          "spokenResult": "User reports No OpenIntent has run.; native AX confirms that marker. Five identifier queries return one entity, with no authored perform in the captured interval.",
+          "spokenRouting": {
+            "pid": 39211,
+            "queryReturnCounts": [
+              1,
+              1,
+              1,
+              1,
+              1
+            ],
+            "queryTimestamps": [
+              "2026-10-11 17:42:47.391",
+              "2026-10-11 17:42:47.489",
+              "2026-10-11 17:43:01.251",
+              "2026-10-11 17:43:18.723",
+              "2026-10-11 17:43:28.985"
+            ],
+            "timezone": "America/Recife",
+            "authoredPerformObserved": false,
+            "log": "/tmp/ZforgeIntentProbe-build2-voice-routing.log",
+            "interpretation": "Installed identifier resolution succeeds; the internal cause of missing action dispatch remains unresolved."
+          }
+        }
+      },
+      "testHarnessLimits": [
+        "Initial project omitted the test target; no bundles or scenarios ran.",
+        "Two subsequent hosts did not execute scenarios and were interrupted; source-group/scheme association and Debug-only Xcode instrumentation were corrected.",
+        "Test hosts suppress index publication through an explicit test argument and XCTest environment; native routing evidence is process-specific.",
+        "Debug test-host signing uses Xcode instrumentation; installed Release remains sandbox-only."
+      ],
+      "testSourceSha256": "dae5103fccf1a0b208261c0b23687447b4f0a68d9c94d5eb7dc8e82df882cd7b",
+      "requestedIdentity": {
+        "before": {
+          "bundle": "/tmp/ZforgeIntentProbeIdentityBefore.xcresult",
+          "distinct": 6,
+          "executions": 8,
+          "passedExecutions": 7,
+          "failedExecutions": 1,
+          "skipped": 0,
+          "failure": "The query returns the correct fixture URL with an ephemeral identifier instead of the incoming bookmark-backed identity."
+        },
+        "after": {
+          "bundle": "/tmp/ZforgeIntentProbeIdentityAfter.xcresult",
+          "distinct": 6,
+          "executions": 8,
+          "failed": 0,
+          "skipped": 0
+        },
+        "fix": "Return the exact received FileEntityIdentifier after verifying its URL against the declared fixture.",
+        "retainedVariant": "Variants/ResolvedFreshIdentity/IntentProbeApp.swift",
+        "retainedVariantSha256": "20a3121de82574160bcaad8855d16224706859dfe3d41d0c39443f724d2d271a",
+        "interpretation": "A characterized diagnostic identity invariant; its relationship to the Siri dispatch failure is not established.",
+        "final": {
+          "bundle": "/tmp/ZforgeIntentProbeIdentityFinal3.xcresult",
+          "distinct": 6,
+          "executions": 8,
+          "failed": 0,
+          "skipped": 0,
+          "summary": {
+            "devicesAndConfigurations": [
+              {
+                "device": {
+                  "architecture": "arm64",
+                  "deviceId": "00008142-000241D1346B401C",
+                  "deviceName": "My Mac",
+                  "modelName": "MacBook Air",
+                  "osBuildNumber": "26A434",
+                  "osVersion": "27.0.1",
+                  "platform": "macOS"
+                },
+                "expectedFailures": 0,
+                "failedTests": 0,
+                "passedTests": 8,
+                "skippedTests": 0,
+                "testPlanConfiguration": {
+                  "configurationId": "1",
+                  "configurationName": "Test Scheme Action"
+                }
+              }
+            ],
+            "environmentDescription": "IntentProbe \u00b7 Built with macOS 27.0.1",
+            "expectedFailures": 0,
+            "failedTests": 0,
+            "finishTime": 1791752702.435,
+            "passedTests": 6,
+            "result": "Passed",
+            "runtimeWarnings": [],
+            "skippedTests": 0,
+            "startTime": 1791752699.305,
+            "statistics": [
+              {
+                "subtitle": "3 test runs",
+                "title": "1 test ran with dynamic parameters"
+              }
+            ],
+            "testFailures": [],
+            "title": "Test - IntentProbe",
+            "topInsights": [],
+            "totalTestCount": 6
+          }
+        },
+        "release": "Build 3 installed; sandbox-only entitlements and strict signature verified; fresh spoken Siri comparison pending.",
+        "spokenBuild3": {
+          "request": "Open Lyra Control.zip in Intent Probe",
+          "modality": "Spoken English, fresh Siri conversation requested",
+          "userResult": "The OpenIntent ran.",
+          "pid": 40699,
+          "performedAt": "2026-10-11 18:14:18.886 America/Recife",
+          "log": "/tmp/ZforgeIntentProbe-build3-voice-routing.log",
+          "interpretation": "User-confirmed direct spoken opening with a correlated authored perform. The control passes; this is not yet a production Zforge result."
+        }
+      },
+      "systemDispatchHarness": {
+        "initial": {
+          "bundle": "/tmp/ZforgeIntentProbeSystemDispatch.xcresult",
+          "scenarios": 2,
+          "failedScenarios": 2,
+          "assertionFailures": 6,
+          "result": "Bundle collision routes framework calls to installed PID 39211 while XCTest observes a different process. Named action performs at 17:51:40.357, but the test is not accepted."
+        },
+        "isolated": {
+          "bundle": "/tmp/ZforgeIntentProbeSystemDispatchIsolated.xcresult",
+          "scenarios": 2,
+          "failedScenarios": 2,
+          "assertionFailures": 5,
+          "result": "New Debug bundle is not present in system metadata; markers are stored in AX value, while the original test predicate reads label. Unit-host suppression also prevents the expected publication state."
+        },
+        "infrastructureChanges": [
+          "Debug bundle and display name separate from installed Release.",
+          "Match the exact AX value instead of a substring of label.",
+          "An explicit Debug-only system-test argument enables the synthetic index; ordinary unit hosts continue to suppress startup."
+        ],
+        "manualComparisonLimit": "A pending corrected-build-2 manual Spotlight comparison is contaminated by the automatic invocation. Do not count the resulting marker as Siri or Spotlight success.",
+        "valueAndGuardFix": {
+          "bundle": "/tmp/ZforgeIntentProbeSystemDispatchValue.xcresult",
+          "scenarios": 2,
+          "failedScenarios": 2,
+          "assertionFailures": 3,
+          "result": "Exact initial AX value is observed, but the temporary Debug bundle is unknown to system metadata and its publication stage does not complete. Native LaunchServices launch subsequently registers the test host; the final suite explicitly targets installed Release instead."
+        },
+        "final": {
+          "bundle": "/tmp/ZforgeIntentProbeInstalledDispatch3.xcresult",
+          "scenarios": 2,
+          "failed": 0,
+          "skipped": 0,
+          "testedBundle": "io.libor.ZforgeIntentProbe",
+          "testedReleaseBuild": "3",
+          "summary": {
+            "devicesAndConfigurations": [
+              {
+                "device": {
+                  "architecture": "arm64",
+                  "deviceId": "00008142-000241D1346B401C",
+                  "deviceName": "My Mac",
+                  "modelName": "MacBook Air",
+                  "osBuildNumber": "26A434",
+                  "osVersion": "27.0.1",
+                  "platform": "macOS"
+                },
+                "expectedFailures": 0,
+                "failedTests": 0,
+                "passedTests": 2,
+                "skippedTests": 0,
+                "testPlanConfiguration": {
+                  "configurationId": "1",
+                  "configurationName": "Test Scheme Action"
+                }
+              }
+            ],
+            "environmentDescription": "IntentProbeSystem \u00b7 Built with macOS 27.0.1",
+            "expectedFailures": 0,
+            "failedTests": 0,
+            "finishTime": 1791752628.891,
+            "passedTests": 2,
+            "result": "Passed",
+            "runtimeWarnings": [],
+            "skippedTests": 0,
+            "startTime": 1791752617.257,
+            "statistics": [],
+            "testFailures": [],
+            "title": "Test - IntentProbeSystem",
+            "topInsights": [],
+            "totalTestCount": 2
+          },
+          "routing": [
+            {
+              "route": "Name query -> OpenIntent -> visible status transition",
+              "pid": 40359,
+              "performedAt": "2026-10-11 18:03:41.706 America/Recife"
+            },
+            {
+              "route": "Spotlight query -> OpenIntent -> visible status transition",
+              "pid": 40365,
+              "performedAt": "2026-10-11 18:03:46.463 America/Recife"
+            }
+          ],
+          "limits": "Tests run system resolution/dispatch and assert the window. They do not test native Spotlight result selection or Siri language recognition."
+        }
+      },
+      "systemTestSourceSha256": "19e718804913c814eb7f2f900d5a66f6faa4d66889c863bd1f35c3886a10ffeb"
+    },
+    "initial100Entities": {
+      "durationMs": 150.059916,
+      "timestamp": "2026-10-11 11:12:33.901",
+      "fixtureCleanupEntities": 3,
+      "cleanupDurationMs": 26.52475
+    },
+    "idleWholeApplication": {
+      "pid": 32741,
+      "intervalSeconds": 10.015384792,
+      "before": {
+        "cpuSeconds": 6.14,
+        "rssBytes": 172867584
+      },
+      "after": {
+        "cpuSeconds": 7.26,
+        "rssBytes": 172867584
+      },
+      "cpuDeltaSeconds": 1.12,
+      "scope": "Whole normal application with Recents/Gallery visible; this does not isolate archive-index memory or CPU."
+    },
+    "mcpBuild14": {
+      "checks": [
+        "initialize/discovery",
+        "capabilities",
+        "unapproved access denied",
+        "typed arguments",
+        "UI grant -> real ZIP/7z round-trips and no replacement"
+      ],
+      "initialize_seconds": 0.087038208,
+      "child_user_cpu_seconds": 0.046393,
+      "child_system_cpu_seconds": 0.025897999999999997,
+      "child_maxrss_bytes": 45973504,
+      "elapsed_seconds": 0.350270583,
+      "exit_code": 0
+    },
+    "siriTypedBuild14": {
+      "nominalRequest": "Open Orion Demo.zip in Zforge",
+      "observedResponse": "I couldn't find the file \"Orion Demo.zip\" on your device. Please check the name and try again.",
+      "contextualRequest": "Open the selected archive in Zforge",
+      "contextualResult": "No returned response or observed opening; inconclusive.",
+      "installedProcessQueryOrPerformObserved": false,
+      "installedProcessId": 32741,
+      "scope": "Authored diagnostics across the retained installed-process log; does not exclude every system/helper event."
+    }
+  },
+  "limitations": [
+    "The final integration snapshot passes its new contracts but complete regression has preexisting tag persistence failures reproduced in unchanged 72a9ab7.",
+    "Source manifest isolates concurrent localization work; it is not whole shared-checkout approval.",
+    "macOS 26 runtime and broad UI/accessibility matrix are pending.",
+    "Native initial 100-entity publication passes; exclusive index idle CPU and incremental memory remain unmeasured.",
+    "Automation UI runner failed before scenarios; no final UI test passed."
+  ]
+}

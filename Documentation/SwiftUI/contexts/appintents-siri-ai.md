@@ -50,10 +50,10 @@ Zforge publishes four generic file actions and a macOS 27 system.open action wit
 - [Integrating your music app with Apple Intelligence](https://developer.apple.com/documentation/appintents/integrating-your-music-app-with-apple-intelligence) — expand on demand
 - [Integrating your photo app with Apple Intelligence](https://developer.apple.com/documentation/appintents/integrating-your-photo-app-with-apple-intelligence) — expand on demand
 - [Making actions and content discoverable by Apple Intelligence](appintents-siri-discoverability.md) — expand on demand
-- [Making app entities available in Spotlight](https://developer.apple.com/documentation/appintents/making-app-entities-available-in-spotlight) — expand on demand
+- [Making app entities available in Spotlight](appintents-spotlight-entity-indexing.md) — expand on demand
 - [NSCollectionViewAppIntentsDataSource](https://developer.apple.com/documentation/appintents/nscollectionviewappintentsdatasource) — expand on demand
 - [NSTableViewAppIntentsDataSource](https://developer.apple.com/documentation/appintents/nstableviewappintentsdatasource) — expand on demand
-- [Providing contextual cues to Apple Intelligence and Siri](https://developer.apple.com/documentation/appintents/providing-contextual-cues-to-apple-intelligence-and-siri) — expand on demand
+- [Providing contextual cues to Apple Intelligence and Siri](appintents-onscreen-entity-context.md) — expand on demand
 - [Spotlight integration](https://developer.apple.com/documentation/appintents/spotlight) — expand on demand
 - [UICollectionViewAppIntentsDataSource](https://developer.apple.com/documentation/appintents/uicollectionviewappintentsdatasource) — expand on demand
 - [UITableViewAppIntentsDataSource](https://developer.apple.com/documentation/appintents/uitableviewappintentsdatasource) — expand on demand

@@ -431,6 +431,7 @@ private struct BrowserListRow: View {
                 )
         }
         .browserDraggable(item: entry.item, state: state)
+        .browserArchiveContext(entry.item, isSelected: { state.selection.contains(entry.item.id) })
         .browserDirectoryDropTarget(
             state: state,
             item: entry.item,

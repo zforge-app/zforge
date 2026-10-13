@@ -1,0 +1,109 @@
+# Native Siri schema controls
+
+This diagnostic app isolates `system.open` and explicit Spotlight indexing from Zforge's MCP, engine, folder grants and archive-window handoff. It uses bundle `io.libor.ZforgeIntentProbe` and currently publishes only `Test Archive.zip`, renamed at the user's request for easier spoken testing. Earlier comparisons use `Lyra Control.zip`. It requests only the App Sandbox entitlement, reads no personal file contents and uses no network API.
+
+The user specifically authorized diagnostic execution. The baseline was executed and its Spotlight result opens: the user corrected an accidental negative answer, supplied a screenshot, and native AX and authored identifier/perform diagnostics independently confirm “The OpenIntent ran.” Direct typed nominal and contextual Siri requests refuse. Those routes remain separate.
+
+## Variants
+
+- `Baseline/IntentProbeApp.swift`: original IndexedEntity with String identity and no entity schema. Keep it outside the target's synchronized source group.
+- `Variants/DraftFile/IntentProbeApp.swift`: `files.file`, FileEntity and a draft identifier. Release compilation/signing/indexing pass; the nominal typed Siri request refuses without a query or perform.
+- `Variants/BundledEquality/IntentProbeApp.swift`: preserves the failing direct-equality query and characterization test-host guards.
+- `Variants/ResolvedFreshIdentity/IntentProbeApp.swift`: preserves build 2, which accepts the resolved URL but returns a newly constructed identifier.
+- `ProbeSources/IntentProbeApp.swift`: current `files.file` variant with a real FileEntityIdentifier, referencing the bundled 22-byte empty ZIP. Its Spotlight attribute contentURL names only that bundled fixture. Compilation/signing/indexing pass; final Siri and Spotlight acceptance are recorded in the evidence, without treating index completion as execution.
+
+The application target owns only `ProbeSources`; the separate unit target owns `ProbeTests`. Baseline and historical variants do not belong to either target. To reproduce a historical variant, copy its source into that directory in a separate checkout. Keep source hashes and request modality in the comparison; schema, identity and contentURL differ, so this is not a single-variable causal proof.
+
+## Build and test
+
+Build with Xcode 27 on macOS 27 using the project's development signing configuration:
+
+```sh
+xcodebuild -project IntentProbe.xcodeproj -scheme IntentProbe -configuration Release -destination 'platform=macOS' -derivedDataPath /tmp/ZforgeIntentProbeBuild build
+```
+
+Verify the signature, install the resulting app in Applications, and run the authorized diagnostic. Wait until the window says “The synthetic entity is indexed.” In a fresh native Siri conversation, ask in English:
+
+> Open Test Archive in Intent Probe
+
+Success requires the app to change from “No OpenIntent has run.” to “The OpenIntent ran.” and a corresponding authored perform diagnostic. Record Spotlight discovery/opening independently. Compare spoken and typed requests in separate sessions; saved shortcut execution is a different route. A prior successful marker is not proof of a later invocation.
+
+Diagnostics use subsystem `io.libor.ZforgeIntentProbe`, category `Routing`, and distinguish publication, name query, identifier query and perform without logging request text or private paths. Do not remove other apps, reset global registration/index caches or broaden grants to produce a passing result.
+
+The original compile rejected an AppEntity passed directly to appEntityIdentifier; EntityIdentifier corrects that call. The draft schema's initial compile warned against overriding its generated typeDisplayRepresentation; the override was removed and the final draft and bundled builds have no warnings. The inherited user-selected-file/debugger settings are removed; installed entitlements contain only `com.apple.security.app-sandbox=true`.
+
+[Routing reproduction and remaining acceptance](../../../Documentation/Benchmarks/siri-routing-reproduction.md); [versioned evidence and source hashes](../../../Documentation/Benchmarks/archive-entity-index-results.json).
+
+## File identity regression
+
+The initial bundled variant compares bookmark-backed FileEntityIdentifier values directly. A regression test proves that entityIdentifierString transport preserves the file URL while failing this equality check: three distinct contracts / five executions contain one failing transport execution. Resolve the incoming fileURL and compare it with the exact published fixture URL instead. The final five contracts / seven executions pass, including Codable/string/fresh identity, unknown/draft/foreign rejection, deduplication, names and suggestions. Tests do not redefine the failing expectation.
+
+Run the suite with `xcodebuild -project IntentProbe.xcodeproj -scheme IntentProbe -destination 'platform=macOS' -parallel-testing-enabled NO test`. The Debug test host uses standard Xcode debugger instrumentation; Release does not inject that entitlement and retains only App Sandbox. The dedicated test argument/environment prevents production index publication by the host. Initial missing-target/host-initialization attempts execute no scenarios and are not passing evidence. The installed build 2 contains the corrected query. Its fresh spoken comparison receives five identifier queries returning one entity, but retains No OpenIntent has run and logs no perform. Entity resolution and action dispatch are separate gates; native Spotlight on this corrected variant and direct system execution remain independent checks.
+
+## Preserving the requested identity
+
+A second characterization checks that a resolved entity retains the exact identifier the system requested. It fails against build 2 despite successful URL resolution (six contracts / eight executions, one failed execution) and passes after returning the received identifier with the verified fixture URL (six / eight, zero failures/skips). This corrects a diagnostic invariant; it is not established as the cause of the Siri dispatch failure.
+
+Debug uses the separate bundle `io.libor.ZforgeIntentProbe.TestHost` and display name Intent Probe Test Host. Release keeps `io.libor.ZforgeIntentProbe` and only App Sandbox. The separate `IntentProbeSystem` UI testing scheme uses App Intents Testing to resolve an entity by name or Spotlight, run OpenProbeContentIntent out-of-process and assert the actual window transition. Its explicit target is the installed Release bundle, which must be built, signed, installed and launched first. An implicit shared-bundle target sends calls to a different running copy; merely launching a new temporary bundle with XCTest does not establish system metadata registration. Failed intermediate results are retained in the benchmark evidence.
+
+Run the system suite with `xcodebuild -project IntentProbe.xcodeproj -scheme IntentProbeSystem -destination 'platform=macOS' -parallel-testing-enabled NO test`. These scenarios do not exercise Siri language recognition. The ordinary unit-test host suppresses indexing; only the explicit Debug system-test flag permits synthetic publication in that host. No permission or global index reset is part of test setup.
+
+**Final diagnostic build 3:** `/tmp/ZforgeIntentProbeIdentityFinal3.xcresult` passes six contracts / eight executions, zero failures/skips. `/tmp/ZforgeIntentProbeInstalledDispatch3.xcresult` executes and passes two UI-bundle App Intents Testing scenarios against the explicit installed Release bundle: named entity and Spotlight-index entity each run the system-open action and produce the visible status transition. Authored perform logs correlate with the tested processes at 18:03:41.706 (PID 40359) and 18:03:46.463 (PID 40365). This is real out-of-process dispatch, without proving Siri selected the action or testing a clicked native Spotlight search result. Initial collision, temporary-bundle registration, AX-label and startup-suppression failures are retained; the expectations are preserved and the final AX check matches the exact value. Build 3 compiles without warnings, verifies strict signing and only App Sandbox, with build 2 retained for rollback. No production Zforge migration or new Siri success is claimed.
+
+**Build-3 spoken control accepted:** the user reports The OpenIntent ran after the requested fresh English Siri utterance Open Lyra Control.zip in Intent Probe. Own Routing diagnostics correlate an identifier query/return and perform at 18:14:18.886 (PID 40699). Proceed with a modern files.file adapter for Zforge, preserving its existing path-based discovery/authorization, bounded index lifecycle, physical alias mapping, macOS 26 entity/action and saved String-target action compatibility. The modern index and onscreen associations must use the same transported file identity. File identifiers and explicit-path drafts never confer automation grants. Production acceptance remains pending until delivered tests and the installed Zforge Siri flow pass.
+
+
+## Installed Zforge acceptance harness
+
+`ProbeSystemTests/ZforgeDispatchTests.swift` is an opt-in system/UI acceptance harness for signed installed Zforge build 15. Select only `IntentProbeSystemTests/ZforgeDispatchTests` in the existing IntentProbeSystem scheme. The separate diagnostic test host avoids registering another Zforge Debug bundle during system dispatch testing. It requires the retained synthetic `Orion Demo.zip` fixture under `/tmp/ZforgeAutomationSmoke-20261007` and the existing explicit automation grant; it does not add grants or use personal archive contents. Scenarios resolve by name, retrieve from Spotlight, execute the modern action through AppIntentsTesting, inspect visible archive contents and compare selected onscreen associations in all four modes to the published Spotlight identity. These tests do not exercise Siri's spoken language recognition. Restore the previous browser mode and terminate the acceptance app when the scenario ends.
+
+## Opt-in native List selection comparison
+
+Build 4 retains the accepted build-3 entity/query/action and default interface. `--probe-selected-context` replaces the single displayed title with a native List whose synthetic row starts selected. `testNativeListReportsItsSelectedSyntheticEntity` checks the actual selected outlineRow before requiring one selected file annotation. The executed comparison confirms visible row selection but returns zero annotations, so selected-context acceptance remains open; this does not prove a unique framework defect. Historical compile/table-row selector failures are separate results and the corrected outlineRow selector preserves the same assertions. The exact accepted build-3 source is retained in `Variants/AcceptedBuild3`.
+
+Installed Zforge acceptance now targets build 22. Gesture checks synchronize on visible selection and an enabled contextual action; Columns waits for contents before inspecting its inactive trail. Name/Spotlight execution passes, but the selected-identity gate remains failing. No assertion is relaxed, no arbitrary sleep is added and no personal grant or global cache is changed. [Production counts and source fingerprints](../../../Documentation/Benchmarks/archive-file-schema-results.json).
+
+## Opt-in hidden compatibility schema comparison
+
+The 2026-10-12 user voice comparison accepts build 4: the modern action runs and its own perform event is retained. Production Zforge build 23 still fails the correctly transcribed ZIP name and extensionless name before a retained entity query or perform. Duplicate hidden/public opening schemas are a hypothesis, not an established cause.
+
+`PROBE_COMPATIBILITY_SCHEMA` adds a second, hidden String-target `system.open` action and its query in `ProbeSources/ProbeCompatibilitySchema.swift`. It refers only to the existing bundled ZIP and is never indexed. The modern file action, query, identity and donation remain. A separate compatibility marker/log distinguishes accidental dispatch to the additional action. Without the compilation condition, the original action/interface remain; `Variants/AcceptedBuild4` preserves the exact preceding source.
+
+From this diagnostic project directory, reproduce the current build 6 with:
+
+```sh
+xcodebuild -project IntentProbe.xcodeproj -scheme IntentProbe -configuration Release -destination 'platform=macOS' -derivedDataPath /tmp/ZforgeIntentProbeRenamedBuild6 CURRENT_PROJECT_VERSION=6 SWIFT_ACTIVE_COMPILATION_CONDITIONS='$(inherited) PROBE_COMPATIBILITY_SCHEMA' build
+```
+
+Use the same condition and build version for the unit and `IntentProbeSystem` schemes. Select only the two existing named/Spotlight dispatch cases for this comparison; the known failing selected-annotation scenarios retain their assertions and remain separate acceptance gates. Final build 5 passes 9 unit contracts / 11 executions, two installed dispatch scenarios, warning-free Release compilation and strict signing with only App Sandbox. The earlier passing unit run has one immutable-binding warning, corrected without changing any scenario or assertion.
+
+The installed rollback is `/tmp/ZforgeIntentProbeCompatibilityRollback4/Intent Probe.app`. Fresh manual PID 52717 starts with `No OpenIntent has run.` and indexed status, excluding the preceding automatic performs. Voice comparison with `Open Lyra Control.zip in Intent Probe` is pending. Do not infer Siri success from those automatic tests, or a production defect from metadata duplication alone. [Detailed results](../../../Documentation/Benchmarks/siri-routing-reproduction.md).
+
+That build-5 voice comparison is superseded by the requested pronunciation change. Build 6 replaces the fixture/display/query name with `Test Archive.zip`, preserving the 22 ZIP bytes and both actions. `Variants/CompatibilityBuild5` preserves the preceding source, tests and resource. The refined naming contract fails before the change, and all nine contracts / eleven executions pass afterward. Two installed system scenarios pass with the new visible title and no exposed Spotlight entity for the previous name. No assertion is weakened. The installed build-5 rollback is `/tmp/ZforgeIntentProbeRenameRollback5/Intent Probe.app`.
+
+The pre-restart voice baseline PID 54337 shows `No OpenIntent has run.` and indexed status. Say `Open Test Archive in Intent Probe` in a fresh English voice session, omitting `.zip`. Its result was initially pending and is updated in the recovery checkpoint below; the rename starts a new spoken baseline rather than proving a duplicate-schema cause or a Zforge fix.
+
+**Siri recovery checkpoint — 2026-10-12:** the user reports that Siri works again after changing its language and restarting. Installed Intent Probe build 6, already open, executes the modern action: native AX shows Test Archive.zip / The OpenIntent ran. / The synthetic entity is indexed., and its own Routing log records identifier results count=1 followed by Probe open action invoked at 17:20:23.048 local time (PID 2139), after the 17:11:48 boot. No automatic dispatch test is run in this interval. Both modern and hidden compatibility actions remain in this build, narrowing the hypothesis: the extra hidden action alone does not universally prevent Siri execution. The exact successful utterance and current Siri language are not independently captured; cold-start execution is not established. The language change and restart do not isolate a sole recovery cause. Production build 23 is prepared on Recents at 20:25:28 UTC (PID 2329), with the surviving 179-byte Documents fixture Vega Demo.zip unchanged. A fresh English voice comparison, Open Vega Demo in Zforge, must actually reveal Readme.txt. Production voice acceptance, selected onscreen annotations and saved String-target compatibility invocation remain open. The earlier production refusals remain historical evidence. [Recovery details](../../../Documentation/Benchmarks/siri-routing-reproduction.md).
+
+**Fresh typed Siri comparison — 2026-10-12:** the assistant tests native Siri in separate fresh English conversations, with installed Zforge build 23 (PID 2329) and Probe build 6 (PID 2139). Open Vega Demo in Zforge produces no observed assistant response or archive opening; this conversational result is inconclusive and is not a pass. Open Vega Demo.zip in Zforge explicitly receives I couldn't find the file "Vega Demo.zip" on your Mac. Please check the name and try again. The 179-byte Documents fixture exists and its recorded SHA-256 matches. Zforge remains on Recents, without Readme.txt or any authored ArchiveDiscovery query/perform in the captured 17:40:30–17:43:20 local interval. Open Test Archive in Intent Probe initially exposes only the request. The subsequent fresh full-name request, Open Test Archive.zip in Intent Probe, succeeds: seven identifier query/return pairs count=1 precede a new modern perform at 17:42:48.480. Its already-set window marker alone is not counted as new execution. This establishes typed control dispatch and a current production refusal before an authored query, without identifying a unique cause. These are four manual native Siri requests, not newly executed automated tests. Spoken production, selected annotations and saved compatibility invocation remain separate gates. [Detailed evidence](../../../Documentation/Benchmarks/siri-routing-reproduction.md).
+
+
+## Opt-in explicit availability comparison — build 7
+
+PROBE_RUNTIME_AVAILABILITY adds only explicit @available(macOS 27.0, *) declarations to ProbeEntity, ProbeQuery and OpenProbeContentIntent. The existing hidden compatibility condition remains enabled. Both actions, fixture bytes, name/query resolution and default suggestions are preserved. The exact accepted build-6 source/tests/system harness are retained in Variants/AcceptedBuild6.
+
+The separate metadata characterization fails before adding the declarations: 10 distinct cases / 12 executions, nine existing cases pass and one new case fails with three missing-version issues. Afterward all 10 cases / 12 executions pass with no warnings or skips. Release build 7 compiles warning-free and strict signing passes. Normalized exported metadata differs only in four explicit availability entries (including embedded target metadata); name/value pair order and generated constant indexes are normalized for comparison. Three existing native scenarios pass: Probe named/Spotlight dispatch and installed Zforge 23 Documents name/Spotlight dispatch, both revealing Readme.txt. The selected-annotation failures are not changed or relabeled.
+
+Fresh installed build-7 PID 5939 starts with No OpenIntent has run. and indexed status. The identical previously accepted typed request, Open Test Archive.zip in Intent Probe, receives I couldn’t find a file named “Test Archive.zip” to open in Intent Probe. Own Routing events retain publication but no query/perform. This single comparison is not a unique-cause conclusion: the accepted build 6 is restored for an A/B/A check, preserving signed build 7 at /tmp/ZforgeProbeAvailabilityRetained7/Intent Probe.app. No production code, grants, language/privacy settings or global registration/cache is changed.
+
+
+The availability rollback fails to restore Siri success; build 8 disables the availability condition and uses a newer bundle version, with separate wildcard metadata coverage. Its 10 unit contracts / 12 executions and two installed name/Spotlight dispatch scenarios pass; fresh typed original and app-first phrases still receive file-not-found. Build 7 is preserved in Variants/ExplicitAvailabilityBuild7 and its signed temporary bundle; build 6 remains in Variants/AcceptedBuild6 and signed rollback copies. Availability is not isolated as a cause.
+
+A read-only audit finds the current temporary Debug test host registered with internal name Intent Probe, despite its distinct TestHost bundle ID/display name. Scoped unregistration of the three owned temporary diagnostic paths is rejected by automatic approval because it changes the global Launch Services database. No cleanup is executed or bypassed. The user explicitly authorizes the concrete comparison, but automatic approval rejects it again because it prohibits global registration mutation even with permission. No registration, production code or authorization change is made.
+
+## In-app search and index inspection controls — 2026-10-12
+
+- `PROBE_SEARCH_IN_APP` adds `ProbeSearchInAppIntent`, a `system.searchInApp` action whose window marker reads “The search ran and matched Test Archive.zip.” Build it together with `PROBE_COMPATIBILITY_SCHEMA` and a newer `CURRENT_PROJECT_VERSION`; omitting the flag reproduces build 8. The compatibility metadata test expects three actions only when the flag is set. Installed builds 9–15 use it; build 8 is retained at `/tmp/ZforgeProbeSearchRollback8/Intent Probe.app`.
+- `--probe-inspect-index` (Release, launch argument only) reads back the Probe's own Spotlight item and logs, under category `IndexInspection`, the stored app-entity attributes (`_kMDItemAppEntitySchema`, type identifier, bundle ID, title, content type) without paths or bookmark data.
+
+Results: with the Probe closed, “In Intent Probe, open the archive named Test Archive.zip” and “Search for Test Archive in Intent Probe” both reach the search action (`SearchInApp@call … Found 1 search-in-app tool(s)`), launch the Probe and match; neither request chains an opening. “Open it” then runs the modern open action through Tier 1 with `onScreenEntities: 1`. “Open Test Archive.zip in Intent Probe” still refuses: Siri's app-entity search returns no items although the inspected item carries `_kMDItemAppEntitySchema=files.file`. Ten unit tests in three suites pass with both flags. [Planner evidence](../../../Documentation/Benchmarks/siri-routing-reproduction.md#planner-traces-and-in-app-search--2026-10-12-to-2026-10-13).

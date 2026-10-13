@@ -8,7 +8,7 @@ struct AutomationSettingsSection: View {
 
     var body: some View {
         Section("Automation") {
-            Text("Allow folders that agents may read and write. Existing browser permissions are separate. Removing a folder blocks new requests; running operations must be cancelled by their caller.")
+            Text("Allow folders that agents and Zforge shortcuts may read and write. Existing browser permissions are separate. Removing a folder blocks new requests; running operations must be cancelled by their caller.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -52,9 +52,39 @@ struct AutomationSettingsSection: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
-
+            Text("Archive names directly inside allowed folders are shared with Spotlight and Siri. Siri availability depends on macOS. Save shortcuts for compression and extraction.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+                .accessibilityIdentifier("automation-shortcuts-instructions")
+            if ArchiveContextCatalog.shared.unavailable {
+                HStack {
+                    Text("Archive search is unavailable. Try again.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    Button("Try Again") {
+                        Task { try? await ArchiveIndexRuntime.shared.reindex() }
+                    }
+                    .accessibilityIdentifier("automation-retry-index")
+                }
+            }
+            Button("Open Shortcuts") {
+                guard let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: "com.apple.shortcuts"),
+                      NSWorkspace.shared.open(url) else {
+                    error = AppLocalization.string("Shortcuts is unavailable on this Mac.")
+                    return
+                }
+            }
+            .accessibilityIdentifier("automation-open-shortcuts")
         }
         .task { await reload() }
+        .onReceive(NotificationCenter.default.publisher(for: AutomationGrantStore.changed)) { _ in
+            Task { await reload() }
+        }
+        .onReceive(DistributedNotificationCenter.default().publisher(for: AutomationGrantStore.changed, object: Bundle.main.bundleIdentifier.map { $0 as NSString })) { _ in
+            Task { await reload() }
+        }
         .alert("Automation", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) {
             Button("OK", role: .cancel) { error = nil }
         } message: { Text(error ?? "") }

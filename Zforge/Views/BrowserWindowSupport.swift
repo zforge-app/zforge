@@ -5,11 +5,45 @@ nonisolated struct BrowserWindowRequest: Codable, Hashable {
     let id: UUID
     let initialURL: URL?
     let tabSourceWindowNumber: Int?
+    let automationAccess: BrowserOpeningAccess?
+    /// Archive name search requested by a system action. Restoration repeats the
+    /// search under the then-current automation grants; no lease is serialized.
+    let archiveSearch: String?
 
-    init(id: UUID = UUID(), initialURL: URL? = nil, tabSourceWindowNumber: Int? = nil) {
+    init(id: UUID = UUID(), initialURL: URL? = nil, tabSourceWindowNumber: Int? = nil,
+         automationAccess: BrowserOpeningAccess? = nil, archiveSearch: String? = nil) {
         self.id = id
         self.initialURL = initialURL
         self.tabSourceWindowNumber = tabSourceWindowNumber
+        self.automationAccess = automationAccess
+        self.archiveSearch = archiveSearch
+    }
+
+    private enum CodingKeys: String, CodingKey { case id, initialURL, tabSourceWindowNumber, archiveSearch }
+    init(from decoder: any Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        id = try values.decode(UUID.self, forKey: .id)
+        initialURL = try values.decodeIfPresent(URL.self, forKey: .initialURL)
+        tabSourceWindowNumber = try values.decodeIfPresent(Int.self, forKey: .tabSourceWindowNumber)
+        archiveSearch = try values.decodeIfPresent(String.self, forKey: .archiveSearch)
+        automationAccess = nil
+    }
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.id == rhs.id && lhs.initialURL == rhs.initialURL && lhs.tabSourceWindowNumber == rhs.tabSourceWindowNumber
+            && lhs.archiveSearch == rhs.archiveSearch
+    }
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id); hasher.combine(initialURL); hasher.combine(tabSourceWindowNumber); hasher.combine(archiveSearch)
+    }
+}
+
+/// A live opening scope can be consumed once; restoration never grants access.
+@MainActor final class BrowserOpeningAccess {
+    private var lease: AutomationAccessLease?
+    init(_ lease: AutomationAccessLease) { self.lease = lease }
+    func take() -> AutomationAccessLease? {
+        defer { lease = nil }
+        return lease
     }
 }
 

@@ -452,6 +452,7 @@ final class FinderTagCatalog: NSObject {
                 let restoredRoots = reusableScopes.map { URL(fileURLWithPath: $0.path) }
                 let coldRoots = additions.filter { url in !restoredRoots.contains { $0.path == url.path } }
                 var cursors = journal?.cursors ?? [:]
+                var retryRoots: [URL] = []
                 if !restoredRoots.isEmpty, let snapshot {
                     for scope in reusableScopes { cursors[scope.path] = snapshot.cursors[scope.path] }
                     restoredIndex = true
@@ -468,16 +469,20 @@ final class FinderTagCatalog: NSObject {
                         let url = URL(fileURLWithPath: path)
                         deferredScans.insert(url)
                         pendingScans.insert(url)
+                        retryRoots.append(url)
                     }
                 }
                 journal?.stop()
                 let journal = TagJournal(onChanges: { [weak self] changes in
                     guard let self else { return }
-                    // A cold scan begins after history delivery. Its starting
-                    // tree already includes those historical changes; rescanning
-                    // them again would repeat the very first pass.
+                    // A cold scan begins after history delivery, and a restored
+                    // retry starts once the journal has started. Both starting
+                    // trees already include those historical changes; rescanning
+                    // them again would repeat the very same pass.
                     let changes = self.journal?.isReplaying == true
-                        ? changes.filter { change in !coldRoots.contains { TagScanRoots.covers($0.path, change.path) } }
+                        ? changes.filter { change in
+                            !(coldRoots + retryRoots).contains { TagScanRoots.covers($0.path, change.path) }
+                        }
                         : changes
                     filesChanged(changes)
                 }, onHistory: { [weak self] in self?.saveCheckpoint() })

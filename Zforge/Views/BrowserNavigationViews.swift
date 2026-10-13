@@ -90,6 +90,16 @@ struct BrowserBreadcrumb: View {
 
     @ViewBuilder
     private func componentIcon(_ component: BrowserPathComponent) -> some View {
+        if let systemImage = component.systemImage {
+            Image(systemName: systemImage)
+                .frame(width: 16, height: 16)
+        } else {
+            locationIcon(component)
+        }
+    }
+
+    @ViewBuilder
+    private func locationIcon(_ component: BrowserPathComponent) -> some View {
         switch component.location {
         case .recents:
             Image(systemName: "clock")

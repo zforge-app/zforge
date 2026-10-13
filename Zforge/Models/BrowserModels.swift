@@ -299,6 +299,8 @@ nonisolated struct BrowserPathComponent: Identifiable, Hashable, Sendable {
     let location: BrowserLocation
     let name: String
     let isArchive: Bool
+    /// Overrides the location's symbol, for example for archive search results.
+    var systemImage: String? = nil
 
     var id: BrowserLocation { location }
 }
@@ -331,6 +333,8 @@ nonisolated struct BrowserItem: Identifiable, Hashable, Sendable {
     var extendedMetadata = BrowserExtendedMetadata()
     /// True when an archive directory has at least one file anywhere below it.
     var archiveDirectoryContainsFiles = false
+    /// Cached local resource identity. It is a context hint, never an access grant.
+    var fileIdentity: Data? = nil
 
     var localURL: URL? { location.fileSystemURL }
 
@@ -401,7 +405,9 @@ nonisolated enum ArchiveFormatRegistry {
     static func recognizes(_ name: String) -> Bool {
         let lowercased = name.lowercased()
         if lowercased.hasSuffix(".7z.001") || lowercased.hasSuffix(".zip.001") { return true }
-        return commonExtensions.contains(URL(fileURLWithPath: lowercased).pathExtension)
+        // This is filename classification, not URL resolution. Constructing a
+        // relative file URL repeatedly consults the working directory.
+        return commonExtensions.contains((lowercased as NSString).pathExtension)
     }
 
     static func supportsUpdating(_ name: String) -> Bool {

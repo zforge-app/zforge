@@ -51,7 +51,7 @@ This domain does not make conforming types discoverable by Apple Intelligence or
 
 ### Content and parameter types
 
-- [file](https://developer.apple.com/documentation/appintents/appschema/filesentity/file) — An entity schema for a file. _(Apple Developer; expand on demand)_
+- [file](appintents-file-entity-schema.md) — An entity schema for a file. _(Apple Developer; expand on demand)_
 - [AppSchema.FilesEntity](https://developer.apple.com/documentation/appintents/appschema/filesentity) — Identifies entity schemas in the files domain. _(Apple Developer; expand on demand)_
 
 ### Shortcuts-specific domains

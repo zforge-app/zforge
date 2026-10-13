@@ -59,8 +59,10 @@ struct ContentView: View {
     @FocusState private var browserFocus: BrowserFocusTarget?
     let tabSourceWindowNumber: Int?
 
-    init(initialURL: URL? = nil, tabSourceWindowNumber: Int? = nil) {
-        _browser = State(initialValue: FileBrowserState(initialURL: initialURL))
+    init(initialURL: URL? = nil, tabSourceWindowNumber: Int? = nil, automationAccess: BrowserOpeningAccess? = nil,
+         archiveSearch: String? = nil) {
+        _browser = State(initialValue: FileBrowserState(initialURL: initialURL, automationAccessLease: automationAccess?.take(),
+            archiveSearch: archiveSearch))
         self.tabSourceWindowNumber = tabSourceWindowNumber
     }
 

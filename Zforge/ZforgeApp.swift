@@ -24,7 +24,7 @@ struct ZforgeApp: App {
         ) { request in
             BrowserWindowRoot(request: request, appDelegate: appDelegate)
         } defaultValue: {
-            BrowserWindowRequest(initialURL: appDelegate.takeNextArchiveURL())
+            appDelegate.makeDefaultWindowRequest()
         }
         .defaultSize(width: defaultWindowWidth, height: 720)
         .environment(\.locale, preferences.language.locale)
@@ -74,28 +74,37 @@ private struct BrowserWindowRoot: View {
     var body: some View {
         ContentView(
             initialURL: request.initialURL,
-            tabSourceWindowNumber: request.tabSourceWindowNumber
+            tabSourceWindowNumber: request.tabSourceWindowNumber,
+            automationAccess: request.automationAccess,
+            archiveSearch: request.archiveSearch
         )
             .id(request.id)
             .onAppear {
                 // A file can arrive after SwiftUI computes the default scene value.
                 // In that case, use the first new window for the archive.
-                if !hasAppeared && request.initialURL == nil,
-                   let url = appDelegate.takeNextArchiveURL() {
-                    request = BrowserWindowRequest(initialURL: url)
+                if !hasAppeared && request.initialURL == nil && request.archiveSearch == nil,
+                   let pending = appDelegate.takeNextArchiveRequest() {
+                    appDelegate.releaseLaunchWindow(request.id)
+                    request = pending
                 }
                 hasAppeared = true
                 AutomationPermissionUIFixture.startIfRequested()
                 openPendingArchives()
             }
             .onReceive(NotificationCenter.default.publisher(for: AppDelegate.archiveURLsReceived)) { _ in
+                // A request that launched Zforge replaces its untouched launch
+                // window, so the launch shows one window instead of two.
+                if let pending = appDelegate.takeRequest(forLaunchWindow: request.id) {
+                    request = pending
+                }
                 openPendingArchives()
             }
+            .onDisappear { appDelegate.releaseLaunchWindow(request.id) }
     }
 
     private func openPendingArchives() {
-        for url in appDelegate.takePendingArchiveURLs() {
-            openWindow(id: "browser", value: BrowserWindowRequest(initialURL: url))
+        for pending in appDelegate.takePendingArchiveRequests() {
+            openWindow(id: "browser", value: pending)
         }
     }
 }

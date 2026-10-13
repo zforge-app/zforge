@@ -241,3 +241,33 @@ To consult, first read this index and use `rg -n -i '<terms|symbols>' Documentat
 
 - [System content access](contexts/appintents-system-content-domain.md) — generic system opening supports Siri; SDK availability is checked separately.
 - [Generic Siri content opening](contexts/appintents-system-open-schema.md) — generic system opening supports Siri; SDK availability is checked separately.
+- [In-app search schema](contexts/appintents-system-search-in-app-schema.md) — macOS 27 searchInApp action; Siri's fallback when its own entity search finds nothing.
+
+## Apple Intelligence content discovery — 2026-10-11
+
+- [Spotlight entity indexing](contexts/appintents-spotlight-entity-indexing.md) — named indexes, explicit donations, reindexing and content opening.
+- [Onscreen entity context](contexts/appintents-onscreen-entity-context.md) — accurate visible/selected associations for native Siri context.
+
+### Siri routing controls — 2026-10-11
+
+- [Integration verification](contexts/appintents-integration-verification.md) — separate code, Shortcuts, Spotlight and Siri gates.
+- [FileEntity](contexts/appintents-file-entity.md) — document/file identity contract.
+- [File entity schema](contexts/appintents-file-entity-schema.md) — Siri support for the entity, distinct from Files actions.
+
+- [Testing App Intents through the system infrastructure](contexts/appintents-testing-code.md) — macOS 27 out-of-process resolution/dispatch, Spotlight and annotations.
+
+
+### Native file-view annotations — on-demand expansion, 2026-10-11
+
+- [swiftui-app-entity-identifier](contexts/swiftui-app-entity-identifier.md)
+- [swiftui-app-entity-ui-elements](contexts/swiftui-app-entity-ui-elements.md)
+- [appintents-test-view-annotations](contexts/appintents-test-view-annotations.md)
+
+### App intent visibility — on-demand expansion, 2026-10-12
+
+- [isDiscoverable](contexts/appintents-intent-discoverability.md) — Siri, Spotlight and Shortcuts availability; compatibility actions require independent migration validation.
+
+### Siri system health — on-demand expansion, 2026-10-12
+
+- [Siri troubleshooting](contexts/macos-siri-troubleshooting.md) — enabled state, network and microphone checks.
+- [Siri AI availability](contexts/macos-siri-ai-availability.md) — beta, matching English configuration and region boundaries.

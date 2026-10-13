@@ -1,16 +1,35 @@
 # ZF-43 / D-47 — Direct Siri archive discovery fails before App Intent dispatch
 
-Status: **open; development deferred to `codex/apple-intelligence`; root cause unconfirmed**. Recorded 2026-10-12 at the user's request. Related: ZF-43, OR-20, D-47.
+Status: **root cause identified in Siri's planner traces; two-step conversational opening implemented and natively verified on build 25 (2026-10-12/13); single-utterance opening remains blocked inside Siri's own app-entity search**. Recorded 2026-10-12 at the user's request; continued on `codex/apple-intelligence`. Related: ZF-43, OR-20, D-47.
+
+## Root cause from planner traces — 2026-10-12
+
+System logs of Siri's planner (`intelligenceflowd`, category `PlannerSupport`, and the search service `searchtoold`) were not part of the earlier comparisons. They show the same decision sequence for every recorded production and Probe request:
+
+1. The `Open` tool succeeds through **Tier 1 (system.open schema)** only when it already has an entity. Every recorded Tier 1 success — Probe 17:20:22 and 17:42:48, and the new controls below — has `extractToolContext … onScreenEntities ≥ 1`: the entity came from the visible, annotated window, not from a query.
+2. With `onScreenEntities: 0`, the planner runs `SearchTool agenticSearch`. Its app-entity branch (`isAppEntitySearch=1`) queries CoreSpotlight with filters including `(_kMDItemBundleID="com.apple.*" || _kMDItemAppEntitySchema=* || kMDItemFileProviderID=* || _kMDItemFileName=*)` and returns **0 items** for both Zforge and the Probe, although Spotlight's own UI finds the same donated entity. A read-back of the Probe's own index confirms the item carries `_kMDItemAppEntitySchema=files.file`, `_kMDItemAppEntityTypeIdentifier=ProbeEntity`, bundle ID and title, so the visible filter is satisfied; the remaining filters are redacted (`<private>`), and the semantic pipeline (`spotlightknowledged`) queues no work for these donations. The exclusion happens inside Apple's search service, before any app query — which is why no authored query or perform was ever retained.
+3. When the entity search is empty, phrasings such as “In Zforge, open the archive named Vega Demo.zip” call the app's **SearchInApp** tool, which failed with `No search-in-app schema (system.searchInApp or system.search) registered for bundleId: io.libor.Zforge` (18:09:05). This is the source of “I can't search within Zforge”. Other phrasings fall back to Tier 2, which only launches the app (“opens only Zforge”), or to file-not-found.
+
+Registration, availability annotations, the hidden compatibility schema, input modality and language are therefore not the deciding boundary for these requests. Named-index donation follows Apple's guidance and is not changed.
+
+## Implemented resolution — build 25
+
+Zforge adds a macOS 27 `@AppIntent(schema: .system.searchInApp)` action, **Search Archives** (`SearchZforgeArchivesIntent`). It opens a results window, `Search: “term”`, listing the direct archives in allowed automation folders whose names contain the term, in all four view modes, with the existing onscreen entity annotations. A single result is selected. The follow-up “Open it” then resolves the onscreen archive through Tier 1 and the existing `OpenZforgeFileContentIntent`, which still validates the target and live consent. Search terms never authorize paths. [Behavior](CURRENT-STATE.md#siri-in-app-archive-search--2026-10-13); [evidence](../Benchmarks/siri-routing-reproduction.md#planner-traces-and-in-app-search--2026-10-12-to-2026-10-13).
+
+## Remaining limit
+
+A single utterance such as “Open Vega Demo.zip in Zforge” depends on Siri's app-entity search returning the donated entity, which it did not for Zforge or the minimal Probe in the assistant's typed runs. On 2026-10-13 the user reports that this single utterance opened the archive with build 26; Siri then stopped responding after a spoken attempt, so the result is not independently captured and further Siri tests are paused. No public API or documented requirement explains the exclusion; record it as an Apple-side boundary, revisit on later macOS releases, and consider a Feedback Assistant report with a sysdiagnose captured immediately after a refusal.
 
 ## Continuation branch and delivery decision
 
 - **Development branch:** `codex/apple-intelligence`.
-- **Preserved implementation:** commit `ffee8fb` on `codex/apple-intelligence`, forked from `main` at `2b35eb9`, with the complete preserved Apple Intelligence implementation, tests, diagnostic variants and evidence preserved before the MCP-only delivery split.
+- **Branch source:** `main` at `2b35eb9`, with the complete current Apple Intelligence implementation, tests, diagnostic variants and evidence preserved before the MCP-only delivery split.
 - **Delivery decision, 2026-10-12:** deliver the validated MCP on `main`; keep App Intents, native archive-entity discovery/indexing, onscreen context and Siri diagnosis on this branch for future continuation. The original native shortcut actions are part of the deferred Apple integration too.
 - Shared filesystem/archive operations, contextual MCP folder consent and redundant-grant consolidation remain in the MCP delivery. Existing folder grants and unrelated 21-language localization work must be preserved.
+- **Merged into `main`, 2026-10-13:** at the user's request, this branch is merged into `main`, superseding the MCP-only split; the acceptance gates below remain open.
 - This issue remains open. Deferring the branch does not establish Siri, selected-context or saved-compatibility acceptance. Reconcile future branch integration against the MCP-only `main` contract; do not reintroduce deferred features without their recorded acceptance work.
 
-## Problem and impact
+## Original problem and impact
 
 Siri refuses direct requests to open an indexed, authorized archive in Zforge, reporting that it cannot search inside the app or cannot find the file. The captured failing intervals contain no authored entity query or open-action invocation from the installed application. Opening only the app does not satisfy the requested behavior.
 
@@ -18,7 +37,7 @@ The archive is discoverable through Spotlight and opens through native system di
 
 The minimal Intent Probe has accepted voice and typed executions, but later requests also fail in that control. The evidence does not establish a defect unique to Zforge, a voice-only requirement, or a specific Apple defect.
 
-## Historical diagnostic environment and prerequisites
+## Environment and prerequisites
 
 - macOS 27.0.1, build 26A434; Xcode 27, build 27A266a, macOS 27 SDK.
 - Signed installed Zforge build 23; deployment floor macOS 26.0. The modern `files.file` / `system.open` integration requires macOS 27.
@@ -73,11 +92,11 @@ Treat hidden compatibility actions, content types, availability, indexing timing
 
 ## References
 
-- On `codex/apple-intelligence`: `Documentation/Benchmarks/siri-routing-reproduction.md` contains the detailed reproduction and diagnostic history.
-- On `codex/apple-intelligence`: `Documentation/Benchmarks/archive-file-schema-results.json` contains structured results, metadata and source fingerprints.
+- [Detailed reproduction and diagnostic history](../Benchmarks/siri-routing-reproduction.md).
+- [Structured results, metadata and source fingerprints](../Benchmarks/archive-file-schema-results.json).
 - [Integration contract](AGENT-INTEGRATION-PLAN.md).
-- On `codex/apple-intelligence`: `BuildSupport/Automation/IntentProbe/README.md` describes the minimal control and preserved variants.
-- Deferred production sources on `codex/apple-intelligence`: `Zforge/Automation/ZforgeFileArchiveEntity.swift`, `ZforgeIntents.swift`, `ArchiveSpotlightIndex.swift`, `ArchiveFilePublication.swift`.
-- Deferred installed harness on `codex/apple-intelligence`: `BuildSupport/Automation/IntentProbe/ProbeSystemTests/ZforgeDispatchTests.swift`.
+- [Minimal control and preserved variants](../../BuildSupport/Automation/IntentProbe/README.md).
+- Production: `Zforge/Automation/ZforgeFileArchiveEntity.swift`, `ZforgeIntents.swift`, `ArchiveSpotlightIndex.swift`, `ArchiveFilePublication.swift`.
+- Installed harness: `BuildSupport/Automation/IntentProbe/ProbeSystemTests/ZforgeDispatchTests.swift`.
 
 Raw logs/result bundles are temporary; some pre-restart artifacts are absent. Verify artifact availability and fresh execution independently of historical counts. External reports must exclude security-scoped bookmark payloads, personal file contents and unrelated Siri history.

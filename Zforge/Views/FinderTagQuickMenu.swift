@@ -2,8 +2,8 @@ import AppKit
 
 @MainActor
 enum FinderTagQuickMenu {
-    static func tags(for items: [BrowserItem]) -> [FinderTag] {
-        var tags = FinderTagCatalog.shared.tags
+    static func tags(for items: [BrowserItem], catalogTags: [FinderTag] = FinderTagCatalog.shared.tags) -> [FinderTag] {
+        var tags = catalogTags
         for item in items {
             for name in item.tags where !tags.contains(where: { $0.name == name }) {
                 tags.append(FinderTag(name: name, colorIndex: item.tagColorIndexes[name] ?? 0))
@@ -13,9 +13,10 @@ enum FinderTagQuickMenu {
         return FinderTagPresentation.quickTags(tags)
     }
 
-    static func append(to menu: NSMenu, state: FileBrowserState, items: [BrowserItem]) {
+    static func append(to menu: NSMenu, state: FileBrowserState, items: [BrowserItem],
+                       catalogTags: [FinderTag] = FinderTagCatalog.shared.tags) {
         let enabled = !items.isEmpty && items.allSatisfy { $0.localURL != nil } && !state.archiveOperationInProgress
-        let tags = tags(for: items)
+        let tags = tags(for: items, catalogTags: catalogTags)
         let row = NSMenuItem(title: AppLocalization.string("Tags", locale: state.preferences.language.locale), action: nil, keyEquivalent: "")
         row.identifier = NSUserInterfaceItemIdentifier("quick-tags-" + items.map(\.name).joined(separator: ","))
         let view = NSView(frame: NSRect(x: 0, y: 0, width: 246, height: 36))

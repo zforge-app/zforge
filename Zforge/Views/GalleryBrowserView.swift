@@ -70,6 +70,7 @@ struct GalleryBrowserView: View {
                                         dragSession: dragSession
                                     )
                                     .browserItemContextMenu(state: state, item: item)
+                                    .browserArchiveContext(item, isSelected: { state.selection.contains(item.id) })
                                 }
                             }
                             .padding(10 * scale)

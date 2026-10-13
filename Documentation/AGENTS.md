@@ -18,7 +18,7 @@ The user's local checkouts are grouped under `~/Documents/dev/zforge`: the appli
 
 8. [`Requirements/ARCHIVE-DRAG-DROP-PLAN.md`](Requirements/ARCHIVE-DRAG-DROP-PLAN.md) — plan in force from ZF-30 for exit and reorganization of internal items, with confirmation and visual parity.
 
-9. [`Requirements/SIRI-DISCOVERY-ISSUE.md`](Requirements/SIRI-DISCOVERY-ISSUE.md) — deferred Apple Intelligence issue and continuation branch; not part of the MCP delivery.
+9. [`Requirements/SIRI-DISCOVERY-ISSUE.md`](Requirements/SIRI-DISCOVERY-ISSUE.md) — open ZF-43 / D-47 issue for direct Siri discovery and dispatch, with reproduction and closure criteria.
 
 ## Technical documentation SwiftUI
 

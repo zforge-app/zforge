@@ -38,7 +38,7 @@ The domain applies to apps that search or open content. Its open action supports
 
 ### Overview and featured references
 
-- [searchInApp](https://developer.apple.com/documentation/appintents/appschema/systemintent/searchinapp) — An intent schema that navigates to search results. _(Apple Developer; expand on demand)_
+- [searchInApp](appintents-system-search-in-app-schema.md) — An intent schema that navigates to search results. _(local context)_
 - [open](appintents-system-open-schema.md) — An intent schema that opens an item in the application. _(Apple Developer; expand on demand)_
 - [Apple Intelligence and Siri AI](https://developer.apple.com/documentation/appintents/apple-intelligence-and-siri-ai) — Integrate your app with Apple Intelligence and bring it to Siri AI. _(Apple Developer; expand on demand)_
 
