@@ -48,7 +48,8 @@ int ZFTagDirectoryNext(ZFTagDirectoryReader *reader, ZFTagDirectoryEntry *entry)
     while (true) {
         if (!reader->remaining) {
             struct attrlist attributes = { .bitmapcount = ATTR_BIT_MAP_COUNT,
-                .commonattr = ATTR_CMN_RETURNED_ATTRS | ATTR_CMN_NAME | ATTR_CMN_OBJTYPE | ATTR_CMN_FLAGS | ATTR_CMN_ERROR, .forkattr = ATTR_CMNEXT_EXT_FLAGS };
+                .commonattr = ATTR_CMN_RETURNED_ATTRS | ATTR_CMN_NAME | ATTR_CMN_OBJTYPE | ATTR_CMN_FNDRINFO | ATTR_CMN_FLAGS | ATTR_CMN_ERROR,
+                .forkattr = ATTR_CMNEXT_EXT_FLAGS };
             int count = getattrlistbulk(reader->descriptor, &attributes, reader->buffer, sizeof(reader->buffer), FSOPT_ATTR_CMN_EXTENDED | FSOPT_PACK_INVAL_ATTRS);
             if (count < 0) {
                 if (!reader->delivered) return -1;
@@ -79,9 +80,12 @@ int ZFTagDirectoryNext(ZFTagDirectoryReader *reader, ZFTagDirectoryEntry *entry)
         size_t referenceOffset = offset;
         attrreference_t name;
         uint64_t extended = 0;
+        uint8_t finderInfo[32];
         bool hasExtended = (returned.forkattr & ATTR_CMNEXT_EXT_FLAGS) != 0;
+        // Common attributes are packed in bit order: NAME, OBJTYPE, FNDRINFO, FLAGS.
         if (!field(base, length, &offset, &name, sizeof(name))
             || !field(base, length, &offset, &type, sizeof(type))
+            || !field(base, length, &offset, finderInfo, sizeof(finderInfo))
             || !field(base, length, &offset, &flags, sizeof(flags))
             || !field(base, length, &offset, &extended, sizeof(extended))) { reader->failed = true; return 0; }
         int64_t start = (int64_t)referenceOffset + name.attr_dataoffset;
@@ -104,6 +108,7 @@ int ZFTagDirectoryNext(ZFTagDirectoryReader *reader, ZFTagDirectoryEntry *entry)
             reader->delivered = true;
             return 1;
         }
+        bool hasFinderInfo = (returned.commonattr & ATTR_CMN_FNDRINFO) != 0;
         if ((returned.commonattr & (ATTR_CMN_OBJTYPE | ATTR_CMN_FLAGS)) != (ATTR_CMN_OBJTYPE | ATTR_CMN_FLAGS)) {
             struct stat info;
             if (lstat(reader->path, &info)) { if (errno != ENOENT) reader->failed = true; continue; }
@@ -114,7 +119,8 @@ int ZFTagDirectoryNext(ZFTagDirectoryReader *reader, ZFTagDirectoryEntry *entry)
             .isHidden = rawName[0] == '.' || (flags & UF_HIDDEN) != 0, .hasError = false,
             // getxattr follows a symlink. Its target may have tags even when
             // the link inode itself has no extended attributes.
-            .mayHaveXattrs = ZFTagMayHaveXattrs(type, hasExtended, extended) };
+            .mayHaveXattrs = ZFTagMayHaveXattrs(type, hasExtended, extended),
+            .mayBePackage = type == VDIR && ZFTagMayBePackage(rawName, hasFinderInfo ? finderInfo : NULL) };
         reader->delivered = true;
         return 1;
     }
@@ -122,6 +128,14 @@ int ZFTagDirectoryNext(ZFTagDirectoryReader *reader, ZFTagDirectoryEntry *entry)
 
 bool ZFTagMayHaveXattrs(uint32_t type, bool hasExtended, uint64_t extended) {
     return type == VLNK || !hasExtended || (extended & EF_NO_XATTRS) == 0;
+}
+
+bool ZFTagMayBePackage(const char *name, const uint8_t *finderInfo) {
+    // LaunchServices packages are identified by a filename extension or by the
+    // Finder bundle bit (kHasBundle, big-endian frFlags at bytes 8-9). Missing
+    // Finder info cannot rule out the bit.
+    if (!finderInfo || strchr(name, '.')) return true;
+    return (((uint16_t)finderInfo[8] << 8 | finderInfo[9]) & 0x2000) != 0;
 }
 
 uint32_t ZFTagObjectTypeFromMode(uint32_t mode) {

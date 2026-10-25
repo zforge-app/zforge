@@ -1,16 +1,14 @@
 import CryptoKit
 
 private actor ColdCounters {
-    var requestedPause = 0.0
-    var actualPause = 0.0
-    var pauseCalls = 0
+    var yieldCalls = 0
+    var yieldSeconds = 0.0
     var publishCalls = 0
     var publishSeconds = 0.0
     var records: [String: [String: Int]] = [:]
-    func paused(requested: Duration, actual: Duration) {
-        requestedPause += Self.seconds(requested)
-        actualPause += Self.seconds(actual)
-        pauseCalls += 1
+    func yielded(_ actual: Duration) {
+        yieldSeconds += Self.seconds(actual)
+        yieldCalls += 1
     }
     func published(_ batch: TaggedFileScanner.Batch) {
         let start = ContinuousClock.now
@@ -23,8 +21,7 @@ private actor ColdCounters {
     }
     func report() throws -> Data {
         let encoded = try JSONSerialization.data(withJSONObject: records, options: [.sortedKeys])
-        let report: [String: Any] = ["pause_requested_seconds": requestedPause, "pause_actual_seconds": actualPause,
-            "pause_calls": pauseCalls, "publish_calls": publishCalls,
+        let report: [String: Any] = ["yield_seconds": yieldSeconds, "yield_calls": yieldCalls, "publish_calls": publishCalls,
             "publish_seconds": publishSeconds, "tagged_records": records.count,
             "record_sha256": SHA256.hash(data: encoded).map { String(format: "%02x", $0) }.joined()]
         return try JSONSerialization.data(withJSONObject: report, options: [.sortedKeys])
@@ -36,10 +33,12 @@ struct ColdProfile {
     static func main() async throws {
         let stats = ColdCounters()
         var budget = TaggedFileScanner.Budget()
-        budget.pause = { duration in
+        budget.yieldSlice = {
+            // Production slice boundary (yield + cancellation), timed for attribution.
             let start = ContinuousClock.now
-            try await Task.sleep(for: duration)
-            await stats.paused(requested: duration, actual: start.duration(to: .now))
+            await Task.yield()
+            try Task.checkCancellation()
+            await stats.yielded(start.duration(to: .now))
         }
         let start = ContinuousClock.now
         var before = ZFBenchmarkUsage()

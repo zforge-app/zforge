@@ -36,6 +36,13 @@ nonisolated enum FinderTagMetadata {
     }
 
     static func readColorIndexes(atPath path: UnsafePointer<CChar>) -> ReadResult {
+        // A direct lookup of an absent attribute costs several times more than
+        // listing names (measured on the real Home tree, where protected
+        // provenance makes nearly every item carry some attribute). Both calls
+        // follow symlinks. Only a successful listing that omits the tag name is
+        // definitive; listing errors and oversized lists keep the direct read
+        // and its exact error semantics.
+        if listsTagAttribute(atPath: path) == false { return ReadResult(colors: [:], complete: true) }
         let size = getxattr(path, attribute, nil, 0, 0, 0)
         if size <= 0 {
             // Absence and a concurrently removed path are valid empty metadata;
@@ -49,6 +56,29 @@ nonisolated enum FinderTagMetadata {
         }
         guard count >= 0 else { return ReadResult(colors: [:], complete: false) }
         return ReadResult(colors: colorIndexes(in: Data(bytes.prefix(count))), complete: true)
+    }
+
+    /// `false` only when the complete NUL-separated name list was returned and
+    /// does not contain the tag attribute; `nil` when the list is unavailable.
+    static func listsTagAttribute(atPath path: UnsafePointer<CChar>, capacity: Int = 4096) -> Bool? {
+        withUnsafeTemporaryAllocation(of: CChar.self, capacity: capacity) { buffer -> Bool? in
+            let size = listxattr(path, buffer.baseAddress, buffer.count, 0)
+            guard size >= 0 else { return nil }
+            return attributeNames(UnsafeRawBufferPointer(rebasing: UnsafeRawBufferPointer(buffer)[..<size]),
+                contain: attributeBytes)
+        }
+    }
+
+    private static let attributeBytes = Array(attribute.utf8)
+
+    static func attributeNames(_ list: UnsafeRawBufferPointer, contain name: [UInt8]) -> Bool {
+        var start = list.startIndex
+        while start < list.endIndex {
+            let end = list[start...].firstIndex(of: 0) ?? list.endIndex
+            if end - start == name.count, list[start..<end].elementsEqual(name) { return true }
+            start = end + 1
+        }
+        return false
     }
 
     static func colorIndexes(in data: Data) -> [String: Int] {
