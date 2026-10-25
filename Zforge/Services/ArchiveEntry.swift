@@ -33,6 +33,26 @@ nonisolated enum ArchivePathPolicy {
 
 }
 
+/// Selected archive items: a path matches when it is a selected item or one of its descendants.
+/// Equivalent to `selected.contains { path == $0 || path.hasPrefix($0 + "/") }`, in time
+/// proportional to the path depth rather than to the number of selected items.
+nonisolated struct ArchivePathSelection {
+    private let paths: Set<String>
+
+    init(_ paths: [String]) { self.paths = Set(paths) }
+
+    func contains(_ path: String) -> Bool {
+        if paths.contains(path) { return true }
+        // A matching prefix always ends right before a "/" scalar; confirm each candidate
+        // with the original predicate so String comparison semantics stay identical.
+        for index in path.utf8.indices where path.utf8[index] == UInt8(ascii: "/") {
+            let prefix = String(decoding: path.utf8[..<index], as: UTF8.self)
+            if let match = paths.firstIndex(of: prefix), path.hasPrefix(paths[match] + "/") { return true }
+        }
+        return false
+    }
+}
+
 extension ArchiveEntry {
     nonisolated static func withParents(_ original: [String: Self]) -> [String: Self] {
         var entries = original

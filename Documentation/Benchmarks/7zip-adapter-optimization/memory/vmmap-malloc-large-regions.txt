@@ -1,0 +1,10 @@
+Malloc Large (empty)       7542400000-7542904000   [ 5136K  5120K  5120K     0K] rw-/rwx SM=PRV  
+Malloc Large (empty)       7542c00000-7548e28000   [ 98.2M  98.1M  98.1M     0K] rw-/rwx SM=PRV  
+Malloc Large (empty)       7549000000-7551000000   [128.0M 128.0M 128.0M     0K] rw-/rwx SM=PRV  
+Malloc Large (empty)       7551000000-7559000000   [128.0M 128.0M 128.0M     0K] rw-/rwx SM=PRV  
+Malloc Large (empty)       7559000000-7561000000   [128.0M 128.0M 128.0M     0K] rw-/rwx SM=PRV  
+Malloc Large (empty)       7561000000-7569000000   [128.0M 128.0M 128.0M     0K] rw-/rwx SM=PRV  
+Malloc Large (empty)       7569000000-756d050000   [ 64.3M  64.3M  64.3M     0K] rw-/rwx SM=PRV  
+Malloc Large (empty)       756d800000-7575800000   [128.0M 128.0M 128.0M     0K] rw-/rwx SM=PRV  
+Malloc Large (empty)       7575800000-757d800000   [128.0M 128.0M 128.0M     0K] rw-/rwx SM=PRV  
+Malloc Large (empty)             935.5M   935.4M   935.4M       0K       0K       0K       0K        9         see MALLOC ZONE table below

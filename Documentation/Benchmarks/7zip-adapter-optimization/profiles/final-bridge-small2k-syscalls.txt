@@ -1,0 +1,19 @@
+total syscalls 38558 total ns 117405704
+  16013      4.94 ms read
+   8018      1.49 ms lseek
+   2025      8.41 ms sys_close
+   2005     57.09 ms openat
+   2001      1.01 ms fstatat64
+   2001      0.81 ms mkdirat
+   2000      8.96 ms write
+   2000     13.55 ms fchmod
+   2000     10.03 ms fsetattrlist
+     94      0.07 ms mach_vm_protect_trap
+     58      1.88 ms mach_msg2_trap
+     30      0.14 ms sysctl
+     26      0.05 ms stat64
+     19      0.01 ms mach_vm_map_trap
+     16      0.16 ms open
+     12      0.01 ms mach_vm_deallocate_trap
+     12      0.01 ms mach_port_construct_trap
+     11      0.00 ms mach_port_mod_refs_trap

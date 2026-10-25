@@ -1,0 +1,93 @@
+total weight 954000000
+--- self
+ 30.29% __openat
+  8.81% __fchmod
+  7.76% lstat
+  7.23% close
+  5.03% fsetattrlist
+  3.88% write
+  1.89% _CFStringGetCStringPtrInternal
+  1.68% stat
+  1.57% read
+  1.36% _xzm_free_main
+  1.26% objc_msgSend
+  1.05% _CFRelease
+  0.94% __lseek
+  0.84% __CFStringCreateImmutableFunnel3
+  0.73% _xzm_xzone_malloc_tiny
+  0.73% specialized UnsafeBufferPointer._decomposed<A>(_:as:into:nullTerminated:)
+  0.63% <deduplicated_symbol>
+  0.52% _platform_memmove
+  0.52% __CF_IS_OBJC
+  0.52% swift_bridgeObjectRelease
+  0.52% CFStringCompareWithOptionsAndLocale
+  0.52% __getattrlist
+  0.42% _StringObject.sharedUTF8.getter
+  0.42% mach_absolute_time
+  0.42% _StringGuts.validateScalarRange(_:)
+  0.42% mkdirat
+  0.42% _xzm_xzone_malloc_freelist_outlined
+  0.31% specialized static String._uncheckedFromUTF8(_:isASCII:precalculatedUTF16Count:)
+  0.31% objc_release
+  0.31% bool swift::RefCounts<swift::RefCountBitsT<(swift::RefCountInlinedness)1>>::doDecrementSlow<(swift::PerformDeinit)1>(swift::RefCountBitsT<(s
+--- inclusive
+ 91.61% start_wqthread
+ 91.61% _dispatch_root_queue_drain
+ 91.61% <deduplicated_symbol>
+ 91.61% _pthread_wqthread
+ 91.61% _dispatch_worker_thread2
+ 91.51% partial apply for specialized closure #1 in closure #1 in closure #2 in NativeSevenZipBackend.perform<A>(resource:_:)
+ 91.51% specialized autoreleasepool<A, B>(invoking:)
+ 91.51% thunk for @escaping @callee_guaranteed @Sendable () -> ()
+ 91.51% _dispatch_client_callout
+ 91.51% specialized closure #1 in closure #1 in closure #2 in NativeSevenZipBackend.perform<A>(resource:_:)
+ 91.51% _dispatch_call_block_and_release
+ 91.30% specialized closure #1 in closure #1 in closure #1 in closure #2 in NativeSevenZipBackend.perform<A>(resource:_:)
+ 81.66% partial apply for closure #1 in NativeSevenZipBackend.extract(at:password:paths:destination:outputFile:byteLimit:)
+ 81.55% closure #1 in NativeSevenZipBackend.extract(at:password:paths:destination:outputFile:byteLimit:)
+ 61.22% +[ZFSevenZipBridge extractAtPath:password:indices:destinations:rootPath:byteLimit:operation:error:]
+ 60.90% NArchive::NZip::CHandler::Extract(unsigned int const*, unsigned int, int, IArchiveExtractCallback*)
+ 32.60% (anonymous namespace)::ExtractCallback::GetStream(unsigned int, ISequentialOutStream**, int)
+ 32.49% (anonymous namespace)::OpenOutput(NSString*, NSString*, int, std::__1::map<std::__1::basic_string<char, std::__1::char_traits<char>, std::__
+ 30.29% __openat
+ 30.29% openat
+ 21.28% (anonymous namespace)::ExtractCallback::SetOperationResult(int)
+  9.64% closure #1 in NativeSevenZipBackend.list(at:password:)
+  9.64% partial apply for closure #1 in NativeSevenZipBackend.list(at:password:)
+  9.01% _SwiftURL.standardizedFileURL.getter
+  8.81% __fchmod
+  8.81% fchmod
+  8.07% completeTaskAndRelease(swift::AsyncContext*, swift::SwiftError*)
+  8.07% specialized static EngineHarness.main()
+  8.07% specialized thunk for @escaping @convention(thin) @async () -> ()
+  7.76% lstat
+  7.76% URL.resolvingSymlinksInPath()
+  7.76% protocol witness for _URLProtocol.resolvingSymlinksInPath() in conformance _SwiftURL
+  7.34% CMyComPtr<ISequentialOutStream>::Release()
+  7.34% (anonymous namespace)::Output::Release()
+  7.34% (anonymous namespace)::Output::~Output()
+  7.23% close
+  6.92% String.resolvingSymlinksInPath.getter
+  6.50% specialized NativeSevenZipArchiveEngine.extractArchive(at:to:password:resolveConflict:progress:)
+  6.50% String._resolvingSymlinksInPath()
+  6.29% closure #1 in String._resolvingSymlinksInPath()
+  5.87% specialized NativeSevenZipArchiveEngine.conflictFilesToReplace(entries:selectedPaths:destinationURL:resolveConflict:)
+  5.45% NArchive::NZip::CZipDecoder::Decode(NArchive::NZip::CInArchive&, NArchive::NZip::CItemEx const&, ISequentialOutStream*, IArchiveExtractCallb
+  5.35% closure #1 in closure #1 in closure #1 in String._resolvingSymlinksInPath()
+  5.14% futimens
+  5.03% fsetattrlist
+  4.93% NCompress::CCopyCoder::Code(ISequentialInStream*, ISequentialOutStream*, unsigned long long const*, unsigned long long const*, ICompressProg
+  4.72% URL.appendingPathComponent(_:)
+  4.61% specialized _SwiftURL.appending<A>(path:directoryHint:encodingSlashes:)
+  4.51% specialized Collection<>.split(separator:maxSplits:omittingEmptySubsequences:)
+  4.40% static ArchivePathPolicy.safePath(_:)
+  4.40% specialized static ArchivePathPolicy.safePath(_:)
+  4.19% COutStreamWithCRC::Write(void const*, unsigned int, unsigned int*)
+  3.98% specialized Collection.split(maxSplits:omittingEmptySubsequences:whereSeparator:)
+  3.88% (anonymous namespace)::Output::Write(void const*, unsigned int, unsigned int*)
+  3.88% write
+  3.56% specialized Sequence.sorted(by:)
+  3.56% specialized UnsafeMutableBufferPointer._stableSortImpl(by:)
+  3.56% specialized MutableCollection<>.sort(by:)
+  3.46% specialized closure #1 in UnsafeMutableBufferPointer._stableSortImpl(by:)
+  2.94% +[ZFSevenZipBridge entriesAtPath:password:operation:error:]

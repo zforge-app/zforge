@@ -40,6 +40,8 @@ In each interaction, consult the affected requirements and update your contracts
 
 - [Benchmarks/7zip-ram.md](Benchmarks/7zip-ram.md) — RAM total Zforge and engines, real test with time series, baseline and post-cleaning.
 
+- [Benchmarks/7zip-adapter-optimization.md](Benchmarks/7zip-adapter-optimization.md) — ZF-25 / OR-11 / OR-12: pre-defined workloads and criteria, A/A baseline, profiles, one-at-a-time candidates, final CLI/bridge/`ArchiveServing` comparison and allocator-retention diagnosis.
+
 - [Benchmarks/icon-previews.md](Benchmarks/icon-previews.md) — bounded content-preview workload, disabled baseline, cold/warm latency, CPU, memory and main-actor response.
 
 - [Benchmarks/startup-tag-scan.md](Benchmarks/startup-tag-scan.md) — startup CPU/heap diagnosis, delivered bounded tag discovery, reproducible comparisons and remaining verification.

@@ -1,0 +1,93 @@
+total weight 4075000000
+--- self
+ 13.99% _CFStringGetCStringPtrInternal
+ 11.83% objc_msgSend
+  6.38% _StringGuts.append(_:)
+  6.23% _CFRelease
+  5.33% _CFRetain
+  5.10% closure #1 in _StringGuts._convertedToSmall()
+  4.81% -[__NSCFString _fastCStringContents:]
+  4.10% __openat
+  2.99% swift_bridgeObjectRelease
+  2.40% 0x19b3345ad
+  2.18% _stringCompareFastUTF8(_:_:expecting:bothNFC:)
+  1.77% _StringObject.getSharedUTF8Start()
+  1.74% _StringGuts._convertedToSmall()
+  1.74% _stringCompareInternal(_:_:expecting:)
+  1.69% -[__NSCFString release]
+  1.64% -[__NSCFString retain]
+  1.60% String.hasPrefix(_:)
+  1.42% DefaultStringInterpolation.appendLiteral(_:)
+  1.25% swift_bridgeObjectRetain
+  1.25% _platform_memcmp
+  1.23% _StringObject.sharedUTF8.getter
+  1.18% Substring.description.getter
+  1.10% Substring.init(_:)
+  1.08% DYLD-STUB$$swift_bridgeObjectRelease
+  1.08% objc_release
+  1.08% close
+  0.93% objc_retain
+  0.91% __fchmod
+  0.88% swift_bridgeObjectRetain_n
+  0.83% 0x1ab3462fd
+--- inclusive
+ 58.40% specialized Sequence.contains(where:)
+ 53.60% <deduplicated_symbol>
+ 53.50% _dispatch_client_callout
+ 53.50% _dispatch_call_block_and_release
+ 53.50% _dispatch_worker_thread2
+ 53.50% partial apply for specialized closure #1 in closure #1 in closure #2 in NativeSevenZipBackend.perform<A>(resource:_:)
+ 53.50% specialized closure #1 in closure #1 in closure #2 in NativeSevenZipBackend.perform<A>(resource:_:)
+ 53.50% thunk for @escaping @callee_guaranteed @Sendable () -> ()
+ 53.50% _pthread_wqthread
+ 53.50% start_wqthread
+ 53.50% _dispatch_root_queue_drain
+ 53.50% specialized autoreleasepool<A, B>(invoking:)
+ 53.47% specialized closure #1 in closure #1 in closure #1 in closure #2 in NativeSevenZipBackend.perform<A>(resource:_:)
+ 52.86% partial apply for closure #1 in NativeSevenZipBackend.extract(at:password:paths:destination:outputFile:byteLimit:)
+ 47.34% closure #1 in NativeSevenZipBackend.extract(at:password:paths:destination:outputFile:byteLimit:)
+ 46.43% completeTaskAndRelease(swift::AsyncContext*, swift::SwiftError*)
+ 46.43% specialized static EngineHarness.main()
+ 46.43% specialized thunk for @escaping @convention(thin) @async () -> ()
+ 45.01% specialized NativeSevenZipArchiveEngine.extractItems(_:to:password:resolveConflict:progress:)
+ 37.62% specialized NativeSevenZipArchiveEngine.conflictFilesToReplace(entries:selectedPaths:destinationURL:resolveConflict:)
+ 33.91% static String.+ infix(_:_:)
+ 29.47% specialized Sequence.filter<A>(_:)
+ 29.40% closure #2 in NativeSevenZipArchiveEngine.conflictFilesToReplace(entries:selectedPaths:destinationURL:resolveConflict:)
+ 29.40% closure #1 in implicit closure #1 in closure #2 in NativeSevenZipArchiveEngine.conflictFilesToReplace(entries:selectedPaths:destinationURL:r
+ 28.56% closure #1 in implicit closure #1 in closure #1 in NativeSevenZipBackend.extract(at:password:paths:destination:outputFile:byteLimit:)
+ 24.17% _StringGuts.append(_:)
+ 22.40% _stringCompare(_:_:expecting:)
+ 22.36% static String.== infix(_:_:)
+ 18.85% _stringCompareInternal(_:_:expecting:)
+ 15.17% _StringGuts._convertedToSmall()
+ 13.99% _CFStringGetCStringPtrInternal
+ 11.83% objc_msgSend
+ 11.56% _StringObject.sharedUTF8.getter
+  9.01% +[ZFSevenZipBridge extractAtPath:password:indices:destinations:rootPath:byteLimit:operation:error:]
+  8.93% NArchive::NZip::CHandler::Extract(unsigned int const*, unsigned int, int, IArchiveExtractCallback*)
+  6.26% _CFRelease
+  5.33% _CFRetain
+  5.18% swift_bridgeObjectRetain_n
+  5.10% closure #1 in _StringGuts._convertedToSmall()
+  4.81% -[__NSCFString _fastCStringContents:]
+  4.47% (anonymous namespace)::ExtractCallback::GetStream(unsigned int, ISequentialOutStream**, int)
+  4.47% (anonymous namespace)::OpenOutput(NSString*, NSString*, int, std::__1::map<std::__1::basic_string<char, std::__1::char_traits<char>, std::__
+  4.10% __openat
+  2.99% swift_bridgeObjectRelease
+  2.45% (anonymous namespace)::ExtractCallback::SetOperationResult(int)
+  2.40% 0x19b3345ad
+  2.18% _stringCompareFastUTF8(_:_:expecting:bothNFC:)
+  1.89% NArchive::NZip::CZipDecoder::Decode(NArchive::NZip::CInArchive&, NArchive::NZip::CItemEx const&, ISequentialOutStream*, IArchiveExtractCallb
+  1.87% NCompress::NDeflate::NDecoder::CCoder::Code(ISequentialInStream*, ISequentialOutStream*, unsigned long long const*, unsigned long long const
+  1.87% NCompress::NDeflate::NDecoder::CCoder::CodeReal(ISequentialOutStream*, ICompressProgressInfo*)
+  1.77% _StringObject.getSharedUTF8Start()
+  1.69% -[__NSCFString release]
+  1.64% -[__NSCFString retain]
+  1.60% String.hasPrefix(_:)
+  1.45% DefaultStringInterpolation.appendLiteral(_:)
+  1.33% specialized MutableCollection<>.sort(by:)
+  1.33% specialized Sequence.sorted(by:)
+  1.30% specialized UnsafeMutableBufferPointer._stableSortImpl(by:)
+  1.25% swift_bridgeObjectRetain
+  1.25% _platform_memcmp

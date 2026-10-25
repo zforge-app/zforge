@@ -71,8 +71,8 @@ nonisolated final class NativeSevenZipBackend: @unchecked Sendable {
         try await perform(resource: url) { operation in
             let records = try ZFSevenZipBridge.entries(atPath: url.path, password: password, operation: operation)
             var entries: [String: ArchiveEntry] = [:]
+            let fallback = url.deletingPathExtension().lastPathComponent
             for record in records {
-                let fallback = url.deletingPathExtension().lastPathComponent
                 let path = try ArchivePathPolicy.safePath(record.path.isEmpty ? fallback : record.path)
                 guard !path.isEmpty else { continue }
                 entries[path] = ArchiveEntry(
@@ -89,6 +89,29 @@ nonisolated final class NativeSevenZipBackend: @unchecked Sendable {
     func test(at url: URL, password: String?) async throws {
         try await perform(resource: url) { operation in
             try ZFSevenZipBridge.test(atPath: url.path, password: password, operation: operation)
+        }
+    }
+
+    /// Equivalent to `output.resolvingSymlinksInPath().path` for the containment check,
+    /// resolving each parent directory once. Only a symbolic-link leaf can redirect a path
+    /// beyond its resolved parent, so such leaves are still resolved in full.
+    private struct ContainmentResolver {
+        private var parents: [String: String] = [:]
+
+        mutating func resolvedPath(of output: URL) -> String {
+            var status = stat()
+            if lstat(output.path, &status) == 0 && (status.st_mode & S_IFMT) == S_IFLNK {
+                return output.resolvingSymlinksInPath().path
+            }
+            let parent = output.deletingLastPathComponent()
+            let resolved: String
+            if let cached = parents[parent.path] {
+                resolved = cached
+            } else {
+                resolved = parent.resolvingSymlinksInPath().path
+                parents[parent.path] = resolved
+            }
+            return resolved == "/" ? "/" + output.lastPathComponent : resolved + "/" + output.lastPathComponent
         }
     }
 
@@ -134,18 +157,19 @@ nonisolated final class NativeSevenZipBackend: @unchecked Sendable {
             var destinations: [String] = []
             var outputs: [(ZFSevenZipEntry, URL)] = []
             var preparedDirectories = Set<String>()
+            var resolver = ContainmentResolver()
+            let fallback = url.deletingPathExtension().lastPathComponent
+            let selection = ArchivePathSelection(paths)
             for record in records {
-                let fallback = url.deletingPathExtension().lastPathComponent
                 let path = try ArchivePathPolicy.safePath(record.path.isEmpty ? fallback : record.path)
-                guard paths.isEmpty || paths.contains(where: { path == $0 || path.hasPrefix($0 + "/") }) else { continue }
+                guard paths.isEmpty || selection.contains(path) else { continue }
                 if let outputFile, !record.directory {
                     indices.append(NSNumber(value: record.index)); destinations.append(outputFile.standardizedFileURL.resolvingSymlinksInPath().path)
                     outputs.append((record, outputFile))
                     break
                 }
                 let output = root.appendingPathComponent(path).standardizedFileURL
-                let resolved = output.resolvingSymlinksInPath()
-                guard resolved.path.hasPrefix(root.path + "/") else { throw ArchiveEngineError.unsafePath }
+                guard resolver.resolvedPath(of: output).hasPrefix(root.path + "/") else { throw ArchiveEngineError.unsafePath }
                 if record.directory {
                     if preparedDirectories.insert(output.path).inserted { try Self.prepareDirectory(output, under: root) }
                 } else {

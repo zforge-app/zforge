@@ -1,0 +1,702 @@
+[
+ {
+  "build": "baseline",
+  "kind": "bridge-static",
+  "cycle": -1,
+  "phase": "baseline",
+  "n": 3,
+  "median_mib": 2.4380264282226562,
+  "min_mib": 2.4223785400390625,
+  "max_mib": 2.4380264282226562
+ },
+ {
+  "build": "baseline",
+  "kind": "bridge-static",
+  "cycle": 0,
+  "phase": "create",
+  "n": 3,
+  "median_mib": 683.0010528564453,
+  "min_mib": 682.9698028564453,
+  "max_mib": 683.0479278564453
+ },
+ {
+  "build": "baseline",
+  "kind": "bridge-static",
+  "cycle": 0,
+  "phase": "extract",
+  "n": 3,
+  "median_mib": 939.7043609619141,
+  "min_mib": 939.6731109619141,
+  "max_mib": 939.7512359619141
+ },
+ {
+  "build": "baseline",
+  "kind": "bridge-static",
+  "cycle": 0,
+  "phase": "idle",
+  "n": 3,
+  "median_mib": 939.7043609619141,
+  "min_mib": 939.6731109619141,
+  "max_mib": 939.7512359619141
+ },
+ {
+  "build": "baseline",
+  "kind": "bridge-static",
+  "cycle": 0,
+  "phase": "list",
+  "n": 3,
+  "median_mib": 683.0791778564453,
+  "min_mib": 683.0791778564453,
+  "max_mib": 683.0948028564453
+ },
+ {
+  "build": "baseline",
+  "kind": "bridge-static",
+  "cycle": 0,
+  "phase": "test",
+  "n": 3,
+  "median_mib": 939.6418609619141,
+  "min_mib": 939.6262359619141,
+  "max_mib": 939.6887359619141
+ },
+ {
+  "build": "baseline",
+  "kind": "bridge-static",
+  "cycle": 1,
+  "phase": "create",
+  "n": 3,
+  "median_mib": 940.0324859619141,
+  "min_mib": 939.7043609619141,
+  "max_mib": 940.0793609619141
+ },
+ {
+  "build": "baseline",
+  "kind": "bridge-static",
+  "cycle": 1,
+  "phase": "extract",
+  "n": 3,
+  "median_mib": 940.0793609619141,
+  "min_mib": 939.7824859619141,
+  "max_mib": 940.1262359619141
+ },
+ {
+  "build": "baseline",
+  "kind": "bridge-static",
+  "cycle": 1,
+  "phase": "idle",
+  "n": 3,
+  "median_mib": 940.0949859619141,
+  "min_mib": 939.7981109619141,
+  "max_mib": 940.1418609619141
+ },
+ {
+  "build": "baseline",
+  "kind": "bridge-static",
+  "cycle": 1,
+  "phase": "list",
+  "n": 3,
+  "median_mib": 940.0637359619141,
+  "min_mib": 939.7356109619141,
+  "max_mib": 940.0949859619141
+ },
+ {
+  "build": "baseline",
+  "kind": "bridge-static",
+  "cycle": 1,
+  "phase": "test",
+  "n": 3,
+  "median_mib": 940.0793609619141,
+  "min_mib": 939.7512359619141,
+  "max_mib": 940.1106109619141
+ },
+ {
+  "build": "baseline",
+  "kind": "bridge-static",
+  "cycle": 2,
+  "phase": "create",
+  "n": 3,
+  "median_mib": 940.1418609619141,
+  "min_mib": 940.1106109619141,
+  "max_mib": 940.1574859619141
+ },
+ {
+  "build": "baseline",
+  "kind": "bridge-static",
+  "cycle": 2,
+  "phase": "extract",
+  "n": 3,
+  "median_mib": 940.1574859619141,
+  "min_mib": 940.1418609619141,
+  "max_mib": 940.1887359619141
+ },
+ {
+  "build": "baseline",
+  "kind": "bridge-static",
+  "cycle": 2,
+  "phase": "idle",
+  "n": 3,
+  "median_mib": 940.1574859619141,
+  "min_mib": 940.1574859619141,
+  "max_mib": 940.2043609619141
+ },
+ {
+  "build": "baseline",
+  "kind": "bridge-static",
+  "cycle": 2,
+  "phase": "list",
+  "n": 3,
+  "median_mib": 940.1418609619141,
+  "min_mib": 940.1106109619141,
+  "max_mib": 940.1887359619141
+ },
+ {
+  "build": "baseline",
+  "kind": "bridge-static",
+  "cycle": 2,
+  "phase": "test",
+  "n": 3,
+  "median_mib": 940.1418609619141,
+  "min_mib": 940.1106109619141,
+  "max_mib": 940.1887359619141
+ },
+ {
+  "build": "baseline",
+  "kind": "engine-static",
+  "cycle": -1,
+  "phase": "baseline",
+  "n": 3,
+  "median_mib": 1.969207763671875,
+  "min_mib": 1.969207763671875,
+  "max_mib": 1.969207763671875
+ },
+ {
+  "build": "baseline",
+  "kind": "engine-static",
+  "cycle": 0,
+  "phase": "cleanup",
+  "n": 3,
+  "median_mib": 940.3606109619141,
+  "min_mib": 940.3449859619141,
+  "max_mib": 940.4074859619141
+ },
+ {
+  "build": "baseline",
+  "kind": "engine-static",
+  "cycle": 0,
+  "phase": "create",
+  "n": 3,
+  "median_mib": 683.6729278564453,
+  "min_mib": 683.6260299682617,
+  "max_mib": 683.6885299682617
+ },
+ {
+  "build": "baseline",
+  "kind": "engine-static",
+  "cycle": 0,
+  "phase": "extract",
+  "n": 3,
+  "median_mib": 940.3293609619141,
+  "min_mib": 940.3137359619141,
+  "max_mib": 940.3762359619141
+ },
+ {
+  "build": "baseline",
+  "kind": "engine-static",
+  "cycle": 0,
+  "phase": "idle",
+  "n": 3,
+  "median_mib": 940.3762359619141,
+  "min_mib": 940.3606109619141,
+  "max_mib": 940.4231109619141
+ },
+ {
+  "build": "baseline",
+  "kind": "engine-static",
+  "cycle": 0,
+  "phase": "list",
+  "n": 3,
+  "median_mib": 683.9073028564453,
+  "min_mib": 683.8604049682617,
+  "max_mib": 683.9541778564453
+ },
+ {
+  "build": "baseline",
+  "kind": "engine-static",
+  "cycle": 0,
+  "phase": "test",
+  "n": 3,
+  "median_mib": 940.2043609619141,
+  "min_mib": 940.1730880737305,
+  "max_mib": 940.2824859619141
+ },
+ {
+  "build": "baseline",
+  "kind": "engine-static",
+  "cycle": 1,
+  "phase": "cleanup",
+  "n": 3,
+  "median_mib": 940.5324859619141,
+  "min_mib": 940.5168609619141,
+  "max_mib": 940.9231338500977
+ },
+ {
+  "build": "baseline",
+  "kind": "engine-static",
+  "cycle": 1,
+  "phase": "create",
+  "n": 3,
+  "median_mib": 940.3918609619141,
+  "min_mib": 940.3762359619141,
+  "max_mib": 940.7981338500977
+ },
+ {
+  "build": "baseline",
+  "kind": "engine-static",
+  "cycle": 1,
+  "phase": "extract",
+  "n": 3,
+  "median_mib": 940.4856109619141,
+  "min_mib": 940.4699859619141,
+  "max_mib": 940.8762588500977
+ },
+ {
+  "build": "baseline",
+  "kind": "engine-static",
+  "cycle": 1,
+  "phase": "idle",
+  "n": 3,
+  "median_mib": 940.5324859619141,
+  "min_mib": 940.5168609619141,
+  "max_mib": 940.9231338500977
+ },
+ {
+  "build": "baseline",
+  "kind": "engine-static",
+  "cycle": 1,
+  "phase": "list",
+  "n": 3,
+  "median_mib": 940.4074859619141,
+  "min_mib": 940.3918609619141,
+  "max_mib": 940.8293838500977
+ },
+ {
+  "build": "baseline",
+  "kind": "engine-static",
+  "cycle": 1,
+  "phase": "test",
+  "n": 3,
+  "median_mib": 940.4543609619141,
+  "min_mib": 940.4387359619141,
+  "max_mib": 940.8606338500977
+ },
+ {
+  "build": "baseline",
+  "kind": "engine-static",
+  "cycle": 2,
+  "phase": "cleanup",
+  "n": 3,
+  "median_mib": 940.5481109619141,
+  "min_mib": 940.5481109619141,
+  "max_mib": 940.9387588500977
+ },
+ {
+  "build": "baseline",
+  "kind": "engine-static",
+  "cycle": 2,
+  "phase": "create",
+  "n": 3,
+  "median_mib": 940.5481109619141,
+  "min_mib": 940.5324859619141,
+  "max_mib": 940.9387588500977
+ },
+ {
+  "build": "baseline",
+  "kind": "engine-static",
+  "cycle": 2,
+  "phase": "extract",
+  "n": 3,
+  "median_mib": 940.5481109619141,
+  "min_mib": 940.5481109619141,
+  "max_mib": 940.9387588500977
+ },
+ {
+  "build": "baseline",
+  "kind": "engine-static",
+  "cycle": 2,
+  "phase": "idle",
+  "n": 3,
+  "median_mib": 940.5481109619141,
+  "min_mib": 940.5481109619141,
+  "max_mib": 940.9387588500977
+ },
+ {
+  "build": "baseline",
+  "kind": "engine-static",
+  "cycle": 2,
+  "phase": "list",
+  "n": 3,
+  "median_mib": 940.5481109619141,
+  "min_mib": 940.5481109619141,
+  "max_mib": 940.9387588500977
+ },
+ {
+  "build": "baseline",
+  "kind": "engine-static",
+  "cycle": 2,
+  "phase": "test",
+  "n": 3,
+  "median_mib": 940.5481109619141,
+  "min_mib": 940.5481109619141,
+  "max_mib": 940.9387588500977
+ },
+ {
+  "build": "c3",
+  "kind": "bridge-static",
+  "cycle": -1,
+  "phase": "baseline",
+  "n": 3,
+  "median_mib": 2.4067764282226562,
+  "min_mib": 2.4067764282226562,
+  "max_mib": 2.4380035400390625
+ },
+ {
+  "build": "c3",
+  "kind": "bridge-static",
+  "cycle": 0,
+  "phase": "create",
+  "n": 3,
+  "median_mib": 683.0166778564453,
+  "min_mib": 682.9854278564453,
+  "max_mib": 683.0479278564453
+ },
+ {
+  "build": "c3",
+  "kind": "bridge-static",
+  "cycle": 0,
+  "phase": "extract",
+  "n": 3,
+  "median_mib": 939.6418609619141,
+  "min_mib": 939.6262359619141,
+  "max_mib": 940.2668609619141
+ },
+ {
+  "build": "c3",
+  "kind": "bridge-static",
+  "cycle": 0,
+  "phase": "idle",
+  "n": 3,
+  "median_mib": 939.6418609619141,
+  "min_mib": 939.6262359619141,
+  "max_mib": 940.2668609619141
+ },
+ {
+  "build": "c3",
+  "kind": "bridge-static",
+  "cycle": 0,
+  "phase": "list",
+  "n": 3,
+  "median_mib": 683.0948028564453,
+  "min_mib": 683.0791778564453,
+  "max_mib": 683.0948028564453
+ },
+ {
+  "build": "c3",
+  "kind": "bridge-static",
+  "cycle": 0,
+  "phase": "test",
+  "n": 3,
+  "median_mib": 939.6106109619141,
+  "min_mib": 939.6106109619141,
+  "max_mib": 939.6574859619141
+ },
+ {
+  "build": "c3",
+  "kind": "bridge-static",
+  "cycle": 1,
+  "phase": "create",
+  "n": 3,
+  "median_mib": 939.6731109619141,
+  "min_mib": 939.6418609619141,
+  "max_mib": 940.2981109619141
+ },
+ {
+  "build": "c3",
+  "kind": "bridge-static",
+  "cycle": 1,
+  "phase": "extract",
+  "n": 3,
+  "median_mib": 939.7512359619141,
+  "min_mib": 939.6887359619141,
+  "max_mib": 940.3449859619141
+ },
+ {
+  "build": "c3",
+  "kind": "bridge-static",
+  "cycle": 1,
+  "phase": "idle",
+  "n": 3,
+  "median_mib": 939.7668609619141,
+  "min_mib": 939.7043609619141,
+  "max_mib": 940.3606109619141
+ },
+ {
+  "build": "c3",
+  "kind": "bridge-static",
+  "cycle": 1,
+  "phase": "list",
+  "n": 3,
+  "median_mib": 939.7043609619141,
+  "min_mib": 939.6731109619141,
+  "max_mib": 940.3137359619141
+ },
+ {
+  "build": "c3",
+  "kind": "bridge-static",
+  "cycle": 1,
+  "phase": "test",
+  "n": 3,
+  "median_mib": 939.7356109619141,
+  "min_mib": 939.6887359619141,
+  "max_mib": 940.3293609619141
+ },
+ {
+  "build": "c3",
+  "kind": "bridge-static",
+  "cycle": 2,
+  "phase": "create",
+  "n": 3,
+  "median_mib": 940.0637359619141,
+  "min_mib": 939.7043609619141,
+  "max_mib": 940.3762359619141
+ },
+ {
+  "build": "c3",
+  "kind": "bridge-static",
+  "cycle": 2,
+  "phase": "extract",
+  "n": 3,
+  "median_mib": 940.1262359619141,
+  "min_mib": 939.7824859619141,
+  "max_mib": 940.4699859619141
+ },
+ {
+  "build": "c3",
+  "kind": "bridge-static",
+  "cycle": 2,
+  "phase": "idle",
+  "n": 3,
+  "median_mib": 940.1262359619141,
+  "min_mib": 939.7981109619141,
+  "max_mib": 940.4856109619141
+ },
+ {
+  "build": "c3",
+  "kind": "bridge-static",
+  "cycle": 2,
+  "phase": "list",
+  "n": 3,
+  "median_mib": 940.0637359619141,
+  "min_mib": 939.7199859619141,
+  "max_mib": 940.4387359619141
+ },
+ {
+  "build": "c3",
+  "kind": "bridge-static",
+  "cycle": 2,
+  "phase": "test",
+  "n": 3,
+  "median_mib": 940.1106109619141,
+  "min_mib": 939.7668609619141,
+  "max_mib": 940.4387359619141
+ },
+ {
+  "build": "c3",
+  "kind": "engine-static",
+  "cycle": -1,
+  "phase": "baseline",
+  "n": 3,
+  "median_mib": 1.937957763671875,
+  "min_mib": 1.937957763671875,
+  "max_mib": 1.937957763671875
+ },
+ {
+  "build": "c3",
+  "kind": "engine-static",
+  "cycle": 0,
+  "phase": "cleanup",
+  "n": 3,
+  "median_mib": 940.2980880737305,
+  "min_mib": 940.2668609619141,
+  "max_mib": 940.6731109619141
+ },
+ {
+  "build": "c3",
+  "kind": "engine-static",
+  "cycle": 0,
+  "phase": "create",
+  "n": 3,
+  "median_mib": 683.5479278564453,
+  "min_mib": 683.5322799682617,
+  "max_mib": 683.5791778564453
+ },
+ {
+  "build": "c3",
+  "kind": "engine-static",
+  "cycle": 0,
+  "phase": "extract",
+  "n": 3,
+  "median_mib": 940.2824630737305,
+  "min_mib": 940.2512359619141,
+  "max_mib": 940.6574859619141
+ },
+ {
+  "build": "c3",
+  "kind": "engine-static",
+  "cycle": 0,
+  "phase": "idle",
+  "n": 3,
+  "median_mib": 940.3137359619141,
+  "min_mib": 940.2980880737305,
+  "max_mib": 940.6731109619141
+ },
+ {
+  "build": "c3",
+  "kind": "engine-static",
+  "cycle": 0,
+  "phase": "list",
+  "n": 3,
+  "median_mib": 683.8448028564453,
+  "min_mib": 683.8135299682617,
+  "max_mib": 683.8760528564453
+ },
+ {
+  "build": "c3",
+  "kind": "engine-static",
+  "cycle": 0,
+  "phase": "test",
+  "n": 3,
+  "median_mib": 940.1262359619141,
+  "min_mib": 940.0949630737305,
+  "max_mib": 940.1731109619141
+ },
+ {
+  "build": "c3",
+  "kind": "engine-static",
+  "cycle": 1,
+  "phase": "cleanup",
+  "n": 3,
+  "median_mib": 940.8293380737305,
+  "min_mib": 940.8137359619141,
+  "max_mib": 940.9387359619141
+ },
+ {
+  "build": "c3",
+  "kind": "engine-static",
+  "cycle": 1,
+  "phase": "create",
+  "n": 3,
+  "median_mib": 940.7355880737305,
+  "min_mib": 940.7043609619141,
+  "max_mib": 940.8293609619141
+ },
+ {
+  "build": "c3",
+  "kind": "engine-static",
+  "cycle": 1,
+  "phase": "extract",
+  "n": 3,
+  "median_mib": 940.7980880737305,
+  "min_mib": 940.7824859619141,
+  "max_mib": 940.9074859619141
+ },
+ {
+  "build": "c3",
+  "kind": "engine-static",
+  "cycle": 1,
+  "phase": "idle",
+  "n": 3,
+  "median_mib": 940.8293380737305,
+  "min_mib": 940.8137359619141,
+  "max_mib": 940.9387359619141
+ },
+ {
+  "build": "c3",
+  "kind": "engine-static",
+  "cycle": 1,
+  "phase": "list",
+  "n": 3,
+  "median_mib": 940.7668380737305,
+  "min_mib": 940.7512359619141,
+  "max_mib": 940.8762359619141
+ },
+ {
+  "build": "c3",
+  "kind": "engine-static",
+  "cycle": 1,
+  "phase": "test",
+  "n": 3,
+  "median_mib": 940.7824630737305,
+  "min_mib": 940.7668609619141,
+  "max_mib": 940.8918609619141
+ },
+ {
+  "build": "c3",
+  "kind": "engine-static",
+  "cycle": 2,
+  "phase": "cleanup",
+  "n": 3,
+  "median_mib": 940.8918380737305,
+  "min_mib": 940.8606109619141,
+  "max_mib": 941.0012359619141
+ },
+ {
+  "build": "c3",
+  "kind": "engine-static",
+  "cycle": 2,
+  "phase": "create",
+  "n": 3,
+  "median_mib": 940.8605880737305,
+  "min_mib": 940.8293609619141,
+  "max_mib": 940.9543609619141
+ },
+ {
+  "build": "c3",
+  "kind": "engine-static",
+  "cycle": 2,
+  "phase": "extract",
+  "n": 3,
+  "median_mib": 940.8918380737305,
+  "min_mib": 940.8606109619141,
+  "max_mib": 941.0012359619141
+ },
+ {
+  "build": "c3",
+  "kind": "engine-static",
+  "cycle": 2,
+  "phase": "idle",
+  "n": 3,
+  "median_mib": 940.8918380737305,
+  "min_mib": 940.8606109619141,
+  "max_mib": 941.0012359619141
+ },
+ {
+  "build": "c3",
+  "kind": "engine-static",
+  "cycle": 2,
+  "phase": "list",
+  "n": 3,
+  "median_mib": 940.8762130737305,
+  "min_mib": 940.8449859619141,
+  "max_mib": 940.9699859619141
+ },
+ {
+  "build": "c3",
+  "kind": "engine-static",
+  "cycle": 2,
+  "phase": "test",
+  "n": 3,
+  "median_mib": 940.8762130737305,
+  "min_mib": 940.8449859619141,
+  "max_mib": 940.9856109619141
+ }
+]

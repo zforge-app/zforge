@@ -1,0 +1,93 @@
+total weight 916000000
+--- self
+ 32.53% __openat
+ 11.14% close
+  7.86% __fchmod
+  7.10% write
+  6.33% fsetattrlist
+  5.46% lstat
+  1.64% _CFStringGetCStringPtrInternal
+  1.20% objc_msgSend
+  1.20% read
+  1.20% _xzm_free_main
+  0.98% _xzm_xzone_malloc_tiny
+  0.98% mkdirat
+  0.98% __lseek
+  0.87% stat
+  0.87% specialized UnsafeBufferPointer._decomposed<A>(_:as:into:nullTerminated:)
+  0.76% <deduplicated_symbol>
+  0.76% _CFRelease
+  0.76% CFStringCompareWithOptionsAndLocale
+  0.66% _platform_memmove
+  0.44% __CF_IS_OBJC
+  0.44% CFStringFindWithOptionsAndLocale
+  0.44% -[__NSCFString _fastCStringContents:]
+  0.44% swift_release
+  0.44% swift_bridgeObjectRetain
+  0.33% _xzm_xzone_malloc_freelist_outlined
+  0.33% _StringGuts.validateScalarIndex(_:)
+  0.33% String.index(after:)
+  0.33% _allASCII(_:)
+  0.33% _StringObject.getSharedUTF8Start()
+  0.33% specialized static String._uncheckedFromUTF8(_:isASCII:precalculatedUTF16Count:)
+--- inclusive
+ 91.38% <deduplicated_symbol>
+ 91.05% start_wqthread
+ 91.05% _dispatch_worker_thread2
+ 91.05% _pthread_wqthread
+ 91.05% _dispatch_client_callout
+ 91.05% _dispatch_root_queue_drain
+ 90.94% partial apply for specialized closure #1 in closure #1 in closure #2 in NativeSevenZipBackend.perform<A>(resource:_:)
+ 90.94% specialized closure #1 in closure #1 in closure #2 in NativeSevenZipBackend.perform<A>(resource:_:)
+ 90.94% thunk for @escaping @callee_guaranteed @Sendable () -> ()
+ 90.94% _dispatch_call_block_and_release
+ 90.94% specialized autoreleasepool<A, B>(invoking:)
+ 90.83% specialized closure #1 in closure #1 in closure #1 in closure #2 in NativeSevenZipBackend.perform<A>(resource:_:)
+ 83.84% closure #1 in NativeSevenZipBackend.extract(at:password:paths:destination:outputFile:byteLimit:)
+ 83.84% partial apply for closure #1 in NativeSevenZipBackend.extract(at:password:paths:destination:outputFile:byteLimit:)
+ 68.67% +[ZFSevenZipBridge extractAtPath:password:indices:destinations:rootPath:byteLimit:operation:error:]
+ 68.23% NArchive::NZip::CHandler::Extract(unsigned int const*, unsigned int, int, IArchiveExtractCallback*)
+ 33.19% (anonymous namespace)::ExtractCallback::GetStream(unsigned int, ISequentialOutStream**, int)
+ 33.19% (anonymous namespace)::OpenOutput(NSString*, NSString*, int, std::__1::map<std::__1::basic_string<char, std::__1::char_traits<char>, std::__
+ 32.53% __openat
+ 32.53% openat
+ 25.33% (anonymous namespace)::ExtractCallback::SetOperationResult(int)
+ 11.24% (anonymous namespace)::Output::Release()
+ 11.14% close
+ 11.14% (anonymous namespace)::Output::~Output()
+ 11.14% CMyComPtr<ISequentialOutStream>::Release()
+  8.62% specialized static EngineHarness.main()
+  8.62% completeTaskAndRelease(swift::AsyncContext*, swift::SwiftError*)
+  8.62% specialized thunk for @escaping @convention(thin) @async () -> ()
+  8.52% URL.appendingPathComponent(_:)
+  8.30% specialized _SwiftURL.appending<A>(path:directoryHint:encodingSlashes:)
+  7.97% NArchive::NZip::CZipDecoder::Decode(NArchive::NZip::CInArchive&, NArchive::NZip::CItemEx const&, ISequentialOutStream*, IArchiveExtractCallb
+  7.86% __fchmod
+  7.86% fchmod
+  7.53% NCompress::CCopyCoder::Code(ISequentialInStream*, ISequentialOutStream*, unsigned long long const*, unsigned long long const*, ICompressProg
+  7.21% COutStreamWithCRC::Write(void const*, unsigned int, unsigned int*)
+  7.10% write
+  7.10% (anonymous namespace)::Output::Write(void const*, unsigned int, unsigned int*)
+  6.99% partial apply for closure #1 in NativeSevenZipBackend.list(at:password:)
+  6.88% closure #1 in NativeSevenZipBackend.list(at:password:)
+  6.77% specialized NativeSevenZipArchiveEngine.extractArchive(at:to:password:resolveConflict:progress:)
+  6.33% futimens
+  6.33% fsetattrlist
+  6.11% specialized NativeSevenZipArchiveEngine.conflictFilesToReplace(entries:selectedPaths:destinationURL:resolveConflict:)
+  5.46% lstat
+  4.69% specialized static _SwiftURL.isDirectory(_:)
+  4.37% specialized Collection<>.split(separator:maxSplits:omittingEmptySubsequences:)
+  3.93% specialized Collection.split(maxSplits:omittingEmptySubsequences:whereSeparator:)
+  3.82% specialized UnsafeMutableBufferPointer._stableSortImpl(by:)
+  3.82% specialized MutableCollection<>.sort(by:)
+  3.82% specialized closure #1 in UnsafeMutableBufferPointer._stableSortImpl(by:)
+  3.82% specialized Sequence.sorted(by:)
+  3.71% specialized static ArchivePathPolicy.safePath(_:)
+  3.71% static ArchivePathPolicy.safePath(_:)
+  3.17% +[ZFSevenZipBridge entriesAtPath:password:operation:error:]
+  3.06% closure #3 in NativeSevenZipArchiveEngine.conflictFilesToReplace(entries:selectedPaths:destinationURL:resolveConflict:)
+  2.95% StringProtocol.localizedStandardCompare<A>(_:)
+  2.18% String.subscript.getter
+  2.07% protocol witness for Collection.subscript.read in conformance String
+  2.07% specialized MutableCollection<>._insertionSort(within:sortedEnd:by:)
+  1.75% NativeSevenZipBackend.ContainmentResolver.resolvedPath(of:)

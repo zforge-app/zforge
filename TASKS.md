@@ -31,7 +31,7 @@ Updated at **2026-10-07**. This list preserves the requests raised in this conve
 | ZF-21 | Replace CLI `7zz` backend with native integration with 7-Zip static link | Backend and build implemented for arm64/macOS 26.0; verified native operations; external validation/UI and pending distribution | OR-10; no divergence recorded |
 | ZF-22 | Migrate app and test targets for Swift 6 | Implemented; Debug/Release and 98 approved unit tests; UI locked on runner startup | Explicit isolation of menus, thumbnails and utilities |
 | ZF-24 | Compare RAM total of Zforge and 7zz processes in real builds | 36 completed days, hashes conferred; sampler and registered series; D-21 corrected in both branches; retention in OR-11 | UI of fixture; does not prove leakage not all UI |
-| ZF-25 | Investigating and optimizing performance and memory of native adapters | Planned to request user; hypotheses recorded, without profiling or correction of performance | OR-11 and OR-12 |
+| ZF-25 | Investigating and optimizing performance and memory of native adapters | Round 2026-10-23 (user-authorized): profiled; three measured optimizations kept (bridge index table, cached containment resolution, set-based selection), one reverted; 10,000-entry extraction 2.2–2.4 × faster via `ArchiveServing`, bridge at CLI parity, multi-selection 8.1 × faster. Complete path still 1.18–1.35 × CLI (target not met); OR-11 retention identified as allocator-held free memory, not reduced. Full-app signed RAM rerun pending | OR-11 and OR-12; D-51; [benchmark](Documentation/Benchmarks/7zip-adapter-optimization.md) |
 | ZF-26 | Set/create tags by context and toolbar and color folders | Implementada; signed build Debug, 114 unit tests and 3 of UI approved; wide visual check pending | D-23; OR-09 |
 | ZF-27 | Fix new folders on sidebar | Implemented: contextual menu, drop targets and persistence; action of the selector preserved without link on the sidebar; build and approved tests, selector/menu/removal/reopening exercised on the app; user-confirmed functionality; alternative B applied to the indicator; visual check of the pending finish | Wide matrix and automation in REGRESSION-COVERAGE.md |
 | ZF-28 | Refine drag feedback and directory selection on sidebar | Implemented: preserved symbols, target single, monochromatic selection; tests/build and actual selection conferred; gesture continuous and outstanding visual matrix | D-24 |
@@ -286,6 +286,19 @@ Static implementation is compromised in this branch `feat/7zz-static-linking`. T
 - Repeat operations in the same process to distinguish stable retention from accumulated growth; record memory after each phase and after closing sessions, without adding independent peaks of processes.
 - Reexecise the time suite and RAM total Zforge + children in static and dynamic variants; check hashes and record samples/variability, not just a median.
 - Complete only with measured gain and verified pertinent regressions: partial selection, Unicode, conflicts, cancellation, corrupted files, links/traversal and actual extraction in the sandbox. Do not remove security guarantees to get gain.
+
+### Round 2026-10-23 — status: optimizations delivered, targets partially met, items open
+
+Explicitly authorized by the user. Workloads and acceptance criteria were written before any code change; method, all samples and limits are in [7zip-adapter-optimization.md](Documentation/Benchmarks/7zip-adapter-optimization.md). Another agent worked on the same host throughout; baseline and candidates were interleaved in the same windows.
+
+- **Re-baseline (current code, after D-21):** native bridge extraction was +44 % over the CLI at 2,000 files and 2.5–3.2 × at 10,000 entries, scaling superlinearly. An A/A control bounded run-to-run medians at ≤ 1 %.
+- **Hypothesis 1 confirmed:** `indexOfObject:` was 61 % of profile samples; replaced by a position table built once (kept).
+- **Hypothesis 2 — no adapter excess found:** per file the bridge issues exactly `openat`, `write`, `fchmod`, `futimens`, `close`; kernel file creation dominates. A directory-hint candidate gained only 1–2 % and was reverted. Metadata calls were kept for correctness.
+- **Hypothesis 3 confirmed for the Swift path:** cached parent resolution for the containment check (kept) and a set-based selection matcher replacing O(entries × selected) scans in the backend and conflict scan (kept). The second listing and conflict sort remain (≈ 5 % and ≈ 4 %).
+- **Hypothesis 4 (OR-11):** retention starts after 7z creation (≈ 683 MiB) and reaches ≈ 940 MiB after the test; `vmmap` shows it as empty "Malloc Large" segments held by the system allocator (live heap ≈ 262 KB), reused without growth across three in-process cycles. Not a leak; not reduced.
+- **Criteria:** C1 bridge parity met within noise; C2 linear scaling met; **C3 complete path ≤ 1.25 × CLI not met** (1.18–1.35 ×); C4 no regression met; M1/M3 met; **M2 bounded retention not met**.
+- **Tests:** new partial-selection mapping (ZIP/7z, 451 files), destination file-link and selection-semantics tests pass on the candidate. The behavioral ones also pass on unchanged HEAD. Full unit suite: 366 tests, 359 passed, 7 failed; these are the preexisting D-49 `TagCatalogTests` failures, reproduced identically on unchanged HEAD.
+- **Open:** complete-path overhead (staging copy, double listing, conflict scan, URL standardization); OR-11 remedy (separate engine process or allocator decision); signed full-app RAM rerun and macOS 26.0 runtime; CLI system-call count (System Trace capture of `7zz` hung under the tracer).
 
 ### ZF-26 — Set/create tags and color folders
 
