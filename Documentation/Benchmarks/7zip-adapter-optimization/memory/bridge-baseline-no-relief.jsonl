@@ -1,0 +1,16 @@
+{"memory":{"footprint":2523664,"malloc_allocated":16777216,"malloc_in_use":163936},"phase":"baseline"}
+{"cycle":0,"memory":{"footprint":716178512,"malloc_allocated":20971520,"malloc_in_use":232576},"phase":"create","seconds":0.76358058300684206}
+{"cycle":0,"memory":{"footprint":716260432,"malloc_allocated":20971520,"malloc_in_use":239088},"phase":"list","seconds":0.00019633301417343318}
+{"cycle":0,"memory":{"footprint":985236752,"malloc_allocated":20971520,"malloc_in_use":243408},"phase":"test","seconds":0.11720949999289587}
+{"cycle":0,"memory":{"footprint":985285904,"malloc_allocated":20971520,"malloc_in_use":248720},"phase":"extract","seconds":0.13445195800159127}
+{"cycle":0,"memory":{"footprint":985285904,"malloc_allocated":20971520,"malloc_in_use":252896},"phase":"idle","seconds":1}
+{"cycle":1,"memory":{"footprint":985302288,"malloc_allocated":20971520,"malloc_in_use":257440},"phase":"create","seconds":0.7503308329905849}
+{"cycle":1,"memory":{"footprint":985302288,"malloc_allocated":20971520,"malloc_in_use":262368},"phase":"list","seconds":0.00011441600508987904}
+{"cycle":1,"memory":{"footprint":985335056,"malloc_allocated":20971520,"malloc_in_use":266592},"phase":"test","seconds":0.10842404098366387}
+{"cycle":1,"memory":{"footprint":985335056,"malloc_allocated":20971520,"malloc_in_use":270816},"phase":"extract","seconds":0.15803904199856333}
+{"cycle":1,"memory":{"footprint":985367824,"malloc_allocated":20971520,"malloc_in_use":274816},"phase":"idle","seconds":1}
+{"cycle":2,"memory":{"footprint":985744656,"malloc_allocated":33554432,"malloc_in_use":279296},"phase":"create","seconds":0.75619012501556426}
+{"cycle":2,"memory":{"footprint":985744656,"malloc_allocated":33554432,"malloc_in_use":283712},"phase":"list","seconds":0.00014104199362918735}
+{"cycle":2,"memory":{"footprint":985744656,"malloc_allocated":33554432,"malloc_in_use":287936},"phase":"test","seconds":0.10782908299006522}
+{"cycle":2,"memory":{"footprint":985761040,"malloc_allocated":33554432,"malloc_in_use":292160},"phase":"extract","seconds":0.16051795898238197}
+{"cycle":2,"memory":{"footprint":985761040,"malloc_allocated":33554432,"malloc_in_use":296160},"phase":"idle","seconds":1}

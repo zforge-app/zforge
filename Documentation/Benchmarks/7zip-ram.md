@@ -44,6 +44,8 @@ Median `physical footprint` during the two seconds of baseline and for three sec
 | Static | 735.8 | 992.3 | 992.3 | 992.3 |
 | Dynamic | 736.2 | 992.5 | 992.5 | 992.5 |
 
+> **Correction 2026-10-23 (D-51, ZF-25):** the per-phase series shows the native process already holding 736.0 MiB at the *end* of creation; the test raises this retained level to 992.3 MiB. Retention therefore starts after creation, and the test adds to it. In-process repetition and `vmmap` attribute it to freed engine buffers kept by the system allocator ("Malloc Large (empty)"), stable across repetitions, with ≈ 262 KB of live heap: [7zip-adapter-optimization.md](7zip-adapter-optimization.md#or-11-memory-after-the-large-7z-pipeline). The numbers below are unchanged.
+
 The isolated creation reached almost the same peak in the three variants. The difference in the pipeline native appears in the test step and remains after extraction/closing: about **992 MiB**, versus **56 MiB** in the CLI after their children have finished. This is a memory retention finding to investigate (OR-11). The test does not identify its cause: caches, allocator, object ownership or other hypotheses require profiling. It does not prove leakage, unlimited growth or performance of various operations within the same process.
 
 ## Total RSS Peak (MiB)

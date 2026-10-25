@@ -1,0 +1,32 @@
+======================================================================
+bridge-hold [44414]: 64-bit    Footprint: 940 MB (16384 bytes per page)
+======================================================================
+
+  Dirty      Clean  Reclaimable    Regions    Category
+    ---        ---          ---        ---    ---
+ 935 MB        0 B          0 B          9    Malloc Large
+1872 KB        0 B          0 B          8    Malloc Small
+ 881 KB        0 B          0 B          1    page table
+ 592 KB        0 B          0 B          9    Malloc Metadata
+ 399 KB        0 B          0 B        286    __DATA_DIRTY
+ 252 KB        0 B          0 B        336    __DATA
+ 192 KB        0 B          0 B         13    Untagged
+ 128 KB        0 B          0 B          1    Malloc Tiny
+ 112 KB        0 B          0 B          6    Stack
+  86 KB        0 B          0 B        974    unused dyld shared cache area
+  64 KB        0 B          0 B          1    Dispatch Continuations
+  48 KB        0 B          0 B          4    __TPRO_CONST
+  47 KB        0 B          0 B          1    __OBJC_RW
+  16 KB        0 B          0 B          1    Deferred Reclaim
+  16 KB        0 B          0 B          1    OS Alloc Once
+  16 KB        0 B          0 B          1    Activity Tracing
+   48 B        0 B          0 B        168    __AUTH
+    0 B    1184 KB          0 B        390    __TEXT
+    0 B     464 KB          0 B          3    mapped file
+    0 B      80 KB          0 B        325    __DATA_CONST
+    0 B      16 KB          0 B          2    __LINKEDIT
+    0 B        0 B          0 B          1    __CTF
+    0 B        0 B          0 B        327    __AUTH_CONST
+    0 B        0 B          0 B          1    __FONT_DATA
+    0 B        0 B          0 B          1    __OBJC_RO
+    ---        ---          ---        ---    ---

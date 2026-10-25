@@ -1,0 +1,93 @@
+total weight 2342000000
+--- self
+ 18.23% objc_msgSend
+ 13.32% __openat
+ 11.53% CFNumberGetValue
+ 10.63% _CFNumberGetType2
+  3.89% -[__NSCFNumber compare:]
+  3.37% __fchmod
+  3.37% -[__NSCFNumber objCType]
+  3.20% _NSIsNSNumber
+  3.07% lstat
+  3.03% close
+  2.86% -[__NSCFNumber longLongValue]
+  2.31% fsetattrlist
+  2.05% write
+  1.58% -[__NSCFNumber isEqualToNumber:]
+  1.24% -[__NSCFNumber isEqual:]
+  0.73% read
+  0.64% _xzm_xzone_malloc_tiny
+  0.64% NBitl::CDecoder<CInBuffer>::MovePos(unsigned long)
+  0.56% stat
+  0.51% NBitl::CDecoder<CInBuffer>::Normalize()
+  0.47% _CFStringGetCStringPtrInternal
+  0.43% NCompress::NDeflate::NDecoder::CCoder::CodeSpec(unsigned int, bool, unsigned int)
+  0.38% _xzm_free_main
+  0.38% __lseek
+  0.38% -[NSArray indexOfObject:]
+  0.34% CInBufferBase::ReadByte()
+  0.30% closure #1 in closure #1 in static URLEncoder.percentDecode(string:excludingASCII:)
+  0.30% __getattrlist
+  0.26% _platform_memmove
+  0.26% specialized UnsafeBufferPointer._decomposed<A>(_:as:into:nullTerminated:)
+--- inclusive
+ 96.11% _dispatch_client_callout
+ 96.11% <deduplicated_symbol>
+ 96.07% _pthread_wqthread
+ 96.07% specialized closure #1 in closure #1 in closure #2 in NativeSevenZipBackend.perform<A>(resource:_:)
+ 96.07% _dispatch_call_block_and_release
+ 96.07% _dispatch_root_queue_drain
+ 96.07% specialized autoreleasepool<A, B>(invoking:)
+ 96.07% partial apply for specialized closure #1 in closure #1 in closure #2 in NativeSevenZipBackend.perform<A>(resource:_:)
+ 96.07% _dispatch_worker_thread2
+ 96.07% thunk for @escaping @callee_guaranteed @Sendable () -> ()
+ 96.07% start_wqthread
+ 95.94% specialized closure #1 in closure #1 in closure #1 in closure #2 in NativeSevenZipBackend.perform<A>(resource:_:)
+ 92.44% partial apply for closure #1 in NativeSevenZipBackend.extract(at:password:paths:destination:outputFile:byteLimit:)
+ 92.40% closure #1 in NativeSevenZipBackend.extract(at:password:paths:destination:outputFile:byteLimit:)
+ 85.44% +[ZFSevenZipBridge extractAtPath:password:indices:destinations:rootPath:byteLimit:operation:error:]
+ 85.35% NArchive::NZip::CHandler::Extract(unsigned int const*, unsigned int, int, IArchiveExtractCallback*)
+ 70.11% (anonymous namespace)::ExtractCallback::GetStream(unsigned int, ISequentialOutStream**, int)
+ 55.76% -[NSArray indexOfObject:]
+ 45.13% -[__NSCFNumber isEqualToNumber:]
+ 41.42% -[__NSCFNumber compare:]
+ 18.23% objc_msgSend
+ 13.75% (anonymous namespace)::OpenOutput(NSString*, NSString*, int, std::__1::map<std::__1::basic_string<char, std::__1::char_traits<char>, std::__
+ 13.32% __openat
+ 13.32% openat
+ 13.28% -[__NSCFNumber longLongValue]
+ 12.34% -[__NSCFNumber objCType]
+ 11.53% CFNumberGetValue
+ 10.63% _CFNumberGetType2
+  8.71% (anonymous namespace)::ExtractCallback::SetOperationResult(int)
+  5.51% NArchive::NZip::CZipDecoder::Decode(NArchive::NZip::CInArchive&, NArchive::NZip::CItemEx const&, ISequentialOutStream*, IArchiveExtractCallb
+  5.21% NCompress::NDeflate::NDecoder::CCoder::Code(ISequentialInStream*, ISequentialOutStream*, unsigned long long const*, unsigned long long const
+  5.21% NCompress::NDeflate::NDecoder::CCoder::CodeReal(ISequentialOutStream*, ICompressProgressInfo*)
+  4.14% -[__NSCFNumber isEqual:]
+  3.80% completeTaskAndRelease(swift::AsyncContext*, swift::SwiftError*)
+  3.80% specialized thunk for @escaping @convention(thin) @async () -> ()
+  3.80% specialized static EngineHarness.main()
+  3.50% partial apply for closure #1 in NativeSevenZipBackend.list(at:password:)
+  3.50% closure #1 in NativeSevenZipBackend.list(at:password:)
+  3.37% __fchmod
+  3.37% fchmod
+  3.20% _SwiftURL.standardizedFileURL.getter
+  3.20% _NSIsNSNumber
+  3.07% lstat
+  3.03% (anonymous namespace)::Output::Release()
+  3.03% (anonymous namespace)::Output::~Output()
+  3.03% close
+  3.03% CMyComPtr<ISequentialOutStream>::Release()
+  3.03% NCompress::NDeflate::NDecoder::CCoder::CodeSpec(unsigned int, bool, unsigned int)
+  2.95% specialized NativeSevenZipArchiveEngine.extractArchive(at:to:password:resolveConflict:progress:)
+  2.82% specialized NativeSevenZipArchiveEngine.conflictFilesToReplace(entries:selectedPaths:destinationURL:resolveConflict:)
+  2.82% protocol witness for _URLProtocol.resolvingSymlinksInPath() in conformance _SwiftURL
+  2.82% URL.resolvingSymlinksInPath()
+  2.52% String.resolvingSymlinksInPath.getter
+  2.39% String._resolvingSymlinksInPath()
+  2.35% closure #1 in String._resolvingSymlinksInPath()
+  2.31% fsetattrlist
+  2.31% futimens
+  2.18% COutBuffer::FlushPart()
+  2.18% COutBuffer::Flush()
+  2.18% NCompress::NDeflate::NDecoder::CCoder::Flush()

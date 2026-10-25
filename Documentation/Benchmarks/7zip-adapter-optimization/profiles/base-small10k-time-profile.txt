@@ -1,0 +1,93 @@
+total weight 2142000000
+--- self
+ 17.79% objc_msgSend
+ 13.82% _CFNumberGetType2
+ 13.40% CFNumberGetValue
+ 12.70% __openat
+  4.06% close
+  3.97% -[__NSCFNumber longLongValue]
+  3.73% -[__NSCFNumber objCType]
+  3.50% -[__NSCFNumber compare:]
+  3.31% __fchmod
+  2.75% _NSIsNSNumber
+  2.52% write
+  2.29% fsetattrlist
+  1.49% -[__NSCFNumber isEqual:]
+  1.45% NBitl::CDecoder<CInBuffer>::Normalize()
+  1.45% read
+  1.31% NCompress::NDeflate::NDecoder::CCoder::CodeSpec(unsigned int, bool, unsigned int)
+  1.26% NBitl::CDecoder<CInBuffer>::MovePos(unsigned long)
+  1.21% -[__NSCFNumber isEqualToNumber:]
+  0.75% NCompress::NHuffman::CDecoderBase<unsigned short, unsigned int, unsigned long long, 15u, 288u, 10u>::Build(unsigned char const*, NCompress::
+  0.75% -[NSArray indexOfObject:]
+  0.61% __lseek
+  0.56% CInBufferBase::ReadByte()
+  0.51% CLzOutWindow::PutByte(unsigned char)
+  0.51% NBitl::CDecoder<CInBuffer>::GetValue(unsigned int)
+  0.47% CLzOutWindow::CopyBlock(unsigned int, unsigned int)
+  0.42% _xzm_xzone_malloc_tiny
+  0.33% NBitl::CBaseDecoder<CInBuffer>::ExtraBitsWereRead_Fast() const
+  0.28% mkdirat
+  0.23% CrcUpdate
+  0.23% NCompress::NDeflate::NDecoder::CCoder::DecodeLevels(unsigned char*, unsigned int)
+--- inclusive
+100.00% start
+ 99.86% main
+ 98.23% NArchive::NZip::CHandler::Extract(unsigned int const*, unsigned int, int, IArchiveExtractCallback*)
+ 94.21% (anonymous namespace)::Extract(NSString*, NSString*, NSArray<ZFSevenZipEntry*>*, unsigned long, ZFSevenZipOperation*, unsigned long*)
+ 93.42% +[ZFSevenZipBridge extractAtPath:password:indices:destinations:rootPath:byteLimit:operation:error:]
+ 75.44% (anonymous namespace)::ExtractCallback::GetStream(unsigned int, ISequentialOutStream**, int)
+ 61.11% -[NSArray indexOfObject:]
+ 50.56% -[__NSCFNumber isEqualToNumber:]
+ 46.36% -[__NSCFNumber compare:]
+ 17.79% objc_msgSend
+ 16.81% -[__NSCFNumber longLongValue]
+ 15.41% -[__NSCFNumber objCType]
+ 13.82% _CFNumberGetType2
+ 13.40% CFNumberGetValue
+ 13.31% (anonymous namespace)::OpenOutput(NSString*, NSString*, int, std::__1::map<std::__1::basic_string<char, std::__1::char_traits<char>, std::__
+ 12.70% openat
+ 12.70% __openat
+ 11.34% NArchive::NZip::CZipDecoder::Decode(NArchive::NZip::CInArchive&, NArchive::NZip::CItemEx const&, ISequentialOutStream*, IArchiveExtractCallb
+ 10.88% NCompress::NDeflate::NDecoder::CCoder::CodeReal(ISequentialOutStream*, ICompressProgressInfo*)
+ 10.88% NCompress::NDeflate::NDecoder::CCoder::Code(ISequentialInStream*, ISequentialOutStream*, unsigned long long const*, unsigned long long const
+  9.80% (anonymous namespace)::ExtractCallback::SetOperationResult(int)
+  8.12% NCompress::NDeflate::NDecoder::CCoder::CodeSpec(unsigned int, bool, unsigned int)
+  5.00% +[ZFSevenZipBridge testAtPath:password:operation:error:]
+  4.15% (anonymous namespace)::Output::Release()
+  4.15% CMyComPtr<ISequentialOutStream>::Release()
+  4.06% (anonymous namespace)::Output::~Output()
+  4.06% close
+  3.69% -[__NSCFNumber isEqual:]
+  3.31% __fchmod
+  3.31% fchmod
+  2.75% COutBuffer::FlushPart()
+  2.75% COutStreamWithCRC::Write(void const*, unsigned int, unsigned int*)
+  2.75% COutBuffer::Flush()
+  2.75% NCompress::NDeflate::NDecoder::CCoder::Flush()
+  2.75% _NSIsNSNumber
+  2.52% (anonymous namespace)::Output::Write(void const*, unsigned int, unsigned int*)
+  2.52% write
+  2.47% NBitl::CDecoder<CInBuffer>::Normalize()
+  2.43% NBitl::CDecoder<CInBuffer>::GetValue(unsigned int)
+  2.29% futimens
+  2.29% fsetattrlist
+  2.15% NCompress::NDeflate::NDecoder::CCoder::ReadTables()
+  1.45% read
+  1.45% CInFileStream::Read(void*, unsigned int, unsigned int*)
+  1.40% NArchive::NZip::CInArchive::Read_LocalItem_After_CdItem(NArchive::NZip::CItemEx&, bool&, bool&)
+  1.26% NBitl::CDecoder<CInBuffer>::MovePos(unsigned long)
+  1.12% NArchive::NZip::CInArchive::SafeRead(unsigned char*, unsigned int)
+  1.12% NArchive::NZip::CInArchive::ReadFromCache(unsigned char*, unsigned int, unsigned int&)
+  1.07% ReadStream(ISequentialInStream*, void*, unsigned long*)
+  1.03% CInBufferBase::ReadByte()
+  1.03% NWindows::NFile::NIO::CInFile::read_part(void*, unsigned long)
+  0.75% NCompress::NHuffman::CDecoderBase<unsigned short, unsigned int, unsigned long long, 15u, 288u, 10u>::Build(unsigned char const*, NCompress::
+  0.75% @objc _NSFileManagerBridge.createDirectory(atPath:withIntermediateDirectories:attributes:)
+  0.70% specialized NSFileManager.withFileSystemRepresentation<A>(for:_:)
+  0.70% specialized String.withFileSystemRepresentation<A>(_:)
+  0.61% __lseek
+  0.61% NArchive::NZip::CInArchive::ReadUInt32()
+  0.61% NCompress::NDeflate::NDecoder::CCoder::DecodeLevels(unsigned char*, unsigned int)
+  0.56% NBitl::CDecoder<CInBuffer>::ReadBits(unsigned int)
+  0.51% CLzOutWindow::PutByte(unsigned char)

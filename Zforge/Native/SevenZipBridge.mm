@@ -245,13 +245,15 @@ Z7_COM7F_IMF(Output::Write(const void *data, UInt32 size, UInt32 *processed)) {
     }
     written += done; if (processed) *processed = done; return S_OK;
 }
+constexpr UInt32 kUnselected = UINT32_MAX;
 class ExtractCallback final : public IArchiveExtractCallback, public ICryptoGetTextPassword,
     public CMyUnknownImp {
     Z7_IFACES_IMP_UNK_2(IArchiveExtractCallback, ICryptoGetTextPassword)
     Z7_IFACE_COM7_IMP(IProgress)
 public:
     Context *context;
-    NSArray<NSNumber *> *indices;
+    // Archive index -> position in `destinations`; the first occurrence wins.
+    std::vector<UInt32> positions;
     NSArray<NSString *> *destinations;
     UInt64 limit;
     int itemResult = 0;
@@ -287,9 +289,8 @@ Z7_COM7F_IMF(ExtractCallback::SetOperationResult(Int32 result)) {
 Z7_COM7F_IMF(ExtractCallback::GetStream(UInt32 index, ISequentialOutStream **stream, Int32 askMode)) {
     *stream = nullptr; file = nullptr; output.Release(); RINOK(context->check())
     if (askMode != NArchive::NExtract::NAskMode::kExtract) return S_OK;
-    NSUInteger position = [indices indexOfObject:@(index)];
-    if (position == NSNotFound) return S_OK;
-    NSString *destination = destinations[position];
+    if (index >= positions.size() || positions[index] == kUnselected) return S_OK;
+    NSString *destination = destinations[positions[index]];
     if (destination.length == 0) return S_OK; // directory, created by Swift
     file = new Output;
     output = file; file->context = context; file->limit = limit;
@@ -444,13 +445,25 @@ bool Finish(HRESULT result, Context &context, NSError **error, int itemResult = 
     try {
         if (indices.count != destinations.count) return Finish(E_INVALIDARG, ctx, error);
         Archive arc; if (!Finish(Open(path, ctx, arc), ctx, error)) return NO;
-        std::vector<UInt32> selected;
-        for (NSNumber *index in indices) selected.push_back(index.unsignedIntValue);
-        std::sort(selected.begin(), selected.end());
-        selected.erase(std::unique(selected.begin(), selected.end()), selected.end());
+        UInt32 count = 0;
+        if (!Finish(arc.handler->GetNumberOfItems(&count), ctx, error)) return NO;
         ExtractCallback *callback = new ExtractCallback;
         CMyComPtr<IArchiveExtractCallback> owner = callback;
-        callback->context = &ctx; callback->archive = arc.handler; callback->indices = indices;
+        // A direct table keeps each callback O(1); a linear search per item made
+        // extracting n selected items O(n^2).
+        callback->positions.assign(count, kUnselected);
+        std::vector<UInt32> selected;
+        selected.reserve(indices.count);
+        UInt32 position = 0;
+        for (NSNumber *number in indices) {
+            UInt32 index = number.unsignedIntValue;
+            selected.push_back(index);
+            if (index < count && callback->positions[index] == kUnselected) callback->positions[index] = position;
+            ++position;
+        }
+        std::sort(selected.begin(), selected.end());
+        selected.erase(std::unique(selected.begin(), selected.end()), selected.end());
+        callback->context = &ctx; callback->archive = arc.handler;
         callback->destinations = destinations; callback->limit = byteLimit;
         callback->rootPath = rootPath;
         callback->root = open(rootPath.fileSystemRepresentation, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);

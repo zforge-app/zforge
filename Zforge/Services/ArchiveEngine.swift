@@ -1104,12 +1104,9 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
         resolveConflict: @escaping ArchiveConflictResolver
     ) async throws -> [URL] {
         let selected = selectedPaths.compactMap { try? safeArchivePath($0) }
+        let selection = ArchivePathSelection(selected)
         let relevantEntries = entries.values
-            .filter { entry in
-                selected.isEmpty || selected.contains { path in
-                    entry.path == path || entry.path.hasPrefix(path + "/")
-                }
-            }
+            .filter { entry in selected.isEmpty || selection.contains(entry.path) }
             .sorted { $0.path.localizedStandardCompare($1.path) == .orderedAscending }
 
         var replacements: [URL] = []
