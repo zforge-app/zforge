@@ -51,3 +51,5 @@ In each interaction, consult the affected requirements and update your contracts
 - [Benchmarks/tag-catalog-equivalence.md](Benchmarks/tag-catalog-equivalence.md) — ZF-42 independent-oracle differential validation, baseline defects and repairs, one-time index invalidation and executed regression evidence.
 
 - [Benchmarks/tag-first-index-diagnosis.md](Benchmarks/tag-first-index-diagnosis.md) — real first-pass latency, matched raw scanner comparison, suspension/coverage controls, Release logging and unresolved signed-application attribution.
+
+- [Benchmarks/tag-first-pass-optimization.md](Benchmarks/tag-first-pass-optimization.md) — 2026-10-24 first-pass profiling (metadata syscalls, duty-cycle suspension), delivered optimizations, real-tree/catalog-path/10,000-record results and remaining targets.

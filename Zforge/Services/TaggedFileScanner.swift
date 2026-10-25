@@ -22,10 +22,24 @@ nonisolated struct TagScanRoots: Sendable {
         // A slash followed by a combining mark is one Swift grapheme. Check
         // the POSIX separator byte, preserving canonical-equivalent scope
         // names through the fallback rather than changing filesystem identity.
-        if path.utf8.starts(with: prefix.utf8) {
-            return path.utf8.dropFirst(prefix.utf8.count).first == 0x2f
-        }
+        if let separated = bytePrefix(prefix, of: path) { return separated }
         return path.hasPrefix(prefix) && path.dropFirst(prefix.count).utf8.first == 0x2f
+    }
+
+    /// When `path`'s UTF-8 bytes begin with `prefix`, whether a separator byte
+    /// follows; nil when the bytes differ. One contiguous comparison instead of
+    /// generic per-element iteration (hot in cached restoration).
+    private static func bytePrefix(_ prefix: Substring, of path: String) -> Bool? {
+        var path = path
+        var prefix = prefix
+        return path.withUTF8 { pathBytes in
+            prefix.withUTF8 { prefixBytes -> Bool? in
+                guard pathBytes.count >= prefixBytes.count else { return nil }
+                if !prefixBytes.isEmpty,
+                   memcmp(pathBytes.baseAddress!, prefixBytes.baseAddress!, prefixBytes.count) != 0 { return nil }
+                return pathBytes.count > prefixBytes.count && pathBytes[prefixBytes.count] == 0x2f
+            }
+        }
     }
 
     mutating func remove(coveredBy scopes: [URL]) {
@@ -127,14 +141,31 @@ nonisolated struct TagVisibilityBatch {
     /// prefix and no relative components. Avoid Foundation path construction
     /// on that common path; retain normalization for aliases and unusual inputs.
     func normalizedPath(_ path: String) -> String {
-        if contains(normalizedPath: path),
-           !path.utf8.split(separator: 0x2f, omittingEmptySubsequences: false).dropFirst()
-                .contains(where: { part in
-                    part.isEmpty || (part.first == 0x2e && (part.count == 1 || (part.count == 2 && part.last == 0x2e)))
-                }) {
+        if contains(normalizedPath: path), !Self.hasEmptyOrRelativeComponent(path) {
             return path
         }
         return URL(fileURLWithPath: path, isDirectory: false).standardizedFileURL.path
+    }
+
+    /// Whether any separator-delimited component after the first is empty, `.`
+    /// or `..`. One byte pass, without allocating the component array.
+    static func hasEmptyOrRelativeComponent(_ path: String) -> Bool {
+        var component = 0
+        var length = 0
+        var dotsOnly = true
+        func flagged() -> Bool { component > 0 && (length == 0 || (dotsOnly && length <= 2)) }
+        for byte in path.utf8 {
+            if byte == 0x2f {
+                if flagged() { return true }
+                component += 1
+                length = 0
+                dotsOnly = true
+            } else {
+                length += 1
+                if byte != 0x2e { dotsOnly = false }
+            }
+        }
+        return flagged()
     }
 
     mutating func isVisible(_ url: URL, readInfo: (String) -> FileInfo? = Self.info(at:)) -> Bool {
@@ -183,8 +214,8 @@ nonisolated struct TagVisibilityBatch {
 }
 
 /// Reads real Finder metadata even where a sandboxed Spotlight query omits it.
-/// One utility worker drains Foundation temporaries per item and cooperatively
-/// suspends between bounded slices. There are no periodic wakeups after return.
+/// One utility worker drains Foundation temporaries per item and yields between
+/// bounded slices without a CPU duty cycle. There are no periodic wakeups after return.
 nonisolated enum TaggedFileScanner {
     typealias Batch = [String: [String: Int]]
     typealias Publish = @Sendable (Batch) async -> Void
@@ -195,7 +226,42 @@ nonisolated enum TaggedFileScanner {
         var usesBulkEnumeration = true
         var maximumItems = 128
         var workSlice: Duration = .milliseconds(8)
-        var pause: @Sendable (Duration) async throws -> Void = { try await Task.sleep(for: $0) }
+        /// Runs between bounded slices. The user removed the CPU duty-cycle cap
+        /// on 2026-10-24: the default only yields the utility thread and
+        /// observes cancellation; it never sleeps. Tests inject gates here.
+        var yieldSlice: @Sendable () async throws -> Void = {
+            await Task.yield()
+            try Task.checkCancellation()
+        }
+    }
+
+    /// One worker's bounded slice: at most `maximumItems` items or `workSlice`
+    /// of wall time between publication, interleaving and cancellation points.
+    /// There is no CPU duty cycle.
+    struct WorkSlice {
+        let budget: Budget
+        private let clock = ContinuousClock()
+        private var start: ContinuousClock.Instant
+        private(set) var items = 0
+
+        init(_ budget: Budget) {
+            self.budget = budget
+            start = clock.now
+        }
+
+        var exhausted: Bool { items >= budget.maximumItems || start.duration(to: clock.now) >= budget.workSlice }
+        mutating func inspected() { items += 1 }
+
+        /// Throws when canceled, like the injected yield.
+        mutating func yield() async throws {
+            try await budget.yieldSlice()
+            restart()
+        }
+
+        mutating func restart() {
+            items = 0
+            start = clock.now
+        }
     }
 
     struct ReadResult: Sendable {
@@ -225,12 +291,13 @@ nonisolated enum TaggedFileScanner {
     }
 
     static func visibilityResult(_ batch: Batch, policy: TagDiscoveryPolicy, budget: Budget = Budget()) async -> VisibilityResult {
+        // Most traversal checkpoints carry no tagged records. Avoid a worker
+        // and two executor hops per empty interleaving checkpoint.
+        guard !batch.isEmpty else { return VisibilityResult(records: [:], metadataRechecks: []) }
         let worker = Task.detached(priority: .utility) {
             var visibility = TagVisibilityBatch(policy: policy)
             var result: Batch = [:]
-            let clock = ContinuousClock()
-            var start = clock.now
-            var inspected = 0
+            var slice = WorkSlice(budget)
             for (path, colors) in batch {
                 guard !Task.isCancelled else { break }
                 autoreleasepool {
@@ -238,16 +305,13 @@ nonisolated enum TaggedFileScanner {
                     guard visibility.contains(normalizedPath: normalized) else { return }
                     result[path] = colors.isEmpty || visibility.isVisible(normalizedPath: normalized, recordPath: path) ? colors : [:]
                 }
-                inspected += 1
-                let elapsed = start.duration(to: clock.now)
-                if inspected >= budget.maximumItems || elapsed >= budget.workSlice {
-                    do { try await budget.pause(elapsed * 4) } catch { break }
-                    inspected = 0
-                    start = clock.now
+                slice.inspected()
+                if slice.exhausted {
+                    do { try await slice.yield() } catch { break }
                 }
             }
-            if inspected > 0, !Task.isCancelled {
-                try? await budget.pause(start.duration(to: clock.now) * 4)
+            if slice.items > 0, !Task.isCancelled {
+                try? await slice.yield()
             }
             return Task.isCancelled ? VisibilityResult(records: [:], metadataRechecks: [])
                 : VisibilityResult(records: result, metadataRechecks: visibility.metadataRechecks.map { URL(fileURLWithPath: $0) })
@@ -262,9 +326,7 @@ nonisolated enum TaggedFileScanner {
     static func readResult(_ urls: [URL], budget: Budget = Budget()) async -> ReadResult {
         let worker = Task.detached(priority: .utility) {
             let exclusion = TemporaryExclusion()
-            let clock = ContinuousClock()
-            var start = clock.now
-            var inspected = 0
+            var slice = WorkSlice(budget)
             var records: Batch = [:]
             var complete = true
             var deferred = TagScanRoots()
@@ -287,16 +349,13 @@ nonisolated enum TaggedFileScanner {
                     if metadata.complete { records[url.path] = metadata.colors }
                     else { complete = false; deferred.deferRetry(url) }
                 }
-                inspected += 1
-                let elapsed = start.duration(to: clock.now)
-                if inspected >= budget.maximumItems || elapsed >= budget.workSlice {
-                    do { try await budget.pause(elapsed * 4) } catch { break }
-                    start = clock.now
-                    inspected = 0
+                slice.inspected()
+                if slice.exhausted {
+                    do { try await slice.yield() } catch { break }
                 }
             }
-            if inspected > 0, !Task.isCancelled {
-                try? await budget.pause(start.duration(to: clock.now) * 4)
+            if slice.items > 0, !Task.isCancelled {
+                try? await slice.yield()
             }
             return ReadResult(records: records, complete: complete && !Task.isCancelled, deferred: deferred.urls)
         }
@@ -321,9 +380,7 @@ nonisolated enum TaggedFileScanner {
 
     private static func discover(_ roots: [URL], budget: Budget, onBatch: @escaping Publish) async -> ScanResult {
         let exclusion = TemporaryExclusion()
-        let clock = ContinuousClock()
-        var sliceStart = clock.now
-        var inspected = 0
+        var slice = WorkSlice(budget)
         var batch: Batch = [:]
         var uniqueRoots = TagScanRoots()
         for root in roots { uniqueRoots.insert(root.resolvingSymlinksInPath()) }
@@ -336,20 +393,16 @@ nonisolated enum TaggedFileScanner {
         // holds an autorelease pool across an await.
         func checkpoint(force: Bool = false) async -> Bool {
             guard !Task.isCancelled else { return false }
-            let elapsed = sliceStart.duration(to: clock.now)
-            guard force || inspected >= budget.maximumItems || elapsed >= budget.workSlice else { return true }
+            guard force || slice.exhausted else { return true }
             // Empty checkpoints allow incremental reads to interleave even
             // while traversing a large subtree containing no tags.
             await onBatch(batch)
             batch.removeAll(keepingCapacity: true)
             guard !Task.isCancelled else { return false }
-            if inspected > 0 {
-                // Target a 20% duty cycle for this single worker. A filesystem
-                // syscall cannot be preempted at an exact 8 ms boundary.
-                do { try await budget.pause(elapsed * 4) } catch { return false }
-            }
-            inspected = 0
-            sliceStart = clock.now
+            if slice.items > 0 {
+                // Yield the utility thread between slices; no CPU cap applies.
+                do { try await slice.yield() } catch { return false }
+            } else { slice.restart() }
             return !Task.isCancelled
         }
 
@@ -376,7 +429,7 @@ nonisolated enum TaggedFileScanner {
                     if !metadata.complete { deferred.deferRetry(URL(fileURLWithPath: identity(directory.path))) }
                     if !metadata.colors.isEmpty { batch[identity(directory.path)] = metadata.colors }
                 }
-                inspected += 1
+                slice.inspected()
                 totalInspected += 1
                 guard await checkpoint() else { return ScanResult(interrupted: true) }
                 if (try? directory.resourceValues(forKeys: [.isPackageKey]).isPackage) == true {
@@ -402,8 +455,10 @@ nonisolated enum TaggedFileScanner {
                         if entry.descend {
                             let path = entry.path
                             guard !visitedRoots.contains(path), !exclusion.contains(path: path) else { return }
-                            let url = URL(fileURLWithPath: path, isDirectory: true)
-                            descend = (try? url.resourceValues(forKeys: [.isPackageKey]).isPackage) != true
+                            // Bulk Finder info rules out most packages without a
+                            // second per-directory attribute request.
+                            descend = !entry.mayBePackage || (try? URL(fileURLWithPath: path, isDirectory: true)
+                                .resourceValues(forKeys: [.isPackageKey]).isPackage) != true
                         }
                         // A reported absence is definitive for this inode. New
                         // attributes added during scanning are caught by the watcher.
@@ -419,11 +474,11 @@ nonisolated enum TaggedFileScanner {
                         }
                     }
                     if descend { stack.append(TagDirectoryEntries(URL(fileURLWithPath: entry.path, isDirectory: true), useBulk: budget.usesBulkEnumeration)) }
-                    inspected += 1
+                    slice.inspected()
                     totalInspected += 1
                     // Avoid entering an async function for every untagged item.
                     // The suspension/publication remains bounded by both limits.
-                    if inspected >= budget.maximumItems || sliceStart.duration(to: clock.now) >= budget.workSlice {
+                    if slice.exhausted {
                         guard await checkpoint(force: true) else { return ScanResult(interrupted: true) }
                     }
                 }
@@ -450,6 +505,7 @@ nonisolated private final class TagDirectoryEntries {
         let hidden: Bool
         let mayHaveXattrs: Bool
         let hasError: Bool
+        var mayBePackage = true
     }
     let directory: URL
     private let path: String
@@ -486,7 +542,8 @@ nonisolated private final class TagDirectoryEntries {
             switch ZFTagDirectoryNext(cursor, &entry) {
             case 1:
                 guard let path = entry.path else { failed = true; finished = true; return nil }
-                return Entry(rawPath: path, descend: entry.isDirectory, hidden: entry.isHidden, mayHaveXattrs: entry.mayHaveXattrs, hasError: entry.hasError)
+                return Entry(rawPath: path, descend: entry.isDirectory, hidden: entry.isHidden, mayHaveXattrs: entry.mayHaveXattrs,
+                             hasError: entry.hasError, mayBePackage: entry.mayBePackage)
             case -1: startFallback()
             default: failed = failed || ZFTagDirectoryFailed(cursor); finished = true
             }

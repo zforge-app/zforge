@@ -10,11 +10,17 @@ typedef struct {
     bool isHidden;
     bool mayHaveXattrs;
     bool hasError;
+    // False only for a directory whose name has no extension separator and
+    // whose returned Finder info lacks the bundle bit: LaunchServices cannot
+    // classify it as a package. Every other directory keeps the full check.
+    bool mayBePackage;
 } ZFTagDirectoryEntry;
 
 // Conservative rule also used when a volume omits the extended field.
 bool ZFTagMayHaveXattrs(uint32_t objectType, bool hasExtendedFlags, uint64_t extendedFlags);
 uint32_t ZFTagObjectTypeFromMode(uint32_t mode);
+// Conservative package pre-check; finderInfo may be NULL when not returned.
+bool ZFTagMayBePackage(const char *name, const uint8_t *finderInfo);
 
 // Worker-local cursor; returned paths remain valid until the next call.
 ZFTagDirectoryReader *ZFTagDirectoryOpen(const char *path);

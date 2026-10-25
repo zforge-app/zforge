@@ -1059,3 +1059,73 @@ The new PROBE_COMPATIBILITY_SCHEMA variant adds a hidden String-target system.op
 - Launch window reuse (build 26): new case `launchWindowReuse` covers single reuse, other windows, the grace period, a closed launch window and later default windows; `ArchiveSearchIntentTests` and `SiriArchiveIntentTests` pass, 33 tests, zero failures. The interaction monitor and SwiftUI window replacement are covered only by native acceptance.
 - Native one-window acceptance (delegated computer use, build 26): cold launch → 1 window (`/tmp/ZforgeSiriWindows26`); already running → 2 windows on a fresh conversation (the first attempt in a reused conversation did not invoke the action). “Open it”: 3 of 4 runs passed (`/tmp/ZforgeSiriOpenIt26`, runs A/B1/B2); the first cold run failed with `onScreenEntities: 0` and did not reproduce.
 - Native acceptance (manual/delegated, not automated): typed Siri on installed build 25 — search, “Open it” with Readme.txt, “Search for … in Zforge”. Spoken input, four-mode/language/size/theme/accessibility matrix and a UI test for the results window remain open.
+
+## ZF-41 / ZF-42 first-pass optimization — D-41 / D-43, 2026-10-24
+
+Tests run from copies under `/private/tmp/zf41r` (`base-src` = unchanged `HEAD` `6778795`, `final-src` = candidate) because a test host started from `~/Documents` can wait on a Documents privacy consent. Debug test builds of both trees succeed; the candidate adds no compiler warning in the changed files.
+
+| Executed result | Distinct tests | Executions | Outcome |
+| --- | ---: | ---: | --- |
+| Baseline TagCatalogTests, `/private/tmp/zf41r/base-tags.xcresult` | 57 | 71 | All pass, zero skips. D-49's seven failures are not reproduced in this run. |
+| Candidate TagCatalogTests, first run, `final-tags.xcresult` | 62 | 90 | 61 / 89 pass; the new oversized-list test fails in its own fixture: `setxattr` returns `ENAMETOOLONG` (names over 127 bytes). |
+| Candidate TagCatalogTests after fixture correction, `final-tags2.xcresult` | 62 | 90 | All pass, zero skips. The fixture now uses 40 names of 120 bytes; the test's assertions are unchanged. |
+| Candidate full unit suite, `final-unit.xcresult` | 367 | 557 | 366 / 556 pass, zero skips. One failure: `ArchiveDiscoveryPerformanceTests.mixedDirectChildren`, 136.58 ms against its 100 ms limit under full-suite load. |
+| Same performance test isolated, `base-archperf.xcresult` / `final-archperf.xcresult` | 1 | 1 | Passes on baseline and on the candidate. It does not exercise the changed tag code; earlier rounds already recorded this timing sensitivity. |
+| Three serial tag UI cases, candidate `final-tag-ui.xcresult` | 3 | 3 | 1 pass (`testIconModeTagContextMenuPreservesSelection`), 2 fail. |
+| Same UI cases, baseline `base-tag-ui.xcresult` | 3 | 3 | The same two fail with identical messages (`quick-tag-Red` not found; `XCTAssertTrue`). Preexisting, depends on the host's Finder tags (D-52). |
+| Differential equivalence, `/private/tmp/zf41r/equivalence-final` | 76 checkpoints | 152 catalog comparisons + fresh rescans | All pass against the independent POSIX/plist oracle (reference `fd1bacc` + journal repair, as accepted on 2026-10-06). |
+
+New contracts (62 − 57 = 5 tests, 19 executions): exact-name `listxattr` prefilter (including similar names, a missing path and raw list parsing); oversized name lists keep the direct read and still discover tags; bulk package pre-check (dotless bundle-bit package excluded, plain and dotted folders traversed, native equals Foundation fallback); cooperative duty (blocked time is not CPU work, bounded 50 ms overshoot credit, CPU-bound work measured); 15 path-component normalization cases. These cover new functions, so they cannot fail before the change for a behavioral reason. The real-tree scanner, catalog path and 10,000-record runs additionally verify identical record hashes and inspected/metadata-read counts against the baseline; one intended deferral difference is documented in the benchmark.
+
+Existing tests are not loosened or rewritten. The existing `scannerBoundsBatchesAndYields` pause assertions (`> 0`, at least three pauses) still hold with CPU-based duty.
+
+**FileOperationServiceTests QoS warning investigated:** the candidate xcresult attributes the single runtime warning ("[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default…") to `FileOperationServiceTests.newFolderStartsRenaming()`, `FileOperationServiceTests.swift` line 144 — the teardown that detaches the `NSHostingController` and closes a window with an active rename field editor. The `[Internal]` prefix marks a wait inside system frameworks; no tag discovery, scanner or Zforge background worker is involved (discovery runs at utility priority and never blocks the main thread). Unchanged test fixture; not fixed in this round.
+
+Measurements and limits: [tag-first-pass-optimization.md](Documentation/Benchmarks/tag-first-pass-optimization.md). Not covered: the signed application's cold first pass and 10,000-record launch (protected container index), full four-mode visual review (no UI change is made), macOS 26 runtime.
+
+### CPU duty cycle removed by user decision — 2026-10-24
+
+The user changed the requirement ("now that we've mostly solved the cost of the operation, remove the CPU usage limit and run the test again"). `TaggedFileScanner.Budget.pause(Duration)` becomes `yieldSlice()` (default: `Task.yield()` plus cancellation check); `CooperativeDuty` becomes `WorkSlice` with the same 128-item/8 ms boundaries. Test changes and their justification:
+
+- `scannerBoundsBatchesAndYields`: the assertion `pauses.allSatisfy { $0 > .zero }` encoded the 20% duty contract and is removed **because the user removed that requirement**. Every other assertion is kept: tagged batches at most 128, all 257 records, at least three slice boundaries for tagged and untagged trees, and at least three publications. The probe now counts yields instead of pause durations.
+- `canceledVisibilityBatchDoesNotPublishPartialRecords`: the cancellation gate moves from the pause hook to the yield hook. The scenario and assertions are unchanged (cancel at the first boundary, no partial result, exactly one boundary reached).
+- This round's own `cooperativeDutyMeasuresCPUAndCreditsOvershoot` tested the removed component and is replaced by `sliceBoundariesYieldAndObserveCancellation`: item/time slice limits, counter reset and cancellation observed at the default boundary.
+- `TagDiscoveryWorkProfile.swift` (added earlier this round) is deleted; `TagDiscoveryColdProfile.swift` records yields; `TagDiscoveryAppPathProfile.swift` adds main-actor heartbeat, per-second CPU and thermal-state reporting.
+
+| Executed result | Distinct tests | Executions | Outcome |
+| --- | ---: | ---: | --- |
+| TagCatalogTests, `/private/tmp/zf41r/nocap-tags.xcresult` | 62 | 90 | All pass, zero skips. |
+| Full unit suite, `/private/tmp/zf41r/nocap-unit.xcresult` | 367 | 557 | All pass, zero failures/skips. The archive discovery benchmark that failed under load in the capped run passes here. The FileOperationServiceTests QoS diagnostic remains. |
+| Differential equivalence, `/private/tmp/zf41r/equivalence-nocap` | 76 checkpoints | 152 comparisons + fresh rescans | All pass. |
+
+Tag UI cases were not re-run after this change: it alters no UI, and the three cases already fail 2 of 3 identically on unchanged `HEAD` (D-52). Performance and responsiveness evidence: [benchmark](Documentation/Benchmarks/tag-first-pass-optimization.md#user-decision-cpu-duty-cycle-removed--2026-10-24).
+
+### Concurrent traversal experiment — 2026-10-24
+
+New contracts (3 tests, 5 executions): `concurrentTraversalMatchesSingleWorker` (2, 4 and 8 workers; an uneven tree with a 24-level chain, a 700-file directory, unequal branches, Unicode names including a leading combining mark, a tagged folder, file and directory links, dot-hidden and `UF_HIDDEN` folders, a package and an unreadable folder; five repetitions per count compare records, inspected and metadata-read counts and deferred sets with one worker, check batches stay at most 128, and repeat with the Foundation fallback); `canceledConcurrentTraversalStops` (four gated workers, cancellation mid-scan: interrupted result, no deferred claim, no publication after return, only fixture records published); `catalogWithConcurrentWorkersMatchesSingleWorker` (catalog cold discovery and checkpoint with four workers). The one-worker path is refactored into shared seed and entry helpers with unchanged behavior; existing tests are not modified in this step.
+
+| Executed result (screen locked, unrelated Godot load) | Distinct tests | Executions | Outcome |
+| --- | ---: | ---: | --- |
+| Candidate TagCatalogTests, `/private/tmp/zf41r/par-tags.xcresult` | 65 | 95 | 57 / 85 pass. 8 fail, all at `store.load()`: the seven D-49 contracts plus the new catalog test. Both new scanner tests pass in every parameter and repetition. |
+| Unchanged `HEAD` TagCatalogTests, same locked session, `base-tags-locked.xcresult` | 57 | 71 | 50 / 64 pass; the same seven D-49 contracts fail. Earlier the same day, unlocked, the same build passed 57 / 71. |
+| Candidate full unit suite, `par-unit.xcresult` | 370 | 562 | 360 / 550 pass. Failures: the eight checkpoint loads above; `ArchiveDiscoveryPerformanceTests.mixedDirectChildren` (146.0 ms vs 100 ms under load); `updatesGlobalCatalogueLive`, where one 100 ms poll took about 17 s in the locked, loaded session. |
+
+These failures come from the locked session: protected checkpoints cannot be reopened (D-49 root cause), and the session was heavily loaded. They are not attributed to the experiment, whose default remains one worker. **Superseded:** the concurrent code was later removed by user decision. The blocked reruns were performed unlocked on the final one-worker source (next section).
+
+### Decisions applied and unlocked verification — 2026-10-24
+
+**Multi-worker rejected by the user; the default and only mode is one worker.** Removed: `Budget.workers`, the shared-directory-stack traversal (`ConcurrentTraversal`, seed/entry helpers), `FinderTagCatalog(scanBudget:)`, the `ZF_TAG_WORKERS` benchmark switch and the three concurrent tests with their fixture helper. The scanner is restored to its previous simpler single-worker structure; `TaggedFileScanner.swift` and `FinderTagCatalog.swift` are byte-identical (SHA-256 `45d37557…`, `731e8838…`) to the one-worker build measured and tested before the experiment. **D-49:** the user keeps the index protection class. Precondition: the screen must be unlocked when running the tag tests, the differential harness and the D-43 benchmark; in a locked session the seven checkpoint contracts fail for that reason only, and they are not skipped or loosened.
+
+Runs from `/private/tmp/zf41r/final-src`, under `caffeinate -dimsu`. A guard confirmed the session was unlocked before and after every run and recorded unrelated load (a Godot workload that intermittently used up to 5.6 cores, plus Spotlight `mds`/`mds_stores`).
+
+| Executed result | Distinct tests | Executions | Outcome |
+| --- | ---: | ---: | --- |
+| TagCatalogTests, `final2-tags.xcresult` | 62 | 90 | **All pass**, zero skips, including the seven D-49 checkpoint contracts. |
+| Full unit suite, first run, `final2-unit.xcresult` (Godot at 5.6 cores and `mds_stores` near one core during the run) | 367 | 557 | 365 / 555 pass. Failures: `rapidColumnArchiveSelectionPublishesOnlyCurrentArchive` (timed out waiting for `started:First.zip`, D-28 history) and `updatesGlobalCatalogueLive` (one 100 ms poll took 15.8 s). |
+| Full unit suite, second run, `final3-unit.xcresult` (Spotlight `mds`/`mds_stores` busy) | 367 | 557 | 364 / 554 pass. Failures: the same two, plus `ArchiveDiscoveryPerformanceTests.mixedDirectChildren` (117 ms vs 100 ms). |
+| The three failing cases in isolation, `final-flaky2.xcresult` | 3 | 3 | **All pass.** |
+| Differential equivalence, `/private/tmp/zf41r/equivalence-single` | 76 checkpoints | 152 comparisons + rescans | **All pass.** |
+
+The three full-suite failures are timing-dependent and outside the changed code: one wait suspended the test host for 13–16 s, and an archive benchmark measured 117 ms against 100 ms. All three pass alone. The identical production source passed the full suite (367 / 557) earlier on a quieter machine (`nocap-unit.xcresult`). They are recorded as load-dependent intermittent failures, not as approval, and no test was changed. The FileOperationServiceTests QoS diagnostic remains.
+
+Performance repeats after the decisions (functional check under unrelated Godot load of 2–6 cores, flagged contaminated): isolated first pass median 6.485 s, sandboxed/unsandboxed cold 7.093/7.163 s, reopen 0.042 s, D-43 Debug/Release 0.388/0.308 s. All targets hold, and the identical record hash, counts and oracle are verified. A clean, thermally settled repeat could not be obtained in this window. The clean evidence for this exact source is the earlier quiet-window measurement of the byte-identical build. Details in the [benchmark](Documentation/Benchmarks/tag-first-pass-optimization.md#final-verification-of-the-delivered-one-worker-source--2026-10-24).

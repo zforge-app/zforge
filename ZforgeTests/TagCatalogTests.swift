@@ -59,6 +59,16 @@ struct TagCatalogTests {
         #expect(TagScanRoots.covers(root, path) == expected)
     }
 
+    @Test("Path normalization detects empty, current and parent components after the first", arguments: [
+        ("/fixture/A/file.txt", false), ("/fixture/A/../file.txt", true), ("/fixture/./A", true),
+        ("/fixture//A", true), ("/fixture/A/", true), ("/fixture/A/.", true), ("/fixture/A/..", true),
+        ("/fixture/.hidden/file", false), ("/fixture/...", false), ("/fixture/..x/file", false),
+        ("/", true), ("", false), ("relative/./x", true), ("./relative", false), ("/fixture/\u{301}file", false)
+    ])
+    func emptyOrRelativeComponentDetection(path: String, expected: Bool) {
+        #expect(TagVisibilityBatch.hasEmptyOrRelativeComponent(path) == expected)
+    }
+
     @Test("Initial discovery and cached reopening retain a filename beginning with a combining mark")
     @MainActor
     func discoveryRetainsLeadingCombiningFilename() async throws {
@@ -273,7 +283,7 @@ struct TagCatalogTests {
         let gate = ScanGate()
         var budget = TaggedFileScanner.Budget()
         budget.maximumItems = 1
-        budget.pause = { _ in await gate.arriveAndWait() }
+        budget.yieldSlice = { await gate.arriveAndWait() }
         let batch = Dictionary(uniqueKeysWithValues: (0..<256).map {
             (root.appendingPathComponent("file-\($0).txt").path, ["Cancellation Label": 6])
         })
@@ -750,19 +760,20 @@ struct TagCatalogTests {
             try writeTags(["Bounded Fixture\n6"], to: file)
         }
         let probe = BudgetProbe()
-        let budget = TaggedFileScanner.Budget(pause: { await probe.paused($0) })
+        let budget = TaggedFileScanner.Budget(yieldSlice: { await probe.yielded() })
         await TaggedFileScanner.scan([root], budget: budget) { await probe.published($0) }
         #expect(await probe.maximumBatch <= 128)
         #expect(await probe.recordCount == 257)
-        #expect(await probe.pauses.count >= 3)
-        #expect(await probe.pauses.allSatisfy { $0 > .zero })
+        // The former positive-pause-duration assertion encoded the 20% CPU
+        // duty cycle, removed by the user on 2026-10-24; slices still yield.
+        #expect(await probe.yields >= 3)
         for index in 0..<257 { try writeTags([], to: root.appendingPathComponent("file-\(index).txt")) }
         let untagged = BudgetProbe()
-        await TaggedFileScanner.scan([root], budget: TaggedFileScanner.Budget(pause: { await untagged.paused($0) })) {
+        await TaggedFileScanner.scan([root], budget: TaggedFileScanner.Budget(yieldSlice: { await untagged.yielded() })) {
             await untagged.published($0)
         }
         #expect(await untagged.recordCount == 0)
-        #expect(await untagged.pauses.count >= 3)
+        #expect(await untagged.yields >= 3)
         #expect(await untagged.publications >= 3)
     }
 
@@ -1374,6 +1385,125 @@ struct TagCatalogTests {
         #expect(Set(await result.records.keys) == [file.path, link.path])
     }
 
+    @Test("The attribute-name prefilter reads listed tags and treats similar names as untagged")
+    func attributeListPrefilterMatchesExactTagName() throws {
+        let root = try fixtureRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let file = root.appendingPathComponent("A/first.txt")
+        let tagName = FinderTagMetadata.attribute
+        for name in [tagName + "X", String(tagName.dropLast()), "io.zforge.fixture"] {
+            try writeAttribute(name, value: Data("Similar attribute fixture".utf8), to: file)
+        }
+        try file.path.withCString { path in
+            #expect(FinderTagMetadata.listsTagAttribute(atPath: path) == false)
+            let untagged = FinderTagMetadata.readColorIndexes(atPath: path)
+            #expect(untagged.complete)
+            #expect(untagged.colors.isEmpty)
+            try writeTags(["Listed Fixture\n6", "Plain Listed Fixture"], to: file)
+            #expect(FinderTagMetadata.listsTagAttribute(atPath: path) == true)
+            let tagged = FinderTagMetadata.readColorIndexes(atPath: path)
+            #expect(tagged.complete)
+            #expect(tagged.colors == ["Listed Fixture": 6, "Plain Listed Fixture": 0])
+        }
+        // A missing item remains complete empty metadata, as with a direct read.
+        let missing = FinderTagMetadata.readColorIndexes(atPath: root.appendingPathComponent("missing.txt").path)
+        #expect(missing.complete)
+        #expect(missing.colors.isEmpty)
+        let names = Array("first\0\(tagName)\0".utf8)
+        names.withUnsafeBytes { list in
+            #expect(FinderTagMetadata.attributeNames(list, contain: Array(tagName.utf8)))
+            #expect(!FinderTagMetadata.attributeNames(UnsafeRawBufferPointer(rebasing: list[..<6]), contain: Array(tagName.utf8)))
+        }
+        #expect(!FinderTagMetadata.attributeNames(UnsafeRawBufferPointer(start: nil, count: 0), contain: Array(tagName.utf8)))
+    }
+
+    @Test("An attribute-name list larger than the prefilter buffer keeps the direct tag read")
+    func oversizedAttributeListFallsBackToDirectRead() async throws {
+        let root = try fixtureRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let file = root.appendingPathComponent("A/first.txt")
+        // Names are limited to 127 bytes; 40 names of 120 bytes exceed the 4 KiB list.
+        for index in 0..<40 {
+            let name = "io.zforge.fixture.long-attribute-name-\(index)-"
+            try writeAttribute(name + String(repeating: "x", count: 120 - name.utf8.count), value: Data([UInt8(index)]), to: file)
+        }
+        try file.path.withCString { path in
+            #expect(FinderTagMetadata.listsTagAttribute(atPath: path, capacity: 4096) == nil)
+            #expect(FinderTagMetadata.readColorIndexes(atPath: path).complete)
+            #expect(FinderTagMetadata.readColorIndexes(atPath: path).colors.isEmpty)
+            try writeTags(["Oversized List Fixture\n4"], to: file)
+            #expect(FinderTagMetadata.listsTagAttribute(atPath: path, capacity: 4096) == nil)
+            #expect(FinderTagMetadata.readColorIndexes(atPath: path).colors == ["Oversized List Fixture": 4])
+        }
+        let result = ScanResults()
+        #expect(await TaggedFileScanner.scan([root]) { await result.append($0) })
+        #expect(await result.records == [file.path: ["Oversized List Fixture": 4]])
+    }
+
+    @Test("Bulk Finder info skips the package lookup only for extensionless directories without the bundle bit")
+    func bulkPackagePrecheckPreservesBundleBitAndExtensions() async throws {
+        let root = try fixtureRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        var finderInfo = [UInt8](repeating: 0, count: 32)
+        #expect(!ZFTagMayBePackage("Plain", finderInfo))
+        #expect(ZFTagMayBePackage("Plain.app", finderInfo))
+        #expect(ZFTagMayBePackage("Version 1.2", finderInfo))
+        #expect(ZFTagMayBePackage("Plain", nil))
+        finderInfo[8] = 0x20
+        #expect(ZFTagMayBePackage("Plain", finderInfo))
+        // A dotless directory with the bundle bit is a package to LaunchServices;
+        // a plain dotless folder and a dotted ordinary folder are traversed.
+        let flagged = root.appendingPathComponent("FlaggedBundle")
+        let plain = root.appendingPathComponent("PlainFolder")
+        let dotted = root.appendingPathComponent("Version 1.2")
+        for directory in [flagged, plain, dotted] {
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+            let file = directory.appendingPathComponent("inside.txt")
+            try Data("Package fixture".utf8).write(to: file)
+            try writeTags(["Package Boundary\n6"], to: file)
+        }
+        try writeAttribute("com.apple.FinderInfo", value: Data(finderInfo), to: flagged)
+        #expect(try flagged.resourceValues(forKeys: [.isPackageKey]).isPackage == true)
+        #expect(try plain.resourceValues(forKeys: [.isPackageKey]).isPackage == false)
+        #expect(try dotted.resourceValues(forKeys: [.isPackageKey]).isPackage == false)
+        let native = ScanResults()
+        let fallback = ScanResults()
+        #expect(await TaggedFileScanner.scan([root]) { await native.append($0) })
+        #expect(await TaggedFileScanner.scan([root], budget: .init(usesBulkEnumeration: false)) { await fallback.append($0) })
+        let expected = Set([plain, dotted].map { $0.appendingPathComponent("inside.txt").path })
+        #expect(Set(await native.records.keys) == expected)
+        #expect(await native.records == fallback.records)
+    }
+
+    @Test("Slice boundaries bound work, yield without a CPU pause and observe cancellation")
+    func sliceBoundariesYieldAndObserveCancellation() async {
+        var slice = TaggedFileScanner.WorkSlice(TaggedFileScanner.Budget(maximumItems: 2, workSlice: .seconds(60)))
+        slice.inspected()
+        #expect(!slice.exhausted)
+        slice.inspected()
+        #expect(slice.exhausted)
+        // The default boundary yields and returns without a timed suspension.
+        try? await slice.yield()
+        #expect(slice.items == 0)
+        #expect(TaggedFileScanner.WorkSlice(TaggedFileScanner.Budget(workSlice: .zero)).exhausted)
+        let canceled = Task { () -> Bool in
+            var slice = TaggedFileScanner.WorkSlice(TaggedFileScanner.Budget())
+            slice.inspected()
+            withUnsafeCurrentTask { $0?.cancel() }
+            do { try await slice.yield(); return false } catch { return error is CancellationError }
+        }
+        #expect(await canceled.value)
+    }
+
+    private func writeAttribute(_ name: String, value: Data, to url: URL) throws {
+        let result = value.withUnsafeBytes { bytes in
+            url.withUnsafeFileSystemRepresentation { path in
+                setxattr(path!, name, bytes.baseAddress, value.count, 0, 0)
+            }
+        }
+        #expect(result == 0, "setxattr \(name) failed: \(errno)")
+    }
+
     private func fixtureRoot() throws -> URL {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent("TagCatalogue-\(UUID())")
         for name in ["A", "B"] {
@@ -1508,11 +1638,11 @@ private actor CatalogWorkProbe {
 }
 
 private actor BudgetProbe {
-    private(set) var pauses: [Duration] = []
+    private(set) var yields = 0
     private(set) var recordCount = 0
     private(set) var maximumBatch = 0
     private(set) var publications = 0
-    func paused(_ duration: Duration) { pauses.append(duration) }
+    func yielded() { yields += 1 }
     func published(_ batch: TaggedFileScanner.Batch) {
         publications += 1
         recordCount += batch.count
