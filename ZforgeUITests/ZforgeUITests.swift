@@ -825,8 +825,10 @@ final class ZforgeUITests: XCTestCase {
         expectation(for: dismissed, evaluatedWith: app.sheets.firstMatch)
         waitForExpectations(timeout: 3)
         rowPoint.rightClick()
-        let edit = app.menuItems["Edit Tags"]
+        // The editor item is found by identifier because hovering a circle retitles it with the tag name.
+        let edit = app.menuItems["edit-tags"]
         XCTAssertTrue(edit.waitForExistence(timeout: 3))
+        XCTAssertEqual(edit.title, "Edit Tags")
         let quickButtons = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "quick-tag-"))
         XCTAssertEqual(quickButtons.count, 7)
         let applied = app.buttons["quick-tag-Red"]
@@ -841,6 +843,9 @@ final class ZforgeUITests: XCTestCase {
         hover.name = "Applied tag hover"
         hover.lifetime = .keepAlways
         add(hover)
+        XCTAssertEqual(edit.title, "Red")
+        edit.hover()
+        XCTAssertEqual(edit.title, "Edit Tags")
         edit.click()
         XCTAssertTrue(app.sheets.firstMatch.waitForExistence(timeout: 3))
         XCTAssertFalse(app.buttons["UI draft tag"].exists)

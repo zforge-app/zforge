@@ -465,6 +465,10 @@ The preparation baseline for the fresh spoken Vega/Probe comparison is captured 
 **ZF-43 issue recorded — 2026-10-12:** [Direct Siri archive discovery fails before App Intent dispatch](Documentation/Requirements/SIRI-DISCOVERY-ISSUE.md) is open under ZF-43 / OR-20 / D-47. It consolidates reproduction, passing native/Spotlight controls, intermittent Probe routing, unconfirmed hypotheses, the blocked registration comparison and closure criteria. Recording the issue adds no new execution result and does not close the integration gates.
 
 **Delivery split requested — 2026-10-12:** the user requests a validated MCP-only `main` and preserves native Apple integration, including its initial shortcut actions, modern file entity/index/context development, diagnostics and unresolved tests, on `codex/apple-intelligence` for future continuation. This branch retains the full implementation and historical evidence; its unresolved acceptance gates remain open. Shared MCP operations, contextual permissions and grant consolidation remain deliverable. No user grants or unrelated localization work are discarded. The issue records the continuation branch.
+### ZF-26 follow-up — Quick tag hover and tag name label (2026-10-26)
+
+**Implemented; unit and UI tests approved.** User-reported bug: sweeping the mouse quickly over the quick-tag circles left several showing + because per-circle tracking areas lost their exit events. Hover now belongs to `FinderTagQuickRowView`, which resolves the circle under the pointer on every enter/move/exit. New request: while a circle is hovered the Edit Tags item shows the tag name (tooltips removed). UI fixtures now use an isolated tag catalog, so the tag UI tests no longer depend on the Mac's own Finder tags. Divergence D-53; also addresses D-52. Evidence in `REGRESSION-COVERAGE.md`; Portuguese, light theme and a manual fast-sweep check remain pending.
+
 ### ZF-43 — Siri in-app archive search (implemented on `codex/apple-intelligence`; 2026-10-13)
 
 - [x] Identify the Siri routing boundary from planner traces (`intelligenceflowd`, `searchtoold`) and confirm it with Probe controls.

@@ -31,6 +31,32 @@ struct IconPreviewServiceTests {
         #expect(names.count == 10)
     }
 
+    @Test("Only video files show the play badge over their content thumbnail")
+    func videoPlayBadgeEligibility() {
+        for name in ["Movie.mov", "Clip.mp4", "Phone.m4v", "Screen Recording.MOV", "Capture.avi"] {
+            #expect(item(name).showsVideoPlayBadge, "\(name)")
+        }
+        for name in ["Sound.mp3", "Voice.m4a", "Photo.png", "Animation.gif", "Document.pdf", "Page.html", "Unknown.bin"] {
+            #expect(!item(name).showsVideoPlayBadge, "\(name)")
+        }
+        #expect(!item("Movies.mov", directory: true).showsVideoPlayBadge)
+        #expect(!item("Clip.mp4.zip", archive: true).showsVideoPlayBadge)
+        var declared = item("Untyped")
+        declared = BrowserItem(id: declared.id, name: declared.name, location: declared.location,
+            isContainer: false, isDirectory: false, isPackage: false, isSymbolicLink: false, isHidden: false,
+            isArchive: false, size: 128, packedSize: nil, creationDate: nil, modificationDate: nil, accessDate: nil,
+            tags: [], contentTypeIdentifier: "public.mpeg-4", encrypted: false, checksum: nil, compressionMethod: nil)
+        #expect(declared.showsVideoPlayBadge)
+    }
+
+    @Test("The play badge scales with the thumbnail within readable bounds")
+    func videoPlayBadgeDiameter() {
+        #expect(VideoPlayBadge.diameter(for: CGSize(width: 64, height: 64)) == 64 * 0.36)
+        #expect(VideoPlayBadge.diameter(for: CGSize(width: 200, height: 260)) == 56)
+        #expect(VideoPlayBadge.diameter(for: CGSize(width: 20, height: 20)) == 16)
+        #expect(VideoPlayBadge.diameter(for: CGSize(width: 128, height: 80)) == 80 * 0.36)
+    }
+
     @Test("Success and unavailable representations are cached, revisions and zoom reload")
     func cacheInvalidation() async throws {
         let image = try sampleImage()

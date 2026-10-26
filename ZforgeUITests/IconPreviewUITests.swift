@@ -111,6 +111,26 @@ final class IconPreviewUITests: XCTestCase {
     }
 
     @MainActor
+    func testVideoThumbnailShowsPlayBadgeInIconsAndSelectionStack() throws {
+        let app = fixtureApplication()
+        launchFixture(app)
+        defer { app.terminate() }
+        XCTAssertTrue(preview(named: "Preview.mov", in: app).waitForExistence(timeout: 10))
+        XCTAssertTrue(preview(named: "Preview.png", in: app).exists)
+        attachScreenshot(app, named: "Video thumbnail with play badge in Icons")
+
+        browserFile(named: "Preview.mov", in: app).click()
+        waitForIconSelection(named: "Preview.mov", in: app)
+        XCUIElement.perform(withKeyModifiers: .command) {
+            browserFile(named: "Preview.png", in: app).click()
+        }
+        waitForIconSelection(named: "Preview.png", in: app)
+        app.typeKey("4", modifierFlags: .command)
+        XCTAssertTrue(app.descendants(matching: .any)["browser-mode-gallery"].firstMatch.waitForExistence(timeout: 5))
+        attachScreenshot(app, named: "Video thumbnail with play badge in the Gallery selection stack")
+    }
+
+    @MainActor
     func testPortugueseNarrowWindowPreservesPreviewsAndMultipleSelectionAtZoomLimits() throws {
         let app = fixtureApplication(width: "720", language: "portugueseBrazil", appearance: "Dark")
         launchFixture(app)
@@ -161,7 +181,7 @@ final class IconPreviewUITests: XCTestCase {
     }
 
     private var previewFileNames: [String] {
-        ["Preview.png", "Preview.jpg", "Preview.pdf", "Preview.txt", "Preview.html"]
+        ["Preview.png", "Preview.jpg", "Preview.pdf", "Preview.txt", "Preview.html", "Preview.mov"]
     }
 
     @MainActor

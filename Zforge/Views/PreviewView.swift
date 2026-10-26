@@ -168,6 +168,8 @@ final class QuickLookThumbnailHostView: NSImageView {
     private var request: QLThumbnailGenerator.Request?
     private var requestedURL: URL?
     private var requestedSize: CGSize = .zero
+    /// Reports whether the view shows a content thumbnail rather than the placeholder icon.
+    var onContentAvailabilityChange: ((Bool) -> Void)?
 
     override var intrinsicContentSize: NSSize {
         NSSize(width: NSView.noIntrinsicMetric, height: NSView.noIntrinsicMetric)
@@ -189,6 +191,9 @@ final class QuickLookThumbnailHostView: NSImageView {
         requestedURL = url
         requestedSize = size
         image = NSWorkspace.shared.icon(forFile: url.path)
+        // Deferred so SwiftUI state is never mutated during `updateNSView`; it is enqueued
+        // before the thumbnail callback, so it cannot overwrite a newer result.
+        DispatchQueue.main.async { [weak self] in self?.onContentAvailabilityChange?(false) }
 
         guard FileManager.default.fileExists(atPath: url.path) else { return }
         let scale = max(window?.backingScaleFactor ?? NSScreen.main?.backingScaleFactor ?? 2, 1)
@@ -202,6 +207,7 @@ final class QuickLookThumbnailHostView: NSImageView {
 
         QLThumbnailGenerator.shared.generateBestRepresentation(for: request) { [weak self] representation, _ in
             let thumbnail = representation?.cgImage
+            let showsContent = thumbnail != nil && representation?.type != .icon
             DispatchQueue.main.async {
                 guard let self,
                       self.request === request,
@@ -210,6 +216,7 @@ final class QuickLookThumbnailHostView: NSImageView {
                 if let thumbnail {
                     self.image = NSImage(cgImage: thumbnail, size: .zero)
                 }
+                self.onContentAvailabilityChange?(showsContent)
             }
         }
     }
@@ -228,14 +235,17 @@ final class QuickLookThumbnailHostView: NSImageView {
 private struct QuickLookThumbnail: NSViewRepresentable {
     let url: URL
     let size: CGSize
+    var onContentAvailabilityChange: ((Bool) -> Void)?
 
     func makeNSView(context: Context) -> QuickLookThumbnailHostView {
         let view = QuickLookThumbnailHostView()
+        view.onContentAvailabilityChange = onContentAvailabilityChange
         view.display(url, size: size)
         return view
     }
 
     func updateNSView(_ view: QuickLookThumbnailHostView, context: Context) {
+        view.onContentAvailabilityChange = onContentAvailabilityChange
         view.display(url, size: size)
     }
 
@@ -563,6 +573,7 @@ private struct SelectionHeroItem: View {
     let width: CGFloat
     let height: CGFloat
     let scale: CGFloat
+    @State private var showsContentThumbnail = false
 
     var body: some View {
         Group {
@@ -580,8 +591,14 @@ private struct SelectionHeroItem: View {
                 } else {
                     QuickLookThumbnail(
                         url: previewURL,
-                        size: CGSize(width: width, height: height)
+                        size: CGSize(width: width, height: height),
+                        onContentAvailabilityChange: { showsContentThumbnail = $0 }
                     )
+                    .overlay {
+                        if item.showsVideoPlayBadge && showsContentThumbnail {
+                            VideoPlayBadge(thumbnailSize: CGSize(width: width, height: height))
+                        }
+                    }
                 }
             } else if state.previewRequiresManualLoad(for: item) {
                 VStack(spacing: 8 * scale) {
