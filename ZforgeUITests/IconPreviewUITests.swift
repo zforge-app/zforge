@@ -119,12 +119,13 @@ final class IconPreviewUITests: XCTestCase {
         XCTAssertTrue(preview(named: "Preview.png", in: app).exists)
         attachScreenshot(app, named: "Video thumbnail with play badge in Icons")
 
-        browserFile(named: "Preview.mov", in: app).click()
-        waitForIconSelection(named: "Preview.mov", in: app)
-        XCUIElement.perform(withKeyModifiers: .command) {
-            browserFile(named: "Preview.png", in: app).click()
-        }
+        // The last selected item tops the stack, so select the movie last to keep its badge visible.
+        browserFile(named: "Preview.png", in: app).click()
         waitForIconSelection(named: "Preview.png", in: app)
+        XCUIElement.perform(withKeyModifiers: .command) {
+            browserFile(named: "Preview.mov", in: app).click()
+        }
+        waitForIconSelection(named: "Preview.mov", in: app)
         app.typeKey("4", modifierFlags: .command)
         XCTAssertTrue(app.descendants(matching: .any)["browser-mode-gallery"].firstMatch.waitForExistence(timeout: 5))
         attachScreenshot(app, named: "Video thumbnail with play badge in the Gallery selection stack")
