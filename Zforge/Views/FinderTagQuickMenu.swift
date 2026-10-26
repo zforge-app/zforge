@@ -19,7 +19,14 @@ enum FinderTagQuickMenu {
         let tags = tags(for: items, catalogTags: catalogTags)
         let row = NSMenuItem(title: AppLocalization.string("Tags", locale: state.preferences.language.locale), action: nil, keyEquivalent: "")
         row.identifier = NSUserInterfaceItemIdentifier("quick-tags-" + items.map(\.name).joined(separator: ","))
-        let view = NSView(frame: NSRect(x: 0, y: 0, width: 246, height: 36))
+        let editorTitle = AppLocalization.string("Edit Tags", locale: state.preferences.language.locale)
+        let editor = ClosureMenuItem(title: editorTitle, systemImage: "tag", isEnabled: enabled) { state.editTags(items: items) }
+        editor.identifier = NSUserInterfaceItemIdentifier("edit-tags")
+        if #available(macOS 27.0, *) { editor.preferredImageVisibility = .visible }
+        // While a circle is hovered the editor item names its tag, as Finder does.
+        let view = FinderTagQuickRowView(frame: NSRect(x: 0, y: 0, width: 246, height: 36)) { [weak editor] tag in
+            editor?.title = tag?.name ?? editorTitle
+        }
         view.autoresizingMask = [.width]
         for (index, tag) in tags.enumerated() {
             let count = items.filter { $0.tags.contains(tag.name) }.count
@@ -40,10 +47,56 @@ enum FinderTagQuickMenu {
         }
         row.view = view
         menu.addItem(row)
-        let editor = ClosureMenuItem(title: AppLocalization.string("Edit Tags", locale: state.preferences.language.locale),
-                                     systemImage: "tag", isEnabled: enabled) { state.editTags(items: items) }
-        if #available(macOS 27.0, *) { editor.preferredImageVisibility = .visible }
         menu.addItem(editor)
+    }
+}
+
+/// Owns hover for the whole circle row. A single tracking area that resolves the
+/// circle under the pointer on every event cannot strand a hover symbol, unlike
+/// per-circle areas, whose exit events are lost when the pointer crosses them quickly.
+@MainActor
+final class FinderTagQuickRowView: NSView {
+    private let hoverChanged: (FinderTag?) -> Void
+    private var hoverTracking: NSTrackingArea?
+    /// Last circle named by the editor item; kept across the gaps between circles
+    /// so the title does not flicker, and cleared when the pointer leaves the row.
+    private var namedTag: FinderTag?
+
+    init(frame: NSRect, hoverChanged: @escaping (FinderTag?) -> Void) {
+        self.hoverChanged = hoverChanged
+        super.init(frame: frame)
+    }
+
+    required init?(coder: NSCoder) { nil }
+
+    var buttons: [FinderTagQuickButton] { subviews.compactMap { $0 as? FinderTagQuickButton } }
+
+    override func updateTrackingAreas() {
+        if let hoverTracking { removeTrackingArea(hoverTracking) }
+        let tracking = NSTrackingArea(rect: bounds, options: [.mouseEnteredAndExited, .mouseMoved, .activeAlways, .inVisibleRect],
+                                      owner: self)
+        hoverTracking = tracking
+        addTrackingArea(tracking)
+        super.updateTrackingAreas()
+    }
+
+    override func mouseEntered(with event: NSEvent) { updateHover(at: convert(event.locationInWindow, from: nil)) }
+    override func mouseMoved(with event: NSEvent) { updateHover(at: convert(event.locationInWindow, from: nil)) }
+    override func mouseExited(with event: NSEvent) { updateHover(at: nil) }
+
+    override func viewWillMove(toWindow newWindow: NSWindow?) {
+        if newWindow == nil { updateHover(at: nil) }
+        super.viewWillMove(toWindow: newWindow)
+    }
+
+    /// Marks at most one circle as hovered; `nil` means the pointer left the row.
+    func updateHover(at point: NSPoint?) {
+        let target = point.flatMap { point in buttons.first { $0.isEnabled && $0.frame.contains(point) } }
+        for button in buttons { button.isHovered = button === target }
+        let named = point == nil ? nil : target?.finderTag ?? namedTag
+        guard named != namedTag else { return }
+        namedTag = named
+        hoverChanged(named)
     }
 }
 
@@ -53,8 +106,10 @@ final class FinderTagQuickButton: NSButton {
     let applied: Bool
     let mixed: Bool
     private let handler: () -> Void
-    private var hovered = false
-    private var hoverTracking: NSTrackingArea?
+    /// Set by `FinderTagQuickRowView`, the single owner of the row's hover state.
+    var isHovered = false {
+        didSet { if isHovered != oldValue { needsDisplay = true } }
+    }
 
     init(tag: FinderTag, applied: Bool, mixed: Bool, handler: @escaping () -> Void) {
         self.finderTag = tag
@@ -69,10 +124,8 @@ final class FinderTagQuickButton: NSButton {
         title = ""
         target = self
         action = #selector(toggleTag)
-        toolTip = tag.name
         setAccessibilityLabel(tag.name)
         setAccessibilityIdentifier("quick-tag-\(tag.name)")
-
     }
 
     required init?(coder: NSCoder) { nil }
@@ -80,20 +133,9 @@ final class FinderTagQuickButton: NSButton {
     override func accessibilityValue() -> Any? { applied ? "1" : mixed ? "mixed" : "0" }
 
     var symbolName: String? {
-        if hovered { return applied ? "xmark" : "plus" }
+        if isHovered { return applied ? "xmark" : "plus" }
         return applied ? "checkmark" : mixed ? "minus" : nil
     }
-
-    override func updateTrackingAreas() {
-        if let hoverTracking { removeTrackingArea(hoverTracking) }
-        let tracking = NSTrackingArea(rect: bounds, options: [.mouseEnteredAndExited, .activeAlways, .inVisibleRect], owner: self)
-        hoverTracking = tracking
-        addTrackingArea(tracking)
-        super.updateTrackingAreas()
-    }
-
-    override func mouseEntered(with event: NSEvent) { hovered = true; needsDisplay = true }
-    override func mouseExited(with event: NSEvent) { hovered = false; needsDisplay = true }
 
     override func draw(_ dirtyRect: NSRect) {
         let colors: [NSColor] = [.clear, .systemGray, .systemGreen, .systemPurple, .systemBlue, .systemYellow, .systemRed, .systemOrange]

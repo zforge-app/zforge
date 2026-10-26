@@ -96,7 +96,18 @@ nonisolated enum FinderTagPresentation {
 @MainActor
 @Observable
 final class FinderTagCatalog: NSObject {
-    static let shared = FinderTagCatalog(indexStore: .standard)
+    static let shared = ProcessInfo.processInfo.arguments.contains("--ui-fixtures")
+        ? FinderTagCatalog.uiFixture() : FinderTagCatalog(indexStore: .standard)
+
+    /// UI fixtures must not depend on the Mac's own Finder tags, which decide the quick-tag
+    /// circles: an isolated catalog that offers Finder's standard English favorites. Slot 0 is
+    /// colorless in Finder's layout, so it stays empty for each name to keep its own color.
+    private static func uiFixture() -> FinderTagCatalog {
+        let catalog = FinderTagCatalog(discoveryRoots: [], scanner: { _, _ in }, reader: { _ in [:] }, monitorsFiles: false,
+            usesSpotlight: false, favoriteTagNames: { ["", "Red", "Orange", "Yellow", "Green", "Blue", "Purple", "Gray"] })
+        catalog.publish()
+        return catalog
+    }
 
     private(set) var tags: [FinderTag] = []
     private(set) var revision: UInt64 = 0
@@ -114,6 +125,7 @@ final class FinderTagCatalog: NSObject {
     @ObservationIgnored private let monitorsFiles: Bool
     @ObservationIgnored private let usesSpotlight: Bool
     @ObservationIgnored private let eventDelay: @Sendable () async throws -> Void
+    @ObservationIgnored private let favoriteTagNames: (() -> [String])?
     @ObservationIgnored private var running = false
     @ObservationIgnored private var eventTask: Task<Void, Never>?
     @ObservationIgnored private var pendingChanges: [String: TagFileChange] = [:]
@@ -143,7 +155,8 @@ final class FinderTagCatalog: NSObject {
         monitorsFiles: Bool = true,
         usesSpotlight: Bool = true,
         indexStore: TagIndexStore? = nil,
-        eventDelay: @escaping @Sendable () async throws -> Void = { try await Task.sleep(for: .milliseconds(350)) }
+        eventDelay: @escaping @Sendable () async throws -> Void = { try await Task.sleep(for: .milliseconds(350)) },
+        favoriteTagNames: (() -> [String])? = nil
     ) {
         self.discoveryPolicy = TagDiscoveryPolicy(roots: discoveryRoots)
         if let scanner {
@@ -158,6 +171,7 @@ final class FinderTagCatalog: NSObject {
         self.usesSpotlight = usesSpotlight
         self.indexStore = indexStore
         self.eventDelay = eventDelay
+        self.favoriteTagNames = favoriteTagNames
         super.init()
     }
 
@@ -404,15 +418,7 @@ final class FinderTagCatalog: NSObject {
         for (name, references) in tagReferences {
             colors[name] = references.keys.filter { $0 != 0 }.min() ?? 0
         }
-        // This plist is read through the same Home authorization as user files.
-        // Cross-domain CFPreferences alone is unavailable in the App Sandbox.
-        let prefsURL = UserDirectoryService.homeURL.appendingPathComponent("Library/Preferences/com.apple.finder.plist")
-        let prefs = (try? Data(contentsOf: prefsURL)).flatMap {
-            try? PropertyListSerialization.propertyList(from: $0, format: nil) as? [String: Any]
-        }
-        let favorites = prefs?["FavoriteTagNames"] as? [String]
-            ?? CFPreferencesCopyAppValue("FavoriteTagNames" as CFString, "com.apple.finder" as CFString) as? [String]
-            ?? []
+        let favorites = favoriteTagNames?() ?? Self.finderFavoriteTagNames()
         let colorBySlot = [0, 6, 7, 5, 2, 4, 3, 1]
         for (slot, name) in favorites.enumerated() where !name.isEmpty {
             colors[name] = colors[name] ?? (slot < colorBySlot.count ? colorBySlot[slot] : 0)
@@ -420,6 +426,18 @@ final class FinderTagCatalog: NSObject {
         let updated = colors.map { FinderTag(name: $0.key, colorIndex: $0.value) }
             .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
         if updated != tags { tags = updated }
+    }
+
+    private static func finderFavoriteTagNames() -> [String] {
+        // This plist is read through the same Home authorization as user files.
+        // Cross-domain CFPreferences alone is unavailable in the App Sandbox.
+        let prefsURL = UserDirectoryService.homeURL.appendingPathComponent("Library/Preferences/com.apple.finder.plist")
+        let prefs = (try? Data(contentsOf: prefsURL)).flatMap {
+            try? PropertyListSerialization.propertyList(from: $0, format: nil) as? [String: Any]
+        }
+        return prefs?["FavoriteTagNames"] as? [String]
+            ?? CFPreferencesCopyAppValue("FavoriteTagNames" as CFString, "com.apple.finder" as CFString) as? [String]
+            ?? []
     }
 
     /// Restore only after scopes have been authorized. Monitor before scanning

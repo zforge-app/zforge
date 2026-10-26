@@ -554,6 +554,59 @@ struct TagCatalogTests {
         #expect(blue.accessibilityValue() as? String == "0")
     }
 
+    @Test("Quick tag row keeps a single hovered circle and names it in the editor item")
+    @MainActor
+    func quickTagRowHover() async throws {
+        let suite = "TagMenuHover-\(UUID())"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let state = FileBrowserState(preferences: FileBrowserPreferences(defaults: defaults),
+            fileSystem: UIFixtureFileSystemService(), recentItems: UIFixtureRecentItemsService(),
+            grants: UIFixtureAccessGrantStore(), archives: UIFixtureArchiveEngine())
+        defer { state.close() }
+        state.preferences.language = .english
+        await state.start()
+        let file = try #require(state.items.first { $0.name == "Welcome.txt" })
+        let menu = NSMenu()
+        FinderTagQuickMenu.append(to: menu, state: state, items: [file], catalogTags: [
+            FinderTag(name: "Blue", colorIndex: 4), FinderTag(name: "Green", colorIndex: 2), FinderTag(name: "Red", colorIndex: 6)])
+        let row = try #require(menu.items.first { $0.identifier?.rawValue == "quick-tags-Welcome.txt" }?.view as? FinderTagQuickRowView)
+        let editor = try #require(menu.items.first { $0.identifier?.rawValue == "edit-tags" })
+        let buttons = row.buttons
+        #expect(buttons.map(\.finderTag.name) == ["Blue", "Green", "Red"])
+        #expect(buttons.allSatisfy { $0.toolTip == nil })
+        #expect(editor.title == "Edit Tags")
+        func center(_ button: FinderTagQuickButton) -> NSPoint { NSPoint(x: button.frame.midX, y: button.frame.midY) }
+
+        row.updateHover(at: center(buttons[0]))
+        #expect(buttons.map(\.isHovered) == [true, false, false])
+        #expect(buttons[0].symbolName == "plus")
+        #expect(editor.title == "Blue")
+
+        // A fast sweep delivers no exit for the circles it skipped over.
+        row.updateHover(at: center(buttons[2]))
+        #expect(buttons.map(\.isHovered) == [false, false, true])
+        // The fixture file already carries Red, so its hover offers removal.
+        #expect(buttons.map(\.symbolName) == [nil, nil, "xmark"])
+        #expect(editor.title == "Red")
+
+        // The gap between circles clears the symbol but keeps the name to avoid flicker.
+        row.updateHover(at: NSPoint(x: (buttons[1].frame.maxX + buttons[2].frame.minX) / 2, y: buttons[1].frame.midY))
+        #expect(buttons.allSatisfy { !$0.isHovered })
+        #expect(editor.title == "Red")
+
+        row.updateHover(at: nil)
+        #expect(buttons.allSatisfy { !$0.isHovered })
+        #expect(buttons.map(\.symbolName) == [nil, nil, "checkmark"])
+        #expect(editor.title == "Edit Tags")
+
+        row.updateHover(at: center(buttons[1]))
+        #expect(editor.title == "Green")
+        row.viewWillMove(toWindow: nil)
+        #expect(buttons.allSatisfy { !$0.isHovered })
+        #expect(editor.title == "Edit Tags")
+    }
+
     @Test("Completed discovery is reused by repeated refreshes and descendant scopes")
     @MainActor
     func refreshReusesDiscovery() async throws {

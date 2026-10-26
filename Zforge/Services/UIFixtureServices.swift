@@ -1,4 +1,5 @@
 import AppKit
+import AVFoundation
 import Foundation
 import ImageIO
 import UniformTypeIdentifiers
@@ -46,11 +47,50 @@ enum IconPreviewUIFixture {
         try Data("<!doctype html><html><body><h1>Icon preview fixture</h1><p>HTML content preview.</p></body></html>".utf8)
             .write(to: directory.appendingPathComponent("Preview.html"))
         try Data(repeating: 0xFF, count: 128).write(to: directory.appendingPathComponent("Unsupported.bin"))
+        try await writeMovie(of: image, to: directory.appendingPathComponent("Preview.mov"))
         try await archives.createArchive(
             from: [directory.appendingPathComponent("Preview.png")],
             outputURL: directory.appendingPathComponent("Sample.zip"),
             format: .zip, progress: { _ in }
         )
+    }
+
+    /// Writes a short H.264 movie whose frames repeat `image`, so Quick Look has a video frame.
+    private static func writeMovie(of image: CGImage, to url: URL) async throws {
+        let writer = try AVAssetWriter(outputURL: url, fileType: .mov)
+        let input = AVAssetWriterInput(mediaType: .video, outputSettings: [
+            AVVideoCodecKey: AVVideoCodecType.h264,
+            AVVideoWidthKey: image.width,
+            AVVideoHeightKey: image.height
+        ])
+        let adaptor = AVAssetWriterInputPixelBufferAdaptor(assetWriterInput: input, sourcePixelBufferAttributes: [
+            kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA,
+            kCVPixelBufferWidthKey as String: image.width,
+            kCVPixelBufferHeightKey as String: image.height
+        ])
+        writer.add(input)
+        guard writer.startWriting() else { throw writer.error ?? CocoaError(.fileWriteUnknown) }
+        writer.startSession(atSourceTime: .zero)
+        for frame in 0..<4 {
+            while !input.isReadyForMoreMediaData { await Task.yield() }
+            guard let pool = adaptor.pixelBufferPool else { throw CocoaError(.fileWriteUnknown) }
+            var buffer: CVPixelBuffer?
+            CVPixelBufferPoolCreatePixelBuffer(nil, pool, &buffer)
+            guard let buffer else { throw CocoaError(.fileWriteUnknown) }
+            CVPixelBufferLockBaseAddress(buffer, [])
+            let context = CGContext(data: CVPixelBufferGetBaseAddress(buffer), width: image.width,
+                height: image.height, bitsPerComponent: 8, bytesPerRow: CVPixelBufferGetBytesPerRow(buffer),
+                space: CGColorSpace(name: CGColorSpace.sRGB)!,
+                bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue | CGBitmapInfo.byteOrder32Little.rawValue)
+            context?.draw(image, in: CGRect(x: 0, y: 0, width: image.width, height: image.height))
+            CVPixelBufferUnlockBaseAddress(buffer, [])
+            guard adaptor.append(buffer, withPresentationTime: CMTime(value: CMTimeValue(frame), timescale: 4)) else {
+                throw writer.error ?? CocoaError(.fileWriteUnknown)
+            }
+        }
+        input.markAsFinished()
+        await writer.finishWriting()
+        guard writer.status == .completed else { throw writer.error ?? CocoaError(.fileWriteUnknown) }
     }
 }
 

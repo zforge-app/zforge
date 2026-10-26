@@ -22,6 +22,11 @@ struct IconPreviewView: View {
                     .resizable()
                     .interpolation(.high)
                     .scaledToFit()
+                    .overlay {
+                        if item.showsVideoPlayBadge {
+                            VideoPlayBadge(thumbnailSize: CGSize(width: size, height: size))
+                        }
+                    }
             } else {
                 FileIconView(item: item, size: size)
             }
