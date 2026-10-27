@@ -12,6 +12,7 @@ final class FileBrowserState {
         case navigate(name: String)
         case loadRecents
         case reveal(target: URL)
+        case finderRequest(FinderMenuRequest)
     }
 
     private struct HistoryEntry {
@@ -183,6 +184,7 @@ final class FileBrowserState {
     @ObservationIgnored private let initialURL: URL?
     @ObservationIgnored private var initialAutomationAccessLease: AutomationAccessLease?
     @ObservationIgnored private let initialArchiveSearch: String?
+    @ObservationIgnored private var initialFinderRequest: FinderMenuRequest?
     @ObservationIgnored private let archiveSearch: any ArchiveSearching
     // Results stay readable, and archives opened from them stay extractable,
     // until the window closes. A refreshed search replaces the equivalent scope.
@@ -705,7 +707,20 @@ final class FileBrowserState {
         ProcessInfo.processInfo.arguments.contains("--ui-archive-drag-fixtures") ? initialURL : nil
     }
 
-    convenience init(initialURL: URL? = nil, automationAccessLease: AutomationAccessLease? = nil, archiveSearch: String? = nil) {
+    convenience init(initialURL: URL? = nil, automationAccessLease: AutomationAccessLease? = nil, archiveSearch: String? = nil,
+                     finderRequest: FinderMenuRequest? = nil) {
+        if ProcessInfo.processInfo.arguments.contains("--ui-finder-fixtures") {
+            // Real files in Zforge's own temporary folder, revealed in Finder so a UI
+            // test can choose the Zforge submenu there; windows opened from Finder
+            // run their request against the same files.
+            self.init(preferences: FileBrowserPreferences.shared, fileSystem: FileSystemService(),
+                recentItems: UIFixtureRecentItemsService(), grants: UIFixtureAccessGrantStore(),
+                archives: NativeSevenZipArchiveEngine(),
+                initialURL: finderRequest == nil
+                    ? ZforgeTemporaryStorage.root().appendingPathComponent("FinderFixture-" + UUID().uuidString) : nil,
+                initialFinderRequest: finderRequest)
+            return
+        }
         if ProcessInfo.processInfo.arguments.contains("--ui-icon-preview-fixtures") {
             self.init(preferences: FileBrowserPreferences.shared, fileSystem: FileSystemService(),
                 recentItems: UIFixtureRecentItemsService(), grants: UIFixtureAccessGrantStore(),
@@ -742,7 +757,8 @@ final class FileBrowserState {
             archives: NativeSevenZipArchiveEngine(),
             initialURL: initialURL,
             automationAccessLease: automationAccessLease,
-            initialArchiveSearch: archiveSearch
+            initialArchiveSearch: archiveSearch,
+            initialFinderRequest: finderRequest
         )
     }
 
@@ -757,7 +773,8 @@ final class FileBrowserState {
         initialURL: URL? = nil,
         automationAccessLease: AutomationAccessLease? = nil,
         archiveSearch: (any ArchiveSearching)? = nil,
-        initialArchiveSearch: String? = nil
+        initialArchiveSearch: String? = nil,
+        initialFinderRequest: FinderMenuRequest? = nil
     ) {
         self.preferences = preferences
         self.viewMode = preferences.viewMode
@@ -771,6 +788,7 @@ final class FileBrowserState {
         initialAutomationAccessLease = automationAccessLease
         self.archiveSearch = archiveSearch ?? AuthorizedArchiveSearch()
         self.initialArchiveSearch = initialArchiveSearch
+        self.initialFinderRequest = initialFinderRequest
         location = .recents
         pathComponents = [
             BrowserPathComponent(
@@ -816,6 +834,23 @@ final class FileBrowserState {
                 try FileManager.default.removeItem(at: inside)
                 try FileManager.default.removeItem(at: target)
             } catch { self.error = mapError(error); return }
+        }
+        if ProcessInfo.processInfo.arguments.contains("--ui-finder-fixtures"), initialFinderRequest == nil, let initialURL {
+            do {
+                let payload = initialURL.appendingPathComponent("Payload", isDirectory: true)
+                try FileManager.default.createDirectory(at: payload, withIntermediateDirectories: true)
+                try Data("payload".utf8).write(to: payload.appendingPathComponent("Payload.txt"))
+                let archive = initialURL.appendingPathComponent("Sample.zip")
+                try await archives.createArchive(from: [payload], outputURL: archive, format: .zip, progress: { _ in })
+                try FileManager.default.removeItem(at: payload)
+                try Data("note".utf8).write(to: initialURL.appendingPathComponent("Note.txt"))
+                NSWorkspace.shared.activateFileViewerSelecting([archive])
+            } catch { self.error = mapError(error); return }
+        }
+        if let finderRequest = initialFinderRequest {
+            initialFinderRequest = nil
+            await performFinderRequest(finderRequest)
+            return
         }
         if let initialArchiveSearch {
             await showArchiveSearch(initialArchiveSearch)
@@ -864,10 +899,46 @@ final class FileBrowserState {
                 await navigate(to: .fileSystem(intendedURL), named: name, resetPath: true)
             case let .reveal(target):
                 await reveal(target)
+            case let .finderRequest(request):
+                await performFinderRequest(request)
             case nil:
                 let name = intendedURL.lastPathComponent
                 await navigate(to: .fileSystem(intendedURL), named: name, resetPath: true)
             }
+        } catch {
+            self.error = mapError(error)
+        }
+    }
+
+    /// Runs an action chosen in Finder's Zforge submenu through the same path as the
+    /// browser's context menu, after showing its items selected in their folder.
+    /// Each folder holding a selected item needs browser access first.
+    func performFinderRequest(_ request: FinderMenuRequest) async {
+        let urls = request.urls
+        var folders: [URL] = []
+        for folder in urls.map({ $0.deletingLastPathComponent().standardizedFileURL }) where !folders.contains(folder) {
+            folders.append(folder)
+        }
+        guard request.isWellFormed, let first = folders.first else { return }
+        for folder in folders where !(await grants.hasGrant(for: folder)) {
+            requestAuthorization(for: folder, purpose: .finderRequest(request))
+            return
+        }
+        do {
+            for folder in folders { _ = try await grants.activateGrant(for: folder) }
+            FinderTagCatalog.shared.refresh(searchScopes: await grants.metadataSearchScopes())
+            var items: [BrowserItem] = []
+            for url in urls { items.append(try await fileSystem.item(at: url)) }
+            await navigate(to: .fileSystem(first), named: FileManager.default.displayName(atPath: first.path), resetPath: true)
+            selectLocalItems(at: urls)
+            // The selection may have changed between Finder's menu and this window.
+            guard contextualActions(for: items).contains(request.action) else {
+                error = .unavailable(AppLocalization.string(
+                    "The requested item or operation is no longer available.", locale: preferences.language.locale
+                ))
+                return
+            }
+            contextualFeedbackMessage = await performContextualAction(request.action, items: items)
         } catch {
             self.error = mapError(error)
         }
@@ -1890,20 +1961,13 @@ final class FileBrowserState {
     }
 
     private func archiveBaseName(_ name: String) -> String {
-        let lowercased = name.lowercased()
-        for suffix in [".tar.gz", ".tar.bz2", ".tar.xz", ".tgz", ".tbz2", ".txz"] {
-            if lowercased.hasSuffix(suffix) {
-                return String(name.dropLast(suffix.count))
-            }
-        }
-        return URL(fileURLWithPath: name).deletingPathExtension().lastPathComponent
+        ArchiveNaming.baseName(name)
     }
 
     private func archiveExtractionDirectoryName(for archiveName: String) -> String {
-        let baseName = archiveBaseName(archiveName)
-        return baseName.isEmpty || baseName == "." || baseName == ".."
-            ? AppLocalization.string("Archive", locale: preferences.language.locale)
-            : baseName
+        ArchiveNaming.extractionDirectoryName(
+            for: archiveName, fallback: AppLocalization.string("Archive", locale: preferences.language.locale)
+        )
     }
 
     private func isDirectory(at url: URL) -> Bool {

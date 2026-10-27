@@ -172,40 +172,11 @@ nonisolated enum ArchiveToolbarAction: Equatable, Sendable {
     }
 }
 
-nonisolated enum BrowserSelectionAction: CaseIterable, Hashable, Sendable {
-    case open
-    case compress
-    case compressCustom
-    case addToArchive
-    case removeFromArchive
-    case extractHere
-    case extractNamed
-    case extractChoose
-    case validate
-
-    var systemImage: String {
-        switch self {
-        case .open: "arrow.up.forward.app"
-        case .compress, .compressCustom: "archivebox"
-        case .addToArchive: "archivebox.badge.plus"
-        case .removeFromArchive: "trash"
-        case .extractHere, .extractNamed, .extractChoose: "arrow.down.to.line.compact"
-        case .validate: "checkmark.shield"
-        }
-    }
-}
-
-nonisolated enum BrowserSelectionActionPolicy {
+extension BrowserSelectionActionPolicy {
     static func actions(for selected: [BrowserItem]) -> [BrowserSelectionAction] {
         guard !selected.isEmpty else { return [] }
         guard selected.allSatisfy({ $0.localURL != nil }) else { return [.open] }
-        guard selected.allSatisfy(\.isArchive) else {
-            return [.open, .compress, .compressCustom, .addToArchive]
-        }
-        let extraction: [BrowserSelectionAction] = [
-            .open, .extractHere, .extractNamed, .extractChoose, .validate
-        ]
-        return selected.count > 1 ? extraction + [.compress, .compressCustom, .addToArchive] : extraction + [.addToArchive]
+        return actions(localItemsAreArchives: selected.map(\.isArchive))
     }
 }
 
@@ -392,35 +363,6 @@ nonisolated enum BrowserError: LocalizedError, Equatable {
         case let .previewTooLarge(size):
             AppLocalization.string("error.preview_too_large \(AppLocalization.byteCount(size))")
         }
-    }
-}
-
-nonisolated enum ArchiveFormatRegistry {
-    static let commonExtensions: Set<String> = [
-        "7z", "zip", "rar", "tar", "tgz", "tbz", "tbz2", "txz", "tzst",
-        "gz", "gzip", "bz2", "bzip2", "xz", "zst", "lzma", "cab", "arj",
-        "lzh", "lha", "cpio", "xar", "wim", "swm", "iso"
-    ]
-
-    static func recognizes(_ name: String) -> Bool {
-        let lowercased = name.lowercased()
-        if lowercased.hasSuffix(".7z.001") || lowercased.hasSuffix(".zip.001") { return true }
-        // This is filename classification, not URL resolution. Constructing a
-        // relative file URL repeatedly consults the working directory.
-        return commonExtensions.contains((lowercased as NSString).pathExtension)
-    }
-
-    static func supportsUpdating(_ name: String) -> Bool {
-        let lowercased = name.lowercased()
-        return lowercased.hasSuffix(".zip") || lowercased.hasSuffix(".7z")
-    }
-
-    /// Formats whose directory metadata can be read without walking a
-    /// sequentially compressed payload. Keep this deliberately conservative:
-    /// inline list expansion must feel as immediate as expanding a folder.
-    static func supportsFastTreeListing(_ name: String) -> Bool {
-        let extensionName = URL(fileURLWithPath: name.lowercased()).pathExtension
-        return extensionName == "zip" || extensionName == "7z"
     }
 }
 

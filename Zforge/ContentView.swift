@@ -60,9 +60,9 @@ struct ContentView: View {
     let tabSourceWindowNumber: Int?
 
     init(initialURL: URL? = nil, tabSourceWindowNumber: Int? = nil, automationAccess: BrowserOpeningAccess? = nil,
-         archiveSearch: String? = nil) {
+         archiveSearch: String? = nil, finderRequest: FinderMenuRequest? = nil) {
         _browser = State(initialValue: FileBrowserState(initialURL: initialURL, automationAccessLease: automationAccess?.take(),
-            archiveSearch: archiveSearch))
+            archiveSearch: archiveSearch, finderRequest: finderRequest))
         self.tabSourceWindowNumber = tabSourceWindowNumber
     }
 
@@ -753,15 +753,28 @@ nonisolated final class ClosureMenuItem: NSMenuItem {
     @MainActor
     init(
         title: String,
-        systemImage: String,
+        image: NSImage?,
         isEnabled: Bool,
         handler: @escaping @MainActor () -> Void
     ) {
         self.handler = handler
         super.init(title: title, action: #selector(performAction), keyEquivalent: "")
         target = self
-        image = NSImage(systemSymbolName: systemImage, accessibilityDescription: title)
+        self.image = image
         self.isEnabled = isEnabled
+    }
+
+    @MainActor
+    convenience init(title: String, systemImage: String, isEnabled: Bool, handler: @escaping @MainActor () -> Void) {
+        self.init(title: title, image: NSImage(systemSymbolName: systemImage, accessibilityDescription: title),
+                  isEnabled: isEnabled, handler: handler)
+    }
+
+    /// A selection action's item, with the same symbol as Finder's Zforge submenu.
+    @MainActor
+    convenience init(title: String, action: BrowserSelectionAction, isEnabled: Bool, handler: @escaping @MainActor () -> Void) {
+        self.init(title: title, image: action.menuSymbol.flatMap { MenuSymbolImage.image(for: $0, accessibilityDescription: title) },
+                  isEnabled: isEnabled, handler: handler)
     }
 
     @MainActor @objc private func performAction() {

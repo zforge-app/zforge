@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		A10000000000000000000002 /* 7-Zip-License.txt in Resources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000004 /* 7-Zip-License.txt */; };
 		A43000000000000000000001 /* MCP in Frameworks */ = {isa = PBXBuildFile; productRef = A43000000000000000000002 /* MCP */; };
+		B10000000000000000000002 /* ZforgeFinderExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B10000000000000000000001 /* ZforgeFinderExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -26,7 +27,28 @@
 			remoteGlobalIDString = 55A3998330042A170038B088;
 			remoteInfo = Zforge;
 		};
+		B10000000000000000000004 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 55A3997C30042A170038B088 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B10000000000000000000010;
+			remoteInfo = ZforgeFinderExtension;
+		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		B10000000000000000000003 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				B10000000000000000000002 /* ZforgeFinderExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		55A3998430042A170038B088 /* Zforge.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Zforge.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -34,6 +56,7 @@
 		55A3999B30042A180038B088 /* ZforgeUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ZforgeUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A10000000000000000000003 /* 7zz */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = 7zz; sourceTree = "<group>"; };
 		A10000000000000000000004 /* 7-Zip-License.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "7-Zip-License.txt"; sourceTree = "<group>"; };
+		B10000000000000000000001 /* ZforgeFinderExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ZforgeFinderExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -43,6 +66,13 @@
 				Info.plist,
 			);
 			target = 55A3998330042A170038B088 /* Zforge */;
+		};
+		B10000000000000000000008 /* Exceptions for "ZforgeFinderExtension" folder in "ZforgeFinderExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = B10000000000000000000010 /* ZforgeFinderExtension */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -63,6 +93,19 @@
 		55A3999E30042A180038B088 /* ZforgeUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = ZforgeUITests;
+			sourceTree = "<group>";
+		};
+		B10000000000000000000006 /* Shared */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		B10000000000000000000007 /* ZforgeFinderExtension */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				B10000000000000000000008 /* Exceptions for "ZforgeFinderExtension" folder in "ZforgeFinderExtension" target */,
+			);
+			path = ZforgeFinderExtension;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -90,6 +133,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B10000000000000000000012 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -97,6 +147,8 @@
 			isa = PBXGroup;
 			children = (
 				55A3998630042A170038B088 /* Zforge */,
+				B10000000000000000000006 /* Shared */,
+				B10000000000000000000007 /* ZforgeFinderExtension */,
 				A10000000000000000000007 /* Vendor */,
 				55A3999430042A180038B088 /* ZforgeTests */,
 				55A3999E30042A180038B088 /* ZforgeUITests */,
@@ -110,6 +162,7 @@
 				55A3998430042A170038B088 /* Zforge.app */,
 				55A3999130042A180038B088 /* ZforgeTests.xctest */,
 				55A3999B30042A180038B088 /* ZforgeUITests.xctest */,
+				B10000000000000000000001 /* ZforgeFinderExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -134,13 +187,16 @@
 				55A3998030042A170038B088 /* Sources */,
 				55A3998130042A170038B088 /* Frameworks */,
 				55A3998230042A170038B088 /* Resources */,
+				B10000000000000000000003 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				B10000000000000000000005 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				55A3998630042A170038B088 /* Zforge */,
+				B10000000000000000000006 /* Shared */,
 			);
 			name = Zforge;
 			packageProductDependencies = (
@@ -196,6 +252,29 @@
 			productReference = 55A3999B30042A180038B088 /* ZforgeUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		B10000000000000000000010 /* ZforgeFinderExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B10000000000000000000020 /* Build configuration list for PBXNativeTarget "ZforgeFinderExtension" */;
+			buildPhases = (
+				B10000000000000000000011 /* Sources */,
+				B10000000000000000000012 /* Frameworks */,
+				B10000000000000000000013 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				B10000000000000000000006 /* Shared */,
+				B10000000000000000000007 /* ZforgeFinderExtension */,
+			);
+			name = ZforgeFinderExtension;
+			packageProductDependencies = (
+			);
+			productName = ZforgeFinderExtension;
+			productReference = B10000000000000000000001 /* ZforgeFinderExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -216,6 +295,9 @@
 					55A3999A30042A180038B088 = {
 						CreatedOnToolsVersion = 26.6;
 						TestTargetID = 55A3998330042A170038B088;
+					};
+					B10000000000000000000010 = {
+						CreatedOnToolsVersion = 27.1;
 					};
 				};
 			};
@@ -259,6 +341,7 @@
 				55A3998330042A170038B088 /* Zforge */,
 				55A3999030042A180038B088 /* ZforgeTests */,
 				55A3999A30042A180038B088 /* ZforgeUITests */,
+				B10000000000000000000010 /* ZforgeFinderExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -280,6 +363,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		55A3999930042A180038B088 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B10000000000000000000013 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -332,6 +422,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B10000000000000000000011 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -344,6 +441,11 @@
 			isa = PBXTargetDependency;
 			target = 55A3998330042A170038B088 /* Zforge */;
 			targetProxy = 55A3999C30042A180038B088 /* PBXContainerItemProxy */;
+		};
+		B10000000000000000000005 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B10000000000000000000010 /* ZforgeFinderExtension */;
+			targetProxy = B10000000000000000000004 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -672,6 +774,64 @@
 			};
 			name = Release;
 		};
+		B10000000000000000000021 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ZforgeFinderExtension/ZforgeFinderExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 26;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = FL2Y9U53SS;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = ZforgeFinderExtension/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MARKETING_VERSION = 0.0.1;
+				PRODUCT_BUNDLE_IDENTIFIER = io.libor.Zforge.FinderExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		B10000000000000000000022 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ZforgeFinderExtension/ZforgeFinderExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 26;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = FL2Y9U53SS;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = ZforgeFinderExtension/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MARKETING_VERSION = 0.0.1;
+				PRODUCT_BUNDLE_IDENTIFIER = io.libor.Zforge.FinderExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -707,6 +867,15 @@
 			buildConfigurations = (
 				55A399AC30042A180038B088 /* Debug */,
 				55A399AD30042A180038B088 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B10000000000000000000020 /* Build configuration list for PBXNativeTarget "ZforgeFinderExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B10000000000000000000021 /* Debug */,
+				B10000000000000000000022 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

@@ -82,14 +82,15 @@ enum BrowserActionsMenu {
         }
 
         let selected = browser.selectedItems
-        addItem("Open", systemImage: "arrow.up.forward.app", isEnabled: !selected.isEmpty) {
+        menu.addItem(ClosureMenuItem(title: AppLocalization.string("Open", locale: locale), action: .open,
+                                     isEnabled: !selected.isEmpty) {
             Task { _ = await browser.performContextualAction(.open, items: selected) }
-        }
+        })
         for action in browser.contextualActions(for: selected) where action != .open {
             menu.addItem(
                 ClosureMenuItem(
                     title: browser.contextualTitle(action, items: selected),
-                    systemImage: action.systemImage,
+                    action: action,
                     isEnabled: !browser.archiveOperationInProgress
                 ) {
                     Task {

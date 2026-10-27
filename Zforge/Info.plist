@@ -21,6 +21,14 @@
 			<key>LSHandlerRank</key><string>Alternate</string>
 		</dict>
 	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key><string>io.libor.Zforge.finder-requests</string>
+			<key>CFBundleTypeRole</key><string>Viewer</string>
+			<key>CFBundleURLSchemes</key><array><string>zforge-finder</string></array>
+		</dict>
+	</array>
 	<key>CFBundleExecutable</key><string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIconFile</key><string>zforge_icon</string>
 	<key>CFBundleIconName</key><string>zforge_icon</string>
@@ -41,6 +49,7 @@
 			<key>UTTypeDescription</key><string>Zforge archive item transfer</string>
 		</dict>
 	</array>
+	<key>ZforgeAppGroupIdentifier</key><string>$(DEVELOPMENT_TEAM).io.libor.Zforge</string>
 	<key>NSPrincipalClass</key><string>NSApplication</string>
 </dict>
 </plist>

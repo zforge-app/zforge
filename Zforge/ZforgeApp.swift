@@ -76,13 +76,14 @@ private struct BrowserWindowRoot: View {
             initialURL: request.initialURL,
             tabSourceWindowNumber: request.tabSourceWindowNumber,
             automationAccess: request.automationAccess,
-            archiveSearch: request.archiveSearch
+            archiveSearch: request.archiveSearch,
+            finderRequest: request.finderRequest
         )
             .id(request.id)
             .onAppear {
                 // A file can arrive after SwiftUI computes the default scene value.
                 // In that case, use the first new window for the archive.
-                if !hasAppeared && request.initialURL == nil && request.archiveSearch == nil,
+                if !hasAppeared && request.initialURL == nil && request.archiveSearch == nil && request.finderRequest == nil,
                    let pending = appDelegate.takeNextArchiveRequest() {
                     appDelegate.releaseLaunchWindow(request.id)
                     request = pending
@@ -367,6 +368,8 @@ private struct ZforgeSettingsView: View {
                 .accessibilityIdentifier("settings-show-icon-previews")
 
             AutomationSettingsSection()
+
+            FinderExtensionSettingsSection()
 
             Section("List Columns") {
                 Text("Choose the columns shown by default. Use the arrows to change their order. A folder can override this layout from a column header.")

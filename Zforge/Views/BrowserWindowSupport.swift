@@ -9,14 +9,18 @@ nonisolated struct BrowserWindowRequest: Codable, Hashable {
     /// Archive name search requested by a system action. Restoration repeats the
     /// search under the then-current automation grants; no lease is serialized.
     let archiveSearch: String?
+    /// An action chosen in Finder. It runs once; restoration never repeats it.
+    let finderRequest: FinderMenuRequest?
 
     init(id: UUID = UUID(), initialURL: URL? = nil, tabSourceWindowNumber: Int? = nil,
-         automationAccess: BrowserOpeningAccess? = nil, archiveSearch: String? = nil) {
+         automationAccess: BrowserOpeningAccess? = nil, archiveSearch: String? = nil,
+         finderRequest: FinderMenuRequest? = nil) {
         self.id = id
         self.initialURL = initialURL
         self.tabSourceWindowNumber = tabSourceWindowNumber
         self.automationAccess = automationAccess
         self.archiveSearch = archiveSearch
+        self.finderRequest = finderRequest
     }
 
     private enum CodingKeys: String, CodingKey { case id, initialURL, tabSourceWindowNumber, archiveSearch }
@@ -27,13 +31,15 @@ nonisolated struct BrowserWindowRequest: Codable, Hashable {
         tabSourceWindowNumber = try values.decodeIfPresent(Int.self, forKey: .tabSourceWindowNumber)
         archiveSearch = try values.decodeIfPresent(String.self, forKey: .archiveSearch)
         automationAccess = nil
+        finderRequest = nil
     }
     static func == (lhs: Self, rhs: Self) -> Bool {
         lhs.id == rhs.id && lhs.initialURL == rhs.initialURL && lhs.tabSourceWindowNumber == rhs.tabSourceWindowNumber
-            && lhs.archiveSearch == rhs.archiveSearch
+            && lhs.archiveSearch == rhs.archiveSearch && lhs.finderRequest == rhs.finderRequest
     }
     func hash(into hasher: inout Hasher) {
         hasher.combine(id); hasher.combine(initialURL); hasher.combine(tabSourceWindowNumber); hasher.combine(archiveSearch)
+        hasher.combine(finderRequest)
     }
 }
 

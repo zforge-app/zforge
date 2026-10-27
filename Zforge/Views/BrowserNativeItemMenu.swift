@@ -117,7 +117,7 @@ enum BrowserNativeContextMenu {
         }
         func selectTargets() { if !state.selection.contains(item.id) { state.select(item) } }
         for action in state.contextualActions(for: items) {
-            menu.addItem(ClosureMenuItem(title: state.contextualTitle(action, items: items), systemImage: action.systemImage,
+            menu.addItem(ClosureMenuItem(title: state.contextualTitle(action, items: items), action: action,
                                         isEnabled: !state.archiveOperationInProgress) {
                 Task { state.contextualFeedbackMessage = await state.performContextualAction(action, items: items) }
             })

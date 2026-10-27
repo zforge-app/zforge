@@ -1,4 +1,5 @@
 import AppKit
+import OSLog
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
@@ -38,6 +39,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func application(_ application: NSApplication, open urls: [URL]) {
+        if urls.contains(where: { $0.scheme == FinderRequestInbox.urlScheme }) {
+            receiveFinderRequests(from: FinderRequestInbox.shared())
+        }
         let archives = urls.filter { ArchiveFormatRegistry.recognizes($0.lastPathComponent) }
         guard !archives.isEmpty else { return }
 
@@ -48,6 +52,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func receiveAutomationArchive(_ url: URL, lease: AutomationAccessLease) {
         guard ArchiveFormatRegistry.recognizes(url.lastPathComponent) else { return }
         pendingArchives.append(BrowserWindowRequest(initialURL: url, automationAccess: BrowserOpeningAccess(lease)))
+        NotificationCenter.default.post(name: Self.archiveURLsReceived, object: self)
+    }
+
+    /// Each action chosen in Finder's Zforge submenu opens a window that shows its
+    /// items and runs the action there. The wake URL carries no request itself.
+    func receiveFinderRequests(from inbox: FinderRequestInbox?) {
+        guard let inbox else {
+            Logger(subsystem: "io.libor.Zforge", category: "Finder").error("The Finder request inbox is unavailable.")
+            return
+        }
+        let requests = inbox.drain()
+        guard !requests.isEmpty else { return }
+        pendingArchives.append(contentsOf: requests.map { BrowserWindowRequest(finderRequest: $0) })
         NotificationCenter.default.post(name: Self.archiveURLsReceived, object: self)
     }
 
