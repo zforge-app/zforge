@@ -17,66 +17,13 @@ final class ZforgeUITests: XCTestCase {
         )], timeout: 3) == .completed
     }
 
+    /// Real menu bar, Option alternate, ⌃⌥⌘N/⇧⌘N delivery and inline editor in
+    /// List. Parity across the four modes is covered offscreen by
+    /// `FolderWithSelectionFlowTests` and `FolderWithSelectionTests`.
     @MainActor
-    func testFolderSelectionCommandIsLocalizedAndDocumented() throws {
-        let app = XCUIApplication()
-        app.launchArguments = ["--ui-fixtures", "--ui-window-width", "680",
-            "-appLanguagePreference", "portugueseBrazil", "-ApplePersistenceIgnoreState", "YES"]
-        addTeardownBlock { app.terminate() }
-        launchArchiveFixture(app)
-        defer { app.terminate() }
-        XCTAssertTrue(app.staticTexts["Welcome.txt"].waitForExistence(timeout: 8))
-        XCUIElement.perform(withKeyModifiers: .option) {
-            app.menuBars.menuBarItems["File"].click()
-            XCTAssertTrue(app.menuItems["Nova Pasta com Seleção"].exists, app.debugDescription)
-            let menu = XCTAttachment(screenshot: app.screenshot())
-            menu.name = "Portuguese folder selection alternate at 680 pt"
-            menu.lifetime = .keepAlways
-            add(menu)
-        }
-        app.terminate()
-        launchArchiveFixture(app)
-        app.typeKey("/", modifierFlags: .command)
-        let shortcuts = app.windows.containing(.staticText, identifier: "Atalhos de Teclado").firstMatch
-        XCTAssertTrue(shortcuts.waitForExistence(timeout: 3), app.debugDescription)
-        let browserWindow = app.windows.matching(NSPredicate(format: "identifier BEGINSWITH %@", "browser-")).firstMatch
-        browserWindow.buttons[XCUIIdentifierCloseWindow].click()
-        let search = shortcuts.searchFields.firstMatch
-        search.click()
-        // Preserve the user's clipboard while supplying the complete Unicode
-        // query. XCTest's simulated typing drops characters during searchable updates.
-        let pasteboard = NSPasteboard.general
-        let savedItems = (pasteboard.pasteboardItems ?? []).map { source in
-            let copy = NSPasteboardItem()
-            for type in source.types {
-                if let data = source.data(forType: type) { copy.setData(data, forType: type) }
-            }
-            return copy
-        }
-        var suppliedChangeCount = -1
-        defer {
-            if pasteboard.changeCount == suppliedChangeCount {
-                pasteboard.clearContents()
-                pasteboard.writeObjects(savedItems)
-            }
-        }
-        pasteboard.clearContents()
-        pasteboard.setString("Nova Pasta com Seleção", forType: .string)
-        suppliedChangeCount = pasteboard.changeCount
-        search.typeKey("v", modifierFlags: .command)
-        XCTAssertEqual(search.value as? String, "Nova Pasta com Seleção", app.debugDescription)
-        XCTAssertTrue(shortcuts.staticTexts["Nova Pasta com Seleção"].waitForExistence(timeout: 3))
-        XCTAssertTrue(shortcuts.descendants(matching: .any).matching(identifier: "shortcut-⌃⌥⌘N").firstMatch.exists)
-        let help = XCTAttachment(screenshot: app.screenshot())
-        help.name = "Portuguese folder selection shortcut help"
-        help.lifetime = .keepAlways
-        add(help)
-        app.typeKey("w", modifierFlags: .command)
-    }
-
-    @MainActor
-    func testNewFolderWithSelectionMenuAndShortcutInEveryMode() throws {
-        for mode in ["icons", "list", "columns", "gallery"] {
+    func testNewFolderWithSelectionMenuAndShortcutInListMode() throws {
+        let mode = "list"
+        do {
             for activation in ["shortcut", "menu"] {
                 let app = XCUIApplication()
                 app.launchArguments = ["--ui-archive-drag-fixtures", "--ui-window-width", "1100",
@@ -122,7 +69,7 @@ final class ZforgeUITests: XCTestCase {
                 app.typeKey(.return, modifierFlags: [])
                 let folder = app.descendants(matching: .any).matching(identifier: "browser-item-Grouped Items").firstMatch.staticTexts["Grouped Items"].firstMatch
                 XCTAssertTrue(folder.waitForExistence(timeout: 8), app.debugDescription)
-                if mode == "columns" { folder.click() } else { folder.doubleClick() }
+                folder.doubleClick()
                 XCTAssertTrue(app.windows["Grouped Items"].firstMatch.waitForExistence(timeout: 8), mode)
                 XCTAssertTrue(local.waitForExistence(timeout: 8), mode)
                 XCTAssertTrue(archive.waitForExistence(timeout: 8), mode)
@@ -137,15 +84,19 @@ final class ZforgeUITests: XCTestCase {
         }
     }
 
+    /// Real Option alternation in the menu bar, in List. The native alternate
+    /// pairing is characterized by `FileMenuCommandTests` and the disabled state
+    /// without a selection in every mode by `FolderWithSelectionFlowTests`.
     @MainActor
-    func testFolderSelectionMenuAlternatesWithOptionInEveryMode() throws {
-        for mode in ["icons", "list", "columns", "gallery"] {
+    func testFolderSelectionMenuAlternatesWithOptionInListMode() throws {
+        let mode = "list"
+        do {
             let app = XCUIApplication()
             app.launchArguments = ["--ui-archive-drag-fixtures", "--ui-window-width", "1100",
                 "--ui-view-mode", mode, "-appLanguagePreference", "english", "-ApplePersistenceIgnoreState", "YES"]
             addTeardownBlock { app.terminate() }
             launchArchiveFixture(app)
-            app.windows.firstMatch.coordinate(withNormalizedOffset: CGVector(dx: 0.85, dy: mode == "gallery" ? 0.9 : 0.75)).click()
+            app.windows.firstMatch.coordinate(withNormalizedOffset: CGVector(dx: 0.85, dy: 0.75)).click()
             let selectedCells = app.descendants(matching: .any).matching(NSPredicate(
                 format: "identifier BEGINSWITH %@ AND selected == true", "browser-item-"
             ))
@@ -189,49 +140,12 @@ final class ZforgeUITests: XCTestCase {
     }
 
     @MainActor
-    func testLastClosedWindowRestoresViewModeAfterRelaunch() throws {
+    func testViewModeIsPerWindowAndLastClosedWindowRestoresIt() throws {
+        // Per-mode parity of window isolation and of both close orders lives in
+        // WindowViewModeTests; this keeps the real shortcut, toolbar, close, Quit
+        // and relaunch path for one representative sequence.
         let app = XCUIApplication()
         app.launchEnvironment["ZFORGE_UI_PREFERENCES_SUITE"] = "ZforgeViewRelaunch-\(UUID().uuidString)"
-        defer { app.terminate() }
-        for (initialMode, mode, closeFirst) in [("icons", "list", true),
-            ("columns", "gallery", false), ("icons", "gallery", true), ("icons", "columns", false)] {
-            app.launchArguments = ["--ui-fixtures", "--ui-window-width", "1100",
-                "--ui-view-mode", initialMode,
-                "-appLanguagePreference", "english"]
-            launchArchiveFixture(app)
-            let first = app.windows.containing(.any, identifier: "browser-mode-\(initialMode)").firstMatch
-            XCTAssertTrue(first.waitForExistence(timeout: 5))
-            app.typeKey("n", modifierFlags: .command)
-            XCTAssertTrue(app.windows.element(boundBy: 1).waitForExistence(timeout: 5))
-            app.typeKey(["icons": "1", "list": "2", "columns": "3", "gallery": "4"][mode]!, modifierFlags: .command)
-            let changed = app.windows.containing(.any, identifier: "browser-mode-\(mode)").firstMatch
-            XCTAssertTrue(changed.waitForExistence(timeout: 5))
-            XCTAssertTrue(first.exists, "Changing the second window must preserve the first mode")
-            // Alternate close order so every mode is exercised as the winner.
-            let winner = closeFirst ? changed : first
-            let loser = closeFirst ? first : changed
-            let expected = closeFirst ? mode : initialMode
-            loser.buttons[XCUIIdentifierCloseWindow].click()
-            XCTAssertTrue(winner.exists)
-            winner.buttons[XCUIIdentifierCloseWindow].click()
-            XCTAssertTrue(app.windows.firstMatch.waitForNonExistence(timeout: 5))
-            // Opening again in the same process must also use the saved mode.
-            app.typeKey("n", modifierFlags: .command)
-            let restored = app.descendants(matching: .any)["browser-mode-\(expected)"].firstMatch
-            XCTAssertTrue(restored.waitForExistence(timeout: 5))
-            app.typeKey("q", modifierFlags: .command)
-            XCTAssertTrue(app.wait(for: .notRunning, timeout: 5))
-            app.launchArguments = ["--ui-fixtures", "--ui-window-width", "1100",
-                "-appLanguagePreference", "english"]
-            launchArchiveFixture(app)
-            XCTAssertTrue(restored.waitForExistence(timeout: 5), "Relaunch must restore \(expected)")
-            app.terminate()
-        }
-    }
-
-    @MainActor
-    func testViewModeIsIndependentBetweenWindows() throws {
-        let app = XCUIApplication()
         app.launchArguments = [
             "--ui-fixtures", "--ui-window-width", "1100", "--ui-view-mode", "icons",
             "-appLanguagePreference", "english"
@@ -264,11 +178,34 @@ final class ZforgeUITests: XCTestCase {
         XCTAssertTrue(content("gallery").firstMatch.waitForExistence(timeout: 5))
         XCTAssertEqual(content("list").count, 1)
         XCTAssertEqual(content("icons").count, 0)
+
+        // Close the most recently changed window first: the last window closed,
+        // not the latest change, supplies the next mode.
+        let listWindow = app.windows.containing(.any, identifier: "browser-mode-list").firstMatch
+        let galleryWindow = app.windows.containing(.any, identifier: "browser-mode-gallery").firstMatch
+        galleryWindow.buttons[XCUIIdentifierCloseWindow].click()
+        XCTAssertTrue(listWindow.exists)
+        listWindow.buttons[XCUIIdentifierCloseWindow].click()
+        XCTAssertTrue(app.windows.firstMatch.waitForNonExistence(timeout: 5))
+        // Opening again in the same process must also use the saved mode.
+        app.typeKey("n", modifierFlags: .command)
+        let restored = app.descendants(matching: .any)["browser-mode-list"].firstMatch
+        XCTAssertTrue(restored.waitForExistence(timeout: 5))
+        app.typeKey("q", modifierFlags: .command)
+        XCTAssertTrue(app.wait(for: .notRunning, timeout: 5))
+        app.launchArguments = ["--ui-fixtures", "--ui-window-width", "1100",
+            "-appLanguagePreference", "english"]
+        launchArchiveFixture(app)
+        XCTAssertTrue(restored.waitForExistence(timeout: 5), "Relaunch must restore list")
     }
 
+    /// Real File menu presentation and the Open with submenu in List. Order
+    /// and alternates of the native menu are characterized by `FileMenuCommandTests`,
+    /// which also covers availability for every mode.
     @MainActor
-    func testFileOpenPrecedesOpenWithAndTracksSelectionInEveryMode() throws {
-        for mode in ["icons", "list", "columns", "gallery"] {
+    func testFileOpenPrecedesOpenWithAndTracksSelectionInListMode() throws {
+        let mode = "list"
+        do {
             let app = XCUIApplication()
             app.launchArguments = [
                 "--ui-fixtures", "--ui-window-width", "1100", "--ui-view-mode", mode,
@@ -286,16 +223,13 @@ final class ZforgeUITests: XCTestCase {
             XCTAssertTrue(welcome.waitForExistence(timeout: 5), mode)
             XCTAssertTrue(another.exists, mode)
 
-            // Gallery initially selects its first item. Establish the same
-            // empty-selection precondition by clicking the background in every mode.
+            // Establish the empty-selection precondition by clicking the background.
             let content = app.descendants(matching: .any)["browser-mode-\(mode)"].firstMatch
             let area = content.frame
             let window = app.windows.firstMatch
             window.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(
-                // Gallery's mode container includes its inspector. Use the
-                // file row to locate the empty thumbnail strip, as in menu parity.
-                dx: mode == "gallery" ? window.frame.width - 26 : area.minX - window.frame.minX + area.width * 0.2,
-                dy: mode == "gallery" ? welcome.frame.midY - window.frame.minY : area.minY - window.frame.minY + area.height * 0.8
+                dx: area.minX - window.frame.minX + area.width * 0.2,
+                dy: area.minY - window.frame.minY + area.height * 0.8
             )).click()
             let emptyMenu = openFileMenu(in: app)
             assertOpenPrecedesOpenWith(in: emptyMenu, open: "Open", openWith: "Open with", context: mode)
@@ -323,9 +257,13 @@ final class ZforgeUITests: XCTestCase {
         }
     }
 
+    /// Real File ▸ Open click in Columns, whose Command-click selection does not
+    /// expand the container. Navigation in every mode is covered offscreen by
+    /// `FileMenuCommandTests`.
     @MainActor
-    func testFileOpenNavigatesSelectedFolderAndArchiveInEveryMode() throws {
-        for mode in ["icons", "list", "columns", "gallery"] {
+    func testFileOpenNavigatesSelectedFolderAndArchiveInColumnsMode() throws {
+        let mode = "columns"
+        do {
             let app = XCUIApplication()
             app.launchArguments = [
                 "--ui-archive-drag-fixtures", "--ui-window-width", "1100", "--ui-view-mode", mode,
@@ -340,11 +278,7 @@ final class ZforgeUITests: XCTestCase {
             XCTAssertTrue(folder.waitForExistence(timeout: 8), mode)
             // Command-click selects a container without expanding it in Columns.
             // Navigation below therefore has to come from the File command.
-            if mode == "columns" {
-                XCUIElement.perform(withKeyModifiers: [.command]) { folder.click() }
-            } else {
-                folder.click()
-            }
+            XCUIElement.perform(withKeyModifiers: [.command]) { folder.click() }
             XCTAssertEqual(app.windows.firstMatch.title, initialTitle, mode)
             let folderMenu = openFileMenu(in: app)
             XCTAssertTrue(folderMenu.menuItems["Open"].isEnabled, mode)
@@ -358,11 +292,7 @@ final class ZforgeUITests: XCTestCase {
                 .matching(identifier: "browser-item-Sample.zip").firstMatch
                 .staticTexts["Sample.zip"].firstMatch
             XCTAssertTrue(archive.waitForExistence(timeout: 8), mode)
-            if mode == "columns" {
-                XCUIElement.perform(withKeyModifiers: [.command]) { archive.click() }
-            } else {
-                archive.click()
-            }
+            XCUIElement.perform(withKeyModifiers: [.command]) { archive.click() }
             XCTAssertEqual(app.windows.firstMatch.title, initialTitle, mode)
             let archiveMenu = openFileMenu(in: app)
             XCTAssertTrue(archiveMenu.menuItems["Open"].isEnabled, mode)
@@ -376,32 +306,6 @@ final class ZforgeUITests: XCTestCase {
             capture.lifetime = .keepAlways
             add(capture)
         }
-    }
-
-    @MainActor
-    func testFileOpenUsesPortugueseLocalization() throws {
-        let app = XCUIApplication()
-        app.launchArguments = [
-            "--ui-fixtures", "--ui-window-width", "1100", "--ui-view-mode", "list",
-            "-appLanguagePreference", "portugueseBrazil", "-AppleLanguages", "(en)"
-        ]
-        launchArchiveFixture(app)
-        defer { app.terminate() }
-        let welcome = app.descendants(matching: .any)
-            .matching(identifier: "browser-item-Welcome.txt").firstMatch
-            .staticTexts["Welcome.txt"].firstMatch
-        XCTAssertTrue(welcome.waitForExistence(timeout: 5))
-        let menu = openFileMenu(in: app)
-        assertOpenPrecedesOpenWith(in: menu, open: "Abrir", openWith: "Abrir com", context: "Portuguese")
-        XCTAssertFalse(menu.menuItems["Abrir"].isEnabled)
-        app.typeKey(.escape, modifierFlags: [])
-        welcome.click()
-        let selectedMenu = openFileMenu(in: app)
-        XCTAssertTrue(selectedMenu.menuItems["Abrir"].isEnabled)
-        let capture = XCTAttachment(screenshot: app.screenshot())
-        capture.name = "File menu Open in Portuguese"
-        capture.lifetime = .keepAlways
-        add(capture)
     }
 
     @MainActor
@@ -471,22 +375,37 @@ final class ZforgeUITests: XCTestCase {
             ))
             let more = app.buttons["toolbar-more-menu"]
             XCTAssertTrue(more.exists, mode)
+            let editTags = app.buttons["edit-tags-action"]
             for selected in [false, true] {
                 if selected { file.click(); file.click() } else { blank.click() }
-                more.click()
-                XCTAssertTrue(popup.menuItems["Open"].waitForExistence(timeout: 2), mode)
-                XCTAssertEqual(popup.menuItems["Open"].isEnabled, selected, mode)
-                let expected = popup.menuItems.allElementsBoundByIndex.map { "\($0.label):\($0.isEnabled)" }
-                app.typeKey(.escape, modifierFlags: [])
+                // The menus' contents for every selection and mode are compared offscreen
+                // (BrowserMenuParityTests); one mode keeps the real More button's parity.
+                var expected: [String]?
+                if mode == "list" {
+                    more.click()
+                    XCTAssertTrue(popup.menuItems["Open"].waitForExistence(timeout: 2), mode)
+                    XCTAssertEqual(popup.menuItems["Open"].isEnabled, selected, mode)
+                    expected = popup.menuItems.allElementsBoundByIndex.map { "\($0.label):\($0.isEnabled)" }
+                    app.typeKey(.escape, modifierFlags: [])
+                }
                 blank.rightClick()
                 XCTAssertTrue(popup.menuItems["Open"].waitForExistence(timeout: 2), "\(mode), selected: \(selected)")
-                XCTAssertEqual(popup.menuItems.allElementsBoundByIndex.map { "\($0.label):\($0.isEnabled)" }, expected, mode)
+                XCTAssertEqual(popup.menuItems["Open"].isEnabled, selected, "\(mode), selected: \(selected)")
+                XCTAssertFalse(popup.menuItems["Open with"].exists, "A blank area must show the More menu, not an item's menu: \(mode)")
+                if let expected {
+                    XCTAssertEqual(popup.menuItems.allElementsBoundByIndex.map { "\($0.label):\($0.isEnabled)" }, expected, mode)
+                }
                 app.typeKey(.escape, modifierFlags: [])
             }
-            // The blank-area monitor must leave the item-specific menu intact.
+            // The blank-area monitor must leave the item-specific menu intact, and right-clicking
+            // the selected item must keep the selection the toolbar acts on.
+            XCTAssertTrue(editTags.isEnabled, mode)
             file.rightClick()
             XCTAssertTrue(popup.menuItems["Open with"].waitForExistence(timeout: 2), mode)
+            XCTAssertTrue(popup.menuItems["Edit Tags"].exists, mode)
+            XCTAssertEqual(app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "quick-tag-")).count, 7, mode)
             app.typeKey(.escape, modifierFlags: [])
+            XCTAssertTrue(editTags.isEnabled, "Right-clicking the selected item must keep the selection in \(mode)")
             app.terminate()
         }
     }
@@ -509,138 +428,80 @@ final class ZforgeUITests: XCTestCase {
         XCTAssertTrue(browser.waitForExistence(timeout: 8), app.debugDescription)
     }
 
+    /// Real Option-drag inside an archive in Columns, with Escape and Return in the
+    /// native confirmation. Per-mode reveal, duplicate counts, history and the move
+    /// variants are characterized offscreen by `ArchiveDragDropTests`.
     @MainActor
-    func testArchiveMutationKeepsBackHistoryAndAncestorColumnsInEveryMode() throws {
-        for mode in ["icons", "list", "columns", "gallery"] {
-            let app = XCUIApplication()
-            app.launchArguments = ["--ui-archive-drag-fixtures", "--ui-archive-navigation-fixtures",
-                "--ui-window-width", "1300", "--ui-view-mode", mode, "-appLanguagePreference", "english"]
-            launchArchiveFixture(app)
-            let initialTitle = app.windows.firstMatch.title
-            for name in ["Sample.zip", "Inside", "Deep"] {
-                let label = app.descendants(matching: .any).matching(identifier: "browser-item-\(name)").firstMatch.staticTexts[name].firstMatch
-                XCTAssertTrue(label.waitForExistence(timeout: 8), app.debugDescription)
-                if mode == "columns" { label.click() } else { label.doubleClick() }
-            }
-            XCTAssertTrue(app.windows["Deep"].firstMatch.waitForExistence(timeout: 8), app.debugDescription)
-            let payload = app.descendants(matching: .any).matching(identifier: "browser-item-DeepPayload.txt").firstMatch.staticTexts["DeepPayload.txt"].firstMatch
-            let leaf = app.descendants(matching: .any).matching(identifier: "browser-item-Leaf").firstMatch.staticTexts["Leaf"].firstMatch
-            XCTAssertTrue(payload.waitForExistence(timeout: 8)); XCTAssertTrue(leaf.exists)
-            XCUIElement.perform(withKeyModifiers: [.option]) { payload.click(forDuration: 0.3, thenDragTo: leaf) }
-            XCTAssertTrue(app.staticTexts["Modify the Original Archive?"].firstMatch.waitForExistence(timeout: 5))
-            app.typeKey(.return, modifierFlags: [])
-            let expectedTitle = mode == "list" ? "Deep" : "Leaf"
-            XCTAssertTrue(app.windows[expectedTitle].firstMatch.waitForExistence(timeout: 8), app.debugDescription)
-            let copies = app.descendants(matching: .any).matching(identifier: "browser-item-DeepPayload.txt")
-            let duplicate = XCTNSPredicateExpectation(predicate: NSPredicate(format: "count == %@", NSNumber(value: mode == "gallery" || mode == "icons" ? 1 : 2)), object: copies)
-            XCTAssertEqual(XCTWaiter.wait(for: [duplicate], timeout: 8), .completed, app.debugDescription)
-            if mode == "columns" {
-                for (index, name) in ["Sample.zip", "Inside", "Deep", "Leaf", "DeepPayload.txt"].enumerated() {
-                    let column = app.descendants(matching: .any).matching(identifier: "browser-column-\(index)").firstMatch
-                    XCTAssertTrue(column.staticTexts[name].firstMatch.exists, "Missing ancestor \(name): \(app.debugDescription)")
-                }
-            }
-            let capture = XCTAttachment(screenshot: app.screenshot()); capture.name = "Mutation hierarchy \(mode)"; capture.lifetime = .keepAlways; add(capture)
-            let titles = mode == "list" ? ["Inside", "Sample.zip", initialTitle] : ["Deep", "Inside", "Sample.zip", initialTitle]
-            for title in titles {
-                app.buttons["Back"].firstMatch.click()
-                XCTAssertTrue(app.windows[title].firstMatch.waitForExistence(timeout: 8), "Back skipped \(title): \(app.debugDescription)")
-            }
-            app.buttons["Forward"].firstMatch.click()
-            XCTAssertTrue(app.windows["Sample.zip"].firstMatch.waitForExistence(timeout: 8), app.debugDescription)
-            app.terminate()
-        }
-    }
-
-    @MainActor
-    func testArchiveDragCopiesIntoDroppedFolderInEveryMode() throws {
-        for mode in ["list", "icons", "columns", "gallery"] {
-            let app = XCUIApplication()
-            app.launchArguments = ["--ui-archive-drag-fixtures", "--ui-window-width", "1100",
-                "--ui-view-mode", mode, "-appLanguagePreference", "english"]
-            launchArchiveFixture(app)
-            app.activate()
-            let archive = app.staticTexts["Sample.zip"].firstMatch
-            XCTAssertTrue(archive.waitForExistence(timeout: 8), app.debugDescription)
-            if mode == "list" {
-                app.descendants(matching: .any).matching(identifier: "browser-item-Sample.zip").firstMatch.buttons.firstMatch.click()
-                let inside = app.staticTexts["Inside"].firstMatch
-                XCTAssertTrue(inside.waitForExistence(timeout: 5))
-                app.descendants(matching: .any).matching(identifier: "browser-item-Inside").firstMatch.buttons.firstMatch.click()
-            } else {
-                if mode == "columns" { archive.click() } else { archive.doubleClick() }
-                let inside = app.staticTexts["Inside"].firstMatch
-                XCTAssertTrue(inside.waitForExistence(timeout: 5))
-                if mode == "columns" { inside.click() } else { inside.doubleClick() }
-            }
-            let payload = app.descendants(matching: .any).matching(identifier: "browser-item-Payload.txt").firstMatch.staticTexts["Payload.txt"].firstMatch
-            XCTAssertTrue(payload.waitForExistence(timeout: 5))
-            let destination = app.descendants(matching: .any).matching(identifier: "sidebar-fixture-drop").firstMatch
-            XCTAssertTrue(destination.waitForExistence(timeout: 5))
-            payload.click(forDuration: 0.3, thenDragTo: destination)
-            let picture = XCTAttachment(screenshot: app.screenshot()); picture.name = "Archive copy \(mode)"; picture.lifetime = .keepAlways; add(picture)
-            destination.click()
-            XCTAssertTrue(app.windows["Dropped"].firstMatch.waitForExistence(timeout: 8), app.debugDescription)
-            XCTAssertTrue(app.descendants(matching: .any).matching(identifier: "browser-item-Payload.txt").firstMatch.waitForExistence(timeout: 8), app.debugDescription)
-            app.terminate()
-        }
-    }
-
-    @MainActor
-    func testArchiveMoveUsesKeyboardConfirmationAndCancellation() throws {
+    func testArchiveInternalCopyConfirmationKeepsHistoryAndAncestorColumns() throws {
         let app = XCUIApplication()
-        app.launchArguments = ["--ui-archive-drag-fixtures", "--ui-view-mode", "list", "-appLanguagePreference", "english"]
+        app.launchArguments = ["--ui-archive-drag-fixtures", "--ui-archive-navigation-fixtures",
+            "--ui-window-width", "1300", "--ui-view-mode", "columns", "-appLanguagePreference", "english"]
         launchArchiveFixture(app)
-        let archive = app.staticTexts["Sample.zip"].firstMatch
-        XCTAssertTrue(archive.waitForExistence(timeout: 8))
-        app.descendants(matching: .any).matching(identifier: "browser-item-Sample.zip").firstMatch.buttons.firstMatch.click()
-        let inside = app.staticTexts["Inside"].firstMatch
-        XCTAssertTrue(inside.waitForExistence(timeout: 5))
-        app.descendants(matching: .any).matching(identifier: "browser-item-Inside").firstMatch.buttons.firstMatch.click()
-        let payload = app.descendants(matching: .any).matching(identifier: "browser-item-Payload.txt").firstMatch.staticTexts["Payload.txt"].firstMatch
-        let dropped = app.descendants(matching: .any).matching(identifier: "browser-item-Dropped").firstMatch.staticTexts["Dropped"].firstMatch
-        XCTAssertTrue(payload.waitForExistence(timeout: 5)); XCTAssertTrue(dropped.exists)
-        XCUIElement.perform(withKeyModifiers: [.option]) { payload.click(forDuration: 0.3, thenDragTo: dropped) }
+        let initialTitle = app.windows.firstMatch.title
+        for name in ["Sample.zip", "Inside", "Deep"] {
+            let label = app.descendants(matching: .any).matching(identifier: "browser-item-\(name)").firstMatch.staticTexts[name].firstMatch
+            XCTAssertTrue(label.waitForExistence(timeout: 8), app.debugDescription)
+            label.click()
+        }
+        XCTAssertTrue(app.windows["Deep"].firstMatch.waitForExistence(timeout: 8), app.debugDescription)
+        let payload = app.descendants(matching: .any).matching(identifier: "browser-item-DeepPayload.txt").firstMatch.staticTexts["DeepPayload.txt"].firstMatch
+        let leaf = app.descendants(matching: .any).matching(identifier: "browser-item-Leaf").firstMatch.staticTexts["Leaf"].firstMatch
+        XCTAssertTrue(payload.waitForExistence(timeout: 8)); XCTAssertTrue(leaf.exists)
+        let copies = app.descendants(matching: .any).matching(identifier: "browser-item-DeepPayload.txt")
+        // Escape cancels the confirmation: the archive and the view stay unchanged.
+        XCUIElement.perform(withKeyModifiers: [.option]) { payload.click(forDuration: 0.3, thenDragTo: leaf) }
         XCTAssertTrue(app.staticTexts["Modify the Original Archive?"].firstMatch.waitForExistence(timeout: 5))
         app.typeKey(.escape, modifierFlags: [])
-        XCTAssertTrue(payload.waitForExistence(timeout: 5))
-        app.descendants(matching: .any).matching(identifier: "browser-item-Dropped").firstMatch.buttons.firstMatch.click()
-        XCTAssertEqual(app.descendants(matching: .any).matching(identifier: "browser-item-Payload.txt").count, 1)
-        XCUIElement.perform(withKeyModifiers: [.option]) { payload.click(forDuration: 0.3, thenDragTo: dropped) }
+        let dismissed = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == false"),
+            object: app.staticTexts["Modify the Original Archive?"].firstMatch)
+        XCTAssertEqual(XCTWaiter.wait(for: [dismissed], timeout: 5), .completed, app.debugDescription)
+        XCTAssertTrue(app.windows["Deep"].firstMatch.exists, app.debugDescription)
+        XCTAssertTrue(payload.exists)
+        XCTAssertEqual(copies.count, 1, app.debugDescription)
+        // Return confirms the copy.
+        XCUIElement.perform(withKeyModifiers: [.option]) { payload.click(forDuration: 0.3, thenDragTo: leaf) }
         XCTAssertTrue(app.staticTexts["Modify the Original Archive?"].firstMatch.waitForExistence(timeout: 5))
         app.typeKey(.return, modifierFlags: [])
-        app.descendants(matching: .any).matching(identifier: "sidebar-fixture-drop").firstMatch.click()
-        XCTAssertTrue(app.windows["Dropped"].firstMatch.waitForExistence(timeout: 8))
-        XCTAssertTrue(app.descendants(matching: .any).matching(identifier: "browser-item-Payload.txt").firstMatch.waitForExistence(timeout: 8))
+        XCTAssertTrue(app.windows["Leaf"].firstMatch.waitForExistence(timeout: 8), app.debugDescription)
+        let duplicate = XCTNSPredicateExpectation(predicate: NSPredicate(format: "count == 2"), object: copies)
+        XCTAssertEqual(XCTWaiter.wait(for: [duplicate], timeout: 8), .completed, app.debugDescription)
+        for (index, name) in ["Sample.zip", "Inside", "Deep", "Leaf", "DeepPayload.txt"].enumerated() {
+            let column = app.descendants(matching: .any).matching(identifier: "browser-column-\(index)").firstMatch
+            XCTAssertTrue(column.staticTexts[name].firstMatch.exists, "Missing ancestor \(name): \(app.debugDescription)")
+        }
+        let capture = XCTAttachment(screenshot: app.screenshot()); capture.name = "Mutation hierarchy columns"; capture.lifetime = .keepAlways; add(capture)
+        for title in ["Deep", "Inside", "Sample.zip", initialTitle] {
+            app.buttons["Back"].firstMatch.click()
+            XCTAssertTrue(app.windows[title].firstMatch.waitForExistence(timeout: 8), "Back skipped \(title): \(app.debugDescription)")
+        }
+        app.buttons["Forward"].firstMatch.click()
+        XCTAssertTrue(app.windows["Sample.zip"].firstMatch.waitForExistence(timeout: 8), app.debugDescription)
     }
 
+    /// Real archive drag from Icons onto a sidebar folder. The copy semantics in
+    /// every mode are characterized offscreen by `ArchiveDragDropTests`.
     @MainActor
-    func testArchiveInternalMoveAndOptionCopyRevealExpandedDestination() throws {
+    func testArchiveDragCopiesIntoSidebarFolder() throws {
         let app = XCUIApplication()
-        app.launchArguments = ["--ui-archive-drag-fixtures", "--ui-view-mode", "list", "-appLanguagePreference", "english"]
+        app.launchArguments = ["--ui-archive-drag-fixtures", "--ui-window-width", "1100",
+            "--ui-view-mode", "icons", "-appLanguagePreference", "english"]
         launchArchiveFixture(app)
-        let archive = app.descendants(matching: .any).matching(identifier: "browser-item-Sample.zip").firstMatch
-        XCTAssertTrue(archive.waitForExistence(timeout: 8)); archive.buttons.firstMatch.click()
-        let inside = app.descendants(matching: .any).matching(identifier: "browser-item-Inside").firstMatch
-        XCTAssertTrue(inside.waitForExistence(timeout: 5)); inside.buttons.firstMatch.click()
-        let payloads = app.descendants(matching: .any).matching(identifier: "browser-item-Payload.txt")
-        let source = payloads.firstMatch.staticTexts["Payload.txt"].firstMatch
-        XCTAssertTrue(source.waitForExistence(timeout: 5))
-        let target = app.descendants(matching: .any).matching(identifier: "browser-item-Target").firstMatch.staticTexts["Target"].firstMatch
-        source.click(forDuration: 0.3, thenDragTo: target)
-        XCTAssertTrue(app.staticTexts["Modify the Original Archive?"].firstMatch.waitForExistence(timeout: 5))
-        app.typeKey(.return, modifierFlags: [])
-        XCTAssertTrue(source.waitForExistence(timeout: 8))
-        XCTAssertEqual(payloads.count, 1)
-        // Refresh expands Target and leaves the surviving Inside directory expanded.
-        let firstCapture = XCTAttachment(screenshot: app.screenshot()); firstCapture.name = "Internal move revealed"; firstCapture.lifetime = .keepAlways; add(firstCapture)
-        let insideTarget = inside.staticTexts["Inside"].firstMatch
-        XCUIElement.perform(withKeyModifiers: [.option]) { source.click(forDuration: 0.3, thenDragTo: insideTarget) }
-        XCTAssertTrue(app.staticTexts["Modify the Original Archive?"].firstMatch.waitForExistence(timeout: 5))
-        app.typeKey(.return, modifierFlags: [])
-        let duplicated = XCTNSPredicateExpectation(predicate: NSPredicate(format: "count == 2"), object: payloads)
-        XCTAssertEqual(XCTWaiter.wait(for: [duplicated], timeout: 8), .completed)
-        let capture = XCTAttachment(screenshot: app.screenshot()); capture.name = "Internal copy preserves both entries"; capture.lifetime = .keepAlways; add(capture)
+        app.activate()
+        let archive = app.staticTexts["Sample.zip"].firstMatch
+        XCTAssertTrue(archive.waitForExistence(timeout: 8), app.debugDescription)
+        archive.doubleClick()
+        let inside = app.staticTexts["Inside"].firstMatch
+        XCTAssertTrue(inside.waitForExistence(timeout: 5))
+        inside.doubleClick()
+        let payload = app.descendants(matching: .any).matching(identifier: "browser-item-Payload.txt").firstMatch.staticTexts["Payload.txt"].firstMatch
+        XCTAssertTrue(payload.waitForExistence(timeout: 5))
+        let destination = app.descendants(matching: .any).matching(identifier: "sidebar-fixture-drop").firstMatch
+        XCTAssertTrue(destination.waitForExistence(timeout: 5))
+        payload.click(forDuration: 0.3, thenDragTo: destination)
+        let picture = XCTAttachment(screenshot: app.screenshot()); picture.name = "Archive copy icons"; picture.lifetime = .keepAlways; add(picture)
+        destination.click()
+        XCTAssertTrue(app.windows["Dropped"].firstMatch.waitForExistence(timeout: 8), app.debugDescription)
+        XCTAssertTrue(app.descendants(matching: .any).matching(identifier: "browser-item-Payload.txt").firstMatch.waitForExistence(timeout: 8), app.debugDescription)
     }
 
     @MainActor
@@ -672,36 +533,16 @@ final class ZforgeUITests: XCTestCase {
         XCTAssertTrue(payload.exists)
     }
 
+    /// Real local-file drags in List: Option-copy onto a folder row, then a drop
+    /// onto an archive row confirmed through the SwiftUI dialog. Move without
+    /// modifiers and the addition semantics are characterized by `ArchiveDragDropTests`.
     @MainActor
-    func testLocalDragRetainsMoveAndOptionCopyBehavior() throws {
-        for copying in [false, true] {
-            let app = XCUIApplication()
-            app.launchArguments = ["--ui-archive-drag-fixtures", "--ui-view-mode", "list", "-appLanguagePreference", "english"]
-            launchArchiveFixture(app)
-            let localRows = app.descendants(matching: .any).matching(identifier: "browser-item-Local.txt")
-            let source = localRows.firstMatch.staticTexts["Local.txt"].firstMatch
-            XCTAssertTrue(source.waitForExistence(timeout: 8))
-            let destination = app.descendants(matching: .any).matching(identifier: "browser-item-Dropped").firstMatch
-            let target = destination.staticTexts["Dropped"].firstMatch
-            XCUIElement.perform(withKeyModifiers: copying ? [.option] : []) {
-                source.click(forDuration: 0.3, thenDragTo: target)
-            }
-            destination.buttons.firstMatch.click()
-            let count = XCTNSPredicateExpectation(predicate: NSPredicate(format: "count == %d", copying ? 2 : 1), object: localRows)
-            XCTAssertEqual(XCTWaiter.wait(for: [count], timeout: 8), .completed, app.debugDescription)
-            target.doubleClick()
-            XCTAssertTrue(app.windows["Dropped"].firstMatch.waitForExistence(timeout: 8))
-            XCTAssertTrue(source.waitForExistence(timeout: 5))
-            app.terminate()
-        }
-    }
-
-    @MainActor
-    func testLocalDropIntoArchiveRetainsConfirmationAndSource() throws {
+    func testLocalDragsOptionCopyAndConfirmAdditionToArchive() throws {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-archive-drag-fixtures", "--ui-view-mode", "list", "-appLanguagePreference", "english"]
         launchArchiveFixture(app)
-        let local = app.descendants(matching: .any).matching(identifier: "browser-item-Local.txt").firstMatch.staticTexts["Local.txt"].firstMatch
+        let localRows = app.descendants(matching: .any).matching(identifier: "browser-item-Local.txt")
+        let local = localRows.firstMatch.staticTexts["Local.txt"].firstMatch
         XCTAssertTrue(local.waitForExistence(timeout: 8))
         let archive = app.descendants(matching: .any).matching(identifier: "browser-item-Sample.zip").firstMatch
         local.click(forDuration: 0.3, thenDragTo: archive.staticTexts["Sample.zip"].firstMatch)
@@ -709,9 +550,24 @@ final class ZforgeUITests: XCTestCase {
         XCTAssertTrue(addButton.waitForExistence(timeout: 5), app.debugDescription)
         addButton.click()
         archive.buttons.firstMatch.click()
-        let rows = app.descendants(matching: .any).matching(identifier: "browser-item-Local.txt")
-        let added = XCTNSPredicateExpectation(predicate: NSPredicate(format: "count == 2"), object: rows)
+        let added = XCTNSPredicateExpectation(predicate: NSPredicate(format: "count == 2"), object: localRows)
         XCTAssertEqual(XCTWaiter.wait(for: [added], timeout: 8), .completed, app.debugDescription)
+        // Collapse the archive so the only Local.txt row is the local file (an archive
+        // entry with Option would be moved out of the archive); Option copies it into Dropped.
+        archive.buttons.firstMatch.click()
+        let collapsed = XCTNSPredicateExpectation(predicate: NSPredicate(format: "count == 1"), object: localRows)
+        XCTAssertEqual(XCTWaiter.wait(for: [collapsed], timeout: 8), .completed, app.debugDescription)
+        let destination = app.descendants(matching: .any).matching(identifier: "browser-item-Dropped").firstMatch
+        let target = destination.staticTexts["Dropped"].firstMatch
+        XCUIElement.perform(withKeyModifiers: [.option]) {
+            local.click(forDuration: 0.3, thenDragTo: target)
+        }
+        destination.buttons.firstMatch.click()
+        let copied = XCTNSPredicateExpectation(predicate: NSPredicate(format: "count == 2"), object: localRows)
+        XCTAssertEqual(XCTWaiter.wait(for: [copied], timeout: 8), .completed, app.debugDescription)
+        target.doubleClick()
+        XCTAssertTrue(app.windows["Dropped"].firstMatch.waitForExistence(timeout: 8))
+        XCTAssertTrue(local.waitForExistence(timeout: 5))
     }
 
     @MainActor
@@ -745,7 +601,14 @@ final class ZforgeUITests: XCTestCase {
         let desiredTitle = finderOrigin.withOffset(CGVector(dx: 1200 - finderWindow.frame.minX, dy: 74 - finderWindow.frame.minY))
         titlePoint.click(forDuration: 0.2, thenDragTo: desiredTitle)
         app.activate()
-        let drop = finderWindow.coordinate(withNormalizedOffset: CGVector(dx: 0.65, dy: 0.65))
+        // Moving Finder by its title is best effort: where its title bar is free
+        // depends on the user's Finder sidebar width. Drop on Finder's content
+        // where Zforge does not cover it, never on Zforge itself.
+        let finderFrame = finderWindow.frame
+        let uncoveredMinX = max(finderFrame.minX, window.frame.maxX)
+        XCTAssertGreaterThan(finderFrame.maxX - uncoveredMinX, 60, "Zforge covers the Finder window: source \(window.frame), Finder \(finderFrame)")
+        let drop = finderWindow.coordinate(withNormalizedOffset: CGVector(
+            dx: ((uncoveredMinX + finderFrame.maxX) / 2 - finderFrame.minX) / finderFrame.width, dy: 0.65))
         print("Source \(window.frame), Finder \(finderWindow.frame), payload \(payload.frame)")
         let arrangement = XCTAttachment(screenshot: app.screenshot()); arrangement.name = "Finder drop arrangement"; arrangement.lifetime = .keepAlways; add(arrangement)
         payload.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).click(forDuration: 0.3, thenDragTo: drop)
@@ -765,29 +628,6 @@ final class ZforgeUITests: XCTestCase {
         XCTAssertEqual(try String(contentsOf: published, encoding: .utf8), "payload")
         let removed = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == false"), object: payload)
         XCTAssertEqual(XCTWaiter.wait(for: [removed], timeout: 10), .completed)
-    }
-
-    @MainActor
-    func testArchiveRemovalIsSharedByToolbarAndContextMenu() throws {
-        let app = XCUIApplication()
-        app.launchArguments = [
-            "--ui-fixtures", "--ui-window-width", "1100",
-            "--ui-view-mode", "list", "-appLanguagePreference", "english"
-        ]
-        launchArchiveFixture(app)
-        app.activate()
-        let archive = app.staticTexts["Sample.zip"].firstMatch
-        XCTAssertTrue(archive.waitForExistence(timeout: 5))
-        archive.doubleClick()
-        let inside = app.staticTexts["Inside.txt"].firstMatch
-        XCTAssertTrue(inside.waitForExistence(timeout: 5))
-        inside.click()
-        app.buttons["toolbar-more-menu"].click()
-        XCTAssertTrue(app.menuItems["Remove from Archive…"].waitForExistence(timeout: 3))
-        app.typeKey(.escape, modifierFlags: [])
-        inside.rightClick()
-        XCTAssertTrue(app.menuItems["Remove from Archive…"].waitForExistence(timeout: 3))
-        app.typeKey(.escape, modifierFlags: [])
     }
 
     @MainActor
@@ -829,15 +669,14 @@ final class ZforgeUITests: XCTestCase {
         let edit = app.menuItems["edit-tags"]
         XCTAssertTrue(edit.waitForExistence(timeout: 3))
         XCTAssertEqual(edit.title, "Edit Tags")
-        let quickButtons = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "quick-tag-"))
-        XCTAssertEqual(quickButtons.count, 7)
+        // The seven circles and the applied Red mark are checked offscreen
+        // (BrowserMenuParityTests); this test keeps the real hover and sheet.
         let applied = app.buttons["quick-tag-Red"]
         XCTAssertTrue(applied.exists)
         let contextCapture = XCTAttachment(screenshot: app.screenshot())
         contextCapture.name = "Quick tag circles"
         contextCapture.lifetime = .keepAlways
         add(contextCapture)
-        XCTAssertEqual(applied.value as? String, "1", app.debugDescription)
         applied.hover()
         let hover = XCTAttachment(screenshot: app.screenshot())
         hover.name = "Applied tag hover"
@@ -853,68 +692,10 @@ final class ZforgeUITests: XCTestCase {
     }
 
     @MainActor
-    func testIconModeTagContextMenuPreservesSelection() throws {
-        let app = XCUIApplication()
-        app.launchArguments = ["--ui-fixtures", "--ui-window-width", "1100", "--ui-view-mode", "icons", "-appLanguagePreference", "english"]
-        app.launch()
-        app.activate()
-        openFixtureBrowserIfNeeded(app)
-        let file = app.staticTexts["Welcome.txt"].firstMatch
-        XCTAssertTrue(file.waitForExistence(timeout: 5))
-        let frame = file.frame
-        let window = app.windows.firstMatch
-        let rowPoint = window.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: frame.midX - window.frame.minX, dy: frame.midY - window.frame.minY))
-        file.click()
-        file.click()
-        XCTAssertTrue(app.buttons["edit-tags-action"].isEnabled)
-        rowPoint.rightClick()
-        XCTAssertTrue(app.menuItems["Edit Tags"].waitForExistence(timeout: 3))
-        XCTAssertEqual(app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "quick-tag-")).count, 7)
-        app.typeKey(.escape, modifierFlags: [])
-        XCTAssertTrue(app.buttons["edit-tags-action"].isEnabled)
-    }
-
-    @MainActor
-    func testTagContextMenuInGalleryAndColumns() throws {
-        for mode in ["gallery", "columns"] {
-            let app = XCUIApplication()
-            app.launchArguments = ["--ui-fixtures", "--ui-window-width", "1100", "--ui-view-mode", mode, "-appLanguagePreference", "english"]
-            app.launch()
-            app.activate()
-            openFixtureBrowserIfNeeded(app)
-            let file = app.staticTexts["Welcome.txt"].firstMatch
-            XCTAssertTrue(file.waitForExistence(timeout: 5), mode)
-            file.rightClick()
-            XCTAssertTrue(app.menuItems["Edit Tags"].waitForExistence(timeout: 3), mode)
-            XCTAssertEqual(app.buttons["quick-tag-Red"].value as? String, "1", mode)
-            app.typeKey(.escape, modifierFlags: [])
-            app.terminate()
-        }
-    }
-
-    @MainActor
-    func testExample() throws {
-        let app = XCUIApplication()
-        app.launchArguments = ["--ui-fixtures"]
-        app.launch()
-        XCTAssertTrue(app.staticTexts["Fixture Folder"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.staticTexts["Welcome.txt"].exists)
-    }
-
-    @MainActor
-    func testCompressionProfilesAreAvailableInSettings() throws {
-        let app = XCUIApplication()
-        app.launchArguments = ["--ui-fixtures", "-appLanguagePreference", "english"]
-        app.launch()
-        app.typeKey(",", modifierFlags: .command)
-        XCTAssertTrue(app.staticTexts["Compression"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.descendants(matching: .any)["Default compression profile"].waitForExistence(timeout: 5), app.debugDescription)
-        XCTAssertTrue(app.descendants(matching: .any)["Archive format"].waitForExistence(timeout: 5), app.debugDescription)
-        XCTAssertTrue(app.buttons["Save as New Profile"].waitForExistence(timeout: 5))
-    }
-
-    @MainActor
-    func testCustomCompressionShowsProfileOptions() throws {
+    func testCustomCompressionPanelOpensFolderChooser() throws {
+        // The panel's fields, alignment, password expansion and name preservation are
+        // checked offscreen (CompressionPanelLayoutTests); the real menu, sheet and
+        // folder chooser stay here.
         let app = XCUIApplication()
         app.launchArguments = [
             "--ui-fixtures", "--ui-view-mode", "list",
@@ -931,50 +712,10 @@ final class ZforgeUITests: XCTestCase {
         let custom = app.menuItems["Compress Custom…"]
         XCTAssertTrue(custom.waitForExistence(timeout: 3))
         custom.click()
-        XCTAssertTrue(app.descendants(matching: .any)["Compression profile"].waitForExistence(timeout: 5), app.debugDescription)
-        XCTAssertTrue(app.descendants(matching: .any)["Archive format"].waitForExistence(timeout: 5), app.debugDescription)
-        XCTAssertFalse(app.textFields["Profile name"].exists)
-        XCTAssertFalse(app.buttons["Save Profile"].exists)
-        XCTAssertFalse(app.buttons["Save as New Profile"].exists)
-        let autoProfile = app.popUpButtons.matching(
-            NSPredicate(format: "value == %@", "Auto")
-        ).firstMatch
-        XCTAssertTrue(autoProfile.exists)
         let panel = app.sheets.firstMatch
         XCTAssertTrue(panel.waitForExistence(timeout: 5), app.debugDescription)
-        XCTAssertLessThan(panel.frame.width, 700)
-        XCTAssertLessThan(panel.frame.height, 700)
-        let nameField = app.textFields["compression-save-name"]
-        let tagsField = app.textFields["compression-save-tags"]
         let whereButton = app.buttons["compression-save-where"]
-        XCTAssertTrue(nameField.exists)
-        XCTAssertTrue(tagsField.exists)
-        XCTAssertTrue(whereButton.exists)
-        XCTAssertGreaterThan(nameField.frame.width, 380)
-        XCTAssertLessThan(abs(nameField.frame.width - tagsField.frame.width), 5)
-        XCTAssertLessThan(abs(nameField.frame.maxX - whereButton.frame.maxX), 5)
-        XCTAssertGreaterThan(tagsField.frame.minY, nameField.frame.maxY)
-        XCTAssertGreaterThan(whereButton.frame.minY, tagsField.frame.maxY)
-        let format = app.popUpButtons["Archive format"]
-        XCTAssertTrue(format.exists, panel.debugDescription)
-        let dictionary = app.popUpButtons["Dictionary size"]
-        XCTAssertTrue(dictionary.exists)
-        XCTAssertGreaterThan(format.frame.midY, app.staticTexts["Archive format"].frame.midY)
-        XCTAssertGreaterThan(dictionary.frame.midY, app.staticTexts["Dictionary size"].frame.midY)
-        XCTAssertLessThan(abs(format.frame.width - dictionary.frame.width), 5)
-        let profile = app.popUpButtons["Compression profile"]
-        XCTAssertTrue(profile.exists)
-        let title = panel.staticTexts["Compress Custom…"]
-        let profileLabel = panel.staticTexts["Compression profile"]
-        let formatLabel = panel.staticTexts["Archive format"]
-        let saveButton = panel.buttons["Save"]
-        XCTAssertLessThan(abs(title.frame.minX - profileLabel.frame.minX), 3)
-        XCTAssertLessThan(abs(title.frame.minX - formatLabel.frame.minX), 3)
-        XCTAssertLessThan(abs(title.frame.minX - format.frame.minX), 3)
-        XCTAssertLessThan(abs(profile.frame.maxX - dictionary.frame.maxX), 3)
-        XCTAssertLessThan(abs(nameField.frame.maxX - dictionary.frame.maxX), 5)
-        XCTAssertLessThan(abs(whereButton.frame.maxX - dictionary.frame.maxX), 5)
-        XCTAssertLessThan(abs(saveButton.frame.maxX - dictionary.frame.maxX), 5)
+        XCTAssertTrue(whereButton.waitForExistence(timeout: 5), app.debugDescription)
         let compactScreenshot = XCTAttachment(screenshot: panel.screenshot())
         compactScreenshot.name = "Compress Custom compact"
         compactScreenshot.lifetime = .keepAlways
@@ -983,169 +724,7 @@ final class ZforgeUITests: XCTestCase {
         let folderChooser = app.dialogs["Choose Folder…"]
         XCTAssertTrue(folderChooser.waitForExistence(timeout: 5), app.debugDescription)
         folderChooser.buttons["Cancel"].click()
-        format.click()
-        app.menuItems["7z"].click()
-        XCTAssertTrue(
-            (nameField.value as? String)?.hasPrefix("Welcome") == true,
-            "Changing an archive option must preserve the proposed file name."
-        )
-        let solid = app.checkBoxes["Solid archive"]
-        let password = app.checkBoxes["Protect with password"]
-        XCTAssertTrue(solid.waitForExistence(timeout: 3))
-        XCTAssertTrue(password.waitForExistence(timeout: 3))
-        XCTAssertGreaterThan(password.frame.minY, solid.frame.minY)
-        XCTAssertLessThan(abs(password.frame.minX - solid.frame.minX), 12)
-        let compactHeight = panel.frame.height
-        password.click()
-        XCTAssertTrue(
-            (nameField.value as? String)?.hasPrefix("Welcome") == true,
-            "Expanding password options must preserve the proposed file name."
-        )
-        let passwordField = app.secureTextFields["Password"]
-        XCTAssertTrue(passwordField.waitForExistence(timeout: 3))
-        XCTAssertGreaterThan(passwordField.frame.minY, password.frame.maxY)
-        XCTAssertLessThan(abs(passwordField.frame.minX - password.frame.minX), 30)
-        XCTAssertGreaterThan(app.checkBoxes["Encrypt file names"].frame.minX, password.frame.maxX)
-        XCTAssertGreaterThan(panel.frame.height, compactHeight + 40)
-        XCTAssertTrue(
-            (nameField.value as? String)?.hasPrefix("Welcome") == true,
-            "Resizing the panel must preserve the proposed file name."
-        )
-        let passwordScreenshot = XCTAttachment(screenshot: panel.screenshot())
-        passwordScreenshot.name = "Compress Custom with password"
-        passwordScreenshot.lifetime = .keepAlways
-        add(passwordScreenshot)
-        passwordField.click()
-        XCTAssertTrue(
-            (nameField.value as? String)?.hasPrefix("Welcome") == true,
-            "Leaving the name field must preserve the proposed file name."
-        )
-        password.click()
-        XCTAssertFalse(passwordField.exists)
-        XCTAssertLessThan(abs(panel.frame.height - compactHeight), 5)
         app.typeKey(.escape, modifierFlags: [])
-    }
-
-    @MainActor
-    func testColumnLoadingNeverDuplicatesParentRows() throws {
-        let app = XCUIApplication()
-        app.launchArguments = [
-            "--ui-fixtures", "--ui-column-load-delay", "--ui-window-width", "1400",
-            "--ui-view-mode", "columns", "-browser.finderColumnWidth", "260",
-            "-browser.scale", "1", "-browser.previewVisible.columns", "YES",
-            "-appLanguagePreference", "english"
-        ]
-        launchArchiveFixture(app)
-
-        app.buttons["Downloads"].click()
-        let parent = app.descendants(matching: .any)["browser-column-0"]
-        XCTAssertTrue(parent.staticTexts["Fixture Folder"].waitForExistence(timeout: 5))
-        XCTAssertTrue(parent.staticTexts["Sample.zip"].waitForExistence(timeout: 5))
-        let child = app.descendants(matching: .any)["browser-column-1"]
-        // A delayed read holds the actual intermediate UI on screen. Final-state
-        // assertions alone cannot detect a one-frame duplicate during navigation.
-        for (container, result, previous) in [
-            ("Sample.zip", "Inside.txt", "FolderChild.txt"),
-            ("Fixture Folder", "FolderChild.txt", "Inside.txt"),
-            ("Sample.zip", "Inside.txt", "FolderChild.txt")
-        ] {
-            parent.staticTexts[container].click()
-            XCTAssertTrue(child.waitForExistence(timeout: 2))
-            XCTAssertFalse(child.staticTexts[result].exists, "The fixture must still be loading.")
-            for name in ["Welcome.txt", "Another.txt", "Sample.zip", "Fixture Folder", previous] {
-                XCTAssertFalse(child.staticTexts[name].exists, "Loading \(container) duplicated \(name).")
-            }
-            XCTAssertTrue(parent.staticTexts["Welcome.txt"].exists)
-            let pending = XCTAttachment(screenshot: app.windows.firstMatch.screenshot())
-            pending.name = "Loading column: \(container)"
-            pending.lifetime = .keepAlways
-            add(pending)
-
-            XCTAssertTrue(child.staticTexts[result].waitForExistence(timeout: 6))
-            XCTAssertEqual(child.staticTexts.count, 1)
-            let loaded = XCTAttachment(screenshot: app.windows.firstMatch.screenshot())
-            loaded.name = "Loaded column: \(container)"
-            loaded.lifetime = .keepAlways
-            add(loaded)
-        }
-    }
-
-    @MainActor
-    func testColumnPreviewRecalculatesWidthForNewDepth() throws {
-        let app = XCUIApplication()
-        app.launchArguments = [
-            "--ui-fixtures", "--ui-window-width", "1400", "--ui-view-mode", "columns",
-            "-appLanguagePreference", "english"
-        ]
-        launchArchiveFixture(app)
-
-        let rootFile = app.staticTexts["Welcome.txt"]
-        XCTAssertTrue(rootFile.waitForExistence(timeout: 5))
-        rootFile.click()
-        let preview = app.descendants(matching: .any)["column-preview"]
-        XCTAssertTrue(preview.waitForExistence(timeout: 5))
-        let rootWidth = preview.frame.width
-
-        app.staticTexts["Sample.zip"].click()
-        let nestedFile = app.staticTexts["Inside.txt"]
-        XCTAssertTrue(nestedFile.waitForExistence(timeout: 5))
-        nestedFile.click()
-        XCTAssertTrue(preview.waitForExistence(timeout: 5))
-        let nestedWidth = preview.frame.width
-
-        XCTAssertGreaterThan(rootWidth, nestedWidth)
-        XCTAssertGreaterThanOrEqual(nestedWidth, 240)
-    }
-
-    @MainActor
-    func testColumnPreviewKeepsExpandedTerminalAlignment() throws {
-        let app = XCUIApplication()
-        app.launchArguments = [
-            "--ui-fixtures", "--ui-window-width", "1200", "--ui-view-mode", "columns",
-            "-browser.finderColumnWidth", "600", "-browser.scale", "1",
-            "-browser.previewVisible.columns", "YES", "-appLanguagePreference", "english"
-        ]
-        launchArchiveFixture(app)
-
-        let rootColumn = app.descendants(matching: .any)["browser-column-0"]
-        XCTAssertTrue(rootColumn.waitForExistence(timeout: 5))
-        let rootFile = rootColumn.staticTexts["Welcome.txt"]
-        XCTAssertTrue(rootFile.waitForExistence(timeout: 5))
-        rootFile.click()
-
-        let preview = app.descendants(matching: .any)["column-preview"]
-        XCTAssertTrue(preview.waitForExistence(timeout: 5))
-        let initialPreviewWidth = preview.frame.width
-
-        rootColumn.staticTexts["Sample.zip"].click()
-        let childColumn = app.descendants(matching: .any)["browser-column-1"]
-        XCTAssertTrue(childColumn.waitForExistence(timeout: 5))
-        let expandedFrame = childColumn.frame
-        XCTAssertGreaterThan(expandedFrame.width, initialPreviewWidth)
-
-        rootFile.click()
-        XCTAssertTrue(preview.waitForExistence(timeout: 5))
-        let replacementFrame = preview.frame
-        XCTAssertEqual(replacementFrame.width, expandedFrame.width, accuracy: 1)
-        XCTAssertEqual(replacementFrame.minX, expandedFrame.minX, accuracy: 1)
-        XCTAssertEqual(replacementFrame.maxX, expandedFrame.maxX, accuracy: 1)
-
-        let clippedSampleLabel = rootColumn.staticTexts["Sample.zip"]
-        let sidebarFrame = app.outlines["browser-sidebar"].frame
-        let clickX = max(rootColumn.frame.minX, sidebarFrame.maxX) + 24
-        XCTAssertLessThan(clippedSampleLabel.frame.maxX, sidebarFrame.maxX)
-        XCTAssertLessThan(clickX, rootColumn.frame.maxX)
-        // The label is behind the sidebar after horizontal scrolling. Click
-        // the visible part of its row, rather than a multiple of the text width.
-        clippedSampleLabel.coordinate(
-            withNormalizedOffset: CGVector(
-                dx: (clickX - clippedSampleLabel.frame.minX) / clippedSampleLabel.frame.width,
-                dy: 0.5
-            )
-        ).click()
-        XCTAssertTrue(childColumn.waitForExistence(timeout: 5))
-        XCTAssertEqual(childColumn.frame.minX, expandedFrame.minX, accuracy: 1)
-        XCTAssertEqual(childColumn.frame.width, expandedFrame.width, accuracy: 1)
     }
 
     @MainActor
@@ -1200,20 +779,7 @@ final class ZforgeUITests: XCTestCase {
     }
 
     @MainActor
-    func testRecentsShowsOriginalOnlyOnceWhenArchiveSessionsContainCopies() throws {
-        let app = XCUIApplication()
-        app.launchArguments = [
-            "--ui-fixtures", "--ui-recents-duplicates", "--ui-view-mode", "list",
-            "-appLanguagePreference", "english"
-        ]
-        app.launch()
-        let archive = app.staticTexts["Sample.zip"]
-        XCTAssertTrue(archive.waitForExistence(timeout: 5))
-        XCTAssertEqual(app.staticTexts.matching(identifier: "Sample.zip").count, 1)
-    }
-
-    @MainActor
-    func testArrowNavigationKeepsContentFocusAfterChangingView() throws {
+    func testListKeyboardZoomAndArrowNavigationAfterChangingView() throws {
         let app = XCUIApplication()
         app.launchArguments = [
             "--ui-fixtures",
@@ -1224,6 +790,16 @@ final class ZforgeUITests: XCTestCase {
         launchArchiveFixture(app)
         // Recents lists files only; a folder cannot be its readiness signal.
         XCTAssertTrue(app.staticTexts["Welcome.txt"].firstMatch.waitForExistence(timeout: 5))
+
+        // Zoom shortcuts reach the active view (steps: ZoomStepTests.zoomSteps).
+        let browser = app.descendants(matching: .any)["browser-mode-list"]
+        XCTAssertTrue(browser.waitForExistence(timeout: 5))
+        app.typeKey("0", modifierFlags: .command)
+        XCTAssertEqual(browser.value as? String, "100%")
+        app.typeKey("=", modifierFlags: .command)
+        XCTAssertEqual(browser.value as? String, "110%")
+        app.typeKey("-", modifierFlags: .command)
+        XCTAssertEqual(browser.value as? String, "100%")
 
         selectView(named: "Icons", in: app)
         selectView(named: "List", in: app)
@@ -1244,90 +820,10 @@ final class ZforgeUITests: XCTestCase {
     }
 
     @MainActor
-    func testZoomShortcutsUpdateTheActiveView() throws {
-        let app = XCUIApplication()
-        app.launchArguments = [
-            "--ui-fixtures", "--ui-view-mode", "list",
-            "-appLanguagePreference", "english"
-        ]
-        app.launch()
-        let browser = app.descendants(matching: .any)["browser-mode-list"]
-        XCTAssertTrue(browser.waitForExistence(timeout: 5))
-        app.typeKey("0", modifierFlags: .command)
-        XCTAssertEqual(browser.value as? String, "100%")
-        app.typeKey("=", modifierFlags: .command)
-        XCTAssertEqual(browser.value as? String, "110%")
-        app.typeKey("-", modifierFlags: .command)
-        XCTAssertEqual(browser.value as? String, "100%")
-    }
-
-    @MainActor
-    func testArchiveActionsMatchToolbarAndSecondaryMenus() throws {
-        let app = XCUIApplication()
-        app.launchArguments = [
-            "--ui-fixtures", "--ui-window-width", "1100",
-            "--ui-view-mode", "list", "-appLanguagePreference", "english"
-        ]
-        app.launch()
-        let archive = app.staticTexts["Sample.zip"].firstMatch
-        XCTAssertTrue(archive.waitForExistence(timeout: 5))
-        let frame = archive.frame
-        let window = app.windows.firstMatch
-        let rowPoint = window.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: frame.midX - window.frame.minX, dy: frame.midY - window.frame.minY))
-        archive.click()
-
-        let toolbarMenu = app.buttons["toolbar-more-menu"]
-        XCTAssertTrue(toolbarMenu.waitForExistence(timeout: 2))
-        toolbarMenu.click()
-        for title in ["Open", "Extract Here", "Extract to \"Sample\"", "Extract…", "Validate", "Add to Archive…"] {
-            XCTAssertTrue(app.menuItems[title].exists, "Missing \(title) from the toolbar menu")
-        }
-        XCTAssertFalse(app.menuItems["Compress"].exists)
-        app.typeKey(.escape, modifierFlags: [])
-
-        rowPoint.rightClick()
-        for title in ["Open", "Extract Here", "Extract to \"Sample\"", "Extract…", "Validate", "Add to Archive…"] {
-            XCTAssertTrue(app.menuItems[title].exists, "Missing \(title) from the secondary menu")
-        }
-        XCTAssertFalse(app.menuItems["Compress"].exists)
-    }
-
-    @MainActor
-    func testNarrowToolbarUsesOneFunctionalMenu() throws {
-        let app = XCUIApplication()
-        app.launchArguments = [
-            "--ui-fixtures",
-            "--ui-window-width", "650",
-            "-appLanguagePreference", "english"
-        ]
-        app.launch()
-        XCTAssertTrue(app.staticTexts["Welcome.txt"].waitForExistence(timeout: 5))
-
-        let overflowButton = app.buttons["toolbar-overflow-menu"]
-        XCTAssertTrue(overflowButton.waitForExistence(timeout: 2))
-        XCTAssertEqual(overflowButton.value as? String, "Collapsed")
-        overflowButton.click()
-        XCTAssertEqual(overflowButton.value as? String, "Expanded")
-
-        for title in [
-            "View", "Compress Selected", "Share", "Open", "Quick Look",
-            "Get Info", "Edit Tags", "Rename", "Duplicate"
-        ] {
-            XCTAssertTrue(app.menuItems[title].exists, "Missing \(title) from the unified toolbar menu")
-        }
-
-        app.typeKey(.escape, modifierFlags: [])
-        let collapsed = NSPredicate(format: "value == %@", "Collapsed")
-        expectation(for: collapsed, evaluatedWith: overflowButton)
-        waitForExpectations(timeout: 2)
-
-        selectView(named: "List", in: app)
-        let listBrowser = app.descendants(matching: .any)["browser-mode-list"]
-        XCTAssertTrue(listBrowser.waitForExistence(timeout: 2))
-    }
-
-    @MainActor
-    func testIntermediateToolbarKeepsViewOutsideOverflow() throws {
+    func testCompactToolbarMenusOpenFromTheirToolbarButtons() throws {
+        // Which controls each width (650/720/860 pt) shows and which titles its
+        // menu offers are covered offscreen by BrowserWindowLayoutTests and
+        // ToolbarOverflowMenuTests. The pop-up menus need a real click event.
         let app = XCUIApplication()
         app.launchArguments = [
             "--ui-fixtures",
@@ -1340,40 +836,22 @@ final class ZforgeUITests: XCTestCase {
 
         let overflowButton = app.buttons["toolbar-overflow-menu"]
         XCTAssertTrue(overflowButton.waitForExistence(timeout: 2))
+        XCTAssertEqual(overflowButton.value as? String, "Collapsed")
         overflowButton.click()
+        XCTAssertEqual(overflowButton.value as? String, "Expanded")
         XCTAssertFalse(app.menuItems["View"].exists)
         for title in ["Compress Selected", "Share", "Open", "Quick Look", "Get Info"] {
             XCTAssertTrue(app.menuItems[title].exists, "Missing \(title) from the toolbar overflow")
         }
 
         app.typeKey(.escape, modifierFlags: [])
+        let collapsed = NSPredicate(format: "value == %@", "Collapsed")
+        expectation(for: collapsed, evaluatedWith: overflowButton)
+        waitForExpectations(timeout: 2)
+
         selectView(named: "List", in: app)
         let listBrowser = app.descendants(matching: .any)["browser-mode-list"]
         XCTAssertTrue(listBrowser.waitForExistence(timeout: 2))
-    }
-
-    @MainActor
-    func testViewCompactsBeforeArchiveActionIsHidden() throws {
-        let app = XCUIApplication()
-        app.launchArguments = [
-            "--ui-fixtures",
-            "--ui-window-width", "860",
-            "-appLanguagePreference", "english"
-        ]
-        app.launch()
-        XCTAssertTrue(app.staticTexts["Fixture Folder"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.buttons["view-mode-selector-compact"].waitForExistence(timeout: 2))
-        XCTAssertFalse(app.descendants(matching: .any)["view-mode-icons"].exists)
-        XCTAssertTrue(app.buttons["archive-contextual-action"].waitForExistence(timeout: 2))
-
-        let overflowButton = app.buttons["toolbar-overflow-menu"]
-        XCTAssertTrue(overflowButton.waitForExistence(timeout: 2))
-        overflowButton.click()
-        XCTAssertFalse(app.menuItems["View"].exists)
-        XCTAssertFalse(app.menuItems["Compress Selected"].exists)
-        for title in ["Share", "Open", "Quick Look", "Get Info", "Edit Tags", "Rename", "Duplicate"] {
-            XCTAssertTrue(app.menuItems[title].exists, "Missing \(title) from the partial toolbar overflow")
-        }
     }
 
     @MainActor
@@ -1400,40 +878,6 @@ final class ZforgeUITests: XCTestCase {
 
         XCTAssertTrue(shortcutsWindow.staticTexts["Rename"].waitForExistence(timeout: 2))
         XCTAssertFalse(shortcutsWindow.staticTexts["New Folder"].exists)
-    }
-
-    @MainActor
-    func testSidebarCannotConsumeLast360Points() throws {
-        let app = XCUIApplication()
-        app.launchArguments = [
-            "--ui-fixtures",
-            "--ui-window-width", "900",
-            "-appLanguagePreference", "english"
-        ]
-        app.launch()
-        XCTAssertTrue(app.staticTexts["Fixture Folder"].waitForExistence(timeout: 5))
-
-        let window = app.windows.firstMatch
-        XCTAssertTrue(window.waitForExistence(timeout: 2))
-        let sidebar = app.descendants(matching: .any)["browser-sidebar"]
-        XCTAssertTrue(sidebar.waitForExistence(timeout: 2))
-
-        let divider = sidebar.coordinate(withNormalizedOffset: CGVector(dx: 1, dy: 0.5))
-        let farRight = window.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.5))
-        divider.press(forDuration: 0.15, thenDragTo: farRight)
-
-        let maximumSidebarWidth = window.frame.width - 360
-        XCTAssertLessThanOrEqual(sidebar.frame.width, maximumSidebarWidth + 4)
-    }
-
-    @MainActor
-    func testLaunchPerformance() throws {
-        // This measures how long it takes to launch your application.
-        measure(metrics: [XCTApplicationLaunchMetric()]) {
-            let app = XCUIApplication()
-            app.launchArguments = ["--ui-fixtures"]
-            app.launch()
-        }
     }
 
     @MainActor

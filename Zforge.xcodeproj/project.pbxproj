@@ -10,6 +10,7 @@
 		A10000000000000000000002 /* 7-Zip-License.txt in Resources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000004 /* 7-Zip-License.txt */; };
 		A43000000000000000000001 /* MCP in Frameworks */ = {isa = PBXBuildFile; productRef = A43000000000000000000002 /* MCP */; };
 		B10000000000000000000002 /* ZforgeFinderExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B10000000000000000000001 /* ZforgeFinderExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		C10000000000000000000001 /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = C10000000000000000000002 /* SnapshotTesting */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -123,6 +124,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C10000000000000000000001 /* SnapshotTesting in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -224,6 +226,7 @@
 			);
 			name = ZforgeTests;
 			packageProductDependencies = (
+				C10000000000000000000002 /* SnapshotTesting */,
 			);
 			productName = ZforgeTests;
 			productReference = 55A3999130042A180038B088 /* ZforgeTests.xctest */;
@@ -332,6 +335,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				A43000000000000000000003 /* XCRemoteSwiftPackageReference "swift-sdk" */,
+				C10000000000000000000003 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 55A3998530042A170038B088 /* Products */;
@@ -891,6 +895,14 @@
 				version = 0.12.0;
 			};
 		};
+		C10000000000000000000003 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/pointfreeco/swift-snapshot-testing.git";
+			requirement = {
+				kind = exactVersion;
+				version = 1.19.7;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -898,6 +910,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = A43000000000000000000003 /* XCRemoteSwiftPackageReference "swift-sdk" */;
 			productName = MCP;
+		};
+		C10000000000000000000002 /* SnapshotTesting */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C10000000000000000000003 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */;
+			productName = SnapshotTesting;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

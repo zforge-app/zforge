@@ -132,7 +132,7 @@ final class FinderTagCatalog: NSObject {
     /// UI fixtures must not depend on the Mac's own Finder tags, which decide the quick-tag
     /// circles: an isolated catalog that offers Finder's standard English favorites. Slot 0 is
     /// colorless in Finder's layout, so it stays empty for each name to keep its own color.
-    private static func uiFixture() -> FinderTagCatalog {
+    static func uiFixture() -> FinderTagCatalog {
         let catalog = FinderTagCatalog(discoveryRoots: [], scanner: { _, _ in }, reader: { _ in [:] }, monitorsFiles: false,
             usesSpotlight: false, favoriteTagNames: { ["", "Red", "Orange", "Yellow", "Green", "Blue", "Purple", "Gray"] })
         catalog.publish()

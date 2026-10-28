@@ -1,0 +1,316 @@
+{
+  "description": "Maps changed paths to the UI tests they can affect. Scripts/affected-tests.py applies it; the Unit plan always runs in full. Paths are fnmatch globs relative to the project root ('*' also matches '/').",
+  "ignore": [
+    "*.md",
+    "Documentation/*",
+    "Scripts/*",
+    "TestPlans/*",
+    "ZforgeSnapshots/*",
+    "Zforge/Assets.xcassets/*",
+    "Zforge/zforge_icon.icon/*",
+    "Zforge/Resources/*",
+    "Zforge.xcodeproj/xcuserdata/*",
+    "Zforge.xcodeproj/xcshareddata/*",
+    ".gitignore",
+    "*.DS_Store"
+  ],
+  "rules": [
+    {
+      "name": "Shared state and models: semantics are proven by the Unit plan; UI-Smoke checks the interaction wiring in every layer",
+      "paths": [
+        "Zforge/State/*",
+        "Zforge/Models/BrowserModels.swift",
+        "Zforge/Models/FileBrowserPreferences.swift",
+        "Zforge/Services/UIFixtureServices.swift",
+        "Shared/BrowserSelectionAction.swift",
+        "Zforge/Services/FileSystemService.swift",
+        "Zforge/Services/RecentItemsService.swift",
+        "Zforge/Services/UserDirectoryService.swift",
+        "Zforge/Services/VolumeService.swift",
+        "Zforge/Services/DirectoryMonitor.swift",
+        "Zforge/Services/AccessGrantStore.swift",
+        "Zforge/Services/PinnedFolderStore.swift"
+      ],
+      "tests": [
+        "ZforgeUITests/ZforgeUITests/testBlankAreaUsesMoreMenuInEveryView",
+        "ZforgeUITests/ZforgeUITests/testFileOpenNavigatesSelectedFolderAndArchiveInColumnsMode",
+        "ZforgeUITests/ZforgeUITests/testListKeyboardZoomAndArrowNavigationAfterChangingView",
+        "ZforgeUITests/ZforgeUITests/testLocalDragsOptionCopyAndConfirmAdditionToArchive",
+        "ZforgeUITests/ZforgeUITests/testViewModeIsPerWindowAndLastClosedWindowRestoresIt"
+      ]
+    },
+    {
+      "name": "App shell, commands and Settings",
+      "paths": [
+        "Zforge/ZforgeApp.swift",
+        "Zforge/AppDelegate.swift",
+        "Zforge/Info.plist",
+        "Zforge/Zforge.entitlements"
+      ],
+      "tests": [
+        "ZforgeUITests/AutomationUITests/testSettingsProvidesLocalizedAgentSetupAndNativeCancellation",
+        "ZforgeUITests/IconPreviewUITests/testSettingsToggleUpdatesTheOpenGridAndKeepsSelection",
+        "ZforgeUITests/LocalizationUITests/testLanguageSelectionUpdatesOpenMenuAndPersists",
+        "ZforgeUITests/ZforgeUITests/testBlankAreaUsesMoreMenuInEveryView",
+        "ZforgeUITests/ZforgeUITests/testCompactToolbarMenusOpenFromTheirToolbarButtons",
+        "ZforgeUITests/ZforgeUITests/testFileOpenNavigatesSelectedFolderAndArchiveInColumnsMode",
+        "ZforgeUITests/ZforgeUITests/testFileOpenPrecedesOpenWithAndTracksSelectionInListMode",
+        "ZforgeUITests/ZforgeUITests/testFolderSelectionMenuAlternatesWithOptionInListMode",
+        "ZforgeUITests/ZforgeUITests/testKeyboardShortcutHelpOpensAndFilters",
+        "ZforgeUITests/ZforgeUITests/testListKeyboardZoomAndArrowNavigationAfterChangingView",
+        "ZforgeUITests/ZforgeUITests/testLocalDragsOptionCopyAndConfirmAdditionToArchive",
+        "ZforgeUITests/ZforgeUITests/testNewFolderWithSelectionMenuAndShortcutInListMode",
+        "ZforgeUITests/ZforgeUITests/testViewModeIsPerWindowAndLastClosedWindowRestoresIt"
+      ]
+    },
+    {
+      "name": "Window content and toolbar",
+      "paths": [
+        "Zforge/ContentView.swift"
+      ],
+      "tests": [
+        "ZforgeUITests/IconPreviewUITests/testSettingsToggleUpdatesTheOpenGridAndKeepsSelection",
+        "ZforgeUITests/ZforgeUITests/testBlankAreaUsesMoreMenuInEveryView",
+        "ZforgeUITests/ZforgeUITests/testCompactToolbarMenusOpenFromTheirToolbarButtons",
+        "ZforgeUITests/ZforgeUITests/testFileOpenNavigatesSelectedFolderAndArchiveInColumnsMode",
+        "ZforgeUITests/ZforgeUITests/testListKeyboardZoomAndArrowNavigationAfterChangingView",
+        "ZforgeUITests/ZforgeUITests/testLocalDragsOptionCopyAndConfirmAdditionToArchive",
+        "ZforgeUITests/ZforgeUITests/testNewFolderWithSelectionMenuAndShortcutInListMode",
+        "ZforgeUITests/ZforgeUITests/testTagEditorIsSharedByToolbarAndContextMenu",
+        "ZforgeUITests/ZforgeUITests/testViewModeIsPerWindowAndLastClosedWindowRestoresIt"
+      ]
+    },
+    {
+      "name": "Window lifecycle",
+      "paths": [
+        "Zforge/Views/BrowserWindowSupport.swift"
+      ],
+      "tests": [
+        "ZforgeUITests/ZforgeUITests/testArchiveCopyIntoAnotherZforgeWindow",
+        "ZforgeUITests/ZforgeUITests/testFileOpenNavigatesSelectedFolderAndArchiveInColumnsMode",
+        "ZforgeUITests/ZforgeUITests/testNewFolderWithSelectionMenuAndShortcutInListMode",
+        "ZforgeUITests/ZforgeUITests/testViewModeIsPerWindowAndLastClosedWindowRestoresIt"
+      ]
+    },
+    {
+      "name": "Localization",
+      "paths": [
+        "Zforge/Localizable.xcstrings",
+        "Zforge/Services/AppLocalization.swift"
+      ],
+      "tests": [
+        "ZforgeUITests/AutomationUITests/testSettingsProvidesLocalizedAgentSetupAndNativeCancellation",
+        "ZforgeUITests/LocalizationUITests/testLanguageSelectionUpdatesOpenMenuAndPersists",
+        "ZforgeUITests/ZforgeUITests/testKeyboardShortcutHelpOpensAndFilters"
+      ]
+    },
+    {
+      "name": "Keyboard shortcut help",
+      "paths": [
+        "Zforge/Views/KeyboardShortcutsView.swift"
+      ],
+      "tests": [
+        "ZforgeUITests/ZforgeUITests/testKeyboardShortcutHelpOpensAndFilters"
+      ]
+    },
+    {
+      "name": "Context, More and blank-area menus",
+      "paths": [
+        "Zforge/Views/BrowserNativeItemMenu.swift",
+        "Zforge/Views/BrowserActionsMenu.swift",
+        "Shared/MenuSymbolImage.swift"
+      ],
+      "tests": [
+        "ZforgeUITests/ZforgeUITests/testBlankAreaUsesMoreMenuInEveryView",
+        "ZforgeUITests/ZforgeUITests/testCompactToolbarMenusOpenFromTheirToolbarButtons",
+        "ZforgeUITests/ZforgeUITests/testCustomCompressionPanelOpensFolderChooser",
+        "ZforgeUITests/ZforgeUITests/testTagEditorIsSharedByToolbarAndContextMenu"
+      ]
+    },
+    {
+      "name": "Finder tags",
+      "paths": [
+        "Zforge/Views/FinderTagQuickMenu.swift",
+        "Zforge/Views/FinderTagEditor.swift",
+        "Zforge/Services/FinderTag*.swift",
+        "Zforge/Services/TagIndexStore.swift",
+        "Zforge/Services/TagJournal.swift",
+        "Zforge/Services/TaggedFileScanner.swift",
+        "Zforge/Native/TagDirectoryReader.*"
+      ],
+      "tests": [
+        "ZforgeUITests/ZforgeUITests/testBlankAreaUsesMoreMenuInEveryView",
+        "ZforgeUITests/ZforgeUITests/testCompactToolbarMenusOpenFromTheirToolbarButtons",
+        "ZforgeUITests/ZforgeUITests/testTagEditorIsSharedByToolbarAndContextMenu"
+      ]
+    },
+    {
+      "name": "Compression panel",
+      "paths": [
+        "Zforge/Views/CompressionSaveDialog.swift",
+        "Zforge/Views/CompressionProfileEditor.swift",
+        "Zforge/Models/CompressionOptions.swift"
+      ],
+      "tests": [
+        "ZforgeUITests/ZforgeUITests/testCustomCompressionPanelOpensFolderChooser"
+      ]
+    },
+    {
+      "name": "Drag and drop",
+      "paths": [
+        "Zforge/Views/ArchiveDragSource.swift",
+        "Zforge/Services/FileOperationService.swift",
+        "Zforge/Services/ZforgeTemporaryStorage.swift"
+      ],
+      "tests": [
+        "ZforgeUITests/ZforgeUITests/testArchiveCopyIntoAnotherZforgeWindow",
+        "ZforgeUITests/ZforgeUITests/testArchiveDragCopiesIntoSidebarFolder",
+        "ZforgeUITests/ZforgeUITests/testArchiveInternalCopyConfirmationKeepsHistoryAndAncestorColumns",
+        "ZforgeUITests/ZforgeUITests/testArchivePromisesPublishIntoFinderBeforeRemovingOriginal",
+        "ZforgeUITests/ZforgeUITests/testLocalDragsOptionCopyAndConfirmAdditionToArchive",
+        "ZforgeUITests/ZforgeUITests/testNewFolderWithSelectionMenuAndShortcutInListMode"
+      ]
+    },
+    {
+      "name": "Archive engine",
+      "paths": [
+        "Zforge/Services/ArchiveEngine.swift",
+        "Zforge/Services/ArchiveEntry.swift",
+        "Zforge/Services/NativeSevenZipBackend.swift",
+        "Zforge/Native/SevenZipBridge.*",
+        "Zforge/Native/Zforge-Bridging-Header.h",
+        "Zforge/SevenZipHelper.entitlements",
+        "Vendor/*"
+      ],
+      "tests": [
+        "ZforgeUITests/FinderExtensionUITests/testFinderSubmenuOffersArchiveActionsAndExtractsInZforge",
+        "ZforgeUITests/ZforgeUITests/testArchiveCopyIntoAnotherZforgeWindow",
+        "ZforgeUITests/ZforgeUITests/testArchiveDragCopiesIntoSidebarFolder",
+        "ZforgeUITests/ZforgeUITests/testArchiveInternalCopyConfirmationKeepsHistoryAndAncestorColumns",
+        "ZforgeUITests/ZforgeUITests/testArchivePromisesPublishIntoFinderBeforeRemovingOriginal",
+        "ZforgeUITests/ZforgeUITests/testFileOpenNavigatesSelectedFolderAndArchiveInColumnsMode",
+        "ZforgeUITests/ZforgeUITests/testLocalDragsOptionCopyAndConfirmAdditionToArchive"
+      ]
+    },
+    {
+      "name": "Shared browser views and gestures",
+      "paths": [
+        "Zforge/Views/BrowserContentViews.swift",
+        "Zforge/Views/FinderClickGesture.swift",
+        "Zforge/Views/BrowserArchiveContext.swift"
+      ],
+      "tests": [
+        "ZforgeUITests/IconPreviewUITests/testSettingsToggleUpdatesTheOpenGridAndKeepsSelection",
+        "ZforgeUITests/ZforgeUITests/testArchiveDragCopiesIntoSidebarFolder",
+        "ZforgeUITests/ZforgeUITests/testBlankAreaUsesMoreMenuInEveryView",
+        "ZforgeUITests/ZforgeUITests/testColumnPreviewRefitsAfterUserScrollsLeft",
+        "ZforgeUITests/ZforgeUITests/testFileOpenNavigatesSelectedFolderAndArchiveInColumnsMode",
+        "ZforgeUITests/ZforgeUITests/testListKeyboardZoomAndArrowNavigationAfterChangingView",
+        "ZforgeUITests/ZforgeUITests/testLocalDragsOptionCopyAndConfirmAdditionToArchive",
+        "ZforgeUITests/ZforgeUITests/testViewModeIsPerWindowAndLastClosedWindowRestoresIt"
+      ]
+    },
+    {
+      "name": "Sidebar",
+      "paths": [
+        "Zforge/Views/BrowserNavigationViews.swift",
+        "Zforge/Views/SidebarInteraction.swift",
+        "Zforge/Views/SidebarSplitConstraint.swift"
+      ],
+      "tests": [
+        "ZforgeUITests/ZforgeUITests/testArchiveDragCopiesIntoSidebarFolder",
+        "ZforgeUITests/ZforgeUITests/testArchiveInternalCopyConfirmationKeepsHistoryAndAncestorColumns",
+        "ZforgeUITests/ZforgeUITests/testColumnPreviewRefitsAfterUserScrollsLeft",
+        "ZforgeUITests/ZforgeUITests/testViewModeIsPerWindowAndLastClosedWindowRestoresIt"
+      ]
+    },
+    {
+      "name": "Columns and preview",
+      "paths": [
+        "Zforge/Views/ColumnBrowserView.swift",
+        "Zforge/Views/BrowserLayout.swift",
+        "Zforge/Views/PreviewView.swift"
+      ],
+      "tests": [
+        "ZforgeUITests/IconPreviewUITests/testSettingsToggleUpdatesTheOpenGridAndKeepsSelection",
+        "ZforgeUITests/ZforgeUITests/testArchiveInternalCopyConfirmationKeepsHistoryAndAncestorColumns",
+        "ZforgeUITests/ZforgeUITests/testColumnPreviewRefitsAfterUserScrollsLeft",
+        "ZforgeUITests/ZforgeUITests/testFileOpenNavigatesSelectedFolderAndArchiveInColumnsMode"
+      ]
+    },
+    {
+      "name": "List",
+      "paths": [
+        "Zforge/Views/ListBrowserView.swift"
+      ],
+      "tests": [
+        "ZforgeUITests/LocalizationUITests/testLanguageSelectionUpdatesOpenMenuAndPersists",
+        "ZforgeUITests/ZforgeUITests/testArchiveCopyIntoAnotherZforgeWindow",
+        "ZforgeUITests/ZforgeUITests/testArchivePromisesPublishIntoFinderBeforeRemovingOriginal",
+        "ZforgeUITests/ZforgeUITests/testBlankAreaUsesMoreMenuInEveryView",
+        "ZforgeUITests/ZforgeUITests/testCustomCompressionPanelOpensFolderChooser",
+        "ZforgeUITests/ZforgeUITests/testFileOpenPrecedesOpenWithAndTracksSelectionInListMode",
+        "ZforgeUITests/ZforgeUITests/testFolderSelectionMenuAlternatesWithOptionInListMode",
+        "ZforgeUITests/ZforgeUITests/testListKeyboardZoomAndArrowNavigationAfterChangingView",
+        "ZforgeUITests/ZforgeUITests/testLocalDragsOptionCopyAndConfirmAdditionToArchive",
+        "ZforgeUITests/ZforgeUITests/testNewFolderWithSelectionMenuAndShortcutInListMode",
+        "ZforgeUITests/ZforgeUITests/testTagEditorIsSharedByToolbarAndContextMenu"
+      ]
+    },
+    {
+      "name": "Icons, Gallery and previews",
+      "paths": [
+        "Zforge/Views/IconBrowserView.swift",
+        "Zforge/Views/GalleryBrowserView.swift",
+        "Zforge/Views/IconPreviewView.swift",
+        "Zforge/Views/FileIconView.swift",
+        "Zforge/Views/VideoPlayBadge.swift",
+        "Zforge/Views/ArchiveFolderIconComposer.swift",
+        "Zforge/Views/BrowserInfoWindow.swift",
+        "Zforge/Services/IconPreview*.swift"
+      ],
+      "tests": [
+        "ZforgeUITests/IconPreviewUITests/testSettingsToggleUpdatesTheOpenGridAndKeepsSelection",
+        "ZforgeUITests/ZforgeUITests/testArchiveDragCopiesIntoSidebarFolder",
+        "ZforgeUITests/ZforgeUITests/testBlankAreaUsesMoreMenuInEveryView"
+      ]
+    },
+    {
+      "name": "Automation",
+      "paths": [
+        "Zforge/Automation/*"
+      ],
+      "tests": [
+        "ZforgeUITests/AutomationUITests/testMCPContextualPermissionCancellationAndDisconnect",
+        "ZforgeUITests/AutomationUITests/testSettingsProvidesLocalizedAgentSetupAndNativeCancellation"
+      ]
+    },
+    {
+      "name": "Finder extension",
+      "paths": [
+        "ZforgeFinderExtension/*",
+        "Shared/FinderMenuRequest.swift",
+        "Shared/MenuSymbolImage.swift",
+        "Zforge/Views/FinderExtensionSettingsSection.swift"
+      ],
+      "tests": [
+        "ZforgeUITests/FinderExtensionUITests/testFinderSubmenuOffersArchiveActionsAndExtractsInZforge"
+      ]
+    },
+    {
+      "name": "Project and dependencies",
+      "paths": [
+        "Zforge.xcodeproj/project.pbxproj",
+        "Zforge.xcodeproj/project.xcworkspace/*"
+      ],
+      "tests": [
+        "ZforgeUITests/FinderExtensionUITests/testFinderSubmenuOffersArchiveActionsAndExtractsInZforge",
+        "ZforgeUITests/ZforgeUITests/testBlankAreaUsesMoreMenuInEveryView",
+        "ZforgeUITests/ZforgeUITests/testFileOpenNavigatesSelectedFolderAndArchiveInColumnsMode",
+        "ZforgeUITests/ZforgeUITests/testListKeyboardZoomAndArrowNavigationAfterChangingView",
+        "ZforgeUITests/ZforgeUITests/testLocalDragsOptionCopyAndConfirmAdditionToArchive",
+        "ZforgeUITests/ZforgeUITests/testViewModeIsPerWindowAndLastClosedWindowRestoresIt"
+      ]
+    }
+  ]
+}

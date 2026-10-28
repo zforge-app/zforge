@@ -1218,3 +1218,97 @@ Performance repeats after the decisions (functional check under unrelated Godot 
 - Unit suite after the change: 401 tests, 401 passed, 0 failed, 0 skipped (`/tmp/zf44-open-unit.xcresult`).
 - Real-Finder UI test `FinderExtensionUITests` passed, with the on-screen contrast check now including Open (`/tmp/zf44-open-ui.xcresult`); its dark-mode capture shows the light Open symbol aligned with the others.
 - Limits unchanged: light mode on screen, the light-mode highlighted row, and the app's own menus were not captured visually.
+
+## D-58 — List preview let presses reach the rows beneath it — 2026-10-27
+
+- **Test:** `BrowserPreviewOcclusionTests.listPreviewHidesRowsBeneathIt` (unit plan, offscreen). In a 760 pt window in List with the preview shown, every row reaching under the preview is asked about a point on the preview (no drag, no item menu) and a point just left of it (drag and menu).
+- **Fails first:** with `BrowserForegroundArea` disabled it recorded 8 issues (drag and menu for each of the 4 rows); with the fix it passes.
+- **Limit:** the real drag gesture over the preview is not driven by XCUITest; the decision the gesture depends on is tested on the real laid-out views.
+
+## ZF-45 — Test layers, selection and XCUITest migration (RNF-Q08) — 2026-10-27
+
+### Method
+
+Six areas were migrated in isolated worktrees.
+- **Removal rule:** a UI test, or one of its assertions, left XCUITest only after an offscreen test covering it passed.
+- **Regression detection:** each new characterization test was shown to catch a regression. The production behavior was broken on purpose, the test failed for the expected reason, and the code was restored and checked with `git diff`. About 45 such breaks were recorded; each area's report lists them.
+- **No UI runs:** UI tests were compiled but not run (`build-for-testing -testPlan UI-Full` succeeded on the merged tree).
+
+### Production changes
+
+The production changes are behavior-preserving extractions for testability:
+- `canOpenSelection` and `openSelection()` on `FileBrowserState`;
+- `KeyboardShortcutCatalog.sections(matching:locale:)`;
+- `BrowserToolbarLayout.OverflowMenuContents`;
+- `ArchiveDropDestinationView.operation(for:option:sourceMask:)` and `perform(pasteboard:operation:)`;
+- `CompressionSaveDialog.makePanel()`, plus `CompressionSettingsSection` extracted from Settings;
+- an optional `catalogTags:` parameter on the menu builders;
+- fixture service hooks (`itemsGate:`, `includesArchiveSessionCopies:`);
+- a thumbnail callback on `IconPreviewView`;
+- the Info window title function.
+
+No visible string changed.
+
+### Old UI test → coverage now
+
+| Old UI test | Now |
+|---|---|
+| `testFolderSelectionCommandIsLocalizedAndDocumented` | Removed. `FileMenuLocalizationTests.portugueseTitles`, `FileMenuCommandTests.folderSelectionIsTheOptionAlternate`, `KeyboardShortcutHelpTests.portugueseFolderSelection`/`portugueseSnapshot`; ⌘/ in the kept help test. |
+| `testNewFolderWithSelectionMenuAndShortcutInEveryMode` | Reduced to List: `testNewFolderWithSelectionMenuAndShortcutInListMode`. All modes: `FolderWithSelectionFlowTests.groupRenameOpenAndReturn`. |
+| `testFolderSelectionMenuAlternatesWithOptionInEveryMode` | Reduced to List: `testFolderSelectionMenuAlternatesWithOptionInListMode`. All modes: `FolderWithSelectionFlowTests.disabledWithoutSelection`. |
+| `testFileOpenPrecedesOpenWithAndTracksSelectionInEveryMode` | Reduced to List: `…InListMode`. All modes: `FileMenuCommandTests.availabilityTracksSelection`, `openPrecedesOpenWith`. |
+| `testFileOpenNavigatesSelectedFolderAndArchiveInEveryMode` | Reduced to Columns: `…InColumnsMode`. All modes: `FileMenuCommandTests.openNavigatesFolderAndArchive`, `openCapturesSelection`. |
+| `testFileOpenUsesPortugueseLocalization` | Removed. `FileMenuLocalizationTests.portugueseTitles`; real menu in another language: kept Localization UI test. |
+| `testKeyboardShortcutHelpOpensAndFilters` | Kept. Filter also in `KeyboardShortcutHelpTests.englishFilter`. |
+| `LocalizationUITests.testLanguageSelectionUpdatesOpenMenusInAllBrowserModesAndPersists` | Reduced to two languages in List: `testLanguageSelectionUpdatesOpenMenuAndPersists`. 21 languages: `FileMenuLocalizationTests.openTitle`, `pickerNames`; all modes: `FileMenuCommandTests.languageAndModeKeepEmptySelection`. |
+| `testLastClosedWindowRestoresViewModeAfterRelaunch` + `testViewModeIsIndependentBetweenWindows` | Merged: `testViewModeIsPerWindowAndLastClosedWindowRestoresIt`. All modes/orders: `WindowViewModeTests`. |
+| `testArrowNavigationKeepsContentFocusAfterChangingView` + `testZoomShortcutsUpdateTheActiveView` | Merged: `testListKeyboardZoomAndArrowNavigationAfterChangingView`. Steps: `ZoomStepTests.zoomSteps`. |
+| `testNarrowToolbarUsesOneFunctionalMenu` + `testIntermediateToolbarKeepsViewOutsideOverflow` | Merged at 720 pt: `testCompactToolbarMenusOpenFromTheirToolbarButtons`. 650/720/860 pt: `BrowserWindowLayoutTests.toolbarStages`, `ToolbarOverflowMenuTests.overflowContents`, `viewSubmenu`. |
+| `testViewCompactsBeforeArchiveActionIsHidden`, `testSidebarCannotConsumeLast360Points`, `testExample` | Removed (D-57). `toolbarStages(860)`, `overflowContents(860)`, `sidebarLeavesMinimumContentWidth`, `fixtureLaunchListing`. |
+| `testLaunchPerformance`, `ZforgeUITestsLaunchTests.testLaunch` | Removed: Xcode templates without assertions. |
+| `testColumnLoadingNeverDuplicatesParentRows` | Removed. `ColumnBrowserLayoutTests.loadingColumnNeverDuplicatesParentRows` (deterministic gate instead of a 4 s delay). |
+| `testColumnPreviewRecalculatesWidthForNewDepth` | Removed. `previewRecalculatesWidthForNewDepth` (also exact widths 920/660). |
+| `testColumnPreviewKeepsExpandedTerminalAlignment` | Removed. `previewKeepsExpandedTerminalAlignment`. Not covered: a real click on the visible blank part of a row partly behind the sidebar. |
+| `testColumnPreviewRefitsAfterUserScrollsLeft` | Kept (needs a real scroll phase). |
+| `testRecentsShowsOriginalOnlyOnceWhenArchiveSessionsContainCopies` | Removed. `RecentsArchiveSessionCopyTests.originalArchiveAppearsOnce` (all modes). |
+| `testBlankAreaUsesMoreMenuInEveryView` | Kept; it absorbed the Icons and Gallery/Columns tag-menu tests. Offscreen parity: `BrowserMenuParityTests.blankAreaMenuMatchesMoreMenu` (4 modes × 4 selections). |
+| `testArchiveRemovalIsSharedByToolbarAndContextMenu`, `testArchiveActionsMatchToolbarAndSecondaryMenus` | Removed. `BrowserMenuParityTests.archiveRemovalIsShared`, `archiveActionsMatch` (all modes). |
+| `testTagEditorIsSharedByToolbarAndContextMenu` | Kept (hover retitle, sheet, Escape). Circles and values: `itemMenuOffersTags`, `moreMenuOffersTags`. |
+| `testIconModeTagContextMenuPreservesSelection`, `testTagContextMenuInGalleryAndColumns` | Merged into the blank-area test (all four modes) and `itemMenuOffersTags`. |
+| `testCompressionProfilesAreAvailableInSettings` | Removed. `CompressionPanelLayoutTests.compressionSettingsSection` (+ snapshot). |
+| `testCustomCompressionShowsProfileOptions` | Reduced: `testCustomCompressionPanelOpensFolderChooser`. Layout, password expansion and name preservation: `customCompressionPanel` (numeric + 3 snapshots); D-57. |
+| `testArchiveMutationKeepsBackHistoryAndAncestorColumnsInEveryMode` | Reduced to Columns: `testArchiveInternalCopyConfirmationKeepsHistoryAndAncestorColumns` (now also Escape). All modes: `ArchiveDragDropTests.internalCopyKeepsHistoryAndAncestorColumns`. |
+| `testArchiveDragCopiesIntoDroppedFolderInEveryMode` | Reduced to Icons: `testArchiveDragCopiesIntoSidebarFolder`. All modes: `externalCopyIntoDroppedFolder`. |
+| `testArchiveMoveUsesKeyboardConfirmationAndCancellation` | Removed. Keys in the kept internal-copy test; `externalMoveConfirmationAndCancellation`. |
+| `testArchiveInternalMoveAndOptionCopyRevealExpandedDestination` | Removed. `internalMoveThenOptionCopyRevealExpandedDestination`. |
+| `testArchiveCopyIntoAnotherZforgeWindow`, `testArchivePromisesPublishIntoFinderBeforeRemovingOriginal` | Kept (List). Also `copyIntoAnotherWindow`; `ArchiveMutationTests.outboundPromises`. |
+| `testLocalDragRetainsMoveAndOptionCopyBehavior` + `testLocalDropIntoArchiveRetainsConfirmationAndSource` | Merged: `testLocalDragsOptionCopyAndConfirmAdditionToArchive`. Plain move offscreen: `localDragMoveAndOptionCopy`, `localDropIntoArchiveRequiresConfirmation`. |
+| `IconPreviewUITests` (5 tests) | One kept: `testSettingsToggleUpdatesTheOpenGridAndKeepsSelection` (Icons). `IconPreviewGridTests` (5 tests, 8 snapshots): default previews and archive entries, toggle and persistence, selection in all modes, play badge, Portuguese narrow grid at zoom limits. |
+| `AutomationUITests` (2 tests) | Kept, English only. Portuguese strings and copied configuration: `AutomationSettingsTests`. |
+| `FinderExtensionUITests` | Kept unchanged. |
+
+### Results
+
+- **Unit plan on the merged tree:** 449 tests, 446 passed, 3 failed, 0 skipped (`/tmp/zf45-unit.xcresult`). The full plan ran while Spotlight was indexing (load average about 15–20).
+- **`ZforgeTests.rapidColumnArchiveSelectionPublishesOnlyCurrentArchive` and `TagCatalogTests.updatesGlobalCatalogueLive`:** both passed when rerun alone (`/tmp/zf45-rerun2.xcresult`). These are the known load-sensitive cases.
+- **`ArchiveDiscoveryPerformanceTests.mixedDirectChildren` (100 ms budget):** failed at 120–176 ms. It fails the same way on unmodified HEAD under the same load (`/tmp/zf45-base-perf1.xcresult`, `/tmp/zf45-base-perf2.xcresult`), so it is pre-existing and depends on the environment. It is unchanged; it needs a rerun on an idle machine.
+- **First snapshot test:** `MenuSymbolSnapshotTests.finderSymbolStrip` (light and dark) passes unchanged and failed when the Open symbol was swapped.
+- **`Scripts/affected-tests.py --check`:** 22 UI tests, 19 rules, 0 problems. Sample selections:
+  - `CompressionSaveDialog.swift` → 1 UI test.
+  - Documentation plus unit tests → none.
+  - An unmapped view → `UI-Smoke`, with a warning.
+
+- **Kept UI tests, 2026-10-27 (after the D-58 fix):** full `UI-Full` run, 22 tests in 825 s: 16 passed, 6 failed (`/tmp/zf58-ui.xcresult`). The machine was under heavy load from unrelated processes (load average 15, rising to 84–204 during the reruns). Triage:
+  - `testMCPContextualPermissionCancellationAndDisconnect`, `testArchiveCopyIntoAnotherZforgeWindow` and `testCompactToolbarMenusOpenFromTheirToolbarButtons` timed out at launch or on the first panel. They passed unchanged when rerun (`/tmp/zf58-ui-rerun.xcresult`). Load-sensitive; not reproduced.
+  - `testLocalDragsOptionCopyAndConfirmAdditionToArchive` (merged by ZF-45): after the archive was expanded, two `Local.txt` rows existed and the Option-drag picked the archive entry, which Option moves out of the archive ("Modify the Original Archive?"). The test now collapses the archive first, restoring the old copy test's starting state and its expected count of 2. Passed (`/tmp/zf58-ui-rerun.xcresult`).
+  - `testLanguageSelectionUpdatesOpenMenuAndPersists`: pre-existing (the line is unchanged from HEAD). It waited for a window identifier, `browser-main-window`, that no longer exists, and launches can restore no window. It now waits for a `browser-` window and opens one with ⌘N when none appears, as the other fixture launches do, at launch and after relaunch (File > Open takes its language from the focused window). Passed (`/tmp/zf58-ui-rerun4.xcresult`).
+  - `testArchivePromisesPublishIntoFinderBeforeRemovingOriginal`: pre-existing choreography (unchanged from HEAD). It moves Finder by pressing its toolbar 300 pt from the left; with this Mac's Finder sidebar width that point is the back/forward control, so Finder stayed under Zforge and the drop landed on Zforge (failed 3 of 3). The drop point is now on Finder's content where Zforge does not cover it, with a precondition that fails clearly otherwise. Assertions are unchanged. Passed (`/tmp/zf58-ui-rerun5.xcresult`).
+- **Unit plan after the D-58 fix:** 450 tests, 449 passed; `ArchiveDiscoveryPerformanceTests.mixedDirectChildren` failed at 118–144 ms under the same load (`/tmp/zf58-unit.xcresult`).
+
+### Limits
+
+- **No single clean sweep:** every kept UI test has passed, but across one full run and four targeted reruns, not in one uninterrupted `UI-Full` run. The machine was heavily loaded throughout.
+- **Reduced Portuguese coverage:** Portuguese automation text is now checked only against the String Catalog.
+- **Machine-dependent snapshots:** they depend on this Mac's scale, accent color and system icons.
+- **Recording from a worktree:** the sandboxed test host could not write references inside `/tmp` worktrees. The agents imported them from result-bundle attachments. Recording from the main checkout works.
+- **Collateral `pkill`:** during the migration one agent ran a `pkill` that matched any Zforge process, which may have ended other test hosts or the user's own Zforge at about 15:03.

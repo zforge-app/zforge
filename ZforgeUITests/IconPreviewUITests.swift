@@ -5,34 +5,26 @@ final class IconPreviewUITests: XCTestCase {
         continueAfterFailure = false
     }
 
+    /// Thumbnails, archive entries, the video badge, every mode, relaunch persistence, Portuguese,
+    /// narrow widths and zoom limits are characterized offscreen in `IconPreviewGridTests`. This
+    /// scenario keeps what needs the real app: clicking a cell, the menu shortcuts, the Get Info
+    /// window and the Settings toggle updating the open Icons grid.
     @MainActor
-    func testDefaultIconPreviewsIncludeSupportedFilesAndArchiveEntries() throws {
-        let app = fixtureApplication()
-        launchFixture(app)
-        defer { app.terminate() }
-
-        for name in previewFileNames {
-            XCTAssertTrue(preview(named: name, in: app).waitForExistence(timeout: 10), name)
-        }
-        for name in ["Unsupported.bin", "Empty Folder", "Sample.zip"] {
-            XCTAssertTrue(fallback(named: name, in: app).exists, name)
-            XCTAssertFalse(preview(named: name, in: app).exists, name)
-        }
-        attachScreenshot(app, named: "Default icon previews with the preview panel hidden")
-
-        browserFile(named: "Sample.zip", in: app).doubleClick()
-        XCTAssertTrue(browserFile(named: "Preview.jpg", in: app).waitForNonExistence(timeout: 5))
-        XCTAssertTrue(preview(named: "Preview.png", in: app).waitForExistence(timeout: 10))
-        XCTAssertFalse(browserFile(named: "Preview.jpg", in: app).exists)
-        attachScreenshot(app, named: "Archive entry icon preview")
-    }
-
-    @MainActor
-    func testSettingsToggleUpdatesTheOpenGridAndPersistsAcrossRelaunch() throws {
+    func testSettingsToggleUpdatesTheOpenGridAndKeepsSelection() throws {
         let app = fixtureApplication()
         launchFixture(app)
         defer { app.terminate() }
         XCTAssertTrue(preview(named: "Preview.png", in: app).waitForExistence(timeout: 10))
+        browserFile(named: "Preview.png", in: app).click()
+        waitForIconSelection(named: "Preview.png", in: app)
+        assertSelection(named: "Preview.png", in: app)
+
+        // The icon content is present before and after the side preview panel is shown.
+        XCTAssertTrue(preview(named: "Preview.png", in: app).exists)
+        app.typeKey("p", modifierFlags: [.command, .shift])
+        XCTAssertTrue(preview(named: "Preview.png", in: app).exists)
+        assertSelection(named: "Preview.png", in: app)
+        attachScreenshot(app, named: "Selected thumbnail with the preview panel shown")
 
         let toggle = openIconPreviewSettings(in: app)
         XCTAssertEqual(controlState(toggle), 1, app.debugDescription)
@@ -42,67 +34,12 @@ final class IconPreviewUITests: XCTestCase {
         XCTAssertEqual(controlState(toggle), 0, app.debugDescription)
         XCTAssertTrue(fallback(named: "Preview.png", in: app).waitForExistence(timeout: 5))
         closeSettings(in: app)
-        for name in previewFileNames {
-            XCTAssertTrue(fallback(named: name, in: app).waitForExistence(timeout: 5), name)
-            XCTAssertFalse(preview(named: name, in: app).exists, name)
-        }
+        XCTAssertFalse(preview(named: "Preview.png", in: app).exists)
+        assertSelection(named: "Preview.png", in: app)
         attachScreenshot(app, named: "Open grid after disabling icon previews")
 
-        app.terminate()
-        launchFixture(app)
-        XCTAssertTrue(fallback(named: "Preview.png", in: app).waitForExistence(timeout: 5))
-        XCTAssertFalse(preview(named: "Preview.png", in: app).exists)
-        let savedToggle = openIconPreviewSettings(in: app)
-        XCTAssertEqual(controlState(savedToggle), 0, app.debugDescription)
-        savedToggle.click()
-        waitForToggle(savedToggle, enabled: true)
-        XCTAssertTrue(preview(named: "Preview.png", in: app).waitForExistence(timeout: 10))
-        closeSettings(in: app)
-        attachScreenshot(app, named: "Open grid after enabling icon previews again")
-
-        app.terminate()
-        launchFixture(app)
-        XCTAssertTrue(preview(named: "Preview.png", in: app).waitForExistence(timeout: 10))
         let restoredToggle = openIconPreviewSettings(in: app)
-        XCTAssertEqual(controlState(restoredToggle), 1, app.debugDescription)
-    }
-
-    @MainActor
-    func testIconPreviewSettingPreservesSelectionAcrossEveryModeAndPanelVisibility() throws {
-        let app = fixtureApplication()
-        launchFixture(app)
-        defer { app.terminate() }
-        XCTAssertTrue(preview(named: "Preview.png", in: app).waitForExistence(timeout: 10))
-        browserFile(named: "Preview.png", in: app).click()
-        waitForIconSelection(named: "Preview.png", in: app)
-        assertSelection(named: "Preview.png", in: app)
-
-        // The icon content is present before the side preview panel is shown.
-        XCTAssertTrue(preview(named: "Preview.png", in: app).exists)
-        app.typeKey("p", modifierFlags: [.command, .shift])
-        XCTAssertTrue(preview(named: "Preview.png", in: app).exists)
-        assertSelection(named: "Preview.png", in: app)
-        attachScreenshot(app, named: "Selected thumbnail with the preview panel shown")
-
-        let toggle = openIconPreviewSettings(in: app)
-        toggle.click()
-        waitForToggle(toggle, enabled: false)
-        closeSettings(in: app)
-        XCTAssertTrue(fallback(named: "Preview.png", in: app).waitForExistence(timeout: 5))
-        assertSelection(named: "Preview.png", in: app)
-
-        for (key, mode) in [("2", "list"), ("3", "columns"), ("4", "gallery"), ("1", "icons")] {
-            app.typeKey(key, modifierFlags: .command)
-            XCTAssertTrue(app.descendants(matching: .any)["browser-mode-\(mode)"].firstMatch
-                .waitForExistence(timeout: 5), mode)
-            assertSelection(named: "Preview.png", in: app)
-            XCTAssertFalse(preview(named: "Preview.png", in: app).exists, mode)
-            if mode == "icons" {
-                XCTAssertTrue(fallback(named: "Preview.png", in: app).exists)
-            }
-        }
-
-        let restoredToggle = openIconPreviewSettings(in: app)
+        XCTAssertEqual(controlState(restoredToggle), 0, app.debugDescription)
         restoredToggle.click()
         waitForToggle(restoredToggle, enabled: true)
         closeSettings(in: app)
@@ -111,90 +48,14 @@ final class IconPreviewUITests: XCTestCase {
     }
 
     @MainActor
-    func testVideoThumbnailShowsPlayBadgeInIconsAndSelectionStack() throws {
-        let app = fixtureApplication()
-        launchFixture(app)
-        defer { app.terminate() }
-        XCTAssertTrue(preview(named: "Preview.mov", in: app).waitForExistence(timeout: 10))
-        XCTAssertTrue(preview(named: "Preview.png", in: app).exists)
-        attachScreenshot(app, named: "Video thumbnail with play badge in Icons")
-
-        // The last selected item tops the stack, so select the movie last to keep its badge visible.
-        browserFile(named: "Preview.png", in: app).click()
-        waitForIconSelection(named: "Preview.png", in: app)
-        XCUIElement.perform(withKeyModifiers: .command) {
-            browserFile(named: "Preview.mov", in: app).click()
-        }
-        waitForIconSelection(named: "Preview.mov", in: app)
-        app.typeKey("4", modifierFlags: .command)
-        XCTAssertTrue(app.descendants(matching: .any)["browser-mode-gallery"].firstMatch.waitForExistence(timeout: 5))
-        attachScreenshot(app, named: "Video thumbnail with play badge in the Gallery selection stack")
-    }
-
-    @MainActor
-    func testPortugueseNarrowWindowPreservesPreviewsAndMultipleSelectionAtZoomLimits() throws {
-        let app = fixtureApplication(width: "720", language: "portugueseBrazil", appearance: "Dark")
-        launchFixture(app)
-        defer { app.terminate() }
-        XCTAssertTrue(preview(named: "Preview.png", in: app).waitForExistence(timeout: 10))
-
-        browserFile(named: "Preview.png", in: app).click()
-        waitForIconSelection(named: "Preview.png", in: app)
-        assertSelection(named: "Preview.png", titlePrefix: "Informações", in: app)
-        for _ in 0..<3 { app.typeKey("-", modifierFlags: .command) }
-        let content = app.descendants(matching: .any)["browser-mode-icons"].firstMatch
-        let minimumZoom = expectation(for: NSPredicate(format: "value == %@", "70%"), evaluatedWith: content)
-        wait(for: [minimumZoom], timeout: 5)
-        XCTAssertTrue(preview(named: "Preview.png", in: app).waitForExistence(timeout: 10))
-        let smallFrame = preview(named: "Preview.png", in: app).frame
-        assertSelection(named: "Preview.png", titlePrefix: "Informações", in: app)
-        attachScreenshot(app, named: "Portuguese narrow window at 70 percent zoom")
-
-        XCUIElement.perform(withKeyModifiers: .command) {
-            browserFile(named: "Preview.jpg", in: app).click()
-        }
-        waitForIconSelection(named: "Preview.jpg", in: app)
-        XCTAssertTrue(browserFile(named: "Preview.png", in: app).isSelected)
-        assertMultipleSelection(title: "Informações: 2 Itens", summary: "2 itens", in: app)
-        XCTAssertTrue(preview(named: "Preview.png", in: app).exists)
-        XCTAssertTrue(preview(named: "Preview.jpg", in: app).exists)
-        attachScreenshot(app, named: "Portuguese narrow window with two selected image previews")
-
-        for _ in 0..<9 { app.typeKey("=", modifierFlags: .command) }
-        let maximumZoom = expectation(for: NSPredicate(format: "value == %@", "160%"), evaluatedWith: content)
-        wait(for: [maximumZoom], timeout: 5)
-        XCTAssertTrue(preview(named: "Preview.png", in: app).waitForExistence(timeout: 10))
-        XCTAssertGreaterThan(preview(named: "Preview.png", in: app).frame.width, smallFrame.width)
-        assertMultipleSelection(title: "Informações: 2 Itens", summary: "2 itens", in: app)
-        attachScreenshot(app, named: "Portuguese narrow window at 160 percent zoom")
-
-        let toggle = openIconPreviewSettings(in: app)
-        XCTAssertTrue(app.staticTexts["Mostrar pré-visualizações na visão de ícones"].exists,
-            app.debugDescription)
-        XCTAssertEqual(controlState(toggle), 1, app.debugDescription)
-        attachScreenshot(app, named: "Portuguese icon preview Settings label")
-        toggle.click()
-        waitForToggle(toggle, enabled: false)
-        XCTAssertEqual(controlState(toggle), 0, app.debugDescription)
-        closeSettings(in: app)
-        XCTAssertTrue(fallback(named: "Preview.png", in: app).waitForExistence(timeout: 5))
-        assertMultipleSelection(title: "Informações: 2 Itens", summary: "2 itens", in: app)
-    }
-
-    private var previewFileNames: [String] {
-        ["Preview.png", "Preview.jpg", "Preview.pdf", "Preview.txt", "Preview.html", "Preview.mov"]
-    }
-
-    @MainActor
-    private func fixtureApplication(width: String = "1200", language: String = "english",
-                                    appearance: String = "Light") -> XCUIApplication {
+    private func fixtureApplication() -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments = [
-            "--ui-icon-preview-fixtures", "--ui-window-width", width, "--ui-view-mode", "icons",
+            "--ui-icon-preview-fixtures", "--ui-window-width", "1200", "--ui-view-mode", "icons",
             "-ApplePersistenceIgnoreState", "YES", "-NSQuitAlwaysKeepsWindows", "NO",
-            "-AppleInterfaceStyle", appearance,
+            "-AppleInterfaceStyle", "Light",
             "-browser.scale", "1", "-browser.previewVisible.icons", "NO",
-            "-appLanguagePreference", language
+            "-appLanguagePreference", "english"
         ]
         app.launchEnvironment["ZFORGE_UI_PREFERENCES_SUITE"] = "ZforgeIconPreviewUI-\(UUID().uuidString)"
         return app
@@ -264,21 +125,11 @@ final class IconPreviewUITests: XCTestCase {
     }
 
     @MainActor
-    private func assertSelection(named name: String, titlePrefix: String = "Info", in app: XCUIApplication) {
+    private func assertSelection(named name: String, in app: XCUIApplication) {
         app.typeKey("i", modifierFlags: .command)
-        let information = app.windows["\(titlePrefix): \(name)"].firstMatch
+        let information = app.windows["Info: \(name)"].firstMatch
         XCTAssertTrue(information.waitForExistence(timeout: 5), app.debugDescription)
         XCTAssertTrue(information.staticTexts[name].exists)
-        information.buttons[XCUIIdentifierCloseWindow].click()
-        XCTAssertTrue(information.waitForNonExistence(timeout: 5))
-    }
-
-    @MainActor
-    private func assertMultipleSelection(title: String, summary: String, in app: XCUIApplication) {
-        app.typeKey("i", modifierFlags: .command)
-        let information = app.windows[title].firstMatch
-        XCTAssertTrue(information.waitForExistence(timeout: 5), app.debugDescription)
-        XCTAssertTrue(information.staticTexts[summary].exists, app.debugDescription)
         information.buttons[XCUIIdentifierCloseWindow].click()
         XCTAssertTrue(information.waitForNonExistence(timeout: 5))
     }

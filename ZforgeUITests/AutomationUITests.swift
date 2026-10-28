@@ -1,6 +1,10 @@
 import XCTest
 import AppKit
 
+/// Brazilian Portuguese labels, panel titles and prompts, and the copied configuration's contents
+/// are checked offscreen in `AutomationSettingsTests`; cancellation and disconnect semantics in
+/// `ContextualAutomationAccessTests` and `AutomationTests`. These scenarios keep the real
+/// Settings window, pasteboard, native open panels and menu-driven disconnect, in English.
 final class AutomationUITests: XCTestCase {
     @MainActor
     func testSettingsProvidesLocalizedAgentSetupAndNativeCancellation() throws {
@@ -17,7 +21,7 @@ final class AutomationUITests: XCTestCase {
                 pasteboard.writeObjects(saved)
             }
         }
-        for (language, allow) in [("english", "Allow"), ("portugueseBrazil", "Autorizar")] {
+        for (language, allow) in [("english", "Allow")] {
             let app = XCUIApplication()
             app.launchArguments = ["--ui-fixtures", "-appLanguagePreference", language, "-ApplePersistenceIgnoreState", "YES"]
             app.launch()
@@ -53,8 +57,7 @@ final class AutomationUITests: XCTestCase {
     }
     @MainActor
     func testMCPContextualPermissionCancellationAndDisconnect() throws {
-        for (language, title, prompt) in [("english", "Authorize Folder to Continue", "Authorize and Continue"),
-                                         ("portugueseBrazil", "Autorizar pasta para continuar", "Autorizar e continuar")] {
+        for (language, title, prompt) in [("english", "Authorize Folder to Continue", "Authorize and Continue")] {
             for disconnect in [false, true] {
                 let app = XCUIApplication()
                 app.launchArguments = ["--ui-fixtures", "--ui-contextual-permission", "-appLanguagePreference", language, "-ApplePersistenceIgnoreState", "YES"]

@@ -9,7 +9,8 @@ enum BrowserActionsMenu {
         includesArchiveAction: Bool = false,
         includesShareAction: Bool = false,
         showToast: @escaping @MainActor (String) -> Void,
-        restoreContentFocus: @escaping @MainActor () -> Void = {}
+        restoreContentFocus: @escaping @MainActor () -> Void = {},
+        catalogTags: [FinderTag] = FinderTagCatalog.shared.tags
     ) -> NSMenu {
         let locale = browser.preferences.language.locale
         menu.autoenablesItems = false
@@ -109,7 +110,7 @@ enum BrowserActionsMenu {
             browser.showGetInfo()
         }
         menu.addItem(.separator())
-        FinderTagQuickMenu.append(to: menu, state: browser, items: selected)
+        FinderTagQuickMenu.append(to: menu, state: browser, items: selected, catalogTags: catalogTags)
         addItem("Rename", systemImage: "pencil", isEnabled: browser.canRenameSelection) {
             browser.beginRenamingSelectedItem()
         }

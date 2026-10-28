@@ -7,6 +7,7 @@ struct IconPreviewView: View {
     let state: FileBrowserState
     @Binding var isLoaded: Bool
     @Environment(\.displayScale) private var displayScale
+    @Environment(\.iconPreviewLoadObserver) private var loadObserver
     @State private var model = IconPreviewModel()
 
     private var pixelSize: Int { min(256, Int((size * displayScale).rounded(.up))) }
@@ -33,7 +34,10 @@ struct IconPreviewView: View {
         }
         .frame(width: size, height: size)
         .accessibilityHidden(true)
-        .onChange(of: isShowingPreview, initial: true) { _, value in isLoaded = value }
+        .onChange(of: isShowingPreview, initial: true) { _, value in
+            isLoaded = value
+            loadObserver?(item.id, value)
+        }
         .task(id: request) {
             await model.load(item: item, pixelSize: pixelSize, enabled: enabled) { item, pixels in
                 try await state.iconPreview(for: item, pixelSize: pixels)
@@ -46,4 +50,10 @@ struct IconPreviewView: View {
         let pixels: Int
         let enabled: Bool
     }
+}
+
+extension EnvironmentValues {
+    /// Observes whether each Icons cell shows its content thumbnail rather than the fallback
+    /// icon, so hosted views can await loading without the accessibility tree.
+    @Entry var iconPreviewLoadObserver: (@MainActor (BrowserItemID, Bool) -> Void)?
 }

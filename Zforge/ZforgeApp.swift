@@ -150,12 +150,9 @@ private struct BrowserCommands: Commands {
 
         CommandGroup(after: .newItem) {
             Button(AppLocalization.string("Open", locale: browser?.preferences.language.locale)) {
-                guard let browser else { return }
-                let selected = browser.selectedItems
-                Task { _ = await browser.performContextualAction(.open, items: selected) }
+                browser?.openSelection()
             }
-            .disabled(browser?.selectedItems.isEmpty != false
-                || browser?.archiveOperationInProgress != false)
+            .disabled(browser?.canOpenSelection != true)
 
             Menu(AppLocalization.string("Open with", locale: browser?.preferences.language.locale)) {
                 if let browser {
@@ -170,8 +167,7 @@ private struct BrowserCommands: Commands {
                     }
                 }
             }
-            .disabled(browser?.selectedItems.isEmpty != false
-                || browser?.selectedItems.contains(where: \.isContainer) != false)
+            .disabled(browser?.canOpenSelectionWithApplication != true)
             .modifierKeyAlternate(.option) {
                 Menu(AppLocalization.string("Always open with", locale: browser?.preferences.language.locale)) {
                     if let browser {
@@ -186,8 +182,7 @@ private struct BrowserCommands: Commands {
                         }
                     }
                 }
-                .disabled(browser?.hasLocalSelection != true
-                    || browser?.selectedItems.contains(where: \.isContainer) != false)
+                .disabled(browser?.canAlwaysOpenSelectionWithApplication != true)
             }
             Divider()
             Button("Duplicate") { browser?.duplicateSelectedFiles() }
@@ -342,7 +337,7 @@ private struct KeyboardShortcutHelpCommands: Commands {
     }
 }
 
-private struct ZforgeSettingsView: View {
+struct ZforgeSettingsView: View {
     @State private var preferences = FileBrowserPreferences.shared
     @State private var compressionDraft = CompressionDraft(preferences: .shared)
 
@@ -404,19 +399,7 @@ private struct ZforgeSettingsView: View {
                 }
             }
 
-            Section("Compression") {
-                Picker("Default compression profile", selection: $preferences.defaultCompressionProfileID) {
-                    ForEach(preferences.compressionProfiles) { profile in
-                        Text(profile.name).tag(profile.id)
-                    }
-                }
-                CompressionProfileEditor(draft: compressionDraft, preferences: preferences)
-                    .onChange(of: preferences.defaultCompressionProfileID) { _, id in
-                        if let profile = preferences.compressionProfiles.first(where: { $0.id == id }) {
-                            compressionDraft.load(profile, preferences: preferences)
-                        }
-                    }
-            }
+            CompressionSettingsSection(preferences: preferences, draft: compressionDraft)
 
             Section("Archive Navigation") {
                 VStack(alignment: .leading, spacing: 5) {
@@ -468,5 +451,27 @@ private struct ZforgeSettingsView: View {
               columns.indices.contains(index + offset), index + offset > 0 else { return }
         columns.swapAt(index, index + offset)
         preferences.setGlobalListColumns(columns)
+    }
+}
+
+/// The Settings section that chooses the default compression profile and edits profiles.
+struct CompressionSettingsSection: View {
+    @Bindable var preferences: FileBrowserPreferences
+    let draft: CompressionDraft
+
+    var body: some View {
+        Section("Compression") {
+            Picker("Default compression profile", selection: $preferences.defaultCompressionProfileID) {
+                ForEach(preferences.compressionProfiles) { profile in
+                    Text(profile.name).tag(profile.id)
+                }
+            }
+            CompressionProfileEditor(draft: draft, preferences: preferences)
+                .onChange(of: preferences.defaultCompressionProfileID) { _, id in
+                    if let profile = preferences.compressionProfiles.first(where: { $0.id == id }) {
+                        draft.load(profile, preferences: preferences)
+                    }
+                }
+        }
     }
 }

@@ -1,0 +1,33 @@
+{
+  "configurations": [
+    {
+      "id": "77BF859D-FC23-53E4-9F3D-64CA78446FDF",
+      "name": "Default",
+      "options": {}
+    }
+  ],
+  "defaultOptions": {
+    "targetForVariableExpansion": {
+      "containerPath": "container:Zforge.xcodeproj",
+      "identifier": "55A3998330042A170038B088",
+      "name": "Zforge"
+    }
+  },
+  "testTargets": [
+    {
+      "target": {
+        "containerPath": "container:Zforge.xcodeproj",
+        "identifier": "55A3999A30042A180038B088",
+        "name": "ZforgeUITests"
+      },
+      "selectedTests": [
+        "ZforgeUITests/testBlankAreaUsesMoreMenuInEveryView()",
+        "ZforgeUITests/testFileOpenNavigatesSelectedFolderAndArchiveInColumnsMode()",
+        "ZforgeUITests/testListKeyboardZoomAndArrowNavigationAfterChangingView()",
+        "ZforgeUITests/testLocalDragsOptionCopyAndConfirmAdditionToArchive()",
+        "ZforgeUITests/testViewModeIsPerWindowAndLastClosedWindowRestoresIt()"
+      ]
+    }
+  ],
+  "version": 1
+}

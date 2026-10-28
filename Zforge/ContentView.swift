@@ -9,11 +9,34 @@ enum BrowserToolbarLayout {
         case expanded
     }
 
+    /// The actions a toolbar menu adds above the shared item actions, because
+    /// the stage moved their dedicated toolbar controls into that menu.
+    struct OverflowMenuContents: Equatable {
+        let includesViewSelector: Bool
+        let includesArchiveAction: Bool
+        let includesShareAction: Bool
+    }
+
     static func stage(for windowWidth: CGFloat) -> Stage {
         if windowWidth < 678 { return .unifiedOverflow }
         if windowWidth < 840 { return .compactWithActionsOverflow }
         if windowWidth < 900 { return .compactWithArchiveAction }
         return .expanded
+    }
+}
+
+extension BrowserToolbarLayout.Stage {
+    var overflowMenuContents: BrowserToolbarLayout.OverflowMenuContents {
+        switch self {
+        case .unifiedOverflow:
+            .init(includesViewSelector: true, includesArchiveAction: true, includesShareAction: true)
+        case .compactWithActionsOverflow:
+            .init(includesViewSelector: false, includesArchiveAction: true, includesShareAction: true)
+        case .compactWithArchiveAction:
+            .init(includesViewSelector: false, includesArchiveAction: false, includesShareAction: true)
+        case .expanded:
+            .init(includesViewSelector: false, includesArchiveAction: false, includesShareAction: false)
+        }
     }
 }
 
@@ -64,6 +87,12 @@ struct ContentView: View {
         _browser = State(initialValue: FileBrowserState(initialURL: initialURL, automationAccessLease: automationAccess?.take(),
             archiveSearch: archiveSearch, finderRequest: finderRequest))
         self.tabSourceWindowNumber = tabSourceWindowNumber
+    }
+
+    /// Hosts an existing browser state, so tests can lay out the real window offscreen.
+    init(browser: FileBrowserState) {
+        _browser = State(initialValue: browser)
+        tabSourceWindowNumber = nil
     }
 
     var body: some View {
@@ -328,12 +357,7 @@ struct ContentView: View {
         case .unifiedOverflow:
             ToolbarItem(id: "toolbar-overflow-menu-unified", placement: .primaryAction) {
                 Button {
-                    showToolbarActionsMenu(
-                        includesViewSelector: true,
-                        includesArchiveAction: true,
-                        includesShareAction: true,
-                        tracksOverflowPresentation: true
-                    )
+                    showToolbarActionsMenu(for: .unifiedOverflow, tracksOverflowPresentation: true)
                 } label: {
                     ToolbarOverflowIcon(isActive: toolbarOverflowMenuPresented)
                 }
@@ -353,12 +377,7 @@ struct ContentView: View {
             ToolbarSpacer(.fixed, placement: .primaryAction)
             ToolbarItem(id: "toolbar-overflow-menu-compact-actions", placement: .primaryAction) {
                 Button {
-                    showToolbarActionsMenu(
-                        includesViewSelector: false,
-                        includesArchiveAction: true,
-                        includesShareAction: true,
-                        tracksOverflowPresentation: true
-                    )
+                    showToolbarActionsMenu(for: .compactWithActionsOverflow, tracksOverflowPresentation: true)
                 } label: {
                     ToolbarOverflowIcon(isActive: toolbarOverflowMenuPresented)
                 }
@@ -391,12 +410,7 @@ struct ContentView: View {
             ToolbarSpacer(.fixed, placement: .primaryAction)
             ToolbarItem(id: "toolbar-overflow-menu-compact-archive", placement: .primaryAction) {
                 Button {
-                    showToolbarActionsMenu(
-                        includesViewSelector: false,
-                        includesArchiveAction: false,
-                        includesShareAction: true,
-                        tracksOverflowPresentation: true
-                    )
+                    showToolbarActionsMenu(for: .compactWithArchiveAction, tracksOverflowPresentation: true)
                 } label: {
                     ToolbarOverflowIcon(isActive: toolbarOverflowMenuPresented)
                 }
@@ -448,11 +462,7 @@ struct ContentView: View {
                 .accessibilityIdentifier("edit-tags-action")
 
                 Button {
-                    showToolbarActionsMenu(
-                        includesViewSelector: false,
-                        includesArchiveAction: false,
-                        includesShareAction: false
-                    )
+                    showToolbarActionsMenu(for: .expanded)
                 } label: {
                     ToolbarActionIcon(kind: .more)
                 }
@@ -480,11 +490,10 @@ struct ContentView: View {
     }
 
     private func showToolbarActionsMenu(
-        includesViewSelector: Bool,
-        includesArchiveAction: Bool,
-        includesShareAction: Bool,
+        for stage: BrowserToolbarLayout.Stage,
         tracksOverflowPresentation: Bool = false
     ) {
+        let contents = stage.overflowMenuContents
         guard let event = NSApp.currentEvent,
               let contentView = event.window?.contentView else { return }
 
@@ -496,9 +505,9 @@ struct ContentView: View {
                     onClose: { toolbarOverflowMenuPresented = false }
                 )
                 : NSMenu(),
-            includesViewSelector: includesViewSelector,
-            includesArchiveAction: includesArchiveAction,
-            includesShareAction: includesShareAction,
+            includesViewSelector: contents.includesViewSelector,
+            includesArchiveAction: contents.includesArchiveAction,
+            includesShareAction: contents.includesShareAction,
             showToast: showToast,
             restoreContentFocus: restoreContentFocus
         )

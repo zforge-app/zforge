@@ -213,12 +213,7 @@ final class ArchiveDragSourceView: NSView, NSDraggingSource {
         switch event.type {
         case .leftMouseDown:
             didDrag = false; origin = nil
-            guard !event.modifierFlags.contains(.control),
-                  bounds.intersection(visibleRect).contains(convert(event.locationInWindow, from: nil)) else { return false }
-            let local = convert(event.locationInWindow, from: nil)
-            if state.viewMode == .list, let item,
-               let entry = state.flattenedList().first(where: { $0.id == item.id }),
-               local.x < CGFloat(entry.depth * 20 + 24) * state.preferences.scale + 8 { return false }
+            guard !event.modifierFlags.contains(.control), startsDrag(at: event.locationInWindow) else { return false }
             origin = event.locationInWindow
         case .leftMouseDragged:
             guard !didDrag, let origin,
@@ -229,6 +224,19 @@ final class ArchiveDragSourceView: NSView, NSDraggingSource {
         default: break
         }
         return false
+    }
+    /// Whether a press at this window point picks up this item. The monitor sees every
+    /// press in the window, so the point must be on the visible row and not on a
+    /// pane drawn above it, such as List's preview over the rows' trailing part.
+    func startsDrag(at locationInWindow: NSPoint) -> Bool {
+        guard let state else { return false }
+        let local = convert(locationInWindow, from: nil)
+        guard bounds.intersection(visibleRect).contains(local),
+              !BrowserForegroundArea.contains(locationInWindow, in: window) else { return false }
+        if state.viewMode == .list, let item,
+           let entry = state.flattenedList().first(where: { $0.id == item.id }),
+           local.x < CGFloat(entry.depth * 20 + 24) * state.preferences.scale + 8 { return false }
+        return true
     }
     private func begin(_ event: NSEvent) -> Bool {
         guard let state, let item, !state.archiveOperationInProgress else { return false }
@@ -361,12 +369,17 @@ final class ArchiveDropDestinationView: NSView {
         return ArchiveDragTransfer.active[token]
     }
     private func operation(_ sender: NSDraggingInfo) -> NSDragOperation {
-        guard directory != nil || address != nil, let transfer = transfer(from: sender.draggingPasteboard) else { return [] }
+        operation(for: transfer(from: sender.draggingPasteboard), option: NSEvent.modifierFlags.contains(.option),
+                  sourceMask: sender.draggingSourceOperationMask)
+    }
+    /// The drop decision for a virtual drag, separated from the live dragging session.
+    func operation(for transfer: ArchiveDragTransfer?, option: Bool, sourceMask: NSDragOperation) -> NSDragOperation {
+        guard directory != nil || address != nil, let transfer else { return [] }
         if let address {
             guard transfer.state.canReorganizeArchiveItems(transfer.items, to: address) else { return [] }
         }
-        let operation = ArchiveDragPolicy.operation(option: NSEvent.modifierFlags.contains(.option), insideArchive: address != nil)
-        guard sender.draggingSourceOperationMask.contains(operation),
+        let operation = ArchiveDragPolicy.operation(option: option, insideArchive: address != nil)
+        guard sourceMask.contains(operation),
               operation != .move || transfer.state.canRemoveArchiveItems(transfer.items) else { return [] }
         return operation
     }
@@ -383,13 +396,16 @@ final class ArchiveDropDestinationView: NSView {
     override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
         let target = destination(at: sender.draggingLocation)
         targetedView?.onTargetedChange(false); targetedView = nil
-        let operation = target.operation(sender)
+        return target.perform(pasteboard: sender.draggingPasteboard, operation: target.operation(sender))
+    }
+    /// Starts the transfer for the operation chosen by `operation(for:option:sourceMask:)`.
+    func perform(pasteboard: NSPasteboard, operation: NSDragOperation) -> Bool {
         guard !operation.isEmpty else { return false }
-        if let address = target.address, let transfer = transfer(from: sender.draggingPasteboard) {
+        if let address, let transfer = transfer(from: pasteboard) {
             transfer.drop(to: address, moving: operation == .move); return true
         }
-        guard let directory = target.directory else { return false }
-        return accept(pasteboard: sender.draggingPasteboard, directory: directory, operation: operation)
+        guard let directory else { return false }
+        return accept(pasteboard: pasteboard, directory: directory, operation: operation)
     }
     func accept(pasteboard: NSPasteboard, directory: URL, operation: NSDragOperation) -> Bool {
         guard operation == .copy || operation == .move,

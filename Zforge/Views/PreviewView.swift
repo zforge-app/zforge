@@ -170,6 +170,8 @@ final class QuickLookThumbnailHostView: NSImageView {
     private var requestedSize: CGSize = .zero
     /// Reports whether the view shows a content thumbnail rather than the placeholder icon.
     var onContentAvailabilityChange: ((Bool) -> Void)?
+    /// Whether the current request has delivered a content thumbnail rather than an icon.
+    private(set) var showsContentThumbnail = false
 
     override var intrinsicContentSize: NSSize {
         NSSize(width: NSView.noIntrinsicMetric, height: NSView.noIntrinsicMetric)
@@ -216,6 +218,7 @@ final class QuickLookThumbnailHostView: NSImageView {
                 if let thumbnail {
                     self.image = NSImage(cgImage: thumbnail, size: .zero)
                 }
+                self.showsContentThumbnail = showsContent
                 self.onContentAvailabilityChange?(showsContent)
             }
         }
@@ -229,6 +232,7 @@ final class QuickLookThumbnailHostView: NSImageView {
         requestedURL = nil
         requestedSize = .zero
         image = nil
+        showsContentThumbnail = false
     }
 }
 

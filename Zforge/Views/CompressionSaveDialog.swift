@@ -27,7 +27,7 @@ final class CompressionSaveDialogSession {
     private weak var parentWindow: NSWindow?
     private var continuation: CheckedContinuation<CompressionSaveRequest?, Never>?
 
-    private init(
+    init(
         draft: CompressionDraft,
         preferences: FileBrowserPreferences,
         name: String,
@@ -55,6 +55,18 @@ final class CompressionSaveDialogSession {
     }
 
     private func show() {
+        let panel = makePanel()
+        parentWindow = NSApp.keyWindow ?? NSApp.mainWindow
+        if let parentWindow {
+            parentWindow.beginSheet(panel)
+        } else {
+            panel.center()
+            panel.makeKeyAndOrderFront(nil)
+        }
+    }
+
+    /// Builds the panel sized to its content without presenting it.
+    func makePanel() -> NSPanel {
         let panel = NSPanel(
             contentRect: NSRect(x: 0, y: 0, width: CompressionSaveDialogLayout.width, height: 480),
             styleMask: [.titled], backing: .buffered, defer: false
@@ -76,13 +88,7 @@ final class CompressionSaveDialogSession {
         self.host = host
         panel.contentView = host
         panel.setContentSize(NSSize(width: CompressionSaveDialogLayout.width, height: host.fittingSize.height))
-        parentWindow = NSApp.keyWindow ?? NSApp.mainWindow
-        if let parentWindow {
-            parentWindow.beginSheet(panel)
-        } else {
-            panel.center()
-            panel.makeKeyAndOrderFront(nil)
-        }
+        return panel
     }
 
     private func scheduleHeightUpdate() {

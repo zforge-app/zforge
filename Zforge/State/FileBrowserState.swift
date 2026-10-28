@@ -651,6 +651,24 @@ final class FileBrowserState {
     var hasLocalSelection: Bool {
         !selectedItems.isEmpty && selectedItems.allSatisfy { $0.localURL != nil }
     }
+    /// File ▸ Open availability.
+    var canOpenSelection: Bool { !selectedItems.isEmpty && !archiveOperationInProgress }
+    /// File ▸ Open with availability; containers are opened by Zforge itself.
+    var canOpenSelectionWithApplication: Bool {
+        !selectedItems.isEmpty && !selectedItems.contains(where: \.isContainer)
+    }
+    /// File ▸ Always open with availability; the association is saved per local file.
+    var canAlwaysOpenSelectionWithApplication: Bool {
+        hasLocalSelection && !selectedItems.contains(where: \.isContainer)
+    }
+
+    /// File ▸ Open: captures the complete selection before running the shared
+    /// contextual Open asynchronously.
+    @discardableResult
+    func openSelection() -> Task<Void, Never> {
+        let selected = selectedItems
+        return Task { _ = await performContextualAction(.open, items: selected) }
+    }
     var tagEditingRequest: TagEditingRequest?
     var canEditTags: Bool { hasLocalSelection && !archiveOperationInProgress }
 

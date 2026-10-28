@@ -1,22 +1,16 @@
 import XCTest
 
 final class LocalizationUITests: XCTestCase {
+    // Two consecutive live changes through the real Settings picker and menu bar.
+    // Every one of the 21 languages (File Open title and picker names) and the
+    // empty selection after language/mode changes in all four modes are covered
+    // offscreen by `FileMenuLocalizationTests` and `FileMenuCommandTests`.
     private let languages: [(name: String, preference: String, open: String)] = [
-        ("English", "english", "Open"), ("Português (Brasil)", "portugueseBrazil", "Abrir"),
-        ("简体中文", "chineseSimplified", "打开"), ("繁體中文", "chineseTraditional", "打開"),
-        ("日本語", "japanese", "開く"), ("Deutsch", "german", "Öffnen"),
-        ("Français", "french", "Ouvrir"), ("Español", "spanish", "Abrir"),
-        ("한국어", "korean", "열기"), ("Italiano", "italian", "Apri"),
-        ("Русский", "russian", "Открыть"), ("Polski", "polish", "Otwórz"),
-        ("Українська", "ukrainian", "Відкрити"), ("Türkçe", "turkish", "Aç"),
-        ("ไทย", "thai", "เปิด"), ("Dansk", "danish", "Åbn"),
-        ("Čeština", "czech", "Otevřít"), ("Nederlands", "dutch", "Open"),
-        ("Svenska", "swedish", "Öppna"), ("हिन्दी", "hindi", "खोलें"),
-        ("বাংলা", "bengali", "খুলুন")
+        ("Português (Brasil)", "portugueseBrazil", "Abrir"), ("বাংলা", "bengali", "খুলুন")
     ]
 
     @MainActor
-    func testLanguageSelectionUpdatesOpenMenusInAllBrowserModesAndPersists() throws {
+    func testLanguageSelectionUpdatesOpenMenuAndPersists() throws {
         continueAfterFailure = false
         let app = XCUIApplication()
         let suite = "ZforgeLocalizationUI-\(UUID().uuidString)"
@@ -28,7 +22,7 @@ final class LocalizationUITests: XCTestCase {
         app.launch()
         app.activate()
         defer { app.terminate() }
-        XCTAssertTrue(app.windows["browser-main-window"].waitForExistence(timeout: 5))
+        waitForBrowserWindow(app)
 
         for language in languages {
             app.typeKey(",", modifierFlags: .command)
@@ -46,7 +40,7 @@ final class LocalizationUITests: XCTestCase {
             settings.buttons[XCUIIdentifierCloseWindow].click()
             XCTAssertTrue(picker.waitForNonExistence(timeout: 5))
 
-            for shortcut in ["1", "2", "3", "4"] {
+            for shortcut in ["2"] {
                 app.typeKey(shortcut, modifierFlags: .command)
                 app.menuBars.menuBarItems["File"].click()
                 let menu = app.menuBars.menuBarItems["File"].menus.firstMatch
@@ -60,8 +54,21 @@ final class LocalizationUITests: XCTestCase {
         app.terminate()
         app.launch()
         app.activate()
+        // File > Open takes its language from the focused browser window.
+        waitForBrowserWindow(app)
         app.menuBars.menuBarItems["File"].click()
         XCTAssertTrue(app.menuItems["খুলুন"].firstMatch.waitForExistence(timeout: 5), "The final language must survive relaunch")
         app.typeKey(.escape, modifierFlags: [])
+    }
+
+    /// Browser windows are identified as `browser-AppWindow-N`. Like the other
+    /// fixture launches, open one when the launch restores none.
+    @MainActor
+    private func waitForBrowserWindow(_ app: XCUIApplication, file: StaticString = #filePath, line: UInt = #line) {
+        let browserWindow = app.windows.matching(NSPredicate(format: "identifier BEGINSWITH %@", "browser-")).firstMatch
+        if !browserWindow.waitForExistence(timeout: 3) {
+            app.typeKey("n", modifierFlags: .command)
+        }
+        XCTAssertTrue(browserWindow.waitForExistence(timeout: 5), app.debugDescription, file: file, line: line)
     }
 }

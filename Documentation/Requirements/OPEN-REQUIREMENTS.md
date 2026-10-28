@@ -186,3 +186,9 @@ Delivery verification: signed Release build **24** is installed and passes stric
 ## Apple integration merged into main — 2026-10-13
 
 At the user's request, `codex/apple-intelligence` is merged into `main`, superseding the 2026-10-12 MCP-only delivery split. `main` again contains the native shortcut actions, archive-entity discovery/indexing, onscreen context and the macOS 27 Search Archives action with a single launch window (build 26). The MCP-only records above are historical. The code tree equals the branch head, whose full unit regression passed 362/362. Open acceptance gates are unchanged: spoken Siri, selected-context annotations and saved String-target compatibility invocation remain unverified; see [the issue](SIRI-DISCOVERY-ISSUE.md).
+
+## Test layers and selection (RNF-Q08, ZF-45) — 2026-10-27
+
+Implemented: the test plans, the impact map and selection script, the snapshot testing layer, and the migration from 48 to 22 XCUITest tests. Pending verification:
+- **Kept UI tests:** all 22 have passed (2026-10-27), but not in one uninterrupted `UI-Full` run; see REGRESSION-COVERAGE. A clean full run on an idle machine is pending.
+- **Performance test:** a rerun of `ArchiveDiscoveryPerformanceTests` on an idle machine.

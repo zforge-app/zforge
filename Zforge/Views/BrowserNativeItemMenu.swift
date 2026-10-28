@@ -46,8 +46,28 @@ private struct BrowserNativeItemMenu: NSViewRepresentable {
     static func dismantleNSView(_ view: BrowserItemMenuHost, coordinator: ()) { view.stopMonitoring() }
 }
 
+/// Panes drawn above browser rows (previews, resize handles), marked with
+/// `browserContextMenuExcludedArea`. Rows watch the whole window's events, so
+/// they must not treat a press on one of these panes as their own.
 @MainActor
-private final class BrowserItemMenuHost: NSView {
+enum BrowserForegroundArea {
+    static func contains(_ locationInWindow: NSPoint, in window: NSWindow?) -> Bool {
+        guard let root = window?.contentView else { return false }
+        return contains(locationInWindow, in: root)
+    }
+
+    private static func contains(_ point: NSPoint, in view: NSView) -> Bool {
+        if let host = view as? BrowserItemMenuHost, host.excludesBackgroundMenu,
+           !host.isHiddenOrHasHiddenAncestor,
+           host.convert(host.visibleRect.intersection(host.bounds), to: nil).contains(point) {
+            return true
+        }
+        return view.subviews.contains { contains(point, in: $0) }
+    }
+}
+
+@MainActor
+final class BrowserItemMenuHost: NSView {
     var state: FileBrowserState
     var item: BrowserItem?
     var excludesBackgroundMenu: Bool
@@ -69,12 +89,9 @@ private final class BrowserItemMenuHost: NSView {
         guard window != nil, !excludesBackgroundMenu else { return }
         eventMonitor = NSEvent.addLocalMonitorForEvents(matching: [.rightMouseDown, .leftMouseDown]) { [weak self] event in
             let consumed = MainActor.assumeIsolated {
-                guard let self, !self.isHiddenOrHasHiddenAncestor, event.window === self.window,
+                guard let self, event.window === self.window,
                       event.type == .rightMouseDown || event.modifierFlags.contains(.control),
-                      self.convert(self.visibleRect.intersection(self.bounds), to: nil).contains(event.locationInWindow) else { return false }
-                // Item menus take priority regardless of local-monitor registration order.
-                if self.item == nil, let root = self.window?.contentView,
-                   self.containsForegroundMenuArea(at: event.locationInWindow, in: root) { return false }
+                      self.presentsMenu(at: event.locationInWindow) else { return false }
                 let menu = self.item.map { BrowserNativeContextMenu.make(state: self.state, item: $0) }
                     ?? BrowserActionsMenu.make(state: self.state, showToast: { [state = self.state] in
                         state.contextualFeedbackMessage = $0
@@ -84,6 +101,18 @@ private final class BrowserItemMenuHost: NSView {
             }
             return consumed ? nil : event
         }
+    }
+
+    /// Whether a secondary click at this window point opens this host's menu: the point
+    /// is on its visible area and not on a pane drawn above it.
+    func presentsMenu(at locationInWindow: NSPoint) -> Bool {
+        guard !excludesBackgroundMenu, !isHiddenOrHasHiddenAncestor,
+              convert(visibleRect.intersection(bounds), to: nil).contains(locationInWindow),
+              !BrowserForegroundArea.contains(locationInWindow, in: window) else { return false }
+        // Item menus take priority regardless of local-monitor registration order.
+        if item == nil, let root = window?.contentView,
+           containsForegroundMenuArea(at: locationInWindow, in: root) { return false }
+        return true
     }
 
     private func containsForegroundMenuArea(at point: NSPoint, in view: NSView) -> Bool {
@@ -104,7 +133,8 @@ private final class BrowserItemMenuHost: NSView {
 
 @MainActor
 enum BrowserNativeContextMenu {
-    static func make(state: FileBrowserState, item: BrowserItem) -> NSMenu {
+    static func make(state: FileBrowserState, item: BrowserItem,
+                     catalogTags: [FinderTag] = FinderTagCatalog.shared.tags) -> NSMenu {
         let items = state.selection.contains(item.id) ? state.selectedItems : [item]
         let menu = NSMenu(title: item.name)
         menu.autoenablesItems = false
@@ -165,7 +195,7 @@ enum BrowserNativeContextMenu {
         add("Quick Look", "eye") { selectTargets(); state.openQuickLook() }
         add("Slideshow", "play.rectangle", alternate: true) { selectTargets(); state.openQuickLook(slideshow: true) }
         menu.addItem(.separator())
-        FinderTagQuickMenu.append(to: menu, state: state, items: items)
+        FinderTagQuickMenu.append(to: menu, state: state, items: items, catalogTags: catalogTags)
         if item.localURL != nil {
             menu.addItem(.separator())
             add("Rename", "pencil") { state.select(item); state.beginRenaming(item) }

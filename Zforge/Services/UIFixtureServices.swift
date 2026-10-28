@@ -96,11 +96,17 @@ enum IconPreviewUIFixture {
 
 @MainActor
 final class UIFixtureRecentItemsService: RecentItemsServing {
+    private let includesArchiveSessionCopies: Bool
+
+    init(includesArchiveSessionCopies: Bool = ProcessInfo.processInfo.arguments.contains("--ui-recents-duplicates")) {
+        self.includesArchiveSessionCopies = includesArchiveSessionCopies
+    }
+
     func recentItemURLs() async -> [URL] {
         let originals = ["Fixture Folder", "Welcome.txt", "Sample.zip", "Another.txt"].map {
             URL(fileURLWithPath: "/ZforgeFixtures/\($0)")
         }
-        guard ProcessInfo.processInfo.arguments.contains("--ui-recents-duplicates") else {
+        guard includesArchiveSessionCopies else {
             return originals
         }
         let sessionsRoot = ZforgeTemporaryStorage.archiveSessionsRoot()
@@ -124,15 +130,20 @@ final class UIFixtureTaggedItemsService: TaggedItemsServing {
 }
 
 actor UIFixtureFileSystemService: FileSystemServing {
-    private let itemsDelay: Duration
+    /// Holds a delayed read; unit tests pass a gate they release explicitly.
+    private let itemsGate: (@Sendable () async throws -> Void)?
 
     init(itemsDelay: Duration = .zero) {
-        self.itemsDelay = itemsDelay
+        self.init(itemsGate: itemsDelay > .zero ? { @Sendable in try await Task.sleep(for: itemsDelay) } : nil)
+    }
+
+    init(itemsGate: (@Sendable () async throws -> Void)?) {
+        self.itemsGate = itemsGate
     }
 
     func items(in directory: URL, showHidden: Bool) async throws -> [BrowserItem] {
-        if itemsDelay > .zero, directory.lastPathComponent == "Fixture Folder" {
-            try await Task.sleep(for: itemsDelay)
+        if let itemsGate, directory.lastPathComponent == "Fixture Folder" {
+            try await itemsGate()
             return [makeItem(name: "FolderChild.txt", url: directory.appendingPathComponent("FolderChild.txt"))]
         }
         let items = [
@@ -186,10 +197,15 @@ actor UIFixtureAccessGrantStore: AccessGrantStoring {
 
 actor UIFixtureArchiveEngine: ArchiveServing {
     private let sessionID = UUID()
-    private let itemsDelay: Duration
+    /// Holds a delayed read; unit tests pass a gate they release explicitly.
+    private let itemsGate: (@Sendable () async throws -> Void)?
 
     init(itemsDelay: Duration = .zero) {
-        self.itemsDelay = itemsDelay
+        self.init(itemsGate: itemsDelay > .zero ? { @Sendable in try await Task.sleep(for: itemsDelay) } : nil)
+    }
+
+    init(itemsGate: (@Sendable () async throws -> Void)?) {
+        self.itemsGate = itemsGate
     }
 
     func openArchive(
@@ -209,7 +225,7 @@ actor UIFixtureArchiveEngine: ArchiveServing {
     }
 
     func items(at address: ArchiveAddress) async throws -> [BrowserItem] {
-        if itemsDelay > .zero { try await Task.sleep(for: itemsDelay) }
+        if let itemsGate { try await itemsGate() }
         let childAddress = ArchiveAddress(
             sessionID: address.sessionID,
             archiveID: address.archiveID,

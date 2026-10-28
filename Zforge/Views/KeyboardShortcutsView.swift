@@ -4,32 +4,13 @@ struct KeyboardShortcutsView: View {
     @State private var preferences = FileBrowserPreferences.shared
     @State private var searchText = ""
 
+    init(preferences: FileBrowserPreferences = .shared, searchText: String = "") {
+        _preferences = State(initialValue: preferences)
+        _searchText = State(initialValue: searchText)
+    }
+
     private var filteredSections: [KeyboardShortcutSection] {
-        let query = normalized(searchText.trimmingCharacters(in: .whitespacesAndNewlines))
-        guard !query.isEmpty else { return KeyboardShortcutCatalog.sections }
-
-        return KeyboardShortcutCatalog.sections.compactMap { section in
-            let matchingItems = section.items.filter { item in
-                let localizedAction = AppLocalization.string(
-                    String.LocalizationValue(item.action),
-                    locale: preferences.language.locale
-                )
-                let localizedSection = AppLocalization.string(
-                    String.LocalizationValue(section.title),
-                    locale: preferences.language.locale
-                )
-                let shortcutAliases = item.input
-                    .replacingOccurrences(of: "⌃", with: " control ctrl ")
-                    .replacingOccurrences(of: "⌥", with: " option alt ")
-                    .replacingOccurrences(of: "⇧", with: " shift ")
-                    .replacingOccurrences(of: "⌘", with: " command cmd ")
-
-                return [localizedAction, localizedSection, item.input, shortcutAliases]
-                    .contains { normalized($0).contains(query) }
-            }
-            guard !matchingItems.isEmpty else { return nil }
-            return section.withItems(matchingItems)
-        }
+        KeyboardShortcutCatalog.sections(matching: searchText, locale: preferences.language.locale)
     }
 
     var body: some View {
@@ -55,13 +36,6 @@ struct KeyboardShortcutsView: View {
         .frame(minWidth: 620, minHeight: 520)
         .searchable(text: $searchText, placement: .toolbar, prompt: "Search Shortcuts")
         .environment(\.locale, preferences.language.locale)
-    }
-
-    private func normalized(_ value: String) -> String {
-        value.folding(
-            options: [.caseInsensitive, .diacriticInsensitive, .widthInsensitive],
-            locale: preferences.language.locale
-        )
     }
 
     private var header: some View {
@@ -169,7 +143,7 @@ private struct KeyboardShortcutKeycap: View {
     }
 }
 
-private struct KeyboardShortcutSection: Identifiable {
+struct KeyboardShortcutSection: Identifiable {
     let id: String
     let title: String
     let systemImage: String
@@ -180,13 +154,13 @@ private struct KeyboardShortcutSection: Identifiable {
     }
 }
 
-private struct KeyboardShortcutItem: Identifiable {
+struct KeyboardShortcutItem: Identifiable {
     let id: String
     let action: String
     let input: String
 }
 
-private enum KeyboardShortcutCatalog {
+enum KeyboardShortcutCatalog {
     static let sections: [KeyboardShortcutSection] = [
         section("files", "Files and Items", "doc.on.doc", [
             ("Undo", "⌘Z"),
@@ -251,6 +225,40 @@ private enum KeyboardShortcutCatalog {
             ("Show the folders that contain the current folder", "⌘ + click window title")
         ])
     ]
+
+    /// Sections whose action, section title, or shortcut (including spelled-out
+    /// modifier names) match the query in the app language, ignoring case,
+    /// diacritics, and width. An empty query returns every section.
+    static func sections(matching searchText: String, locale: Locale) -> [KeyboardShortcutSection] {
+        func normalized(_ value: String) -> String {
+            value.folding(options: [.caseInsensitive, .diacriticInsensitive, .widthInsensitive], locale: locale)
+        }
+        let query = normalized(searchText.trimmingCharacters(in: .whitespacesAndNewlines))
+        guard !query.isEmpty else { return sections }
+
+        return sections.compactMap { section in
+            let matchingItems = section.items.filter { item in
+                let localizedAction = AppLocalization.string(
+                    String.LocalizationValue(item.action),
+                    locale: locale
+                )
+                let localizedSection = AppLocalization.string(
+                    String.LocalizationValue(section.title),
+                    locale: locale
+                )
+                let shortcutAliases = item.input
+                    .replacingOccurrences(of: "⌃", with: " control ctrl ")
+                    .replacingOccurrences(of: "⌥", with: " option alt ")
+                    .replacingOccurrences(of: "⇧", with: " shift ")
+                    .replacingOccurrences(of: "⌘", with: " command cmd ")
+
+                return [localizedAction, localizedSection, item.input, shortcutAliases]
+                    .contains { normalized($0).contains(query) }
+            }
+            guard !matchingItems.isEmpty else { return nil }
+            return section.withItems(matchingItems)
+        }
+    }
 
     private static func section(
         _ id: String,

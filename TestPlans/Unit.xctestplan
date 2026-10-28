@@ -1,0 +1,26 @@
+{
+  "configurations": [
+    {
+      "id": "5B1AD688-53F7-5DCD-97A2-75CCA8EF2A72",
+      "name": "Default",
+      "options": {}
+    }
+  ],
+  "defaultOptions": {
+    "targetForVariableExpansion": {
+      "containerPath": "container:Zforge.xcodeproj",
+      "identifier": "55A3998330042A170038B088",
+      "name": "Zforge"
+    }
+  },
+  "testTargets": [
+    {
+      "target": {
+        "containerPath": "container:Zforge.xcodeproj",
+        "identifier": "55A3999030042A180038B088",
+        "name": "ZforgeTests"
+      }
+    }
+  ],
+  "version": 1
+}

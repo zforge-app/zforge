@@ -553,3 +553,24 @@ The user reported that the Finder submenu's symbols were black on the dark menu,
 **Incorrect report, 2026-10-27:** after switching to template bitmaps, the agent reported the Finder symbols as light in dark mode from a visual look at a small capture. The user, after restarting, still saw them black; measuring that capture showed the symbols at luminance 0.33 against 0.91 for the titles, so they had never been light. The template-flag unit assertion encoded the same wrong assumption and was replaced.
 
 Correction: the extension paints each symbol in the menu text color of the current appearance (resolved `labelColor`, logged as white in dark mode), as one Retina bitmap sized before drawing, and gives Open a blank image. Evidence: `FinderIntegrationTests.finderCopyFollowsTheme` checks, for every symbol in dark and light appearances, that every opaque pixel is light or dark respectively and that the symbol fills the bitmap (the fill check failed for all eight symbols with the late sizing). The real-Finder UI test now measures each submenu item's symbol column on screen against the menu background: without the tint it failed (maximum luminance 0.45 on the dark menu, `/tmp/zf44-ui-before.xcresult`) and with it it passes, for the archive submenu and for the plain-file submenu with the badged symbols (`/tmp/zf44-ui-after.xcresult`). Limit: light mode is checked by the unit test only, and its highlighted row keeps a dark symbol (see CURRENT-STATE).
+
+### D-56 — Toolbar view selector threshold: documented 780 pt, implemented 900 pt (resolved, 2026-10-27)
+
+CURRENT-STATE (toolbar paragraph) says the view selector shows four segments from 780 pt. The code (`BrowserToolbarLayout.stage(for:)` in `ContentView.swift`) shows them only in the `expanded` stage, from 900 pt. Below 900 pt it uses the compact selector. Since `d253d92` the tests (`ToolbarLayoutTests`, and `BrowserWindowLayoutTests.toolbarStages` from ZF-45) characterize 900 pt. Found during the ZF-45 migration.
+
+Resolution: the user chose 900 pt. The code and tests are unchanged; CURRENT-STATE, PRODUCT-REQUIREMENTS and TASKS now state 900 pt.
+
+### D-57 — Three UI tests could not pass and one depended on the machine's saved settings (resolved by ZF-45 migration, 2026-10-27)
+
+- **Fixture Folder at launch:** `testExample`, `testViewCompactsBeforeArchiveActionIsHidden` and `testSidebarCannotConsumeLast360Points` waited for "Fixture Folder" at launch. Fixture launches open Recents, which lists files only (see D-46), so they failed before reaching their checks. Their contracts now run offscreen and pass:
+  - `BrowserWindowLayoutTests.fixtureLaunchListing` checks the launch listing.
+  - `toolbarStages` and `overflowContents` check the 860 pt toolbar.
+  - `sidebarLeavesMinimumContentWidth` checks the 360 pt content minimum. It is stricter than the old test: exactly 540 pt instead of at most 544 pt.
+- **Saved default profile:** `testCustomCompressionShowsProfileOptions` passed only when the machine's saved default compression profile was 7z. A fresh profile is ZIP, which has no "Dictionary size". `CompressionPanelLayoutTests.customCompressionPanel` starts from ZIP and switches to 7z through the pop-up's own action.
+- **Found on the first run of the kept tests (2026-10-27):** `testLanguageSelectionUpdatesOpenMenuAndPersists` waited for a removed window identifier (`browser-main-window`), and `testArchivePromisesPublishIntoFinderBeforeRemovingOriginal` moved Finder by a toolbar point that depends on the Finder sidebar width. Both were corrected in their synchronization only; see REGRESSION-COVERAGE, ZF-45 results.
+
+### D-58 — List rows could be dragged and opened through the preview (corrected 2026-10-27)
+
+The user recorded a narrow List window with the preview shown: dragging on the preview's text picked up the file whose row lay beneath it. When List scrolls horizontally its rows run beneath the preview, which is drawn above them. Each row's drag source and item menu watch the whole window's mouse events and only checked that the press fell on the row's own visible area, which the preview does not clip. A secondary click on the preview opened that row's menu for the same reason.
+
+Correction: rows ignore presses on panes marked with `browserContextMenuExcludedArea` (List and Gallery previews, the Columns preview and resize handles), shared as `BrowserForegroundArea` by `ArchiveDragSourceView.startsDrag(at:)` and `BrowserItemMenuHost.presentsMenu(at:)`. Evidence: `BrowserPreviewOcclusionTests.listPreviewHidesRowsBeneathIt` lays out the real window offscreen at 760 pt, where every row reaches under the preview. It failed with the check disabled (drag and menu for all four rows) and passes with it.
