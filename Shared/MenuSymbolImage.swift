@@ -4,8 +4,14 @@ import AppKit
 /// label color in light and dark mode, white on the highlighted row.
 @MainActor
 enum MenuSymbolImage {
-    static func image(for symbol: MenuSymbol, accessibilityDescription: String? = nil) -> NSImage? {
-        guard let base = NSImage(systemSymbolName: symbol.name, accessibilityDescription: accessibilityDescription) else { return nil }
+    /// `pointSize` sizes the body, for example to match a toolbar's symbols; nil keeps
+    /// the default menu size.
+    static func image(for symbol: MenuSymbol, accessibilityDescription: String? = nil, pointSize: CGFloat? = nil) -> NSImage? {
+        guard var base = NSImage(systemSymbolName: symbol.name, accessibilityDescription: accessibilityDescription) else { return nil }
+        if let pointSize {
+            guard let sized = base.withSymbolConfiguration(.init(pointSize: pointSize, weight: .regular)) else { return nil }
+            base = sized
+        }
         guard let badgeName = symbol.badge else { return base }
         // The body keeps the default symbol size, like the unbadged symbols beside it.
         let body = base

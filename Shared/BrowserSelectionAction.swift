@@ -18,11 +18,11 @@ nonisolated enum BrowserSelectionAction: String, CaseIterable, Codable, Hashable
     var menuSymbol: MenuSymbol? {
         switch self {
         case .open: MenuSymbol("arrow.up.forward.app")
-        case .compress: MenuSymbol("doc.zipper")
-        case .compressCustom: MenuSymbol("doc.zipper", badge: "gearshape.fill")
-        case .addToArchive: MenuSymbol("doc.zipper", badge: "plus.circle.fill")
+        case .compress: .compress
+        case .compressCustom: MenuSymbol("archivebox", badge: "gearshape.fill")
+        case .addToArchive: MenuSymbol("archivebox", badge: "plus.circle.fill")
         case .removeFromArchive: MenuSymbol("trash")
-        case .extractHere: MenuSymbol("square.and.arrow.down")
+        case .extractHere: .extract
         case .extractNamed: MenuSymbol("folder.badge.plus")
         case .extractChoose: MenuSymbol("folder")
         case .validate: MenuSymbol("checkmark.circle")
@@ -38,6 +38,10 @@ nonisolated struct MenuSymbol: Equatable, Sendable {
         self.name = name
         self.badge = badge
     }
+
+    /// Compress and extract, shared by the menus and the toolbar's archive action.
+    static let compress = MenuSymbol("archivebox", badge: "arrow.down.circle.fill")
+    static let extract = MenuSymbol("archivebox", badge: "arrow.up.circle.fill")
 }
 
 nonisolated enum BrowserSelectionActionPolicy {

@@ -399,7 +399,7 @@ struct ContentView: View {
                 Button {
                     performArchiveToolbarAction()
                 } label: {
-                    ArchiveOperationIcon(isExtracting: browser.archiveToolbarAction.usesExtractionIcon)
+                    ArchiveOperationIcon(symbol: browser.archiveToolbarAction.symbol)
                 }
                 .disabled(!browser.archiveToolbarAction.isEnabled)
                 .focusable(false)
@@ -432,7 +432,7 @@ struct ContentView: View {
                 Button {
                     performArchiveToolbarAction()
                 } label: {
-                    ArchiveOperationIcon(isExtracting: browser.archiveToolbarAction.usesExtractionIcon)
+                    ArchiveOperationIcon(symbol: browser.archiveToolbarAction.symbol)
                 }
                 .disabled(!browser.archiveToolbarAction.isEnabled)
                 .focusable(false)
@@ -795,18 +795,20 @@ nonisolated final class ClosureMenuItem: NSMenuItem {
     }
 }
 
-private struct ArchiveOperationIcon: View {
-    let isExtracting: Bool
+/// The toolbar's archive action: the menus' badged Compress or Extract Here symbol,
+/// at the size of the toolbar's other symbols.
+struct ArchiveOperationIcon: View {
+    static let pointSize: CGFloat = 15
+
+    let symbol: MenuSymbol
 
     var body: some View {
-        ZStack {
-            Image(systemName: "archivebox")
-                .font(.system(size: 14, weight: .regular))
-            Image(systemName: isExtracting ? "arrow.up" : "arrow.down")
-                .font(.system(size: 6, weight: .black))
-                .offset(y: -1)
+        Group {
+            if let image = MenuSymbolImage.image(for: symbol, pointSize: Self.pointSize) {
+                Image(nsImage: image)
+            }
         }
-        .frame(width: 18, height: 18)
+        .frame(width: 25, height: 18)
         .accessibilityHidden(true)
     }
 }

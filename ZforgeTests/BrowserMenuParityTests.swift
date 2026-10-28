@@ -58,6 +58,31 @@ struct BrowserMenuParityTests {
         }
     }
 
+    @Test("The overflow menu's archive action shows the toolbar button's symbol, outside and inside an archive")
+    func overflowArchiveActionSymbol() async throws {
+        let fixture = try await BrowserMenuFixture(mode: .list)
+        defer { fixture.close() }
+        for selection in [BrowserMenuFixture.Selection.none, .archiveEntry] {
+            try await fixture.select(selection)
+            if selection == .archiveEntry { fixture.state.selection = [] }
+            let action = fixture.state.archiveToolbarAction
+            #expect(action == (selection == .none ? .unavailableOutsideArchive : .unavailableInsideArchive))
+            let item = try #require(fixture.overflowMenu().items.first { $0.title == action.title(locale: fixture.state.preferences.language.locale) },
+                                    "\(selection)")
+            let image = try #require(item.image, "\(selection)")
+            let expected = try #require(MenuSymbolImage.image(for: action.symbol))
+            #expect(image.isTemplate)
+            #expect(image.size == expected.size, "\(selection)")
+            #expect(Self.pixels(image) == Self.pixels(expected), "\(selection): \(action) draws another symbol")
+            #expect(!item.isEnabled)
+        }
+    }
+
+    private static func pixels(_ image: NSImage) -> Data? {
+        guard let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil) else { return nil }
+        return NSBitmapImageRep(cgImage: cgImage).tiffRepresentation
+    }
+
     @Test("Remove from Archive… is offered by the More menu and an archive entry's context menu")
     func archiveRemovalIsShared() async throws {
         for mode in BrowserViewMode.allCases {
@@ -182,6 +207,13 @@ private final class BrowserMenuFixture {
     func moreMenu() -> NSMenu {
         BrowserActionsMenu.make(state: state, menu: NSMenu(), includesViewSelector: false, includesArchiveAction: false,
                                 includesShareAction: false, showToast: { _ in }, restoreContentFocus: {},
+                                catalogTags: catalog.tags)
+    }
+
+    /// The menu of the compact toolbar's overflow button, which holds the archive action below 840 pt.
+    func overflowMenu() -> NSMenu {
+        BrowserActionsMenu.make(state: state, menu: NSMenu(), includesViewSelector: false, includesArchiveAction: true,
+                                includesShareAction: true, showToast: { _ in }, restoreContentFocus: {},
                                 catalogTags: catalog.tags)
     }
 

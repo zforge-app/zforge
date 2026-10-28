@@ -42,16 +42,39 @@ struct FinderIntegrationTests {
         #expect(FinderMenuPolicy.actions(for: [folder], isDirectory: { _ in true }) == [.compress, .compressCustom, .addToArchive])
     }
 
-    @Test("Menu symbols: Open uses the open-in-app arrow, compression actions share doc.zipper with distinct badges")
+    @Test("Menu symbols: Open uses the open-in-app arrow, archive actions share archivebox with distinct badges")
     func menuSymbolChoices() {
         #expect(BrowserSelectionAction.open.menuSymbol == MenuSymbol("arrow.up.forward.app"))
-        #expect(BrowserSelectionAction.compress.menuSymbol == MenuSymbol("doc.zipper"))
-        #expect(BrowserSelectionAction.compressCustom.menuSymbol == MenuSymbol("doc.zipper", badge: "gearshape.fill"))
-        #expect(BrowserSelectionAction.addToArchive.menuSymbol == MenuSymbol("doc.zipper", badge: "plus.circle.fill"))
-        #expect(BrowserSelectionAction.extractHere.menuSymbol == MenuSymbol("square.and.arrow.down"))
+        #expect(BrowserSelectionAction.compress.menuSymbol == MenuSymbol("archivebox", badge: "arrow.down.circle.fill"))
+        #expect(BrowserSelectionAction.compressCustom.menuSymbol == MenuSymbol("archivebox", badge: "gearshape.fill"))
+        #expect(BrowserSelectionAction.addToArchive.menuSymbol == MenuSymbol("archivebox", badge: "plus.circle.fill"))
+        #expect(BrowserSelectionAction.extractHere.menuSymbol == MenuSymbol("archivebox", badge: "arrow.up.circle.fill"))
         #expect(BrowserSelectionAction.extractNamed.menuSymbol == MenuSymbol("folder.badge.plus"))
         #expect(BrowserSelectionAction.extractChoose.menuSymbol == MenuSymbol("folder"))
         #expect(BrowserSelectionAction.validate.menuSymbol == MenuSymbol("checkmark.circle"))
+    }
+
+    @Test("The toolbar's archive action uses the menus' Compress and Extract Here symbols, enabled or not")
+    func toolbarArchiveActionSymbols() {
+        let compress = BrowserSelectionAction.compress.menuSymbol
+        let extract = BrowserSelectionAction.extractHere.menuSymbol
+        #expect(ArchiveToolbarAction.compress.symbol == compress)
+        #expect(ArchiveToolbarAction.unavailableOutsideArchive.symbol == compress)
+        #expect(ArchiveToolbarAction.extractAll.symbol == extract)
+        #expect(ArchiveToolbarAction.extractSelected.symbol == extract)
+        #expect(ArchiveToolbarAction.unavailableInsideArchive.symbol == extract)
+    }
+
+    @Test("A point size scales the badged symbol's body for the toolbar, keeping it a template")
+    func badgedSymbolPointSize() throws {
+        let menu = try #require(MenuSymbolImage.image(for: .compress))
+        let toolbar = try #require(MenuSymbolImage.image(for: .compress, pointSize: ArchiveOperationIcon.pointSize))
+        let body = try #require(NSImage(systemSymbolName: "archivebox", accessibilityDescription: nil)?
+            .withSymbolConfiguration(.init(pointSize: ArchiveOperationIcon.pointSize, weight: .regular)))
+        #expect(toolbar.isTemplate)
+        #expect(toolbar.size.width > body.size.width)
+        #expect(toolbar.size.height >= body.size.height && toolbar.size.height < body.size.height * 1.2)
+        #expect(toolbar.size.height > menu.size.height)
     }
 
     @Test("Every action symbol and badge exists and renders as a template for the app's menus", arguments: BrowserSelectionAction.allCases)

@@ -170,6 +170,11 @@ nonisolated enum ArchiveToolbarAction: Equatable, Sendable {
         case .compress, .unavailableOutsideArchive: false
         }
     }
+
+    /// The same symbols as the menus' Compress and Extract Here.
+    var symbol: MenuSymbol {
+        usesExtractionIcon ? .extract : .compress
+    }
 }
 
 extension BrowserSelectionActionPolicy {

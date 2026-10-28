@@ -508,3 +508,11 @@ At the user's request, `codex/apple-intelligence` is merged into `main`, superse
 - **Rules:** `AGENTS.md` (Test layers and selection) and RNF-Q08.
 
 Pending: one run of the kept UI tests, scheduled with the user because it takes over the screen; D-56.
+
+### ZF-46 — Archive action symbol parity (D-59; 2026-10-27)
+
+**Implemented; Unit plan and snapshots approved; UI run and in-app visual check pending.** The user found the toolbar's archive action icon ugly and chose, from a sheet of alternatives, `archivebox` with an arrow badge, also for the context menu.
+- `MenuSymbol.compress` / `.extract` (`Shared/BrowserSelectionAction.swift`) serve Compress, Extract Here, the toolbar button (`ArchiveOperationIcon`, via `ArchiveToolbarAction.symbol`) and the overflow menu's archive item. Compress Custom… and Add to Archive… use `archivebox` with their gear and plus badges. The Finder submenu follows through the shared symbols.
+- `MenuSymbolImage.image(for:pointSize:)` draws the badged symbol at the toolbar's 15 pt.
+
+Pending: the mapped UI tests (they take over the screen) and a look at the real toolbar in both themes, enabled and disabled.

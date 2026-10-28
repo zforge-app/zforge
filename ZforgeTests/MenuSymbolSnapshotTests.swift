@@ -1,4 +1,5 @@
 import AppKit
+import SwiftUI
 import Testing
 @testable import Zforge
 
@@ -30,5 +31,24 @@ struct MenuSymbolSnapshotTests {
             return true
         }
         ZforgeSnapshot.assert(strip, named: appearanceName)
+    }
+
+    /// The toolbar's archive action in both states, enabled and disabled, in the theme's glass capsule.
+    @Test("Toolbar archive action icons keep their badge, size and theme colors", arguments: ZforgeSnapshot.appearances.map(\.name))
+    func toolbarArchiveActionIcons(appearanceName: String) throws {
+        let appearance = try #require(ZforgeSnapshot.appearances.first { $0.name == appearanceName }?.appearance)
+        let view = HStack(spacing: 12) {
+            let actions: [ArchiveToolbarAction] = [.compress, .extractAll, .unavailableOutsideArchive, .unavailableInsideArchive]
+            ForEach(actions.indices, id: \.self) { index in
+                let action = actions[index]
+                ArchiveOperationIcon(symbol: action.symbol)
+                    .foregroundStyle(action.isEnabled ? .primary : .tertiary)
+                    .frame(width: 44, height: 32)
+                    .background(.quaternary, in: Capsule())
+            }
+        }
+        .padding(8)
+        .background(Color(nsColor: .windowBackgroundColor))
+        ZforgeSnapshot.assert(view, size: CGSize(width: 236, height: 48), appearance: appearance, named: appearanceName)
     }
 }

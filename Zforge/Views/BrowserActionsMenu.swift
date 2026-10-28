@@ -62,7 +62,7 @@ enum BrowserActionsMenu {
             menu.addItem(
                 ClosureMenuItem(
                     title: archiveAction.title(locale: locale),
-                    systemImage: "archivebox",
+                    image: MenuSymbolImage.image(for: archiveAction.symbol, accessibilityDescription: archiveAction.title(locale: locale)),
                     isEnabled: archiveAction.isEnabled,
                     handler: {
                         Task {

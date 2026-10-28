@@ -1312,3 +1312,10 @@ No visible string changed.
 - **Machine-dependent snapshots:** they depend on this Mac's scale, accent color and system icons.
 - **Recording from a worktree:** the sandboxed test host could not write references inside `/tmp` worktrees. The agents imported them from result-bundle attachments. Recording from the main checkout works.
 - **Collateral `pkill`:** during the migration one agent ran a `pkill` that matched any Zforge process, which may have ended other test hosts or the user's own Zforge at about 15:03.
+
+### ZF-46 — archive action symbol parity (D-59) — 2026-10-27
+
+- New and changed unit tests: `FinderIntegrationTests.menuSymbolChoices` (expectation changed at the user's request: archive actions moved to `archivebox`), `toolbarArchiveActionSymbols` (toolbar states map to Compress / Extract Here), `badgedSymbolPointSize` (15 pt toolbar body, template); `BrowserMenuParityTests.overflowArchiveActionSymbol` (overflow item draws the toolbar's symbol, outside and inside an archive, pixel-compared).
+- Snapshots: new `MenuSymbolSnapshotTests.toolbarArchiveActionIcons` (light/dark, enabled/disabled) recorded and viewed; `finderSymbolStrip` re-recorded for the approved symbol change and viewed (`/tmp/zf-unit2.xcresult`).
+- Full Unit plan: 454 tests, 453 passed, 1 failed, 0 skipped (`/tmp/zf-unit3.xcresult`). The failure is the known environment-dependent `ArchiveDiscoveryPerformanceTests.mixedDirectChildren` (load average 38–48); it also failed alone. In the first full run `rapidColumnArchiveSelectionPublishesOnlyCurrentArchive` and `updatesGlobalCatalogueLive` failed under the same load and passed alone (`/tmp/zf-unit2.xcresult`), as recorded for ZF-45.
+- `Scripts/affected-tests.py --check`: 0 problems. Not run: the 11 mapped UI tests (they take over the screen) and an in-app look at the real toolbar.
