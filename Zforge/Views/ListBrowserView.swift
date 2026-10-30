@@ -191,6 +191,11 @@ private struct ListHeader: View {
                     .onDrag {
                         NSItemProvider(object: column.rawValue as NSString)
                     }
+                    // Outside the drag source and the sort button, so a divider drag
+                    // resizes instead of starting a column reorder or sorting.
+                    .overlay(alignment: .trailing) {
+                        resizeHandle(column, showsTrailingSeparator: column != columns.last)
+                    }
                     .onDrop(of: [.plainText], isTargeted: nil) { providers in
                         guard column != .name, let provider = providers.first else { return false }
                         _ = provider.loadObject(ofClass: NSString.self) { value, _ in
@@ -269,19 +274,21 @@ private struct ListHeader: View {
                     .frame(width: 1)
             }
         }
-        .overlay(alignment: .trailing) {
-            if showsTrailingSeparator, let field = column.sortField {
-                BrowserColumnResizeHandle(
-                    currentWidth: column == .name
-                        ? nameWidth / scale
-                        : state.preferences.listColumnWidth(field),
-                    scale: scale
-                ) { width in
-                    state.preferences.setListColumnWidth(width, for: field)
-                }
-                .frame(width: 20 * scale)
-                .help("Drag to resize column")
+    }
+
+    @ViewBuilder
+    private func resizeHandle(_ column: BrowserListColumn, showsTrailingSeparator: Bool) -> some View {
+        if showsTrailingSeparator, let field = column.sortField {
+            BrowserColumnResizeHandle(
+                currentWidth: column == .name
+                    ? nameWidth / scale
+                    : state.preferences.listColumnWidth(field),
+                scale: scale
+            ) { width in
+                state.preferences.setListColumnWidth(width, for: field)
             }
+            .frame(width: 20 * scale)
+            .help("Drag to resize column")
         }
     }
 

@@ -778,6 +778,50 @@ final class ZforgeUITests: XCTestCase {
         XCTAssertLessThanOrEqual(childColumn.frame.maxX, window.frame.maxX)
     }
 
+    /// Real drags on the List header: the divider resizes without starting the
+    /// header's column-reorder drag, and the header body still reorders. Width limits
+    /// and scaling are covered offscreen by `BrowserResizeGeometry` and preference tests.
+    @MainActor
+    func testListHeaderDividerResizesAndHeaderBodyReorders() throws {
+        let app = XCUIApplication()
+        app.launchEnvironment["ZFORGE_UI_PREFERENCES_SUITE"] = "ZforgeListHeaderUI-\(UUID().uuidString)"
+        app.launchArguments = ["--ui-fixtures", "--ui-window-width", "1100", "--ui-view-mode", "list",
+            "-appLanguagePreference", "english"]
+        launchArchiveFixture(app)
+        let window = app.windows.matching(NSPredicate(format: "identifier BEGINSWITH %@", "browser-")).firstMatch
+        func header(_ title: String) -> XCUIElement { window.buttons[title].firstMatch }
+        let titles = ["Name", "Date Modified", "Size", "Kind"]
+        func order() -> [String] { titles.sorted { header($0).frame.minX < header($1).frame.minX } }
+        XCTAssertTrue(header("Kind").waitForExistence(timeout: 5), app.debugDescription)
+        XCTAssertEqual(order(), titles)
+
+        // Drag the Name | Date Modified divider 60 pt right, as a user grabs the line.
+        // (The fixture's Name column starts at its 168 pt minimum.)
+        let dateStart = header("Date Modified").frame.minX
+        let divider = header("Name").coordinate(withNormalizedOffset: CGVector(dx: 1, dy: 0.5))
+            .withOffset(CGVector(dx: -3, dy: 0))
+        divider.click(forDuration: 0.1, thenDragTo: divider.withOffset(CGVector(dx: 60, dy: 0)))
+        XCTAssertEqual(order(), titles, "A divider drag must not move a column")
+        XCTAssertEqual(header("Date Modified").frame.minX, dateStart + 60, accuracy: 2,
+                       "The divider follows the pointer")
+
+        // Same for a fixed-width column's divider, dragged to the right.
+        let sizeStart = header("Size").frame.minX
+        let dateDivider = header("Date Modified").coordinate(withNormalizedOffset: CGVector(dx: 1, dy: 0.5))
+            .withOffset(CGVector(dx: -3, dy: 0))
+        dateDivider.click(forDuration: 0.1, thenDragTo: dateDivider.withOffset(CGVector(dx: 40, dy: 0)))
+        XCTAssertEqual(order(), titles, "A divider drag must not move a column")
+        XCTAssertEqual(header("Size").frame.minX, sizeStart + 40, accuracy: 2)
+
+        // Dragging the header body still reorders: Size takes Date Modified's place.
+        header("Size").coordinate(withNormalizedOffset: CGVector(dx: 0.3, dy: 0.5))
+            .click(forDuration: 0.1, thenDragTo: header("Date Modified")
+                .coordinate(withNormalizedOffset: CGVector(dx: 0.3, dy: 0.5)))
+        let reordered = NSPredicate { _, _ in order() == ["Name", "Size", "Date Modified", "Kind"] }
+        XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: reordered, object: nil)], timeout: 5),
+                       .completed, "Order after the header drag: \(order())")
+    }
+
     @MainActor
     func testListKeyboardZoomAndArrowNavigationAfterChangingView() throws {
         let app = XCUIApplication()

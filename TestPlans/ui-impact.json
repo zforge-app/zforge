@@ -235,7 +235,8 @@
         "ZforgeUITests/IconPreviewUITests/testSettingsToggleUpdatesTheOpenGridAndKeepsSelection",
         "ZforgeUITests/ZforgeUITests/testArchiveInternalCopyConfirmationKeepsHistoryAndAncestorColumns",
         "ZforgeUITests/ZforgeUITests/testColumnPreviewRefitsAfterUserScrollsLeft",
-        "ZforgeUITests/ZforgeUITests/testFileOpenNavigatesSelectedFolderAndArchiveInColumnsMode"
+        "ZforgeUITests/ZforgeUITests/testFileOpenNavigatesSelectedFolderAndArchiveInColumnsMode",
+        "ZforgeUITests/ZforgeUITests/testListHeaderDividerResizesAndHeaderBodyReorders"
       ]
     },
     {
@@ -251,6 +252,7 @@
         "ZforgeUITests/ZforgeUITests/testCustomCompressionPanelOpensFolderChooser",
         "ZforgeUITests/ZforgeUITests/testFileOpenPrecedesOpenWithAndTracksSelectionInListMode",
         "ZforgeUITests/ZforgeUITests/testFolderSelectionMenuAlternatesWithOptionInListMode",
+        "ZforgeUITests/ZforgeUITests/testListHeaderDividerResizesAndHeaderBodyReorders",
         "ZforgeUITests/ZforgeUITests/testListKeyboardZoomAndArrowNavigationAfterChangingView",
         "ZforgeUITests/ZforgeUITests/testLocalDragsOptionCopyAndConfirmAdditionToArchive",
         "ZforgeUITests/ZforgeUITests/testNewFolderWithSelectionMenuAndShortcutInListMode",
