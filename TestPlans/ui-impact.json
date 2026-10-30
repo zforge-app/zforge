@@ -60,7 +60,18 @@
         "ZforgeUITests/ZforgeUITests/testListKeyboardZoomAndArrowNavigationAfterChangingView",
         "ZforgeUITests/ZforgeUITests/testLocalDragsOptionCopyAndConfirmAdditionToArchive",
         "ZforgeUITests/ZforgeUITests/testNewFolderWithSelectionMenuAndShortcutInListMode",
-        "ZforgeUITests/ZforgeUITests/testViewModeIsPerWindowAndLastClosedWindowRestoresIt"
+        "ZforgeUITests/ZforgeUITests/testViewModeIsPerWindowAndLastClosedWindowRestoresIt",
+        "ZforgeUITests/SettingsUITests/testArchiveSizeLimitSliderHoldsRoundValuesWhileDragging"
+      ]
+    },
+    {
+      "name": "Settings sliders: scales and steps are proven offscreen by SettingsSliderTests; the UI test proves real drag tracking holds round values",
+      "paths": [
+        "Zforge/Views/ScaleSlider.swift",
+        "Zforge/Models/SettingsSliderScales.swift"
+      ],
+      "tests": [
+        "ZforgeUITests/SettingsUITests/testArchiveSizeLimitSliderHoldsRoundValuesWhileDragging"
       ]
     },
     {

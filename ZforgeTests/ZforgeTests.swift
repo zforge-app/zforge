@@ -234,10 +234,13 @@ struct ZforgeTests {
 
         let clamped = ArchiveBrowsingPolicy(
             maximumNestedArchiveDepth: 50,
-            rootSizeLimit: 12 * 1_000_000_000
+            rootSizeLimit: 20 * 1_000_000_000
         )
         #expect(clamped.maximumNestedArchiveDepth == 10)
-        #expect(clamped.rootSizeLimit == 5 * 1_000_000_000)
+        #expect(clamped.rootSizeLimit == 16 * 1_000_000_000)
+        let raised = ArchiveBrowsingPolicy(maximumNestedArchiveDepth: 0, rootSizeLimit: 100_000_000)
+        #expect(raised.maximumNestedArchiveDepth == 1)
+        #expect(raised.rootSizeLimit == 256_000_000)
 
         let address = ArchiveAddress(
             sessionID: UUID(), archiveID: UUID(), internalPath: "Folder",
@@ -261,20 +264,45 @@ struct ZforgeTests {
 
         let preferences = FileBrowserPreferences(defaults: defaults)
         #expect(preferences.archiveNestingLimit == 5)
-        #expect(preferences.archiveRootSizeLimitGB == 1)
+        #expect(preferences.archiveRootSizeLimit == 1_000_000_000)
         #expect(preferences.archiveBrowsingPolicy == .standard)
         #expect(preferences.defaultCompressionFormat == .zip)
 
         preferences.archiveNestingLimit = 30
-        preferences.archiveRootSizeLimitGB = 12
+        preferences.archiveRootSizeLimit = 30_000_000_000
         preferences.defaultCompressionFormat = .gzip
         #expect(preferences.archiveNestingLimit == 10)
-        #expect(preferences.archiveRootSizeLimitGB == 5)
+        #expect(preferences.archiveRootSizeLimit == 16_000_000_000)
 
         let reloaded = FileBrowserPreferences(defaults: defaults)
         #expect(reloaded.archiveNestingLimit == 10)
-        #expect(reloaded.archiveRootSizeLimitGB == 5)
+        #expect(reloaded.archiveRootSizeLimit == 16_000_000_000)
         #expect(reloaded.defaultCompressionFormat == .gzip)
+
+        // Any step of the slider persists exactly, not only round values.
+        reloaded.archiveRootSizeLimit = 392_000_000
+        reloaded.archiveNestingLimit = 0
+        #expect(FileBrowserPreferences(defaults: defaults).archiveRootSizeLimit == 392_000_000)
+        #expect(FileBrowserPreferences(defaults: defaults).archiveNestingLimit == 1)
+        reloaded.archiveRootSizeLimit = 1
+        #expect(reloaded.archiveRootSizeLimit == 256_000_000)
+    }
+
+    @Test("A root size limit saved in whole GB before the slider is read as decimal bytes")
+    @MainActor
+    func legacyArchiveRootSizeLimit() throws {
+        let suiteName = "ZforgeTests.legacyArchiveRootSizeLimit.\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        defaults.set(3, forKey: "archive.rootSizeLimitGB")
+        let preferences = FileBrowserPreferences(defaults: defaults)
+        #expect(preferences.archiveRootSizeLimit == 3_000_000_000)
+        #expect(preferences.archiveBrowsingPolicy.rootSizeLimit == 3_000_000_000)
+
+        // Once the slider saves a byte count, that value wins over the old setting.
+        preferences.archiveRootSizeLimit = 768_000_000
+        #expect(FileBrowserPreferences(defaults: defaults).archiveRootSizeLimit == 768_000_000)
     }
 
     @Test("Compression profiles persist settings but never persist passwords")

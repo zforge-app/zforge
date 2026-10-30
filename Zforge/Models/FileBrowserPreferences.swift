@@ -38,7 +38,9 @@ final class FileBrowserPreferences {
         static let previewVisibleGallery = "browser.previewVisible.gallery"
         static let language = AppLanguagePreference.defaultsKey
         static let archiveNestingLimit = "archive.nestingLimit"
-        static let archiveRootSizeLimitGB = "archive.rootSizeLimitGB"
+        static let archiveRootSizeLimit = "archive.rootSizeLimitBytes"
+        /// Whole decimal GB (1–5) saved before the limit became a byte count.
+        static let legacyArchiveRootSizeLimitGB = "archive.rootSizeLimitGB"
         static let defaultCompressionFormat = "archive.defaultCompressionFormat"
         static let compressionProfiles = "archive.compressionProfiles"
         static let defaultCompressionProfileID = "archive.defaultCompressionProfileID"
@@ -90,7 +92,8 @@ final class FileBrowserPreferences {
     var language: AppLanguagePreference { didSet { defaults.set(language.rawValue, forKey: Key.language) } }
     var archiveNestingLimit: Int {
         didSet {
-            let clamped = min(max(archiveNestingLimit, 1), 10)
+            let range = ArchiveBrowsingPolicy.nestingDepthRange
+            let clamped = min(max(archiveNestingLimit, range.lowerBound), range.upperBound)
             if archiveNestingLimit != clamped {
                 archiveNestingLimit = clamped
             } else {
@@ -98,13 +101,15 @@ final class FileBrowserPreferences {
             }
         }
     }
-    var archiveRootSizeLimitGB: Int {
+    /// Decimal bytes, as in Finder: 1 GB = 1,000,000,000 bytes.
+    var archiveRootSizeLimit: Int64 {
         didSet {
-            let clamped = min(max(archiveRootSizeLimitGB, 1), 5)
-            if archiveRootSizeLimitGB != clamped {
-                archiveRootSizeLimitGB = clamped
+            let range = ArchiveBrowsingPolicy.rootSizeLimitRange
+            let clamped = min(max(archiveRootSizeLimit, range.lowerBound), range.upperBound)
+            if archiveRootSizeLimit != clamped {
+                archiveRootSizeLimit = clamped
             } else {
-                defaults.set(archiveRootSizeLimitGB, forKey: Key.archiveRootSizeLimitGB)
+                defaults.set(archiveRootSizeLimit, forKey: Key.archiveRootSizeLimit)
             }
         }
     }
@@ -184,7 +189,7 @@ final class FileBrowserPreferences {
     var archiveBrowsingPolicy: ArchiveBrowsingPolicy {
         ArchiveBrowsingPolicy(
             maximumNestedArchiveDepth: archiveNestingLimit,
-            rootSizeLimit: Int64(archiveRootSizeLimitGB) * 1_000_000_000
+            rootSizeLimit: archiveRootSizeLimit
         )
     }
 
@@ -335,12 +340,22 @@ final class FileBrowserPreferences {
             key: Key.previewVisibleGallery
         )
         language = AppLanguagePreference(rawValue: defaults.string(forKey: Key.language) ?? "") ?? .system
-        archiveNestingLimit = defaults.object(forKey: Key.archiveNestingLimit) == nil
-            ? 5
-            : min(max(defaults.integer(forKey: Key.archiveNestingLimit), 1), 10)
-        archiveRootSizeLimitGB = defaults.object(forKey: Key.archiveRootSizeLimitGB) == nil
-            ? 1
-            : min(max(defaults.integer(forKey: Key.archiveRootSizeLimitGB), 1), 5)
+        let storedNestingLimit = defaults.object(forKey: Key.archiveNestingLimit) == nil
+            ? ArchiveBrowsingPolicy.standard.maximumNestedArchiveDepth
+            : defaults.integer(forKey: Key.archiveNestingLimit)
+        let storedRootSizeLimit: Int64 = if let bytes = defaults.object(forKey: Key.archiveRootSizeLimit) as? NSNumber {
+            bytes.int64Value
+        } else if let gigabytes = defaults.object(forKey: Key.legacyArchiveRootSizeLimitGB) as? NSNumber {
+            gigabytes.int64Value * 1_000_000_000
+        } else {
+            ArchiveBrowsingPolicy.standard.rootSizeLimit
+        }
+        let policy = ArchiveBrowsingPolicy(
+            maximumNestedArchiveDepth: storedNestingLimit,
+            rootSizeLimit: storedRootSizeLimit
+        )
+        archiveNestingLimit = policy.maximumNestedArchiveDepth
+        archiveRootSizeLimit = policy.rootSizeLimit
         let legacyFormat = ArchiveCompressionFormat(
             rawValue: defaults.string(forKey: Key.defaultCompressionFormat) ?? ""
         ) ?? .zip

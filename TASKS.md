@@ -516,3 +516,11 @@ Pending: one run of the kept UI tests, scheduled with the user because it takes 
 - `MenuSymbolImage.image(for:pointSize:)` draws the badged symbol at the toolbar's 15 pt.
 
 Pending: the mapped UI tests (they take over the screen) and a look at the real toolbar in both themes, enabled and disabled.
+
+### ZF-47 — Archive navigation limits as sliders (2026-10-29)
+
+**Implemented; Unit plan, offscreen slider tests and snapshots pass; real-drag UI test and in-app check pending.** The user chose sliders for both Archive Navigation limits from an interactive sketch and widened the root size limit to 256 MB–16 GB.
+- `ArchiveSizeLimitSliderScale` and `LinearSettingsSliderScale` (`Zforge/Models/SettingsSliderScales.swift`) define positions, steps and round values; `ScaleSlider` (`Zforge/Views/ScaleSlider.swift`) is the shared native slider with tick labels, held round values, haptics, keyboard and accessibility; `ArchiveNavigationSettingsSection` hosts both.
+- The preference is now `archiveRootSizeLimit` in decimal bytes (`archive.rootSizeLimitBytes`), migrating the former whole-GB key; `ArchiveBrowsingPolicy` owns both ranges.
+
+Pending: `SettingsUITests.testArchiveSizeLimitSliderHoldsRoundValuesWhileDragging` and the other mapped UI tests (blocked: a Debug Zforge held by Xcode's debugger could not be terminated), and a look at the sliders in the running app (drag feel, haptics on a Force Touch trackpad, both themes, VoiceOver).

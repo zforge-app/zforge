@@ -374,12 +374,17 @@ nonisolated enum BrowserError: LocalizedError, Equatable {
 nonisolated struct ArchiveBrowsingPolicy: Equatable, Sendable {
     static let standard = ArchiveBrowsingPolicy(maximumNestedArchiveDepth: 5, rootSizeLimit: 1_000_000_000)
 
+    /// Sub-archives that can be opened inside the root archive.
+    static let nestingDepthRange: ClosedRange<Int> = 1...10
+    /// Root archive size limit in decimal bytes (1 GB = 1,000,000,000 bytes, as in Finder).
+    static let rootSizeLimitRange: ClosedRange<Int64> = 256_000_000...16_000_000_000
+
     let maximumNestedArchiveDepth: Int
     let rootSizeLimit: Int64
 
     init(maximumNestedArchiveDepth: Int, rootSizeLimit: Int64) {
-        self.maximumNestedArchiveDepth = min(max(maximumNestedArchiveDepth, 1), 10)
-        self.rootSizeLimit = min(max(rootSizeLimit, 1_000_000_000), 5 * 1_000_000_000)
+        self.maximumNestedArchiveDepth = min(max(maximumNestedArchiveDepth, Self.nestingDepthRange.lowerBound), Self.nestingDepthRange.upperBound)
+        self.rootSizeLimit = min(max(rootSizeLimit, Self.rootSizeLimitRange.lowerBound), Self.rootSizeLimitRange.upperBound)
     }
 
     func allowsNestedArchives(forOutermostSize size: Int64?) -> Bool {

@@ -401,37 +401,7 @@ struct ZforgeSettingsView: View {
 
             CompressionSettingsSection(preferences: preferences, draft: compressionDraft)
 
-            Section("Archive Navigation") {
-                VStack(alignment: .leading, spacing: 5) {
-                    LabeledContent("Maximum nesting depth") {
-                        Stepper(value: $preferences.archiveNestingLimit, in: 1...10) {
-                            Text(preferences.archiveNestingLimit.formatted())
-                                .monospacedDigit()
-                                .frame(minWidth: 24, alignment: .trailing)
-                        }
-                        .fixedSize()
-                    }
-                    Text("Limits how many compressed files can be opened inside one another. The root archive is not counted.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-
-                VStack(alignment: .leading, spacing: 5) {
-                    LabeledContent("Root archive size limit") {
-                        Stepper(value: $preferences.archiveRootSizeLimitGB, in: 1...5) {
-                            Text("\(preferences.archiveRootSizeLimitGB) GB")
-                                .monospacedDigit()
-                                .frame(minWidth: 48, alignment: .trailing)
-                        }
-                        .fixedSize()
-                    }
-                    Text("Sub-archives are only navigable when the combined size of the root archive and its volumes is below this limit.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-            }
+            ArchiveNavigationSettingsSection(preferences: preferences)
         }
         .formStyle(.grouped)
         .padding()
@@ -455,6 +425,64 @@ struct ZforgeSettingsView: View {
 }
 
 /// The Settings section that chooses the default compression profile and edits profiles.
+/// The nesting depth uses a linear slider with a stop per value; the root size limit uses
+/// a logarithmic one whose fine steps and held round values are defined by
+/// `ArchiveSizeLimitSliderScale`.
+struct ArchiveNavigationSettingsSection: View {
+    @Bindable var preferences: FileBrowserPreferences
+
+    private static let depthScale = LinearSettingsSliderScale(
+        range: Int64(ArchiveBrowsingPolicy.nestingDepthRange.lowerBound)...Int64(ArchiveBrowsingPolicy.nestingDepthRange.upperBound)
+    )
+    private static let sizeScale = ArchiveSizeLimitSliderScale()
+
+    var body: some View {
+        let locale = preferences.language.locale
+        Section("Archive Navigation") {
+            VStack(alignment: .leading, spacing: 5) {
+                LabeledContent("Maximum nesting depth") {
+                    Text(preferences.archiveNestingLimit.formatted())
+                        .monospacedDigit()
+                }
+                ScaleSlider(
+                    scale: Self.depthScale,
+                    value: Binding(
+                        get: { Int64(preferences.archiveNestingLimit) },
+                        set: { preferences.archiveNestingLimit = Int($0) }
+                    ),
+                    tickLabels: ArchiveBrowsingPolicy.nestingDepthRange.map { $0.formatted(.number.locale(locale)) },
+                    accessibilityLabel: AppLocalization.string("Maximum nesting depth", locale: locale),
+                    accessibilityIdentifier: "settings-archive-nesting-depth",
+                    describe: { $0.formatted(.number.locale(locale)) }
+                )
+                Text("Limits how many compressed files can be opened inside one another. The root archive is not counted.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            VStack(alignment: .leading, spacing: 5) {
+                LabeledContent("Root archive size limit") {
+                    Text(AppLocalization.byteCount(preferences.archiveRootSizeLimit, locale: locale))
+                        .monospacedDigit()
+                }
+                ScaleSlider(
+                    scale: Self.sizeScale,
+                    value: $preferences.archiveRootSizeLimit,
+                    tickLabels: ArchiveSizeLimitSliderScale.doublings.map { AppLocalization.byteCount($0, locale: locale) },
+                    accessibilityLabel: AppLocalization.string("Root archive size limit", locale: locale),
+                    accessibilityIdentifier: "settings-archive-root-size-limit",
+                    describe: { AppLocalization.byteCount($0, locale: locale) }
+                )
+                Text("Sub-archives are only navigable when the combined size of the root archive and its volumes is below this limit.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+}
+
 struct CompressionSettingsSection: View {
     @Bindable var preferences: FileBrowserPreferences
     let draft: CompressionDraft
