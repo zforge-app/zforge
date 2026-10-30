@@ -12,6 +12,18 @@ struct SidebarDestination: Identifiable, Hashable {
     var id: String { url.standardizedFileURL.path }
 }
 
+/// Finder's computer item, the first Locations row. It opens the computer level
+/// (`BrowserLocation.computer`) instead of a folder, so it has no URL.
+struct SidebarComputer: Hashable {
+    let name: String
+    let systemImage: String
+    var kind: SidebarLocationKind { .computer }
+
+    static func current() -> SidebarComputer {
+        SidebarComputer(name: ComputerIdentity.name(), systemImage: ComputerIdentity.systemImage)
+    }
+}
+
 @MainActor
 @Observable
 final class SidebarState {
@@ -19,6 +31,8 @@ final class SidebarState {
     @ObservationIgnored private var observers: [NSObjectProtocol] = []
 
     var volumes: [SidebarVolume] = []
+    /// Follows the system computer name; re-read on refresh and app activation.
+    private(set) var computer = SidebarComputer.current()
     var isConnecting = false
     var serverAddress = "smb://"
     var serverError: String?
@@ -73,6 +87,12 @@ final class SidebarState {
 
     func refresh() async {
         volumes = await volumeService.volumes()
+        refreshComputer()
+    }
+
+    func refreshComputer() {
+        let current = SidebarComputer.current()
+        if current != computer { computer = current }
     }
 
     func connectToServer() async -> URL? {

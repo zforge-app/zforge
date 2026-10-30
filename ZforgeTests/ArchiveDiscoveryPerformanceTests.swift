@@ -15,12 +15,19 @@ struct ArchiveDiscoveryPerformanceTests {
             try Data().write(to: root.appendingPathComponent("Fixture-\(index)." + (index < 100 ? "zip" : "txt")))
         }
         let query = AutomationArchiveEntities(access: PerformanceArchiveAccess(root: root))
-        let start = ContinuousClock.now
-        let result = try await query.matching("zip")
-        let elapsed = start.duration(to: .now)
-        #expect(result.count == 100)
-        print("Archive discovery benchmark: children=10000; archives=100; elapsed=\(elapsed)")
-        #expect(elapsed < .milliseconds(100))
+        // The feature target for name discovery is 100 ms. The shared unit-plan run is
+        // noisy, so the test accepts a mean of up to 150 ms over three runs (user
+        // decision, 2026-10-28); each run must still find every archive.
+        var runs: [Duration] = []
+        for _ in 0..<3 {
+            let start = ContinuousClock.now
+            let result = try await query.matching("zip")
+            runs.append(start.duration(to: .now))
+            #expect(result.count == 100)
+        }
+        let elapsed = runs.reduce(.zero, +) / runs.count
+        print("Archive discovery benchmark: children=10000; archives=100; runs=\(runs); mean=\(elapsed); target=100 ms")
+        #expect(elapsed <= .milliseconds(150))
         var before = rusage()
         getrusage(RUSAGE_SELF, &before)
         let snapshotStart = ContinuousClock.now

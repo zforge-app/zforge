@@ -178,7 +178,8 @@ enum KeyboardShortcutCatalog {
             ("Move Items Here", "⌥⌘V"),
             ("Move to Trash / Remove from Archive", "⌘⌫"),
             ("Delete Immediately…", "⌥⌘⌫"),
-            ("Eject", "⌘E")
+            ("Eject", "⌘E"),
+            ("Find", "⌘F")
         ]),
         section("go", "Go", "arrow.triangle.turn.up.right.diamond", [
             ("Computer", "⇧⌘C"),
@@ -186,6 +187,7 @@ enum KeyboardShortcutCatalog {
             ("Recents", "⇧⌘F"),
             ("Go to Folder…", "⇧⌘G"),
             ("Home", "⇧⌘H"),
+            ("Network", "⇧⌘K"),
             ("Downloads", "⌥⌘L"),
             ("Documents", "⇧⌘O"),
             ("Remote", "⌘K"),

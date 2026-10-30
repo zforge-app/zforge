@@ -13,6 +13,7 @@ final class FileBrowserState {
         case loadRecents
         case reveal(target: URL)
         case finderRequest(FinderMenuRequest)
+        case openInNewTab
     }
 
     private struct HistoryEntry {
@@ -20,6 +21,7 @@ final class FileBrowserState {
         let location: BrowserLocation
         let sidebarTag: String?
         var archiveSearch: String? = nil
+        var fileSearch: BrowserFileSearch? = nil
     }
 
     private struct HierarchyCursorSnapshot {
@@ -165,6 +167,14 @@ final class FileBrowserState {
     @ObservationIgnored private var tagRefreshTask: Task<Void, Never>?
     @ObservationIgnored private let grants: any AccessGrantStoring
     @ObservationIgnored private let archives: any ArchiveServing
+    @ObservationIgnored private let volumes: any VolumeCataloging
+    @ObservationIgnored private let networkBrowser: any NetworkServerBrowsing
+    @ObservationIgnored private let networkMounter: any NetworkServerMounting
+    /// Runs while the path shows the Network level; cancelled when it leaves the path or the window closes.
+    @ObservationIgnored private var networkDiscoveryTask: Task<Void, Never>?
+    @ObservationIgnored private var networkConnectionTask: Task<Void, Never>?
+    @ObservationIgnored private var networkServers: [NetworkServer] = []
+    @ObservationIgnored private var volumeObservers: [NSObjectProtocol] = []
     @ObservationIgnored private let monitor = DirectoryMonitor()
     @ObservationIgnored private var expandedDirectoryMonitors: [BrowserItemID: DirectoryMonitor] = [:]
     @ObservationIgnored private var reloadGeneration: UInt64 = 0
@@ -192,6 +202,7 @@ final class FileBrowserState {
     @ObservationIgnored private let quickLookPanel = QuickLookPanelCoordinator()
     @ObservationIgnored private var pendingAuthorizationPurpose: AuthorizationPurpose?
     @ObservationIgnored private var openWindowHandler: ((URL?) -> Void)?
+    @ObservationIgnored private var openTabHandler: ((URL) -> Void)?
     @ObservationIgnored private weak var undoManager: UndoManager?
     @ObservationIgnored private(set) var fileUndoTask: Task<Void, Never>?
     @ObservationIgnored private var isClosed = false
@@ -209,6 +220,35 @@ final class FileBrowserState {
     /// Archive name search shown in the virtual results list, for example after
     /// Siri asks Zforge to search. Shares the Recents virtual location with tags.
     private(set) var archiveSearchTerm: String?
+    /// The toolbar search shown in the virtual results location. It stays set while
+    /// Columns show a result's contents beside the results column.
+    private(set) var fileSearch: BrowserFileSearch? {
+        didSet {
+            guard oldValue != nil, fileSearch == nil else { return }
+            searchDebounceTask?.cancel()
+            searchStreamTask?.cancel()
+            if keepsSearchFieldOnExit {
+                keepsSearchFieldOnExit = false
+            } else {
+                searchText = ""
+                isSearchPresented = false
+            }
+        }
+    }
+    /// Whether the toolbar shows the expanded search field instead of its button.
+    var isSearchPresented = false
+    private(set) var searchText = ""
+    private(set) var searchScope: BrowserSearchScope = .currentFolder
+    /// Incremented to move focus into the toolbar field, for example by ⌘F.
+    private(set) var searchFieldFocusRequest = 0
+    /// Set by the toolbar field so content focus and single-key menu commands leave its text alone.
+    var searchFieldHasFocus = false
+    @ObservationIgnored private let searcher: any BrowserSearching
+    @ObservationIgnored private let searchDebounce: @Sendable () async throws -> Void
+    @ObservationIgnored private var searchDebounceTask: Task<Void, Never>?
+    @ObservationIgnored private var searchStreamTask: Task<[BrowserItem], Error>?
+    @ObservationIgnored private var searchOriginEntry: HistoryEntry?
+    @ObservationIgnored private var keepsSearchFieldOnExit = false
     private var needsExtendedMetadata: Bool {
         let extended: Set<BrowserListColumn> = [.lastOpenedDate, .dateAdded, .version, .comments]
         let sortedByExtended = [BrowserSortField.lastOpenedDate, .dateAdded, .version, .comments]
@@ -222,7 +262,11 @@ final class FileBrowserState {
         if let selectedSidebarTag { discovered.insert(selectedSidebarTag) }
         return discovered.sorted { $0.localizedStandardCompare($1) == .orderedAscending }
     }
-    var pathComponents: [BrowserPathComponent] = []
+    var pathComponents: [BrowserPathComponent] = [] {
+        didSet { synchronizeNetworkDiscovery() }
+    }
+    /// Local Network privacy blocks server discovery; the Network level's empty state explains it.
+    private(set) var networkDiscoveryDenied = false
     var items: [BrowserItem] = [] {
         didSet { itemProjection.invalidateRoot() }
     }
@@ -247,6 +291,9 @@ final class FileBrowserState {
     var columnSelections: [BrowserLocation: BrowserItemID] = [:]
     var isLoading = false
     var error: BrowserError?
+    /// Volumes with an eject in flight; their sidebar eject button shows progress and ignores clicks.
+    var ejectingVolumeURLs: Set<URL> = []
+    @ObservationIgnored var volumeEjector: @Sendable (URL) async throws -> Void = VolumeEjection.eject
     var pendingAuthorizationURL: URL?
     var passwordOperation: PasswordOperation? {
         didSet {
@@ -699,7 +746,14 @@ final class FileBrowserState {
     }
 
     var canRenameSelection: Bool {
-        selectedItems.count == 1 && selectedItems[0].localURL != nil
+        selectedItems.count == 1 && canRename(selectedItems[0])
+    }
+    /// Local items can be renamed except volume roots: the App Sandbox denies Disk Arbitration's
+    /// rename authorization for volumes the user doesn't own, so Zforge doesn't rename volumes
+    /// (OR-25, removed 2026-10-30), and a mount point is never moved.
+    func canRename(_ item: BrowserItem) -> Bool {
+        guard let url = item.localURL else { return false }
+        return (try? url.resourceValues(forKeys: [.isVolumeKey]))?.isVolume != true
     }
     var renamingItemID: BrowserItemID? {
         guard let renamingPath = renamingItemURL?.standardizedFileURL.path else { return nil }
@@ -714,6 +768,11 @@ final class FileBrowserState {
     var canEjectSelection: Bool { ejectableVolumeURL != nil }
     var title: String { pathComponents.last?.name ?? AppLocalization.string("Recents", locale: preferences.language.locale) }
     var breadcrumbComponents: [BrowserPathComponent] {
+        if fileSearch != nil, location == .recents, let results = pathComponents.first,
+           selectedItems.count == 1, let url = selectedItems[0].localURL {
+            // As in Finder, the path bar shows where the selected result is.
+            return [results] + fileSystemPathComponents(to: url.deletingLastPathComponent())
+        }
         guard let first = pathComponents.first,
               case let .fileSystem(url) = first.location else {
             return pathComponents
@@ -763,7 +822,8 @@ final class FileBrowserState {
                 taggedItems: UIFixtureTaggedItemsService(),
                 grants: UIFixtureAccessGrantStore(),
                 archives: UIFixtureArchiveEngine(itemsDelay: columnLoadDelay),
-                initialURL: initialURL
+                initialURL: initialURL,
+                searcher: UIFixtureSearchService()
             )
             return
         }
@@ -792,9 +852,19 @@ final class FileBrowserState {
         automationAccessLease: AutomationAccessLease? = nil,
         archiveSearch: (any ArchiveSearching)? = nil,
         initialArchiveSearch: String? = nil,
-        initialFinderRequest: FinderMenuRequest? = nil
+        initialFinderRequest: FinderMenuRequest? = nil,
+        volumes: (any VolumeCataloging)? = nil,
+        networkBrowser: (any NetworkServerBrowsing)? = nil,
+        networkMounter: (any NetworkServerMounting)? = nil,
+        searcher: (any BrowserSearching)? = nil,
+        searchDebounce: (@Sendable () async throws -> Void)? = nil
     ) {
         self.preferences = preferences
+        self.searcher = searcher ?? BrowserSearchService(archives: archives)
+        self.searchDebounce = searchDebounce ?? { try await Task.sleep(for: FileBrowserState.searchDebounceInterval) }
+        self.volumes = volumes ?? VolumeCatalogService()
+        self.networkBrowser = networkBrowser ?? BonjourNetworkServerBrowser()
+        self.networkMounter = networkMounter ?? WorkspaceNetworkServerMounter()
         self.viewMode = preferences.viewMode
         self.fileSystem = fileSystem
         self.fileOperations = fileOperations
@@ -815,6 +885,16 @@ final class FileBrowserState {
                 isArchive: false
             )
         ]
+        let center = NSWorkspace.shared.notificationCenter
+        volumeObservers = [
+            NSWorkspace.didMountNotification,
+            NSWorkspace.didUnmountNotification,
+            NSWorkspace.didRenameVolumeNotification
+        ].map { name in
+            center.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
+                Task { @MainActor in await self?.refreshComputerLevel() }
+            }
+        }
     }
 
     func start() async {
@@ -919,6 +999,8 @@ final class FileBrowserState {
                 await reveal(target)
             case let .finderRequest(request):
                 await performFinderRequest(request)
+            case .openInNewTab:
+                openTabHandler?(intendedURL)
             case nil:
                 let name = intendedURL.lastPathComponent
                 await navigate(to: .fileSystem(intendedURL), named: name, resetPath: true)
@@ -962,16 +1044,23 @@ final class FileBrowserState {
         }
     }
 
+    /// Activates the stored grant for a sidebar destination, first importing a pinned
+    /// folder's bookmark when no grant exists. Returns whether access is granted.
+    private func activateSidebarGrant(for url: URL) async throws -> Bool {
+        if !(await grants.hasGrant(for: url)),
+           let bookmarked = PinnedFolderStore.shared.bookmarkedURL(for: url) {
+            let started = bookmarked.startAccessingSecurityScopedResource()
+            defer { if started { bookmarked.stopAccessingSecurityScopedResource() } }
+            if started { try await grants.storeGrant(for: bookmarked) }
+        }
+        guard await grants.hasGrant(for: url) else { return false }
+        _ = try await grants.activateGrant(for: url)
+        return true
+    }
+
     func navigateToSidebar(_ url: URL, name: String) async {
         do {
-            if !(await grants.hasGrant(for: url)),
-               let bookmarked = PinnedFolderStore.shared.bookmarkedURL(for: url) {
-                let started = bookmarked.startAccessingSecurityScopedResource()
-                defer { if started { bookmarked.stopAccessingSecurityScopedResource() } }
-                if started { try await grants.storeGrant(for: bookmarked) }
-            }
-            if await grants.hasGrant(for: url) {
-                _ = try await grants.activateGrant(for: url)
+            if try await activateSidebarGrant(for: url) {
                 FinderTagCatalog.shared.refresh(searchScopes: await grants.metadataSearchScopes())
                 await navigate(to: .fileSystem(url), named: name, resetPath: true)
             } else {
@@ -1009,6 +1098,243 @@ final class FileBrowserState {
         select(result)
     }
 
+    // MARK: - Toolbar search
+
+    static let searchDebounceInterval: Duration = .milliseconds(250)
+
+    /// The scopes the search bar offers: Current Folder only when the search
+    /// began in a folder or archive, never in Recents, tags or Computer.
+    var availableSearchScopes: [BrowserSearchScope] {
+        BrowserFileSearch.supportsCurrentFolder(searchOriginComponents.last?.location)
+            ? [.thisMac, .currentFolder] : [.thisMac]
+    }
+
+    /// The name of the folder the Current Folder scope searches.
+    var currentFolderSearchName: String? {
+        guard BrowserFileSearch.supportsCurrentFolder(searchOriginComponents.last?.location) else { return nil }
+        return searchOriginComponents.last?.name
+    }
+
+    var searchResultsAreLimited: Bool {
+        fileSearch != nil && location == .recents && items.count >= BrowserSearchService.maximumResultCount
+    }
+
+    private var searchOriginComponents: [BrowserPathComponent] {
+        fileSearch?.origin ?? currentPathComponents
+    }
+
+    /// In Columns the active column, not the deepest one, is the current folder.
+    private var currentPathComponents: [BrowserPathComponent] {
+        guard let index = pathComponents.lastIndex(where: { $0.location == location }) else { return pathComponents }
+        return Array(pathComponents.prefix(index + 1))
+    }
+
+    /// Expands the toolbar field and focuses it: the search button, ⌘F and Find.
+    func beginSearch() {
+        if !isSearchPresented, fileSearch == nil {
+            searchScope = BrowserFileSearch.supportsCurrentFolder(location) ? .currentFolder : .thisMac
+        }
+        isSearchPresented = true
+        searchFieldFocusRequest &+= 1
+    }
+
+    /// Typing searches after a short pause; each keystroke cancels the pending search.
+    func updateSearchText(_ text: String) {
+        guard text != searchText else { return }
+        searchText = text
+        searchDebounceTask?.cancel()
+        let debounce = searchDebounce
+        searchDebounceTask = Task { [weak self] in
+            do { try await debounce() } catch { return }
+            guard !Task.isCancelled else { return }
+            await self?.applySearchText()
+        }
+    }
+
+    /// Return searches immediately.
+    func submitSearch() {
+        searchDebounceTask?.cancel()
+        searchDebounceTask = Task { [weak self] in await self?.applySearchText() }
+    }
+
+    /// Shows the results for the field's text and scope. Refining the query or
+    /// scope replaces the results in place; Back returns to where the search began.
+    func applySearchText() async {
+        guard let query = BrowserFileSearch.normalizedQuery(searchText) else {
+            await endFileSearch(keepingField: true)
+            return
+        }
+        if fileSearch == nil {
+            searchOriginEntry = HistoryEntry(components: pathComponents, location: location,
+                sidebarTag: selectedSidebarTag, archiveSearch: archiveSearchTerm)
+        }
+        let origin = fileSearch?.origin ?? currentPathComponents
+        let scope = BrowserFileSearch.supportsCurrentFolder(origin.last?.location) ? searchScope : .thisMac
+        let search = BrowserFileSearch(query: query, scope: scope, origin: origin)
+        guard search != fileSearch || location != .recents else { return }
+        await navigate(
+            to: .recents,
+            named: AppLocalization.string("Searching “\(query)”", locale: preferences.language.locale),
+            resetPath: true,
+            recordsHistory: fileSearch == nil,
+            fileSearch: search,
+            systemImage: "magnifyingglass"
+        )
+    }
+
+    func setSearchScope(_ scope: BrowserSearchScope) async {
+        guard scope != searchScope else { return }
+        searchScope = scope
+        guard fileSearch != nil else { return }
+        await applySearchText()
+    }
+
+    /// Escape: clears the text, returns to where the search began and collapses the field.
+    func cancelSearch() async {
+        searchDebounceTask?.cancel()
+        await endFileSearch(keepingField: false)
+    }
+
+    /// Clicking away from an empty field collapses it back to the search button.
+    func dismissSearchFieldIfIdle() {
+        guard isSearchPresented, BrowserFileSearch.normalizedQuery(searchText) == nil else { return }
+        searchDebounceTask?.cancel()
+        if fileSearch != nil {
+            Task { await endFileSearch(keepingField: false) }
+        } else {
+            searchText = ""
+            isSearchPresented = false
+        }
+    }
+
+    private func endFileSearch(keepingField: Bool) async {
+        guard let search = fileSearch else {
+            if !keepingField {
+                searchText = ""
+                isSearchPresented = false
+            }
+            return
+        }
+        let origin = searchOriginEntry ?? HistoryEntry(components: search.origin,
+            location: search.originLocation ?? .recents, sidebarTag: nil)
+        searchOriginEntry = nil
+        if let last = backStack.last, last.fileSearch == nil, last.components == origin.components {
+            backStack.removeLast()
+        } else {
+            pushHistory()
+        }
+        cancelRenaming()
+        keepsSearchFieldOnExit = keepingField
+        pathComponents = origin.components
+        location = origin.location
+        selectedSidebarTag = origin.sidebarTag
+        archiveSearchTerm = origin.archiveSearch
+        fileSearch = nil
+        selection.removeAll()
+        selectionOrder.removeAll()
+        selectionAnchor = nil
+        focusedItemID = nil
+        activeColumnLocation = origin.location
+        await reload()
+    }
+
+    /// Back and Forward show a search with its text in the expanded field.
+    private func restoreFileSearch(_ search: BrowserFileSearch?) {
+        guard let search else {
+            fileSearch = nil
+            return
+        }
+        fileSearch = search
+        searchText = search.query
+        searchScope = search.scope
+        searchOriginEntry = nil
+        isSearchPresented = true
+    }
+
+    /// Streams results into the list as they arrive. A newer reload or the
+    /// window closing cancels the query, and its late batches are discarded.
+    private func streamFileSearch(_ search: BrowserFileSearch, generation: UInt64) async throws -> [BrowserItem] {
+        let target: BrowserSearchTarget
+        switch (search.scope, search.originLocation) {
+        case let (.currentFolder, .fileSystem(url)?): target = .folder(url)
+        case let (.currentFolder, .archive(address)?): target = .archive(address)
+        default: target = .thisMac(scopes: await grants.metadataSearchScopes())
+        }
+        guard generation == reloadGeneration else { return [] }
+        let stream = searcher.results(for: BrowserSearchRequest(
+            query: search.query, target: target, showsHiddenFiles: preferences.showHiddenFiles))
+        items = []
+        columnItems[.recents] = []
+        let task = Task { [weak self] () throws -> [BrowserItem] in
+            var results: [BrowserItem] = []
+            var seen: Set<BrowserItemID> = []
+            for try await batch in stream {
+                guard let self, generation == self.reloadGeneration else { break }
+                var found: [BrowserItem] = []
+                var urls: [URL] = []
+                for match in batch {
+                    switch match {
+                    case let .item(item): found.append(item)
+                    case let .file(url): urls.append(url)
+                    }
+                }
+                if !urls.isEmpty { found += await self.loadRecentItems(at: urls, includeDirectories: true) }
+                guard generation == self.reloadGeneration, !Task.isCancelled else { break }
+                found = found.filter {
+                    (self.preferences.showHiddenFiles || !$0.isHidden) && seen.insert($0.id).inserted
+                }
+                guard !found.isEmpty else { continue }
+                results += found
+                self.items = results
+                self.columnItems[.recents] = self.preferences.sort.sorted(results)
+            }
+            return results
+        }
+        searchStreamTask = task
+        return try await withTaskCancellationHandler { try await task.value } onCancel: { task.cancel() }
+    }
+
+    /// The path after opening a result, so the path bar and Enclosing Folder
+    /// lead to where it actually is rather than back to the results.
+    private func searchResultPath(
+        to destination: BrowserPathComponent,
+        from search: BrowserFileSearch,
+        searchResultURL: URL?
+    ) -> [BrowserPathComponent] {
+        guard case let .archive(address) = destination.location else { return [destination] }
+        if let searchResultURL {
+            let parent = searchResultURL.deletingLastPathComponent().standardizedFileURL
+            return [BrowserPathComponent(location: .fileSystem(parent),
+                name: FileManager.default.displayName(atPath: parent.path), isArchive: false), destination]
+        }
+        guard case let .archive(origin)? = search.originLocation,
+              origin.sessionID == address.sessionID, origin.archiveID == address.archiveID,
+              origin.internalPath.isEmpty || address.internalPath.hasPrefix(origin.internalPath + "/") else {
+            return search.origin + [destination]
+        }
+        let relative = origin.internalPath.isEmpty
+            ? address.internalPath : String(address.internalPath.dropFirst(origin.internalPath.count + 1))
+        var components = search.origin
+        var current = origin
+        for name in relative.split(separator: "/").dropLast().map(String.init) {
+            current = current.appending(name)
+            components.append(BrowserPathComponent(location: .archive(current), name: name, isArchive: false))
+        }
+        return components + [destination]
+    }
+
+    /// A volume renamed by Finder or Disk Utility gets a new mount point; a window showing it
+    /// follows to the same folder. Zforge itself never renames volumes (OR-25).
+    func followRenamedVolume(from oldURL: URL, to newURL: URL) async {
+        let oldPath = oldURL.standardizedFileURL.path
+        let newPath = newURL.standardizedFileURL.path
+        guard oldPath != newPath, oldPath != "/",
+              let current = currentDirectoryURL?.standardizedFileURL.path,
+              current == oldPath || current.hasPrefix(oldPath + "/") else { return }
+        let target = URL(fileURLWithPath: newPath + current.dropFirst(oldPath.count), isDirectory: true)
+        await navigateToSidebar(target, name: FileManager.default.displayName(atPath: target.path))
+    }
+
     func refreshTagResults() {
         guard selectedSidebarTag != nil else { return }
         tagRefreshTask?.cancel()
@@ -1019,9 +1345,41 @@ final class FileBrowserState {
         }
     }
 
+    /// Finder's computer level (Go ▸ Computer and the sidebar computer item): the
+    /// mounted volumes and Network, titled with the Mac's current name.
     func navigateToComputer() async {
-        let root = URL(fileURLWithPath: "/", isDirectory: true)
-        await navigateToSidebar(root, name: AppLocalization.string("Computer", locale: preferences.language.locale))
+        await navigate(to: .computer, named: ComputerIdentity.name(locale: preferences.language.locale), resetPath: true)
+    }
+
+    /// Mounting, unmounting or renaming a volume refreshes a visible computer level.
+    func refreshComputerLevel() async {
+        guard !isClosed, pathComponents.contains(where: { $0.location == .computer }) else { return }
+        if location == .computer {
+            await reload(preservingColumnSelection: true)
+        } else {
+            await reloadColumnItems(at: .computer)
+        }
+    }
+
+    /// A volume opened or expanded from the computer level needs the same grant as its
+    /// sidebar row; folders inside it inherit that grant. Returns `false` after asking
+    /// for access, which then opens the volume.
+    private func activateComputerLevelAccess(for item: BrowserItem) async throws -> Bool {
+        guard case let .fileSystem(url) = item.location,
+              columnItems[.computer]?.contains(where: { $0.id == item.id }) == true else { return true }
+        guard await grants.hasGrant(for: url) else {
+            requestAuthorization(for: url, purpose: .navigate(name: item.name))
+            return false
+        }
+        _ = try await grants.activateGrant(for: url)
+        return true
+    }
+
+    private func computerLevelItems() async -> [BrowserItem] {
+        ComputerLevelCatalog.items(
+            volumes: await volumes.volumes(),
+            locale: preferences.language.locale
+        )
     }
 
     func navigateToDesktop() async {
@@ -1036,9 +1394,83 @@ final class FileBrowserState {
         await navigateToSidebar(home, name: home.lastPathComponent)
     }
 
+    /// Go ▸ Network: the Network level below the computer level, as in Finder, so the path
+    /// bar reads “Computer name › Network” and Enclosing Folder returns to the computer.
     func navigateToNetwork() async {
-        let network = URL(fileURLWithPath: "/Network", isDirectory: true)
-        await navigateToSidebar(network, name: AppLocalization.string("Network", locale: preferences.language.locale))
+        let locale = preferences.language.locale
+        let computer = BrowserPathComponent(location: .computer, name: ComputerIdentity.name(locale: locale), isArchive: false)
+        await navigate(to: .network, named: AppLocalization.string("Network", locale: locale), resetPath: true,
+                       parentComponents: [computer])
+        guard location == .network else { return }
+        columnSelections[.computer] = NetworkLevelCatalog.networkItemID
+    }
+
+    /// Starts discovery when the path shows the Network level (also as a column) and stops it,
+    /// with any pending server connection, when the level leaves the path or the window closes.
+    private func synchronizeNetworkDiscovery() {
+        let showsNetwork = !isClosed && pathComponents.contains { $0.location == .network }
+        if showsNetwork {
+            guard networkDiscoveryTask == nil else { return }
+            networkDiscoveryTask = Task { [weak self, networkBrowser] in
+                for await update in networkBrowser.updates() {
+                    guard let self, !Task.isCancelled else { return }
+                    self.applyNetworkDiscovery(update)
+                }
+            }
+        } else {
+            networkDiscoveryTask?.cancel()
+            networkDiscoveryTask = nil
+            networkConnectionTask?.cancel()
+            networkConnectionTask = nil
+            networkServers = []
+            networkDiscoveryDenied = false
+        }
+    }
+
+    /// Publishes a discovery update live, keeping the selection of servers that remain. It
+    /// replaces the items in place instead of reloading, so a shown error is not cleared.
+    private func applyNetworkDiscovery(_ update: NetworkDiscoveryUpdate) {
+        switch update {
+        case let .servers(servers):
+            networkServers = servers
+            networkDiscoveryDenied = false
+        case .denied:
+            networkServers = []
+            networkDiscoveryDenied = true
+        }
+        let loaded = NetworkLevelCatalog.items(servers: networkServers)
+        columnItems[.network] = preferences.sort.sorted(loaded)
+        guard location == .network else { return }
+        items = loaded
+        let remaining = Set(loaded.map(\.id))
+        selection.formIntersection(remaining)
+        selectionOrder.removeAll { !selection.contains($0) }
+        if let selectionAnchor, !remaining.contains(selectionAnchor) { self.selectionAnchor = nil }
+        if let focusedItemID, !remaining.contains(focusedItemID) { self.focusedItemID = nil }
+        updatePreview()
+    }
+
+    /// Opening a server of the Network level connects through the system's flow (the same as
+    /// Shared ▸ Remote) and, once its share is mounted, opens the share. A newer request, leaving
+    /// the Network level or closing the window cancels the wait without navigating.
+    private func openNetworkServer(_ url: URL) async {
+        networkConnectionTask?.cancel()
+        let task = Task { [weak self, networkMounter] in
+            do {
+                let share = try await networkMounter.mount(url)
+                guard let self, !Task.isCancelled, !self.isClosed else { return }
+                self.networkConnectionTask = nil
+                await self.navigateToSidebar(share, name: FileManager.default.displayName(atPath: share.path))
+            } catch {
+                guard let self, !Task.isCancelled, !(error is CancellationError) else { return }
+                self.networkConnectionTask = nil
+                self.error = .unavailable(
+                    AppLocalization.string("The server could not be opened.", locale: self.preferences.language.locale)
+                )
+            }
+        }
+        networkConnectionTask = task
+        await task.value
     }
 
     func navigateToDownloads() async {
@@ -1092,6 +1524,58 @@ final class FileBrowserState {
         openWindowHandler = action
     }
 
+    func configureOpenTabAction(_ action: @escaping (URL) -> Void) {
+        openTabHandler = action
+    }
+
+    /// Sidebar "Open in New Tab": opens a browser tab at the destination in this
+    /// window, asking for access first when no grant covers it.
+    func openSidebarDestinationInNewTab(_ url: URL) async {
+        do {
+            if try await activateSidebarGrant(for: url) {
+                openTabHandler?(url)
+            } else {
+                requestAuthorization(for: url, purpose: .openInNewTab)
+            }
+        } catch {
+            self.error = mapError(error)
+        }
+    }
+
+    /// Sidebar "Show in Enclosing Folder": shows the parent folder in this browser
+    /// with the destination selected, like Finder does in its own window.
+    func showInEnclosingFolder(_ url: URL) async {
+        let target = url.standardizedFileURL
+        let parent = target.deletingLastPathComponent()
+        guard target.path != "/" else { return }
+        do {
+            if await grants.hasGrant(for: parent) {
+                _ = try await grants.activateGrant(for: parent)
+                await reveal(target)
+            } else {
+                requestAuthorization(for: parent, purpose: .reveal(target: target))
+            }
+        } catch {
+            self.error = mapError(error)
+        }
+    }
+
+    /// Sidebar "Get Info": the same info window as for browser items.
+    func showGetInfo(forSidebarDestination url: URL) async {
+        do {
+            _ = try await activateSidebarGrant(for: url)
+            let item = try await fileSystem.item(at: url)
+            BrowserInfoWindowCoordinator.shared.present(
+                items: [item],
+                locale: preferences.language.locale,
+                fileSystem: fileSystem,
+                archives: archives
+            )
+        } catch {
+            self.error = mapError(error)
+        }
+    }
+
     func openInNewWindow(_ item: BrowserItem) {
         guard item.isContainer, let url = item.localURL else { return }
         openWindowHandler?(url)
@@ -1123,7 +1607,9 @@ final class FileBrowserState {
         recordsHistory: Bool = true,
         clearsSelection: Bool = true
     ) async {
-        if item.isContainer {
+        if case let .networkServer(url) = item.location {
+            await openNetworkServer(url)
+        } else if item.isContainer {
             await openContainer(item, recordsHistory: recordsHistory, clearsSelection: clearsSelection)
         } else if item.canNavigateAsArchive {
             await openArchive(item, recordsHistory: recordsHistory, clearsSelection: clearsSelection)
@@ -1149,10 +1635,13 @@ final class FileBrowserState {
         clearsSelection: Bool = true
     ) async {
         switch item.location {
-        case .recents:
+        case .recents, .computer, .networkServer:
             return
+        case .network:
+            await navigate(to: .network, named: item.name, recordsHistory: recordsHistory, clearsSelection: clearsSelection)
         case let .fileSystem(url):
             do {
+                guard try await activateComputerLevelAccess(for: item) else { return }
                 let resolved = try await fileSystem.resolveNavigationURL(url)
                 guard !Task.isCancelled else { return }
                 let key = resolved.standardizedFileURL.path
@@ -1220,7 +1709,7 @@ final class FileBrowserState {
         do {
             let result: ArchiveOpenResult
             switch item.location {
-            case .recents:
+            case .recents, .computer, .network, .networkServer:
                 return
             case let .fileSystem(url):
                 if let inlineResult = inlineArchiveResults[item.id] {
@@ -1248,7 +1737,8 @@ final class FileBrowserState {
                 named: result.displayName,
                 isArchive: true,
                 recordsHistory: recordsHistory,
-                clearsSelection: clearsSelection
+                clearsSelection: clearsSelection,
+                searchResultURL: item.localURL
             )
         } catch ArchiveEngineError.passwordRequired {
             guard !Task.isCancelled else { return }
@@ -1540,10 +2030,11 @@ final class FileBrowserState {
                   let branch = try await components(for: address.internalPath),
                   let destination = branch.last else { return nil }
             return HistoryEntry(components: Array(entry.components.prefix(index)) + branch,
-                location: destination.location, sidebarTag: entry.sidebarTag, archiveSearch: entry.archiveSearch)
+                location: destination.location, sidebarTag: entry.sidebarTag, archiveSearch: entry.archiveSearch,
+                fileSearch: entry.fileSearch)
         }
         let previous = HistoryEntry(components: pathComponents, location: location, sidebarTag: selectedSidebarTag,
-            archiveSearch: archiveSearchTerm)
+            archiveSearch: archiveSearchTerm, fileSearch: fileSearch)
         let previousRebased = try await rebased(previous)
         var refreshedBack: [HistoryEntry] = []
         var refreshedForward: [HistoryEntry] = []
@@ -2021,11 +2512,12 @@ final class FileBrowserState {
     func goBack() async {
         guard let entry = backStack.popLast() else { return }
         forwardStack.append(HistoryEntry(components: pathComponents, location: location, sidebarTag: selectedSidebarTag,
-            archiveSearch: archiveSearchTerm))
+            archiveSearch: archiveSearchTerm, fileSearch: fileSearch))
         pathComponents = entry.components
         location = entry.location
         selectedSidebarTag = entry.sidebarTag
         archiveSearchTerm = entry.archiveSearch
+        restoreFileSearch(entry.fileSearch)
         activeColumnLocation = entry.location
         await reload()
     }
@@ -2033,11 +2525,12 @@ final class FileBrowserState {
     func goForward() async {
         guard let entry = forwardStack.popLast() else { return }
         backStack.append(HistoryEntry(components: pathComponents, location: location, sidebarTag: selectedSidebarTag,
-            archiveSearch: archiveSearchTerm))
+            archiveSearch: archiveSearchTerm, fileSearch: fileSearch))
         pathComponents = entry.components
         location = entry.location
         selectedSidebarTag = entry.sidebarTag
         archiveSearchTerm = entry.archiveSearch
+        restoreFileSearch(entry.fileSearch)
         activeColumnLocation = entry.location
         await reload()
     }
@@ -2054,6 +2547,7 @@ final class FileBrowserState {
         pathComponents = Array(pathComponents.prefix(index + 1))
         location = component.location
         if component.location != .recents { selectedSidebarTag = nil; archiveSearchTerm = nil }
+        if pathComponents.first?.location != .recents { fileSearch = nil }
         activeColumnLocation = component.location
         await reload()
     }
@@ -2086,10 +2580,11 @@ final class FileBrowserState {
         refreshingColumnLocations: Set<BrowserLocation> = []
     ) async {
         reloadGeneration &+= 1
+        searchStreamTask?.cancel()
         let generation = reloadGeneration
         let currentLocation = location
-        let validSelection = selection
-        let cursorSnapshot = hierarchyCursorSnapshot()
+        var validSelection = selection
+        var cursorSnapshot = hierarchyCursorSnapshot()
         let previousRootItems = items
         isLoading = true
         error = nil
@@ -2100,7 +2595,13 @@ final class FileBrowserState {
             let loaded: [BrowserItem]
             switch currentLocation {
             case .recents:
-                if let archiveSearchTerm {
+                if let fileSearch {
+                    loaded = try await streamFileSearch(fileSearch, generation: generation)
+                    guard generation == reloadGeneration, currentLocation == location else { return }
+                    // Results stream in while the user may already select one.
+                    validSelection = selection
+                    cursorSnapshot = hierarchyCursorSnapshot()
+                } else if let archiveSearchTerm {
                     let results = try await archiveSearch.search(archiveSearchTerm)
                     guard generation == reloadGeneration, currentLocation == location else { return }
                     archiveSearchLease = results.lease
@@ -2116,6 +2617,12 @@ final class FileBrowserState {
                     let urls = await recentItems.recentItemURLs()
                     loaded = await loadRecentItems(at: urls)
                 }
+            case .computer:
+                loaded = await computerLevelItems()
+            case .network:
+                loaded = NetworkLevelCatalog.items(servers: networkServers)
+            case .networkServer:
+                loaded = []
             case let .fileSystem(url):
                 loaded = try await fileSystem.items(
                     in: url, showHidden: preferences.showHiddenFiles,
@@ -2219,12 +2726,52 @@ final class FileBrowserState {
 
     func ejectSelectedVolume() {
         guard let volumeURL = ejectableVolumeURL else { return }
+        Task { await ejectVolume(at: volumeURL) }
+    }
+
+    /// The single eject entry point shared by File ▸ Eject, the sidebar eject button and the
+    /// sidebar Eject menu item. Ejects off the main actor; a repeated request for a volume already
+    /// ejecting is ignored. Failure publishes a localized alert and keeps the current location;
+    /// success leaves a location on the volume (see `leaveUnmountedVolume(_:)`). The sidebar row
+    /// disappears through `SidebarState`'s unmount observer.
+    func ejectVolume(at volumeURL: URL, name: String? = nil) async {
+        let volume = volumeURL.standardizedFileURL
+        guard ejectingVolumeURLs.insert(volume).inserted else { return }
+        defer { ejectingVolumeURLs.remove(volume) }
+        let volumeName = name ?? FileManager.default.displayName(atPath: volume.path)
         do {
-            try NSWorkspace.shared.unmountAndEjectDevice(at: volumeURL)
-            Task { await navigateToComputer() }
+            try await volumeEjector(volume)
         } catch {
-            self.error = mapError(error)
+            self.error = .ejectFailed(
+                volumeName: volumeName,
+                inUse: VolumeEjection.isInUse(error),
+                detail: error.localizedDescription
+            )
+            return
         }
+        await leaveUnmountedVolume(volume)
+    }
+
+    /// Moves a window browsing a folder or an archive on an unmounted volume to the computer
+    /// level, which lists the remaining volumes and needs no folder authorization. Called after
+    /// Zforge's own eject and for every `NSWorkspace.didUnmountNotification` (Finder, Disk Utility,
+    /// another window).
+    func leaveUnmountedVolume(_ volumeURL: URL) async {
+        let currentURL: URL?
+        switch location {
+        case .recents, .computer, .network, .networkServer: currentURL = nil
+        case let .fileSystem(url): currentURL = url
+        case let .archive(address): currentURL = try? await archives.archiveRootURL(for: address)
+        }
+        guard let currentURL, Self.url(currentURL, isOnVolume: volumeURL) else { return }
+        await navigateToComputer()
+    }
+
+    nonisolated static func url(_ url: URL, isOnVolume volumeURL: URL) -> Bool {
+        let volumePath = volumeURL.standardizedFileURL.path
+        let path = url.standardizedFileURL.path
+        guard volumePath != "/" else { return false }
+        return path == volumePath || path.hasPrefix(volumePath.hasSuffix("/") ? volumePath : volumePath + "/")
     }
 
     func createNewFolder() {
@@ -2312,7 +2859,7 @@ final class FileBrowserState {
     }
 
     func beginRenaming(_ item: BrowserItem) {
-        guard let itemURL = item.localURL else { return }
+        guard canRename(item), let itemURL = item.localURL else { return }
         if selection != [item.id] {
             select(item)
         }
@@ -3135,7 +3682,7 @@ final class FileBrowserState {
                     return removedURLs.contains(where: { isSameOrDescendant(columnURL, of: $0) })
                 case let .archive(address):
                     return removedArchiveRoots[address.sessionID] != nil
-                case .recents:
+                case .recents, .computer, .network, .networkServer:
                     return false
                 }
             }
@@ -3161,7 +3708,7 @@ final class FileBrowserState {
                 return removedURLs.contains(where: { isSameOrDescendant(componentURL, of: $0) })
             case let .archive(address):
                 return removedArchiveRoots[address.sessionID] != nil
-            case .recents:
+            case .recents, .computer, .network, .networkServer:
                 return false
             }
         }
@@ -3358,6 +3905,12 @@ final class FileBrowserState {
             stopExpandedDirectoryMonitors(in: cachedHierarchyIDs(rootedAt: item.id))
             return
         }
+        do {
+            guard try await activateComputerLevelAccess(for: item) else { return }
+        } catch {
+            self.error = mapError(error)
+            return
+        }
         expandedItems.insert(item.id)
         let refreshesFromFileSystem: Bool = {
             guard item.isDirectory, case let .fileSystem(url) = item.location else { return false }
@@ -3378,7 +3931,7 @@ final class FileBrowserState {
                     result = existing
                 } else {
                     switch item.location {
-                    case .recents:
+                    case .recents, .computer, .network, .networkServer:
                         return
                     case let .fileSystem(url):
                         result = try await archives.openArchive(
@@ -3396,7 +3949,7 @@ final class FileBrowserState {
                 passwordError = nil
             } else {
                 switch item.location {
-                case .recents:
+                case .recents, .computer, .network, .networkServer:
                     return
                 case let .fileSystem(url):
                     children = try await fileSystem.items(
@@ -3684,8 +4237,12 @@ final class FileBrowserState {
     func close() {
         initialAutomationAccessLease = nil
         archiveSearchLease = nil
+        searchDebounceTask?.cancel()
+        searchStreamTask?.cancel()
         isClosed = true
         undoManager?.removeAllActions(withTarget: self)
+        volumeObservers.forEach(NSWorkspace.shared.notificationCenter.removeObserver)
+        volumeObservers.removeAll()
         monitor.stop()
         stopExpandedDirectoryMonitors()
         recentItems.stop()
@@ -3697,6 +4254,7 @@ final class FileBrowserState {
         columnActivationTask?.cancel()
         columnActivationTask = nil
         pendingColumnExpansionItemID = nil
+        synchronizeNetworkDiscovery()
         Task {
             await archives.cancelAllOperations()
             await archives.closeAllSessions()
@@ -3725,7 +4283,7 @@ final class FileBrowserState {
         do {
             let url: URL
             switch item.location {
-            case .recents:
+            case .recents, .computer, .network, .networkServer:
                 return
             case let .fileSystem(local): url = local
             case .archive:
@@ -3746,16 +4304,30 @@ final class FileBrowserState {
         clearsSelection: Bool = true,
         sidebarTag: String? = nil,
         archiveSearch: String? = nil,
-        systemImage: String? = nil
+        fileSearch: BrowserFileSearch? = nil,
+        searchResultURL: URL? = nil,
+        systemImage: String? = nil,
+        parentComponents: [BrowserPathComponent] = []
     ) async {
         cancelRenaming()
         if recordsHistory { pushHistory() }
+        let previousSearch = self.fileSearch
+        // Columns keep the results column while a result's contents are shown beside it.
+        let keepsSearchColumn = previousSearch != nil && !resetPath && !clearsSelection
         self.location = location
         selectedSidebarTag = sidebarTag
         archiveSearchTerm = archiveSearch
+        self.fileSearch = keepsSearchColumn ? previousSearch : fileSearch
         if resetPath {
             pendingColumnExpansionItemID = nil
-            pathComponents = [BrowserPathComponent(location: location, name: name, isArchive: isArchive, systemImage: systemImage)]
+            pathComponents = parentComponents
+                + [BrowserPathComponent(location: location, name: name, isArchive: isArchive, systemImage: systemImage)]
+            columnItems.removeAll()
+            columnSelections.removeAll()
+        } else if let previousSearch, !keepsSearchColumn {
+            pathComponents = searchResultPath(
+                to: BrowserPathComponent(location: location, name: name, isArchive: isArchive),
+                from: previousSearch, searchResultURL: searchResultURL)
             columnItems.removeAll()
             columnSelections.removeAll()
         } else {
@@ -3771,12 +4343,13 @@ final class FileBrowserState {
         stopExpandedDirectoryMonitors()
         expandedItems.removeAll()
         expandedChildren.removeAll()
-        await reload(preservingColumnSelection: !clearsSelection)
+        await reload(preservingColumnSelection: !clearsSelection,
+                     refreshingColumnLocations: Set(parentComponents.map(\.location)))
     }
 
     private func pushHistory() {
         backStack.append(HistoryEntry(components: pathComponents, location: location, sidebarTag: selectedSidebarTag,
-            archiveSearch: archiveSearchTerm))
+            archiveSearch: archiveSearchTerm, fileSearch: fileSearch))
         forwardStack.removeAll()
     }
 
@@ -4094,8 +4667,8 @@ final class FileBrowserState {
 
         for candidate in candidates {
             guard let values = try? candidate.resourceValues(
-                forKeys: [.volumeURLKey, .volumeIsEjectableKey]
-            ), values.volumeIsEjectable == true,
+                forKeys: SidebarVolume.ejectabilityKeys.union([.volumeURLKey])
+            ), SidebarVolume.isEjectable(values),
                   let volume = values.volume?.standardizedFileURL,
                   candidate.standardizedFileURL == volume else { continue }
             return volume
@@ -4173,6 +4746,14 @@ final class FileBrowserState {
     }
 
     private func reloadColumnItems(at location: BrowserLocation) async {
+        if location == .computer {
+            columnItems[.computer] = preferences.sort.sorted(await computerLevelItems())
+            return
+        }
+        if location == .network {
+            columnItems[.network] = preferences.sort.sorted(NetworkLevelCatalog.items(servers: networkServers))
+            return
+        }
         guard case let .fileSystem(url) = location else { return }
         do {
             let loaded = try await fileSystem.items(

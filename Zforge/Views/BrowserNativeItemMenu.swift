@@ -198,7 +198,7 @@ enum BrowserNativeContextMenu {
         FinderTagQuickMenu.append(to: menu, state: state, items: items, catalogTags: catalogTags)
         if item.localURL != nil {
             menu.addItem(.separator())
-            add("Rename", "pencil") { state.select(item); state.beginRenaming(item) }
+            add("Rename", "pencil", enabled: state.canRename(item)) { state.select(item); state.beginRenaming(item) }
             add("Duplicate", "plus.square.on.square") { selectTargets(); state.duplicateSelectedFiles() }
             add("Make Alias", "link") { state.select(item); state.makeAliasesForSelection() }
             add("Move to Trash", "trash") { state.select(item); state.moveSelectionToTrash() }

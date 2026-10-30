@@ -26,6 +26,7 @@ final class FileBrowserPreferences {
         static let listColumns = "browser.listColumns"
         static let directoryListColumns = "browser.directoryListColumns"
         static let knownSidebarTags = "browser.knownSidebarTags"
+        static let hiddenSidebarLocations = "browser.hiddenSidebarLocations"
         static let finderColumnWidth = "browser.finderColumnWidth"
         static let previewWidth = "browser.previewWidth"
         static let sortField = "browser.sortField"
@@ -62,6 +63,12 @@ final class FileBrowserPreferences {
     }
     private(set) var knownSidebarTags: [String] {
         didSet { defaults.set(knownSidebarTags, forKey: Key.knownSidebarTags) }
+    }
+    /// Locations categories removed from the sidebar; shared by every window.
+    private(set) var hiddenSidebarLocations: Set<SidebarLocationCategory> {
+        didSet {
+            defaults.set(hiddenSidebarLocations.map(\.rawValue).sorted(), forKey: Key.hiddenSidebarLocations)
+        }
     }
     var finderColumnWidth: CGFloat {
         didSet { defaults.set(Double(finderColumnWidth), forKey: Key.finderColumnWidth) }
@@ -227,6 +234,27 @@ final class FileBrowserPreferences {
         globalListColumns = Self.normalizedColumns(columns.map(\.rawValue))
     }
 
+    /// While a Settings row is dragged over another visible column, the dragged column
+    /// takes that column's place. Name and hidden columns are never targets.
+    func moveGlobalListColumn(_ column: BrowserListColumn, onto target: BrowserListColumn) {
+        guard column != target,
+              let from = globalListColumns.firstIndex(of: column), from > 0,
+              let to = globalListColumns.firstIndex(of: target), to > 0 else { return }
+        var columns = globalListColumns
+        columns.remove(at: from)
+        columns.insert(column, at: to)
+        setGlobalListColumns(columns)
+    }
+
+    /// Moves one default List column one step left (-1) or right (+1), never before Name.
+    func moveGlobalListColumn(_ column: BrowserListColumn, by offset: Int) {
+        var columns = globalListColumns
+        guard let index = columns.firstIndex(of: column), index > 0,
+              columns.indices.contains(index + offset), index + offset > 0 else { return }
+        columns.swapAt(index, index + offset)
+        setGlobalListColumns(columns)
+    }
+
     func setListColumns(_ columns: [BrowserListColumn], for location: BrowserLocation) {
         guard let key = Self.directoryKey(for: location) else { return }
         directoryListColumns[key] = Self.normalizedColumns(columns.map(\.rawValue)).map(\.rawValue)
@@ -240,6 +268,14 @@ final class FileBrowserPreferences {
     func hasListColumnOverride(for location: BrowserLocation) -> Bool {
         guard let key = Self.directoryKey(for: location) else { return false }
         return directoryListColumns[key] != nil
+    }
+
+    func isSidebarLocationVisible(_ category: SidebarLocationCategory) -> Bool {
+        !hiddenSidebarLocations.contains(category)
+    }
+
+    func setSidebarLocation(_ category: SidebarLocationCategory, visible: Bool) {
+        if visible { hiddenSidebarLocations.remove(category) } else { hiddenSidebarLocations.insert(category) }
     }
 
     func rememberSidebarTags(_ names: [String]) {
@@ -306,6 +342,8 @@ final class FileBrowserPreferences {
         )
         directoryListColumns = defaults.dictionary(forKey: Key.directoryListColumns) as? [String: [String]] ?? [:]
         knownSidebarTags = defaults.stringArray(forKey: Key.knownSidebarTags) ?? []
+        hiddenSidebarLocations = Set((defaults.stringArray(forKey: Key.hiddenSidebarLocations) ?? [])
+            .compactMap(SidebarLocationCategory.init(rawValue:)))
         let storedFinderWidth = defaults.double(forKey: Key.finderColumnWidth)
         finderColumnWidth = storedFinderWidth == 0 ? 260 : min(max(storedFinderWidth, 180), 800)
         let storedPreviewWidth = defaults.double(forKey: Key.previewWidth)

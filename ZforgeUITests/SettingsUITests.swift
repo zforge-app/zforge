@@ -1,7 +1,65 @@
 import XCTest
 
-/// Settings interactions that need real event delivery.
+/// Settings interactions that need real event delivery. The column order logic is
+/// covered offscreen by `ListColumnOrderTests`; this proves the drag gesture reaches it.
 final class SettingsUITests: XCTestCase {
+    @MainActor
+    func testListColumnsReorderByDragging() throws {
+        let app = XCUIApplication()
+        app.launchEnvironment["ZFORGE_UI_PREFERENCES_SUITE"] = "ZforgeSettingsUI-\(UUID().uuidString)"
+        app.launchArguments = ["--ui-fixtures", "-appLanguagePreference", "english", "-ApplePersistenceIgnoreState", "YES"]
+        app.launch()
+        app.activate()
+        defer { app.terminate() }
+
+        app.typeKey(",", modifierFlags: .command)
+        func row(_ column: String) -> XCUIElement {
+            app.descendants(matching: .any).matching(identifier: "settings-list-column-" + column).firstMatch
+        }
+        func visibleOrder() -> [String] {
+            ["modificationDate", "size", "kind"].sorted { row($0).frame.minY < row($1).frame.minY }
+        }
+        let kind = row("kind")
+        XCTAssertTrue(kind.waitForExistence(timeout: 5), app.debugDescription)
+        XCTAssertEqual(visibleOrder(), ["modificationDate", "size", "kind"])
+
+        // The section sits below the fold; the gesture needs its rows on screen.
+        let settingsWindow = app.windows["com_apple_SwiftUI_Settings_window"]
+        func rowsOnScreen() -> Bool {
+            ["modificationDate", "kind"].allSatisfy { settingsWindow.frame.insetBy(dx: 0, dy: 40).contains(row($0).frame) }
+        }
+        for _ in 0..<20 where !rowsOnScreen() {
+            settingsWindow.scrollViews.firstMatch.scroll(byDeltaX: 0, deltaY: -120)
+        }
+        XCTAssertTrue(rowsOnScreen(), "List Columns rows must be scrolled into view")
+
+        // One drag from Kind's leading handle moves it two places, above Date Modified.
+        let start = kind.coordinate(withNormalizedOffset: CGVector(dx: 0, dy: 0.5)).withOffset(CGVector(dx: 8, dy: 0))
+        let target = row("modificationDate").coordinate(withNormalizedOffset: CGVector(dx: 0, dy: 0.4))
+            .withOffset(CGVector(dx: 8, dy: 0))
+        start.click(forDuration: 0.3, thenDragTo: target)
+
+        let reordered = NSPredicate { _, _ in visibleOrder() == ["kind", "modificationDate", "size"] }
+        XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: reordered, object: nil)], timeout: 5),
+                       .completed, "Order after the drag: \(visibleOrder())")
+        let capture = XCTAttachment(screenshot: app.windows["com_apple_SwiftUI_Settings_window"].screenshot())
+        capture.name = "List columns after drag"
+        capture.lifetime = .keepAlways
+        add(capture)
+
+        // The browser's List header follows the new default order.
+        app.windows["com_apple_SwiftUI_Settings_window"].buttons[XCUIIdentifierCloseWindow].click()
+        let browserWindow = app.windows.matching(NSPredicate(format: "identifier BEGINSWITH %@", "browser-")).firstMatch
+        if !browserWindow.waitForExistence(timeout: 3) {
+            app.typeKey("n", modifierFlags: .command)
+        }
+        XCTAssertTrue(browserWindow.waitForExistence(timeout: 5), app.debugDescription)
+        app.typeKey("2", modifierFlags: .command)
+        let headers = ["Kind", "Date Modified", "Size"].map { app.buttons[$0].firstMatch }
+        XCTAssertTrue(headers[0].waitForExistence(timeout: 5), app.debugDescription)
+        XCTAssertEqual(headers.map(\.frame.minX), headers.map(\.frame.minX).sorted(), "List header order")
+    }
+
     /// The scale's steps and holds are covered offscreen by `SettingsSliderTests`, which call
     /// the slider's action directly. Only real mouse tracking proves that the knob, while
     /// AppKit drags it, holds on a round value and then continues with the next step.

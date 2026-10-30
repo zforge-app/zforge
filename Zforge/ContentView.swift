@@ -15,6 +15,8 @@ enum BrowserToolbarLayout {
         let includesViewSelector: Bool
         let includesArchiveAction: Bool
         let includesShareAction: Bool
+        /// The search button joins the menu only when no toolbar space is left for it.
+        var includesSearchAction = false
     }
 
     static func stage(for windowWidth: CGFloat) -> Stage {
@@ -29,7 +31,8 @@ extension BrowserToolbarLayout.Stage {
     var overflowMenuContents: BrowserToolbarLayout.OverflowMenuContents {
         switch self {
         case .unifiedOverflow:
-            .init(includesViewSelector: true, includesArchiveAction: true, includesShareAction: true)
+            .init(includesViewSelector: true, includesArchiveAction: true, includesShareAction: true,
+                  includesSearchAction: true)
         case .compactWithActionsOverflow:
             .init(includesViewSelector: false, includesArchiveAction: true, includesShareAction: true)
         case .compactWithArchiveAction:
@@ -109,7 +112,6 @@ struct ContentView: View {
                 browser: browser,
                 sidebar: sidebar,
                 windowWidth: windowWidth,
-                showingServerSheet: serverSheetBinding,
                 restoreContentFocus: restoreContentFocus,
                 dragSession: dragSession
             )
@@ -117,6 +119,12 @@ struct ContentView: View {
             .toolbar { browserNavigationToolbar }
         } detail: {
             VStack(spacing: 0) {
+                if browser.fileSearch != nil && browser.location == .recents {
+                    BrowserSearchScopeBar(state: browser)
+                }
+                if NetworkLevelBar.isShown(for: browser) {
+                    NetworkLevelBar(state: browser)
+                }
                 if browser.pendingAuthorizationURL != nil && browser.items.isEmpty {
                     authorizationPlaceholder
                 } else {
@@ -157,12 +165,23 @@ struct ContentView: View {
             await browser.start()
             restoreContentFocus()
         }
+        .onReceive(NSWorkspace.shared.notificationCenter.publisher(for: NSWorkspace.didUnmountNotification)) { notification in
+            guard let volumeURL = notification.userInfo?[NSWorkspace.volumeURLUserInfoKey] as? URL else { return }
+            Task { await browser.leaveUnmountedVolume(volumeURL) }
+        }
         .onAppear {
             browser.configureUndoManager(undoManager)
             browser.configureOpenWindowAction { url in
                 openWindow(
                     id: "browser",
                     value: BrowserWindowRequest(initialURL: url)
+                )
+            }
+            browser.configureOpenTabAction { [browser] url in
+                let source = BrowserWindowLifecycle.shared.window(for: browser) ?? NSApp.keyWindow
+                openWindow(
+                    id: "browser",
+                    value: BrowserWindowRequest(initialURL: url, tabSourceWindowNumber: source?.windowNumber)
                 )
             }
             applyUITestWindowWidthIfNeeded()
@@ -367,6 +386,10 @@ struct ContentView: View {
                 .help("More")
                 .accessibilityLabel("More")
             }
+            // The search button lives in this menu; an active search keeps its field.
+            if browser.isSearchPresented {
+                browserSearchToolbarItem
+            }
         case .compactWithActionsOverflow:
             ToolbarItem(id: "view-mode-selector-compact-actions", placement: .primaryAction) {
                 ViewModeToolbarControl(
@@ -387,6 +410,7 @@ struct ContentView: View {
                 .help("More")
                 .accessibilityLabel("More")
             }
+            browserSearchToolbarItem
         case .compactWithArchiveAction:
             ToolbarItem(id: "view-mode-selector-compact-archive", placement: .primaryAction) {
                 ViewModeToolbarControl(
@@ -420,6 +444,7 @@ struct ContentView: View {
                 .help("More")
                 .accessibilityLabel("More")
             }
+            browserSearchToolbarItem
         case .expanded:
             ToolbarItem(id: "view-mode-selector-expanded", placement: .primaryAction) {
                 ViewModeToolbarControl(
@@ -471,6 +496,16 @@ struct ContentView: View {
                 .accessibilityLabel("More")
                 .accessibilityIdentifier("toolbar-more-menu")
             }
+            browserSearchToolbarItem
+        }
+    }
+
+    /// After the action group, in its own capsule, as in Finder.
+    @ToolbarContentBuilder
+    private var browserSearchToolbarItem: some ToolbarContent {
+        ToolbarSpacer(.fixed, placement: .primaryAction)
+        ToolbarItem(id: "toolbar-search", placement: .primaryAction) {
+            BrowserToolbarSearchControl(state: browser, restoreContentFocus: restoreContentFocus)
         }
     }
 
@@ -508,6 +543,7 @@ struct ContentView: View {
             includesViewSelector: contents.includesViewSelector,
             includesArchiveAction: contents.includesArchiveAction,
             includesShareAction: contents.includesShareAction,
+            includesSearchAction: contents.includesSearchAction,
             showToast: showToast,
             restoreContentFocus: restoreContentFocus
         )
@@ -520,7 +556,7 @@ struct ContentView: View {
         focusRestoreTask?.cancel()
         focusRestoreTask = Task { @MainActor in
             await Task.yield()
-            guard !Task.isCancelled, browser.renamingItemID == nil else { return }
+            guard !Task.isCancelled, browser.renamingItemID == nil, !browser.searchFieldHasFocus else { return }
             if browserFocus != .content {
                 browserFocus = .content
             }
@@ -542,9 +578,12 @@ struct ContentView: View {
             window.setContentSize(NSSize(width: width, height: height))
             // Keep native cascading when visible so one fixture window cannot
             // cover another window's close control. Clamp only offscreen frames.
+            // `--ui-window-leading` anchors the window to the screen's leading edge
+            // for tests that need the rest of the screen free (Finder drops).
             if let visibleFrame {
+                let minX = arguments.contains("--ui-window-leading") ? visibleFrame.minX : window.frame.minX
                 window.setFrameOrigin(NSPoint(
-                    x: min(max(window.frame.minX, visibleFrame.minX),
+                    x: min(max(minX, visibleFrame.minX),
                            max(visibleFrame.minX, visibleFrame.maxX - window.frame.width)),
                     y: min(max(window.frame.minY, visibleFrame.minY),
                            max(visibleFrame.minY, visibleFrame.maxY - window.frame.height))

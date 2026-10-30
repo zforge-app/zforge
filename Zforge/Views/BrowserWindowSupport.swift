@@ -110,6 +110,10 @@ final class BrowserWindowLifecycle: NSObject {
         entries[ObjectIdentifier(window)] = Entry(window: window, browser: browser)
     }
 
+    func window(for browser: FileBrowserState) -> NSWindow? {
+        entries.values.first { $0.browser === browser }?.window
+    }
+
     @objc private func windowWillClose(_ notification: Notification) {
         guard let window = notification.object as? NSWindow,
               let entry = entries.removeValue(forKey: ObjectIdentifier(window)),

@@ -41,6 +41,32 @@ struct FileIconViewTests {
         #expect(composed.representations.contains { $0 is NSCustomImageRep })
     }
 
+    @Test("Volume roots show the system volume icon, not the composed folder, closed and open")
+    @MainActor
+    func volumeRootsUseSystemVolumeIcon() throws {
+        func pixels(_ image: NSImage) throws -> Data {
+            let bitmap = try #require(NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: 64, pixelsHigh: 64,
+                bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
+                colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0))
+            NSGraphicsContext.saveGraphicsState()
+            NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: bitmap)
+            image.draw(in: NSRect(x: 0, y: 0, width: 64, height: 64))
+            NSGraphicsContext.restoreGraphicsState()
+            return try #require(bitmap.tiffRepresentation)
+        }
+        // The startup volume is mounted at `/` on every test machine.
+        let root = URL(fileURLWithPath: "/", isDirectory: true)
+        let systemVolumeIcon = try pixels(NSWorkspace.shared.icon(forFile: root.path))
+        #expect(try pixels(FileIconCache.shared.icon(for: root)) == systemVolumeIcon)
+        #expect(try pixels(FileIconCache.shared.openFolderIcon(for: root)) == systemVolumeIcon)
+
+        let folder = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ZforgeVolumeIcon-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        #expect(try pixels(FileIconCache.shared.icon(for: folder)) != systemVolumeIcon)
+    }
+
     @Test("Open drop-target folders reflect their actual contents state")
     @MainActor
     func openDropTargetFolderReflectsContentsState() throws {

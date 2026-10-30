@@ -8,6 +8,7 @@ enum BrowserActionsMenu {
         includesViewSelector: Bool = false,
         includesArchiveAction: Bool = false,
         includesShareAction: Bool = false,
+        includesSearchAction: Bool = false,
         showToast: @escaping @MainActor (String) -> Void,
         restoreContentFocus: @escaping @MainActor () -> Void = {},
         catalogTags: [FinderTag] = FinderTagCatalog.shared.tags
@@ -54,6 +55,20 @@ enum BrowserActionsMenu {
             }
             viewItem.submenu = viewMenu
             menu.addItem(viewItem)
+            menu.addItem(.separator())
+        }
+
+        if includesSearchAction {
+            let searchItem = ClosureMenuItem(
+                title: AppLocalization.string("Search", locale: locale),
+                systemImage: "magnifyingglass",
+                isEnabled: true
+            ) {
+                browser.beginSearch()
+            }
+            searchItem.keyEquivalent = "f"
+            searchItem.keyEquivalentModifierMask = .command
+            menu.addItem(searchItem)
             menu.addItem(.separator())
         }
 

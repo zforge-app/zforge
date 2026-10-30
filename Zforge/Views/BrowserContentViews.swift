@@ -101,6 +101,13 @@ struct BrowserContent: View {
                     Text("No archive directly inside your allowed folders has a name containing “\(term)”.")
                 }
                 .accessibilityIdentifier("archive-search-empty")
+            } else if let search = state.fileSearch, state.location == .recents, state.items.isEmpty,
+                      !state.isLoading, state.error == nil {
+                ContentUnavailableView.search(text: search.query)
+                    .accessibilityIdentifier("file-search-empty")
+            } else if state.location == .network, state.networkDiscoveryDenied, state.items.isEmpty,
+                      state.error == nil {
+                NetworkLocalAccessDeniedView()
             }
         }
     }

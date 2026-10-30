@@ -27,6 +27,8 @@
         "Zforge/Services/RecentItemsService.swift",
         "Zforge/Services/UserDirectoryService.swift",
         "Zforge/Services/VolumeService.swift",
+        "Zforge/Services/ComputerIdentity.swift",
+        "Zforge/Services/NetworkDiscovery.swift",
         "Zforge/Services/DirectoryMonitor.swift",
         "Zforge/Services/AccessGrantStore.swift",
         "Zforge/Services/PinnedFolderStore.swift"
@@ -43,6 +45,7 @@
       "name": "App shell, commands and Settings",
       "paths": [
         "Zforge/ZforgeApp.swift",
+        "Zforge/Views/SidebarSettingsSection.swift",
         "Zforge/AppDelegate.swift",
         "Zforge/Info.plist",
         "Zforge/Zforge.entitlements"
@@ -61,6 +64,7 @@
         "ZforgeUITests/ZforgeUITests/testLocalDragsOptionCopyAndConfirmAdditionToArchive",
         "ZforgeUITests/ZforgeUITests/testNewFolderWithSelectionMenuAndShortcutInListMode",
         "ZforgeUITests/ZforgeUITests/testViewModeIsPerWindowAndLastClosedWindowRestoresIt",
+        "ZforgeUITests/SettingsUITests/testListColumnsReorderByDragging",
         "ZforgeUITests/SettingsUITests/testArchiveSizeLimitSliderHoldsRoundValuesWhileDragging"
       ]
     },
@@ -75,11 +79,23 @@
       ]
     },
     {
+      "name": "Toolbar search: query, debounce, scopes, results and history are proven by BrowserSearchTests; the UI test proves ⌘F focus and Escape in the real window",
+      "paths": [
+        "Zforge/Services/BrowserSearchService.swift",
+        "Zforge/Views/BrowserSearchViews.swift"
+      ],
+      "tests": [
+        "ZforgeUITests/BrowserSearchUITests/testCommandFFocusesToolbarSearchAndEscapeCollapsesIt",
+        "ZforgeUITests/ZforgeUITests/testCompactToolbarMenusOpenFromTheirToolbarButtons"
+      ]
+    },
+    {
       "name": "Window content and toolbar",
       "paths": [
         "Zforge/ContentView.swift"
       ],
       "tests": [
+        "ZforgeUITests/BrowserSearchUITests/testCommandFFocusesToolbarSearchAndEscapeCollapsesIt",
         "ZforgeUITests/IconPreviewUITests/testSettingsToggleUpdatesTheOpenGridAndKeepsSelection",
         "ZforgeUITests/ZforgeUITests/testBlankAreaUsesMoreMenuInEveryView",
         "ZforgeUITests/ZforgeUITests/testCompactToolbarMenusOpenFromTheirToolbarButtons",
@@ -107,6 +123,7 @@
       "name": "Localization",
       "paths": [
         "Zforge/Localizable.xcstrings",
+        "Zforge/InfoPlist.xcstrings",
         "Zforge/Services/AppLocalization.swift"
       ],
       "tests": [
@@ -207,6 +224,7 @@
       "name": "Shared browser views and gestures",
       "paths": [
         "Zforge/Views/BrowserContentViews.swift",
+        "Zforge/Views/NetworkLevelViews.swift",
         "Zforge/Views/FinderClickGesture.swift",
         "Zforge/Views/BrowserArchiveContext.swift"
       ],
@@ -226,6 +244,10 @@
       "paths": [
         "Zforge/Views/BrowserNavigationViews.swift",
         "Zforge/Views/SidebarInteraction.swift",
+        "Zforge/Views/SidebarItemMenu.swift",
+        "Zforge/Views/SidebarEjectButton.swift",
+        "Zforge/Views/SidebarComputerRow.swift",
+        "Zforge/Views/SidebarLocationMenu.swift",
         "Zforge/Views/SidebarSplitConstraint.swift"
       ],
       "tests": [

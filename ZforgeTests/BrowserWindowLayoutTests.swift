@@ -10,10 +10,10 @@ import Testing
 struct BrowserWindowLayoutTests {
     @Test("Each toolbar stage presents its controls in the real window", arguments: [
         (650.0, ["toolbar-overflow-menu-unified"], false),
-        (720.0, ["view-mode-selector-compact-actions", "toolbar-overflow-menu-compact-actions"], false),
+        (720.0, ["view-mode-selector-compact-actions", "toolbar-overflow-menu-compact-actions", "toolbar-search"], false),
         (860.0, ["view-mode-selector-compact-archive", "archive-contextual-action-compact",
-                 "toolbar-overflow-menu-compact-archive"], false),
-        (1_100.0, ["view-mode-selector-expanded"], true)
+                 "toolbar-overflow-menu-compact-archive", "toolbar-search"], false),
+        (1_100.0, ["view-mode-selector-expanded", "toolbar-search"], true)
     ])
     func toolbarStages(width: Double, primaryItemIDs: [String], showsSegmentedSelector: Bool) async throws {
         let host = try await BrowserWindowHost(width: CGFloat(width))
@@ -25,6 +25,11 @@ struct BrowserWindowLayoutTests {
                 && identifier != NSToolbarItem.Identifier.space.rawValue
         }
         #expect(namedItems == primaryItemIDs, "Toolbar at \(width) points")
+        // The search item trails the toolbar in its own capsule, after a fixed space.
+        if primaryItemIDs.last == "toolbar-search", items.count >= 2 {
+            #expect(items.last?.itemIdentifier.rawValue == "toolbar-search")
+            #expect(items[items.count - 2].itemIdentifier == .space)
+        }
 
         // The segmented selector shows each mode as a segment; compact stages
         // replace it with one menu button, so no segment remains visible.
@@ -34,6 +39,18 @@ struct BrowserWindowLayoutTests {
         } else {
             #expect(segmentedControls.isEmpty, "Toolbar at \(width) points shows the segmented view selector")
         }
+    }
+
+    @Test("Below 678 points the search field appears in the toolbar only while a search is in use")
+    func unifiedStageSearchField() async throws {
+        let host = try await BrowserWindowHost(width: 650)
+        defer { host.close() }
+        func identifiers() -> [String] { (host.window.toolbar?.items ?? []).map(\.itemIdentifier.rawValue) }
+        #expect(!identifiers().contains("toolbar-search"))
+        host.state.beginSearch()
+        try await host.waitUntil { identifiers().last == "toolbar-search" }
+        host.state.dismissSearchFieldIfIdle()
+        try await host.waitUntil { !identifiers().contains("toolbar-search") }
     }
 
     @Test("The sidebar cannot consume the content's last 360 points")
@@ -69,11 +86,11 @@ struct BrowserWindowLayoutTests {
 @MainActor
 struct ToolbarOverflowMenuTests {
     @Test("Each compact stage's menu offers the controls the toolbar moved into it", arguments: [
-        (650.0, ["View", "Compress Selected", "Share", "Open", "Quick Look", "Get Info", "Edit Tags", "Rename", "Duplicate"],
+        (650.0, ["View", "Search", "Compress Selected", "Share", "Open", "Quick Look", "Get Info", "Edit Tags", "Rename", "Duplicate"],
          [String]()),
-        (720.0, ["Compress Selected", "Share", "Open", "Quick Look", "Get Info"], ["View"]),
+        (720.0, ["Compress Selected", "Share", "Open", "Quick Look", "Get Info"], ["View", "Search"]),
         (860.0, ["Share", "Open", "Quick Look", "Get Info", "Edit Tags", "Rename", "Duplicate"],
-         ["View", "Compress Selected"])
+         ["View", "Search", "Compress Selected"])
     ])
     func overflowContents(width: Double, present: [String], absent: [String]) async throws {
         let fixture = try BrowserFixture()
@@ -115,6 +132,7 @@ struct ToolbarOverflowMenuTests {
             includesViewSelector: contents.includesViewSelector,
             includesArchiveAction: contents.includesArchiveAction,
             includesShareAction: contents.includesShareAction,
+            includesSearchAction: contents.includesSearchAction,
             showToast: { _ in }
         )
     }

@@ -199,11 +199,17 @@ final class FileIconCache {
             return icon
         }
 
-        let icon = isDirectory && !isPackage
+        let icon = isDirectory && !isPackage && !Self.isVolumeRoot(standardizedURL)
             ? localDirectoryIcon(hasContents: hasContents)
             : NSWorkspace.shared.icon(forFile: standardizedURL.path)
         cache.setObject(icon, forKey: key)
         return icon
+    }
+
+    /// A mounted volume's root shows the system icon of its volume type (internal disk, external
+    /// or removable drive, disk image, network volume), as in Finder, never the composed folder.
+    private static func isVolumeRoot(_ url: URL) -> Bool {
+        (try? url.resourceValues(forKeys: [.isVolumeKey]))?.isVolume == true
     }
 
     func openFolderIcon(for item: BrowserItem) -> NSImage {
@@ -237,7 +243,9 @@ final class FileIconCache {
         isPackage: Bool,
         modificationDate: Date?
     ) -> NSImage {
-        guard isDirectory, !isPackage else { return NSWorkspace.shared.icon(forFile: url.path) }
+        guard isDirectory, !isPackage, !Self.isVolumeRoot(url.standardizedFileURL) else {
+            return NSWorkspace.shared.icon(forFile: url.path)
+        }
         let hasContents = FolderContentsDetector.hasContents(
             at: url.standardizedFileURL,
             modificationDate: modificationDate,
@@ -337,6 +345,10 @@ struct FileIconView: View {
                 )
             } else if item.localURL != nil {
                 Image(nsImage: FileIconCache.shared.icon(for: item))
+                    .resizable()
+                    .interpolation(.high)
+            } else if let networkIcon = NetworkLevelCatalog.icon(for: item) {
+                Image(nsImage: networkIcon)
                     .resizable()
                     .interpolation(.high)
             } else {

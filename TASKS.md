@@ -524,3 +524,69 @@ Pending: the mapped UI tests (they take over the screen) and a look at the real 
 - The preference is now `archiveRootSizeLimit` in decimal bytes (`archive.rootSizeLimitBytes`), migrating the former whole-GB key; `ArchiveBrowsingPolicy` owns both ranges.
 
 Pending: `SettingsUITests.testArchiveSizeLimitSliderHoldsRoundValuesWhileDragging` and the other mapped UI tests (blocked: a Debug Zforge held by Xcode's debugger could not be terminated), and a look at the sliders in the running app (drag feel, haptics on a Force Touch trackpad, both themes, VoiceOver).
+
+### ZF-48 — Sidebar icon tint like Finder (2026-10-29)
+
+**Implemented; offscreen tests added; Unit plan, snapshot review and in-app check pending (see REGRESSION-COVERAGE).** The user compared the sidebar with Finder: Locations icons must be light gray rather than accent, and every icon must turn gray in an inactive window, as the Remote icon already did.
+- `SidebarIconTint` (accent/neutral role) and the shared `sidebarIconStyle` modifier (`Zforge/Views/BrowserNavigationViews.swift`) read the native `appearsActive` environment. The Locations section sets the neutral role once, so rows added to it inherit it; mounted network volumes are neutral too. Recents and Remote use the same style, so all icons match when inactive. Tag dots keep their color while active and turn gray in an inactive window (user request, 2026-10-30). 2026-10-30: every row name uses the shared `sidebarLabelStyle` and turns gray in an inactive window, as in Finder (Recents and Remote through `SidebarActionRow`).
+
+### ZF-49 — Sidebar item menu with Finder parity (Favorites; 2026-10-29)
+
+**Implemented; offscreen tests added; Unit plan, mapped UI tests and in-app check pending (see REGRESSION-COVERAGE).** The user asked for Finder's Favorites context menu: Open in New Tab, Show in Enclosing Folder │ Remove from Sidebar │ Get Info, Add to Dock. Add to Dock was then removed at the user's request (OR-22, resolved 2026-10-29).
+- `SidebarItemMenu` (`Zforge/Views/SidebarItemMenu.swift`) is the shared model (groups, ids, titles, symbols, enablement, actions) rendered by `SidebarItemMenuContent` in `.contextMenu` and by `nsMenu()` for tests; `SidebarItemMenuActions` runs the commands for a window. Locations reuses it and inserts its volume groups.
+- `FileBrowserState.openSidebarDestinationInNewTab(_:)`, `showInEnclosingFolder(_:)` and `showGetInfo(forSidebarDestination:)`; the tab opener is configured per window in `ContentView` and attaches to the window that owns the sidebar (`BrowserWindowLifecycle.window(for:)`).
+- Add to Dock is not offered: impossible under the App Sandbox, removed at the user's request (OR-22, resolved). Recents has no menu: it is a virtual location without a folder URL.
+
+Pending: real right-click presentation and Open in New Tab tab attachment in the running app (light/dark, a long language such as German).
+
+
+### ZF-50 — Inline eject button for ejectable volumes in Locations (2026-10-29)
+
+**Implemented; offscreen tests added (results in REGRESSION-COVERAGE); mapped UI tests and in-app check pending.** The user's “Ventoy” USB drive had no ⏏ button in the sidebar, unlike Finder.
+- `SidebarVolume.isEjectable` / `isRemovable` (`Zforge/Services/VolumeService.swift`) with one ejectability policy (`SidebarVolume.isEjectable(_:)`) shared by the sidebar and File ▸ Eject; `VolumeEjection` ejects on a detached task and classifies busy failures (verified: a held file on a disk image throws `NSOSStatusErrorDomain` −47).
+- `FileBrowserState.ejectVolume(at:name:)` is the single eject handler (button, File ▸ Eject, sidebar Eject menu item): in-flight tracking (`ejectingVolumeURLs`), `BrowserError.ejectFailed` alerts, and `leaveUnmountedVolume(_:)` moves windows on the unmounted volume to the computer level, also for unmounts observed from outside (`ContentView`).
+- `SidebarEjectButton` (`Zforge/Views/SidebarEjectButton.swift`) is overlaid at the row's trailing edge in a reserved 20 pt slot.
+
+Pending: the inline button for Shared network volumes; ejecting while browsing inside an archive stored on the volume may fail as busy if the archive engine still holds the file (not measured); in-app check with a real removable drive (light/dark, inactive window, long language, selected row).
+
+### ZF-51 — Context menu for sidebar Locations items (2026-10-29)
+
+**Implemented; offscreen tests added (results in REGRESSION-COVERAGE); mapped UI tests and in-app check pending.** Right-clicking a Locations item (home, Macintosh HD, “Ventoy”) opened no menu; the user asked for the Favorites options plus Finder's volume items.
+- `SidebarItemMenu.location` and `SidebarItemMenuActions.locationMenu` / `computerMenu` (`Zforge/Views/SidebarLocationMenu.swift`) reuse ZF-49's shared menu and insert Eject (ZF-50's `ejectVolume(at:name:)`); `SidebarLocationMenu.commands(for:canEject:)` holds the per-kind rules; `SidebarVolume.locationKind`, plus `isRootFileSystem` in `VolumeService`.
+- ~~Rename~~ (removed 2026-10-30 at the user's request, OR-25 resolved: the App Sandbox denies Disk Arbitration's `system.volume.removable.rename` authorization, so renaming “Ventoy”, mounted by root, failed with “You don’t have permission to rename “Ventoy”.”; the rename code below, `VolumeRenamer.swift` and its strings were deleted, volume roots can no longer start the content rename (`FileBrowserState.canRename(_:)`), and only `followRenamedVolume(from:to:)` remains, for volumes renamed by Finder or Disk Utility): `SidebarState.renamingVolumeURL` / `volumeRenameDraft`, inline `SidebarVolumeNameField`, `FileBrowserState.renameVolume(at:from:to:)` (Disk Arbitration's `DADiskRename` through the injected `VolumeRenaming` / `DiskArbitrationVolumeRenamer` after activating the grant covering the volume, the access panel when there is none, and localized messages per dissenter status — fix of the user's 2026-10-30 report that renaming “Ventoy” failed with “You don’t have permission to save the file “Ventoy” in the folder “Volumes”.”) and `followRenamedVolume(from:to:)` on `NSWorkspace.didRenameVolumeNotification`.
+- Erase Disk… is not offered: first delivered as opening Disk Utility, then removed at the user's request (2026-10-30) because the App Sandbox blocks erasing (OR-23, resolved).
+- Remove from Sidebar hides a Finder category: `FileBrowserPreferences.hiddenSidebarLocations` (`SidebarLocationCategory`), Settings ▸ Sidebar (`SidebarSettingsSection`) re-enables it; the computer row (ZF-52) and the Locations/Shared rows honor it.
+
+Pending: in-app right-click on a real removable drive, the boot volume and a network share (light/dark, a long language); following a mount point renamed in Finder or Disk Utility in the app; an in-app check that Rename is disabled for volume roots at the computer level; comparison with Finder's menus for the boot volume, network shares and the computer item; Open in New Tab / Get Info for the computer item.
+
+### ZF-52 — Computer item in sidebar Locations and the computer level (2026-10-29)
+
+**Implemented; offscreen tests added; results and pending checks in REGRESSION-COVERAGE.** The user reversed the earlier decision that Zforge did not need Finder's computer shortcut: Locations now starts with the computer item (the Mac's system name, e.g. “MacBook Air de Felipe”), which opens Finder's computer level (mounted volumes and Network). Contract in CURRENT-STATE §2 and the UI-UX-GUIDE sidebar section.
+- `ComputerIdentity` (`Zforge/Services/ComputerIdentity.swift`): system computer name and model-family symbol from the device-model type hierarchy; `VolumeCataloging` (injectable volume source) and `ComputerLevelCatalog` (volume and Network items).
+- `BrowserLocation.computer` handled by every location switch; `FileBrowserState.navigateToComputer()` (Go ▸ Computer, `⇧⌘C`, previously `/`), `refreshComputerLevel()` on mount/unmount/rename, and the volume access check for open and List expansion.
+- `SidebarComputer` (`SidebarState.computer`, kind `SidebarLocationKind.computer`) and `SidebarComputerRow`; visibility uses the `computer` category of Settings ▸ Sidebar (ZF-49 follow-up for Locations menus), shown by default.
+
+Pending: in-app check of the row and the computer level in the four modes (light/dark, a long language, narrow sidebar), real mount/unmount while the level is visible, and the mapped UI tests. Not done: disabling Duplicate/Compress/Move to Trash for volume roots at the computer level (the system currently rejects them with its error), and a Finder-like proxy icon for the computer window.
+
+**Follow-up — Network at the computer level and the Network level (2026-10-30, user request “Também não tem o Network”). Implemented; offscreen tests added; results in REGRESSION-COVERAGE.** Network was never listed because the catalog required a `/Network` folder, which macOS 26 does not have.
+- [x] Network always listed at the computer level with the system network icon; the `/Network` assumption and `VolumeCataloging.networkURL()` removed (contract change recorded in CURRENT-STATE and `ComputerLocationTests`).
+- [x] `BrowserLocation.network` (level) and `.networkServer(URL)` (server item) in every location switch; Go ▸ Network (`⇧⌘K`) opens `Computer › Network`.
+- [x] Bonjour discovery (`NetworkDiscovery.swift`: `NetworkServerBrowsing`, `BonjourNetworkServerBrowser`), live and cancelled with the level or the window; empty and access-denied states (`NetworkLevelViews.swift`); `NSBonjourServices` and localized `NSLocalNetworkUsageDescription` (`InfoPlist.xcstrings`).
+- [x] Opening a server mounts through the system connect flow (`NetworkServerMounting`, `WorkspaceNetworkServerMounter`) and opens the share.
+- [ ] In-app check with a real SMB server (discovery, Local Network prompt, denial, mount, four modes, light/dark, a long language); gaps in OPEN-REQUIREMENTS “Network level gaps”.
+
+**Follow-up — Add Remote in Network and Network in Locations (2026-10-30, user request). Implemented; offscreen tests added; results in REGRESSION-COVERAGE.** The user removed the “No Servers Found” notice and spinner, moved the sidebar's Shared ▸ Remote row into the Network level as **Add Remote**, and asked for Network in sidebar Locations while keeping it at the computer level.
+- [x] `NetworkLevelBar` (top of the Network level in every mode, independent of the server list) with **Add Remote…** → `FileBrowserState.showServerConnection()`, shared with Go ▸ Remote (`⌘K`) and the single sheet in `ContentView`. Empty state and spinner removed; “Local Network Access Is Off” kept (`NetworkLocalAccessDeniedView`).
+- [x] Sidebar: Remote row removed; Shared header hidden without mounted shares; `SidebarActionRow` kept for Recents.
+- [x] Sidebar Locations ▸ Network (`SidebarNetworkRow`, shared `SidebarVirtualLocationRow` with the computer row) after the volumes; `SidebarLocationCategory.network` with its Settings ▸ Sidebar toggle; menu `SidebarItemMenuActions.networkMenu()` (Remove from Sidebar only).
+- [ ] In-app check of the bar in the four modes (light/dark, a long language, narrow width), the sheet from Add Remote, the sidebar row's highlight/inactive gray, and the mapped UI tests.
+
+### ZF-53 — Toolbar search with Finder parity (2026-10-30, OR-24)
+
+**Implemented; offscreen tests added; results and pending checks in REGRESSION-COVERAGE.** The user asked for search in the toolbar with the magnifying glass to the right of the archive/Share/Tags/More group.
+- [x] `toolbar-search` item after the action group in its own capsule; `⌘F` File ▸ Find; overflow **Search** below 678 pt; inline field with debounce, Return, clear, Escape and click-away collapse (`BrowserSearchViews.swift`).
+- [x] Scopes This Mac (Spotlight `NSMetadataQuery` in authorized roots) and Current Folder (recursive folder walk or open-archive listing), streamed in batches, cancelled by new queries, reloads and window close (`BrowserSearchService.swift`).
+- [x] Virtual results location `Searching “query”` in the four modes with history, path bar of the selected result, opening results at their real path (`FileBrowserState`).
+- [x] Nine String Catalog keys translated into all 21 languages; `Find ⌘F` in the shortcut help.
+- [ ] Real-window visual review (four modes, light/dark, long language, narrow widths, VoiceOver, Reduce Motion) and the mapped UI tests (not run by the agent).
+- [ ] OR-24 gaps: This Mac beyond authorized folders, content matching and tokens, live result updates, restoration.

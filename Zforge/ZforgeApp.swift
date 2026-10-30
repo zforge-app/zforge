@@ -199,7 +199,7 @@ private struct BrowserCommands: Commands {
                 .disabled(browser?.hasLocalSelection != true)
             Button("Rename") { browser?.beginRenamingSelectedItem() }
                 .keyboardShortcut(.return, modifiers: [])
-                .disabled(browser?.canRenameSelection != true)
+                .disabled(browser?.canRenameSelection != true || browser?.searchFieldHasFocus == true)
             Divider()
             Button("Quick Look") { browser?.openQuickLook() }
                 .keyboardShortcut("y", modifiers: .command)
@@ -214,13 +214,18 @@ private struct BrowserCommands: Commands {
                 else { browser?.moveSelectionToTrash() }
             }
                 .keyboardShortcut(.delete, modifiers: .command)
-                .disabled(browser?.hasLocalSelection != true && browser?.canRemoveArchiveItems(browser?.selectedItems ?? []) != true)
+                .disabled(browser?.hasLocalSelection != true && browser?.canRemoveArchiveItems(browser?.selectedItems ?? []) != true
+                    || browser?.searchFieldHasFocus == true)
             Button("Delete Immediately…") { browser?.requestPermanentDeletion() }
                 .keyboardShortcut(.delete, modifiers: [.option, .command])
-                .disabled(browser?.hasLocalSelection != true)
+                .disabled(browser?.hasLocalSelection != true || browser?.searchFieldHasFocus == true)
             Button("Eject") { browser?.ejectSelectedVolume() }
                 .keyboardShortcut("e", modifiers: .command)
                 .disabled(browser?.canEjectSelection != true)
+            Divider()
+            Button("Find") { browser?.beginSearch() }
+                .keyboardShortcut("f", modifiers: .command)
+                .disabled(browser == nil)
         }
 
         CommandGroup(replacing: .pasteboard) {
@@ -260,12 +265,13 @@ private struct BrowserCommands: Commands {
             Button("Home") { Task { await browser?.navigateToHome() } }
                 .keyboardShortcut("h", modifiers: [.command, .shift])
             Button("Network") { Task { await browser?.navigateToNetwork() } }
+                .keyboardShortcut("k", modifiers: [.command, .shift])
             Button("Downloads") { Task { await browser?.navigateToDownloads() } }
                 .keyboardShortcut("l", modifiers: [.option, .command])
             Button("Documents") { Task { await browser?.navigateToDocuments() } }
                 .keyboardShortcut("o", modifiers: [.command, .shift])
             Divider()
-            Button("Remote") { browser?.showingServerConnection = true }
+            Button("Remote") { browser?.showServerConnection() }
                 .keyboardShortcut("k", modifiers: .command)
             Button("Open Enclosing Folder in New Window") {
                 if let parent = browser?.parentDirectoryURL {
@@ -340,6 +346,9 @@ private struct KeyboardShortcutHelpCommands: Commands {
 struct ZforgeSettingsView: View {
     @State private var preferences = FileBrowserPreferences.shared
     @State private var compressionDraft = CompressionDraft(preferences: .shared)
+    @State private var draggedListColumn: BrowserListColumn?
+    @State private var listColumnDragStartIndex = 0
+    @State private var listColumnRowFrames: [BrowserListColumn: CGRect] = [:]
 
     var body: some View {
         Form {
@@ -366,36 +375,17 @@ struct ZforgeSettingsView: View {
 
             FinderExtensionSettingsSection()
 
+            SidebarSettingsSection(preferences: preferences)
+
             Section("List Columns") {
-                Text("Choose the columns shown by default. Use the arrows to change their order. A folder can override this layout from a column header.")
+                Text("Choose the columns shown by default. Drag them to change their order. A folder can override this layout from a column header.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                ForEach(listColumnChoices) { column in
-                    HStack {
-                        Toggle(column.title(locale: preferences.language.locale), isOn: Binding(
-                            get: { preferences.globalListColumns.contains(column) },
-                            set: { isVisible in
-                                var columns = preferences.globalListColumns
-                                if isVisible && !columns.contains(column) { columns.append(column) }
-                                if !isVisible { columns.removeAll { $0 == column } }
-                                preferences.setGlobalListColumns(columns)
-                            }
-                        ))
-                        .disabled(column == .name)
-                        Spacer()
-                        if let index = preferences.globalListColumns.firstIndex(of: column), index > 0 {
-                            Button {
-                                moveListColumn(column, by: -1)
-                            } label: { Image(systemName: "chevron.up") }
-                            .help("Move column left")
-                            .disabled(index == 1)
-                            Button {
-                                moveListColumn(column, by: 1)
-                            } label: { Image(systemName: "chevron.down") }
-                            .help("Move column right")
-                            .disabled(index == preferences.globalListColumns.count - 1)
-                        }
-                    }
+                ForEach(preferences.globalListColumns) { column in
+                    listColumnRow(column)
+                }
+                ForEach(hiddenListColumns) { column in
+                    listColumnRow(column)
                 }
             }
 
@@ -409,18 +399,84 @@ struct ZforgeSettingsView: View {
         .environment(\.locale, preferences.language.locale)
     }
 
-    private var listColumnChoices: [BrowserListColumn] {
-        preferences.globalListColumns + BrowserListColumn.selectable.filter {
-            !preferences.globalListColumns.contains($0)
+    private var hiddenListColumns: [BrowserListColumn] {
+        BrowserListColumn.selectable.filter { !preferences.globalListColumns.contains($0) }
+    }
+
+    /// One column choice. Visible columns after Name are dragged by the handle on their
+    /// leading edge; other rows keep its space so the titles stay aligned. The one-step
+    /// moves are offered as accessibility actions.
+    private func listColumnRow(_ column: BrowserListColumn) -> some View {
+        let index = preferences.globalListColumns.firstIndex(of: column)
+        let isMovable = (index ?? 0) > 0
+        return HStack(spacing: 8) {
+            Image(systemName: "line.3.horizontal")
+                .foregroundStyle(draggedListColumn == column ? .secondary : .tertiary)
+                .frame(width: 16)
+                .frame(maxHeight: .infinity)
+                .opacity(isMovable ? 1 : 0)
+                .contentShape(Rectangle())
+                .help(isMovable ? Text("Drag to reorder") : Text(verbatim: ""))
+                .pointerStyle(isMovable ? (draggedListColumn == column ? .grabActive : .grabIdle) : nil)
+                .gesture(DragGesture(minimumDistance: 2, coordinateSpace: .global)
+                    .onChanged { dragListColumn(column, translation: $0.translation.height) }
+                    .onEnded { _ in draggedListColumn = nil }, isEnabled: isMovable)
+                .accessibilityHidden(true)
+            Toggle(column.title(locale: preferences.language.locale), isOn: Binding(
+                get: { preferences.globalListColumns.contains(column) },
+                set: { isVisible in
+                    var columns = preferences.globalListColumns
+                    if isVisible && !columns.contains(column) { columns.append(column) }
+                    if !isVisible { columns.removeAll { $0 == column } }
+                    preferences.setGlobalListColumns(columns)
+                }
+            ))
+            .disabled(column == .name)
+        }
+        .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { frame in
+            listColumnRowFrames[column] = frame
+        }
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("settings-list-column-" + column.rawValue)
+        .accessibilityActions {
+            if let index, index > 1 {
+                Button("Move column left") { preferences.moveGlobalListColumn(column, by: -1) }
+            }
+            if let index, index > 0, index < preferences.globalListColumns.count - 1 {
+                Button("Move column right") { preferences.moveGlobalListColumn(column, by: 1) }
+            }
         }
     }
 
-    private func moveListColumn(_ column: BrowserListColumn, by offset: Int) {
-        var columns = preferences.globalListColumns
-        guard let index = columns.firstIndex(of: column),
-              columns.indices.contains(index + offset), index + offset > 0 else { return }
-        columns.swapAt(index, index + offset)
-        preferences.setGlobalListColumns(columns)
+    /// Live reordering: while the handle is dragged, the column takes the place of each
+    /// visible row the pointer passes over, so releasing only ends the gesture.
+    private func dragListColumn(_ column: BrowserListColumn, translation: CGFloat) {
+        let columns = preferences.globalListColumns
+        if draggedListColumn != column {
+            draggedListColumn = column
+            listColumnDragStartIndex = columns.firstIndex(of: column) ?? 0
+        }
+        // Only the distance between rows is read from their frames: it holds even
+        // when the Form has scrolled since they were measured.
+        let tops = columns.compactMap { listColumnRowFrames[$0]?.minY }.sorted()
+        guard let first = tops.first, let last = tops.last, tops.count > 1 else { return }
+        let index = ListColumnReorder.targetIndex(
+            from: listColumnDragStartIndex, translation: translation,
+            rowPitch: (last - first) / CGFloat(tops.count - 1), count: columns.count
+        )
+        withAnimation(.easeOut(duration: 0.15)) {
+            preferences.moveGlobalListColumn(column, onto: columns[index])
+        }
+    }
+}
+
+/// Where a dragged Settings column row lands: one place per row pitch travelled from
+/// where the drag started, never before Name (index 0) or past the last visible column.
+enum ListColumnReorder {
+    static func targetIndex(from start: Int, translation: CGFloat, rowPitch: CGFloat, count: Int) -> Int {
+        guard count > 1 else { return 0 }
+        let steps = rowPitch > 0 ? Int((translation / rowPitch).rounded()) : 0
+        return min(max(start + steps, 1), count - 1)
     }
 }
 

@@ -1,0 +1,177 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "CFBundleDisplayName" : {
+      "comment" : "Bundle display name",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Zforge"
+          }
+        }
+      }
+    },
+    "CFBundleName" : {
+      "comment" : "Bundle name",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Zforge"
+          }
+        }
+      }
+    },
+    "NSHumanReadableCopyright" : {
+      "comment" : "Copyright (human-readable)",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : ""
+          }
+        }
+      }
+    },
+    "NSLocalNetworkUsageDescription" : {
+      "comment" : "Local Network privacy prompt shown before Zforge browses for servers (Network level).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zforge আপনার লোকাল নেটওয়ার্কে ফাইল সার্ভার খোঁজে, যাতে সেগুলো নেটওয়ার্ক-এ দেখানো যায়।"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zforge hledá v místní síti souborové servery, aby je mohl zobrazit v části Síť."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zforge leder efter filservere på dit lokale netværk for at vise dem under Netværk."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zforge sucht in deinem lokalen Netzwerk nach Dateiservern, um sie unter „Netzwerk“ anzuzeigen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zforge looks for file servers on your local network to list them in Network."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zforge busca servidores de archivos en tu red local para mostrarlos en Red."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zforge recherche des serveurs de fichiers sur votre réseau local pour les afficher dans Réseau."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zforge आपके लोकल नेटवर्क पर फ़ाइल सर्वर खोजता है ताकि उन्हें नेटवर्क में दिखा सके।"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zforge cerca file server sulla rete locale per mostrarli in Network."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zforge は、ローカルネットワーク上のファイルサーバを探して「ネットワーク」に表示します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zforge가 로컬 네트워크에서 파일 서버를 찾아 네트워크에 표시합니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zforge zoekt naar bestandsservers op je lokale netwerk om ze in Netwerk te tonen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zforge szuka serwerów plików w sieci lokalnej, aby pokazać je w sekcji Sieć."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Zforge procura servidores de arquivos na sua rede local para listá-los em Rede."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zforge ищет файловые серверы в локальной сети, чтобы показать их в разделе «Сеть»."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zforge letar efter filservrar i ditt lokala nätverk för att visa dem under Nätverk."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zforge ค้นหาไฟล์เซิร์ฟเวอร์บนเครือข่ายเฉพาะที่ของคุณเพื่อแสดงในเครือข่าย"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zforge, dosya sunucularını Ağ’da listelemek için yerel ağınızda arar."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zforge шукає файлові сервери в локальній мережі, щоб показати їх у розділі «Мережа»."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zforge 会在本地网络中查找文件服务器，以便在“网络”中列出它们。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zforge 會在本地網路中尋找檔案伺服器，以便在「網路」中列出它們。"
+          }
+        }
+      }
+    },
+    "Zforge archive item transfer" : {
+
+    }
+  },
+  "version" : "1.0"
+}

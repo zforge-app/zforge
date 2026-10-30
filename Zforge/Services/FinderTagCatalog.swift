@@ -720,13 +720,15 @@ final class FinderTagCatalog: NSObject {
 struct FinderTagDot: View {
     let colorIndex: Int
     let size: CGFloat
+    /// Draws the dot in one neutral color instead of its tag color (the sidebar in an inactive window).
+    var monochrome: Color? = nil
 
     var body: some View {
         Circle()
-            .fill(colorIndex == 0 ? Color.clear : color)
+            .fill(colorIndex == 0 ? Color.clear : monochrome ?? color)
             .overlay {
                 Circle()
-                    .strokeBorder(colorIndex == 0 ? Color.secondary : Color.clear, lineWidth: 1.3)
+                    .strokeBorder(colorIndex == 0 ? monochrome ?? Color.secondary : Color.clear, lineWidth: 1.3)
             }
             .frame(width: size, height: size)
             .accessibilityHidden(true)

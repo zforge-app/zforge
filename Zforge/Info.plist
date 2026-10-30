@@ -41,6 +41,12 @@
 	<key>LSApplicationCategoryType</key><string>public.app-category.utilities</string>
 	<key>LSMinimumSystemVersion</key><string>$(MACOSX_DEPLOYMENT_TARGET)</string>
 	<key>NSHumanReadableCopyright</key><string></string>
+	<key>NSLocalNetworkUsageDescription</key><string>Zforge looks for file servers on your local network to list them in Network.</string>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_smb._tcp</string>
+		<string>_afpovertcp._tcp</string>
+	</array>
 	<key>UTExportedTypeDeclarations</key>
 	<array>
 		<dict>

@@ -135,6 +135,15 @@ nonisolated struct BrowserSort: Codable, Equatable, Hashable, Sendable {
 
 nonisolated enum BrowserLocation: Hashable, Sendable {
     case recents
+    /// Finder's computer level: the mounted volumes and Network. Virtual, so it
+    /// accepts no file operations, drops or new folders.
+    case computer
+    /// Finder's Network level: file servers discovered on the local network. Virtual
+    /// and read-only like `computer`.
+    case network
+    /// A discovered server (an item of the Network level, never a browsed level):
+    /// opening it connects to its Bonjour address.
+    case networkServer(URL)
     case fileSystem(URL)
     case archive(ArchiveAddress)
 
@@ -354,6 +363,8 @@ nonisolated enum BrowserError: LocalizedError, Equatable {
     case cancelled
     case invalidServerURL
     case previewTooLarge(Int64)
+    /// Ejecting a volume failed; `inUse` marks a busy volume (open files, a running process).
+    case ejectFailed(volumeName: String, inUse: Bool, detail: String)
 
     var errorDescription: String? {
         switch self {
@@ -367,6 +378,10 @@ nonisolated enum BrowserError: LocalizedError, Equatable {
             AppLocalization.string("error.invalid_server")
         case let .previewTooLarge(size):
             AppLocalization.string("error.preview_too_large \(AppLocalization.byteCount(size))")
+        case let .ejectFailed(volumeName, true, _):
+            AppLocalization.string("error.eject_in_use \(volumeName)")
+        case let .ejectFailed(volumeName, false, detail):
+            AppLocalization.string("error.eject_failed \(volumeName) \(detail)")
         }
     }
 }
@@ -395,11 +410,11 @@ nonisolated struct ArchiveBrowsingPolicy: Equatable, Sendable {
 
 nonisolated extension BrowserItem {
     var usesStaticIconPreview: Bool {
-        isContainer || isArchive
+        isContainer || isArchive || isNetworkEntry
     }
 
     var canExpandInlineInList: Bool {
-        if isContainer { return true }
+        if isContainer { return !isNetworkEntry }
         guard canNavigateAsArchive else { return false }
         return ArchiveFormatRegistry.supportsFastTreeListing(name)
     }
@@ -407,7 +422,7 @@ nonisolated extension BrowserItem {
     var canNavigateAsArchive: Bool {
         guard isArchive else { return false }
         switch location {
-        case .recents:
+        case .recents, .computer, .network, .networkServer:
             return false
         case .fileSystem:
             return true

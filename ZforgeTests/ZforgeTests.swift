@@ -1278,7 +1278,7 @@ struct ZforgeTests {
         switch folder.location {
         case let .archive(address):
             folderAddress = address
-        case .fileSystem, .recents:
+        case .fileSystem, .recents, .computer, .network, .networkServer:
             Issue.record("The archive folder did not have a virtual address")
             return
         }

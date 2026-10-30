@@ -29,7 +29,7 @@ final class ZforgeUITests: XCTestCase {
                 app.launchArguments = ["--ui-archive-drag-fixtures", "--ui-window-width", "1100",
                     "--ui-view-mode", mode, "-appLanguagePreference", "english", "-ApplePersistenceIgnoreState", "YES"]
                 addTeardownBlock { app.terminate() }
-                launchArchiveFixture(app)
+                launchWithBrowserWindow(app)
                 defer { app.terminate() }
                 app.windows.firstMatch.coordinate(withNormalizedOffset: CGVector(dx: 0.85, dy: 0.75)).click()
 
@@ -95,7 +95,7 @@ final class ZforgeUITests: XCTestCase {
             app.launchArguments = ["--ui-archive-drag-fixtures", "--ui-window-width", "1100",
                 "--ui-view-mode", mode, "-appLanguagePreference", "english", "-ApplePersistenceIgnoreState", "YES"]
             addTeardownBlock { app.terminate() }
-            launchArchiveFixture(app)
+            launchWithBrowserWindow(app)
             app.windows.firstMatch.coordinate(withNormalizedOffset: CGVector(dx: 0.85, dy: 0.75)).click()
             let selectedCells = app.descendants(matching: .any).matching(NSPredicate(
                 format: "identifier BEGINSWITH %@ AND selected == true", "browser-item-"
@@ -150,7 +150,7 @@ final class ZforgeUITests: XCTestCase {
             "--ui-fixtures", "--ui-window-width", "1100", "--ui-view-mode", "icons",
             "-appLanguagePreference", "english"
         ]
-        launchArchiveFixture(app)
+        launchWithBrowserWindow(app)
         app.activate()
         defer { app.terminate() }
         let content = { (mode: String) in
@@ -195,7 +195,7 @@ final class ZforgeUITests: XCTestCase {
         XCTAssertTrue(app.wait(for: .notRunning, timeout: 5))
         app.launchArguments = ["--ui-fixtures", "--ui-window-width", "1100",
             "-appLanguagePreference", "english"]
-        launchArchiveFixture(app)
+        launchWithBrowserWindow(app)
         XCTAssertTrue(restored.waitForExistence(timeout: 5), "Relaunch must restore list")
     }
 
@@ -211,7 +211,7 @@ final class ZforgeUITests: XCTestCase {
                 "--ui-fixtures", "--ui-window-width", "1100", "--ui-view-mode", mode,
                 "-appLanguagePreference", "english"
             ]
-            launchArchiveFixture(app)
+            launchWithBrowserWindow(app)
             defer { app.terminate() }
 
             let welcome = app.descendants(matching: .any)
@@ -269,7 +269,7 @@ final class ZforgeUITests: XCTestCase {
                 "--ui-archive-drag-fixtures", "--ui-window-width", "1100", "--ui-view-mode", mode,
                 "-appLanguagePreference", "english"
             ]
-            launchArchiveFixture(app)
+            launchWithBrowserWindow(app)
             defer { app.terminate() }
             let initialTitle = app.windows.firstMatch.title
             let folder = app.descendants(matching: .any)
@@ -354,7 +354,7 @@ final class ZforgeUITests: XCTestCase {
         for mode in ["icons", "list", "columns", "gallery"] {
             let app = XCUIApplication()
             app.launchArguments = ["--ui-fixtures", "--ui-window-width", "1100", "--ui-view-mode", mode, "-appLanguagePreference", "english"]
-            launchArchiveFixture(app)
+            launchWithBrowserWindow(app)
             app.activate()
             // Preview titles can repeat the file name. Keep every interaction
             // on the actual browser cell when selection opens its preview.
@@ -410,8 +410,20 @@ final class ZforgeUITests: XCTestCase {
         }
     }
 
+    /// The frame of the frontmost ordinary window at a screen point (top-left origin,
+    /// like XCUIElement frames), read from the window server.
+    private func frontmostWindowFrame(at point: CGPoint) -> CGRect? {
+        let windows = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]] ?? []
+        for info in windows where (info[kCGWindowLayer as String] as? Int) == 0 {
+            guard let bounds = info[kCGWindowBounds as String] as? NSDictionary,
+                  let frame = CGRect(dictionaryRepresentation: bounds as CFDictionary) else { continue }
+            if frame.contains(point) { return frame }
+        }
+        return nil
+    }
+
     @MainActor
-    private func launchArchiveFixture(_ app: XCUIApplication) {
+    private func launchWithBrowserWindow(_ app: XCUIApplication) {
         // Saved windows from a previous test must not cover the fixture or change
         // the initial window count required by the interaction scenarios.
         app.launchArguments += ["-ApplePersistenceIgnoreState", "YES", "-NSQuitAlwaysKeepsWindows", "NO"]
@@ -436,7 +448,7 @@ final class ZforgeUITests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-archive-drag-fixtures", "--ui-archive-navigation-fixtures",
             "--ui-window-width", "1300", "--ui-view-mode", "columns", "-appLanguagePreference", "english"]
-        launchArchiveFixture(app)
+        launchWithBrowserWindow(app)
         let initialTitle = app.windows.firstMatch.title
         for name in ["Sample.zip", "Inside", "Deep"] {
             let label = app.descendants(matching: .any).matching(identifier: "browser-item-\(name)").firstMatch.staticTexts[name].firstMatch
@@ -485,7 +497,7 @@ final class ZforgeUITests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-archive-drag-fixtures", "--ui-window-width", "1100",
             "--ui-view-mode", "icons", "-appLanguagePreference", "english"]
-        launchArchiveFixture(app)
+        launchWithBrowserWindow(app)
         app.activate()
         let archive = app.staticTexts["Sample.zip"].firstMatch
         XCTAssertTrue(archive.waitForExistence(timeout: 8), app.debugDescription)
@@ -508,7 +520,7 @@ final class ZforgeUITests: XCTestCase {
     func testArchiveCopyIntoAnotherZforgeWindow() throws {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-archive-drag-fixtures", "--ui-window-width", "780", "--ui-view-mode", "list", "-appLanguagePreference", "english"]
-        app.launch(); app.activate()
+        launchWithBrowserWindow(app)
         let firstTitle = app.windows.firstMatch.title
         let sourceWindow = app.windows.matching(NSPredicate(format: "title == %@", firstTitle)).firstMatch
         let archive = sourceWindow.descendants(matching: .any).matching(identifier: "browser-item-Sample.zip").firstMatch
@@ -540,7 +552,7 @@ final class ZforgeUITests: XCTestCase {
     func testLocalDragsOptionCopyAndConfirmAdditionToArchive() throws {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-archive-drag-fixtures", "--ui-view-mode", "list", "-appLanguagePreference", "english"]
-        launchArchiveFixture(app)
+        launchWithBrowserWindow(app)
         let localRows = app.descendants(matching: .any).matching(identifier: "browser-item-Local.txt")
         let local = localRows.firstMatch.staticTexts["Local.txt"].firstMatch
         XCTAssertTrue(local.waitForExistence(timeout: 8))
@@ -576,8 +588,8 @@ final class ZforgeUITests: XCTestCase {
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: directory) }
         let app = XCUIApplication()
-        app.launchArguments = ["--ui-archive-drag-fixtures", "--ui-window-width", "780", "--ui-view-mode", "list", "-appLanguagePreference", "english"]
-        app.launch(); app.activate()
+        app.launchArguments = ["--ui-archive-drag-fixtures", "--ui-window-width", "780", "--ui-window-leading", "--ui-view-mode", "list", "-appLanguagePreference", "english"]
+        launchWithBrowserWindow(app)
         let archive = app.descendants(matching: .any).matching(identifier: "browser-item-Sample.zip").firstMatch
         XCTAssertTrue(archive.waitForExistence(timeout: 8)); archive.buttons.firstMatch.click()
         let inside = app.descendants(matching: .any).matching(identifier: "browser-item-Inside").firstMatch
@@ -602,15 +614,27 @@ final class ZforgeUITests: XCTestCase {
         titlePoint.click(forDuration: 0.2, thenDragTo: desiredTitle)
         app.activate()
         // Moving Finder by its title is best effort: where its title bar is free
-        // depends on the user's Finder sidebar width. Drop on Finder's content
-        // where Zforge does not cover it, never on Zforge itself.
+        // depends on the user's Finder sidebar width, and where Zforge opens and the
+        // user's other Finder windows lie depend on the screen. Drop only on a point
+        // of this test's Finder content that is frontmost on screen, so a drop can
+        // never land on Zforge or on another window (or sidebar) of the user.
         let finderFrame = finderWindow.frame
-        let uncoveredMinX = max(finderFrame.minX, window.frame.maxX)
-        XCTAssertGreaterThan(finderFrame.maxX - uncoveredMinX, 60, "Zforge covers the Finder window: source \(window.frame), Finder \(finderFrame)")
-        let drop = finderWindow.coordinate(withNormalizedOffset: CGVector(
-            dx: ((uncoveredMinX + finderFrame.maxX) / 2 - finderFrame.minX) / finderFrame.width, dy: 0.65))
-        print("Source \(window.frame), Finder \(finderWindow.frame), payload \(payload.frame)")
-        let arrangement = XCTAttachment(screenshot: app.screenshot()); arrangement.name = "Finder drop arrangement"; arrangement.lifetime = .keepAlways; add(arrangement)
+        let content = finderWindow.scrollViews.allElementsBoundByIndex.map(\.frame)
+            .filter { $0.width > 0 && $0.height > 0 }.max { $0.minX < $1.minX } ?? finderFrame
+        func exposedDropPoint() -> CGPoint? {
+            for fy in [0.65, 0.5, 0.8] {
+                for fx in stride(from: 0.1, through: 0.9, by: 0.1) {
+                    let point = CGPoint(x: content.minX + content.width * fx, y: content.minY + content.height * fy)
+                    if let front = frontmostWindowFrame(at: point), front.equalTo(finderFrame, tolerance: 2) { return point }
+                }
+            }
+            return nil
+        }
+        print("Source \(window.frame), Finder \(finderFrame), content \(content), payload \(payload.frame)")
+        let arrangement = XCTAttachment(screenshot: XCUIScreen.main.screenshot()); arrangement.name = "Finder drop arrangement"; arrangement.lifetime = .keepAlways; add(arrangement)
+        let dropPoint = try XCTUnwrap(exposedDropPoint(), "No point of the test's Finder window is exposed: source \(window.frame), Finder \(finderFrame)")
+        let drop = finderWindow.coordinate(withNormalizedOffset: .zero)
+            .withOffset(CGVector(dx: dropPoint.x - finderFrame.minX, dy: dropPoint.y - finderFrame.minY))
         payload.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).click(forDuration: 0.3, thenDragTo: drop)
         let published = directory.appendingPathComponent("Payload.txt")
         let written = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in FileManager.default.fileExists(atPath: published.path) }, object: nil)
@@ -618,6 +642,8 @@ final class ZforgeUITests: XCTestCase {
         XCTAssertEqual(try String(contentsOf: published, encoding: .utf8), "payload")
         app.activate(); XCTAssertTrue(payload.exists)
         try FileManager.default.removeItem(at: published)
+        let stillExposed = try XCTUnwrap(frontmostWindowFrame(at: dropPoint))
+        XCTAssertTrue(stillExposed.equalTo(finderFrame, tolerance: 2), "The drop point is no longer on the test's Finder window")
         XCUIElement.perform(withKeyModifiers: [.option]) {
             payload.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).click(forDuration: 0.3, thenDragTo: drop)
         }
@@ -735,7 +761,7 @@ final class ZforgeUITests: XCTestCase {
             "-browser.finderColumnWidth", "600", "-browser.scale", "1",
             "-browser.previewVisible.columns", "YES", "-appLanguagePreference", "english"
         ]
-        launchArchiveFixture(app)
+        launchWithBrowserWindow(app)
 
         let rootColumn = app.descendants(matching: .any)["browser-column-0"]
         let window = app.windows.firstMatch
@@ -787,7 +813,7 @@ final class ZforgeUITests: XCTestCase {
         app.launchEnvironment["ZFORGE_UI_PREFERENCES_SUITE"] = "ZforgeListHeaderUI-\(UUID().uuidString)"
         app.launchArguments = ["--ui-fixtures", "--ui-window-width", "1100", "--ui-view-mode", "list",
             "-appLanguagePreference", "english"]
-        launchArchiveFixture(app)
+        launchWithBrowserWindow(app)
         let window = app.windows.matching(NSPredicate(format: "identifier BEGINSWITH %@", "browser-")).firstMatch
         func header(_ title: String) -> XCUIElement { window.buttons[title].firstMatch }
         let titles = ["Name", "Date Modified", "Size", "Kind"]
@@ -831,7 +857,7 @@ final class ZforgeUITests: XCTestCase {
             "--ui-view-mode", "list",
             "-appLanguagePreference", "english"
         ]
-        launchArchiveFixture(app)
+        launchWithBrowserWindow(app)
         // Recents lists files only; a folder cannot be its readiness signal.
         XCTAssertTrue(app.staticTexts["Welcome.txt"].firstMatch.waitForExistence(timeout: 5))
 
@@ -874,7 +900,7 @@ final class ZforgeUITests: XCTestCase {
             "--ui-window-width", "720",
             "-appLanguagePreference", "english"
         ]
-        app.launch()
+        launchWithBrowserWindow(app)
         XCTAssertTrue(app.staticTexts["Welcome.txt"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.buttons["view-mode-selector-compact"].waitForExistence(timeout: 2))
 
@@ -906,7 +932,7 @@ final class ZforgeUITests: XCTestCase {
             "-appLanguagePreference", "english"
         ]
         addTeardownBlock { app.terminate() }
-        launchArchiveFixture(app)
+        launchWithBrowserWindow(app)
         XCTAssertTrue(app.staticTexts["Welcome.txt"].waitForExistence(timeout: 5))
 
         app.typeKey("/", modifierFlags: .command)
@@ -963,4 +989,11 @@ final class ZforgeUITests: XCTestCase {
         }
     }
 
+}
+
+private extension CGRect {
+    func equalTo(_ other: CGRect, tolerance: CGFloat) -> Bool {
+        abs(minX - other.minX) <= tolerance && abs(minY - other.minY) <= tolerance
+            && abs(width - other.width) <= tolerance && abs(height - other.height) <= tolerance
+    }
 }
