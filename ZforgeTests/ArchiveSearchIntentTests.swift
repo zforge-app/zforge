@@ -120,7 +120,7 @@ struct ArchiveSearchIntentTests {
         let fixture = try ArchiveSearchFixture()
         defer { fixture.cleanUp() }
         var lease: AutomationAccessLease? = AutomationAccessLease()
-        weak var observed = lease
+        weak let observed = lease
         let search = StubArchiveSearch(urls: [fixture.archive], lease: try #require(lease))
         lease = nil
         let browser = try fixture.browser(search: search, initialSearch: "Vega Demo")

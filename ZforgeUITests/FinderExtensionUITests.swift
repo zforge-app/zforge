@@ -99,10 +99,14 @@ final class FinderExtensionUITests: XCTestCase {
 
     /// Finder's File > Open With menu also lists Zforge, closed and offscreen;
     /// the shortcut menu's item is the visible one.
+    @MainActor
     private func visibleZforgeItem(in finder: XCUIApplication) throws -> XCUIElement {
         let candidates = finder.menuItems.matching(NSPredicate(format: "title == %@", "Zforge"))
+        // XCTWaiter evaluates the predicate on the main thread, where XCUIElement lives.
         let visible = XCTNSPredicateExpectation(predicate: NSPredicate { object, _ in
-            ((object as? XCUIElementQuery)?.allElementsBoundByIndex.contains { $0.isHittable }) == true
+            MainActor.assumeIsolated {
+                ((object as? XCUIElementQuery)?.allElementsBoundByIndex.contains { $0.isHittable }) == true
+            }
         }, object: candidates)
         XCTAssertEqual(XCTWaiter.wait(for: [visible], timeout: 5), .completed, "Is the Zforge Finder extension enabled?")
         return try XCTUnwrap(candidates.allElementsBoundByIndex.first { $0.isHittable })
@@ -110,6 +114,7 @@ final class FinderExtensionUITests: XCTestCase {
 
     /// Finder shows extension images as they are: each symbol must contrast with the
     /// menu like its title (light on a dark menu, dark on a light one).
+    @MainActor
     private func assertSymbolsContrast(in menu: XCUIElement, titles: [String]) throws {
         for title in titles {
             let item = menu.menuItems[title]

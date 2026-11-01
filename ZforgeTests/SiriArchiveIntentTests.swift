@@ -235,7 +235,7 @@ struct SiriArchiveIntentTests {
         }
         try await fixture.store.add(fixture.root)
         var lease: AutomationAccessLease? = try await fixture.store.authorize([fixture.archive])
-        weak var observed = lease
+        weak let observed = lease
         let delegate = AppDelegate()
         try await AutomationArchiveOpening.open(fixture.archive, lease: try #require(lease), delegate: delegate)
         lease = nil
@@ -278,7 +278,7 @@ struct SiriArchiveIntentTests {
         try await engine.createArchive(from: [payload], outputURL: archive, options: options, password: "Opening password", progress: { _ in })
         try await fixture.store.add(fixture.root)
         var lease: AutomationAccessLease? = try await fixture.store.authorize([archive])
-        weak var observed = lease
+        weak let observed = lease
         let fileSystem = SuspendedOpeningFileSystem(suspendOnCall: 3)
         let browser = FileBrowserState(preferences: FileBrowserPreferences(defaults: try #require(UserDefaults(suiteName: fixture.suite))),
             fileSystem: fileSystem, grants: UIFixtureAccessGrantStore(), archives: engine, initialURL: archive, automationAccessLease: lease)

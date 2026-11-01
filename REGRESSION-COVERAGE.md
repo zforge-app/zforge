@@ -1562,3 +1562,12 @@ Read-only: a temporary unit test inside the test host (the only process with acc
 - **Finder submenu (D-67):** the failure snapshot showed the fixture Finder window in Icon view; the test now switches it to list view (⌘2). The instrumented run passed line 33 and stopped at line 57 because the run used a non-default build while Finder's registered extension belongs to the default build (the request went to another Zforge instance). Final verification with the default build in the runs below.
 - **Local drags (D-65):** not reproduced after the D-63 second correction (6 instrumented iterations, 4 iterations with the user's former preferences injected through launch arguments, plus the UI-Full and the selected runs); all four earlier failures were on builds where drag fixtures still read the user's preferences. Cause not established; open.
 - **Another window (D-70):** one of three iterations failed at `:540` because the second window was not moved by the title-bar drag and covered the source row (XCTest “interrupting element”, “Not hittable”). Proposal recorded; not changed.
+
+## Test target warnings — 2026-11-01
+
+- **Before** (clean builds of the `Unit` and `UI-Full` plans): ZforgeTests 7 warnings, ZforgeUITests 12 (the app and the Finder extension had none since `274ebf4`).
+- **Corrected without suppression, scenarios and assertions kept:**
+  - `ArchiveDragDropTests.swift` (4): `#require` returned into an optional property (`view.address`, `view.directory`), so its type parameter became optional and it checked nothing (“never equals nil”). Each value is now required as `ArchiveAddress` / `URL` first and then assigned: the nil checks the tests meant are back.
+  - `ArchiveSearchIntentTests.swift:123`, `SiriArchiveIntentTests.swift:238`, `:281` (3): `weak var observed` never reassigned → `weak let`; the deallocation expectations are unchanged.
+  - `FinderExtensionUITests.swift:98–112` (12): the helpers that query XCUIElement (`visibleZforgeItem`, `assertSymbolsContrast`) are `@MainActor`, like their callers; the `NSPredicate` block that XCTWaiter evaluates on the main thread runs its XCUIElement access through `MainActor.assumeIsolated`.
+- **After:** clean builds of both plans: 0 source warnings and 0 errors in Zforge, ZforgeFinderExtension, ZforgeTests and ZforgeUITests (only `appintentsmetadataprocessor`'s “Metadata extraction skipped” tool message, with no source location). `ArchiveDragDropTests`, `ArchiveSearchIntentTests`, `SiriArchiveIntentTests`: 34 tests pass. The Finder test runs in the final UI runs.
