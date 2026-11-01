@@ -118,9 +118,9 @@ struct SidebarItemMenuActionTests {
     @Test("Show in Enclosing Folder opens the parent in this browser with the destination selected")
     func showInEnclosingFolderSelectsDestination() async throws {
         let (root, folder) = try fixture()
-        let suite = "SidebarMenuReveal-\(UUID())"
+        let suite = "ZforgeTestSuite.SidebarMenuReveal-\(UUID())"
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite); try? FileManager.default.removeItem(at: root) }
+        defer { defaults.removeTestSuite(named: suite); try? FileManager.default.removeItem(at: root) }
         let browser = state(defaults: defaults, grants: UIFixtureAccessGrantStore())
         defer { browser.close() }
 
@@ -134,9 +134,9 @@ struct SidebarItemMenuActionTests {
     @Test("Show in Enclosing Folder asks for the parent when it is not authorized and leaves the view unchanged")
     func showInEnclosingFolderRequestsParentAccess() async throws {
         let (root, folder) = try fixture()
-        let suite = "SidebarMenuRevealDenied-\(UUID())"
+        let suite = "ZforgeTestSuite.SidebarMenuRevealDenied-\(UUID())"
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite); try? FileManager.default.removeItem(at: root) }
+        defer { defaults.removeTestSuite(named: suite); try? FileManager.default.removeItem(at: root) }
         let browser = state(defaults: defaults, grants: DenyingGrantStore())
         defer { browser.close() }
         let before = browser.currentDirectoryURL
@@ -151,9 +151,9 @@ struct SidebarItemMenuActionTests {
     @Test("Open in New Tab hands the destination to this window's tab opener once access is active")
     func openInNewTabUsesTabOpener() async throws {
         let (root, folder) = try fixture()
-        let suite = "SidebarMenuTab-\(UUID())"
+        let suite = "ZforgeTestSuite.SidebarMenuTab-\(UUID())"
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite); try? FileManager.default.removeItem(at: root) }
+        defer { defaults.removeTestSuite(named: suite); try? FileManager.default.removeItem(at: root) }
         let browser = state(defaults: defaults, grants: UIFixtureAccessGrantStore())
         defer { browser.close() }
         var opened: [URL] = []
@@ -171,9 +171,9 @@ struct SidebarItemMenuActionTests {
     @Test("Open in New Tab without access asks for the folder and opens the tab only after authorization")
     func openInNewTabAfterAuthorization() async throws {
         let (root, folder) = try fixture()
-        let suite = "SidebarMenuTabDenied-\(UUID())"
+        let suite = "ZforgeTestSuite.SidebarMenuTabDenied-\(UUID())"
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite); try? FileManager.default.removeItem(at: root) }
+        defer { defaults.removeTestSuite(named: suite); try? FileManager.default.removeItem(at: root) }
         let browser = state(defaults: defaults, grants: DenyingGrantStore())
         defer { browser.close() }
         var opened: [URL] = []
@@ -190,9 +190,9 @@ struct SidebarItemMenuActionTests {
 
     @Test("Get Info for a missing destination reports an error instead of opening an empty window")
     func getInfoForMissingDestinationReportsError() async throws {
-        let suite = "SidebarMenuInfo-\(UUID())"
+        let suite = "ZforgeTestSuite.SidebarMenuInfo-\(UUID())"
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite) }
+        defer { defaults.removeTestSuite(named: suite) }
         let browser = state(defaults: defaults, grants: UIFixtureAccessGrantStore())
         defer { browser.close() }
         let missingName = "Missing-\(UUID().uuidString)"
@@ -210,9 +210,9 @@ struct SidebarItemMenuActionTests {
         let (root, folder) = try fixture()
         let other = root.appendingPathComponent("Other", isDirectory: true)
         try FileManager.default.createDirectory(at: other, withIntermediateDirectories: true)
-        let suite = "SidebarMenuRemove-\(UUID())"
+        let suite = "ZforgeTestSuite.SidebarMenuRemove-\(UUID())"
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite); try? FileManager.default.removeItem(at: root) }
+        defer { defaults.removeTestSuite(named: suite); try? FileManager.default.removeItem(at: root) }
         let browser = state(defaults: defaults, grants: UIFixtureAccessGrantStore())
         defer { browser.close() }
         let sidebar = SidebarState()

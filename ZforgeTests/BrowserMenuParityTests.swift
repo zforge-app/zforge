@@ -175,7 +175,7 @@ private final class BrowserMenuFixture {
     private let catalog = FinderTagCatalog.uiFixture()
 
     init(mode: BrowserViewMode) async throws {
-        suite = "BrowserMenuParity-\(UUID().uuidString)"
+        suite = "ZforgeTestSuite.BrowserMenuParity-\(UUID().uuidString)"
         defaults = try #require(UserDefaults(suiteName: suite))
         let preferences = FileBrowserPreferences(defaults: defaults)
         preferences.language = .english
@@ -229,6 +229,6 @@ private final class BrowserMenuFixture {
     func close() {
         catalog.stop()
         state.close()
-        defaults.removePersistentDomain(forName: suite)
+        defaults.removeTestSuite(named: suite)
     }
 }

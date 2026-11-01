@@ -247,13 +247,13 @@ private struct FileArchiveFixture: Sendable {
         let physicalPath = FileManager.default.temporaryDirectory.appendingPathComponent("FileArchive-" + UUID().uuidString).resolvingSymlinksInPath().path
         root = URL(fileURLWithPath: physicalPath, isDirectory: true)
         archive = root.appendingPathComponent("Example.zip")
-        suite = "FileArchive-" + UUID().uuidString
+        suite = "ZforgeTestSuite.FileArchive-" + UUID().uuidString
         store = AutomationGrantStore(defaults: try #require(UserDefaults(suiteName: suite)))
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
         try Data("File identity fixture".utf8).write(to: archive)
     }
     func cleanUp() {
-        UserDefaults(suiteName: suite)?.removePersistentDomain(forName: suite)
+        UserDefaults(suiteName: suite)?.removeTestSuite(named: suite)
         try? FileManager.default.removeItem(at: root)
     }
 }

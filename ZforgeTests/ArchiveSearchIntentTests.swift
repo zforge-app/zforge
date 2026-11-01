@@ -256,7 +256,7 @@ private struct ArchiveSearchFixture: Sendable {
         container = FileManager.default.temporaryDirectory.appendingPathComponent("ArchiveSearch-" + UUID().uuidString)
         root = container.appendingPathComponent("Allowed")
         archive = root.appendingPathComponent("Vega Demo.zip")
-        suite = "ArchiveSearchTests-" + UUID().uuidString
+        suite = "ZforgeTestSuite.ArchiveSearchTests-" + UUID().uuidString
         store = AutomationGrantStore(defaults: try #require(UserDefaults(suiteName: suite)))
         search = AuthorizedArchiveSearch(access: store)
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
@@ -273,7 +273,7 @@ private struct ArchiveSearchFixture: Sendable {
     }
 
     func cleanUp() {
-        UserDefaults(suiteName: suite)?.removePersistentDomain(forName: suite)
+        UserDefaults(suiteName: suite)?.removeTestSuite(named: suite)
         try? FileManager.default.removeItem(at: container)
     }
 }

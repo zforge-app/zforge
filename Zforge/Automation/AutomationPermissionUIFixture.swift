@@ -38,7 +38,7 @@ final class AutomationPermissionUIFixture: NSObject {
         window.makeKeyAndOrderFront(nil)
         Task {
             let root = FileManager.default.temporaryDirectory.appendingPathComponent("ContextualPermissionUI-" + UUID().uuidString)
-            let suite = "ContextualPermissionUI-" + UUID().uuidString
+            let suite = "ZforgeTestSuite.ContextualPermissionUI-" + UUID().uuidString
             defer {
                 try? FileManager.default.removeItem(at: root)
                 UserDefaults(suiteName: suite)?.removePersistentDomain(forName: suite)

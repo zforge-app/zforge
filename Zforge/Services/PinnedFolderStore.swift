@@ -20,7 +20,7 @@ final class PinnedFolderStore {
          UserDirectoryService.downloadsURL, URL(fileURLWithPath: "/Applications")]
     }
 
-    init(defaults: UserDefaults = .standard, initialURLs: [URL]? = nil) {
+    init(defaults: UserDefaults = ZforgeDefaults.application, initialURLs: [URL]? = nil) {
         self.defaults = defaults
         if let data = defaults.data(forKey: storageKey),
            let saved = try? JSONDecoder().decode([Entry].self, from: data) {

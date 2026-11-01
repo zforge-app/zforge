@@ -18,7 +18,7 @@ actor AccessGrantStore: AccessGrantStoring {
     private let storageKey = "securityScopedBookmarks"
     private var activeRoots: [URL: Int] = [:]
 
-    init(defaults: UserDefaults = .standard) {
+    init(defaults: UserDefaults = ZforgeDefaults.application) {
         self.defaults = defaults
     }
 

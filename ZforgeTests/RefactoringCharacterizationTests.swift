@@ -20,9 +20,9 @@ struct RefactoringCharacterizationTests {
     @Test("Contextual action matrix preserves each selection class")
     @MainActor
     func contextualActions() throws {
-        let defaultsName = "ZF08-Actions-\(UUID().uuidString)"
+        let defaultsName = "ZforgeTestSuite.ZF08-Actions-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: defaultsName))
-        defer { defaults.removePersistentDomain(forName: defaultsName) }
+        defer { defaults.removeTestSuite(named: defaultsName) }
         let state = FileBrowserState(
             preferences: FileBrowserPreferences(defaults: defaults),
             fileSystem: UIFixtureFileSystemService(),
@@ -59,9 +59,9 @@ struct RefactoringCharacterizationTests {
     @Test("Zoom, widths and preview visibility keep their persisted contracts")
     @MainActor
     func persistedLayoutPreferences() throws {
-        let name = "ZF08-Preferences-\(UUID().uuidString)"
+        let name = "ZforgeTestSuite.ZF08-Preferences-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: name))
-        defer { defaults.removePersistentDomain(forName: name) }
+        defer { defaults.removeTestSuite(named: name) }
         let preferences = FileBrowserPreferences(defaults: defaults)
         for _ in 0..<20 { preferences.zoomIn() }
         #expect(preferences.scale == 1.6)
@@ -108,9 +108,9 @@ struct RefactoringCharacterizationTests {
     @Test("Sidebar tag navigation shows matching files and restores Recents")
     @MainActor
     func sidebarTagNavigation() async throws {
-        let suiteName = "ZF-Tags-\(UUID().uuidString)"
+        let suiteName = "ZforgeTestSuite.ZF-Tags-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suiteName))
-        defer { defaults.removePersistentDomain(forName: suiteName) }
+        defer { defaults.removeTestSuite(named: suiteName) }
         let state = FileBrowserState(
             preferences: FileBrowserPreferences(defaults: defaults),
             fileSystem: UIFixtureFileSystemService(),
@@ -222,9 +222,9 @@ struct RefactoringCharacterizationTests {
         let hidden = root.appendingPathComponent(".Hidden.txt")
         try Data("hidden".utf8).write(to: hidden)
 
-        let defaultsName = "ZF08-Recents-Defaults-\(UUID().uuidString)"
+        let defaultsName = "ZforgeTestSuite.ZF08-Recents-Defaults-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: defaultsName))
-        defer { defaults.removePersistentDomain(forName: defaultsName) }
+        defer { defaults.removeTestSuite(named: defaultsName) }
         let recent = ZF08RecentItemsStub(urls: [first, first, second, hidden])
         let state = FileBrowserState(
             preferences: FileBrowserPreferences(defaults: defaults), fileSystem: FileSystemService(),
@@ -300,9 +300,9 @@ struct RefactoringCharacterizationTests {
         for url in [staged, stagedLink, operationCopy, original] { filter.appendIfNew(url) }
         #expect(filter.urls == [original])
 
-        let defaultsName = "ZF-Recents-Defaults-\(fixtureID)"
+        let defaultsName = "ZforgeTestSuite.ZF-Recents-Defaults-\(fixtureID)"
         let defaults = try #require(UserDefaults(suiteName: defaultsName))
-        defer { defaults.removePersistentDomain(forName: defaultsName) }
+        defer { defaults.removeTestSuite(named: defaultsName) }
         let state = FileBrowserState(
             preferences: FileBrowserPreferences(defaults: defaults),
             fileSystem: FileSystemService(),

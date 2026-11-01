@@ -19,8 +19,9 @@ struct UIFixturePreferencesIsolationTests {
     @Test("A UI test launch without its own suite starts from the defaults, whatever the previous launch saved",
           arguments: ["--ui-fixtures", "--ui-icon-preview-fixtures", "--ui-archive-drag-fixtures", "--ui-finder-fixtures", "--ui-window-width"])
     func fixtureLaunchStartsClean(argument: String) throws {
-        let userValue = UserDefaults.standard.object(forKey: Self.viewModeKey) as? String
-        let pristine = try #require(UserDefaults(suiteName: "ZforgePristine-\(UUID().uuidString)"))
+        let pristineSuite = "ZforgeTestSuite.ZforgePristine-\(UUID().uuidString)"
+        let pristine = try #require(UserDefaults(suiteName: pristineSuite))
+        defer { pristine.removeTestSuite(named: pristineSuite) }
         let defaultMode = FileBrowserPreferences(defaults: pristine).viewMode
         let otherMode: BrowserViewMode = defaultMode == .gallery ? .list : .gallery
 
@@ -30,18 +31,20 @@ struct UIFixturePreferencesIsolationTests {
         try #require(previousLaunch !== UserDefaults.standard)
         FileBrowserPreferences(defaults: previousLaunch).viewMode = otherMode
         #expect(FileBrowserPreferences(defaults: previousLaunch).viewMode == otherMode)
+        // The write landed in the launch's own suite (the user's preferences are never read here).
+        #expect(previousLaunch.string(forKey: Self.viewModeKey) == otherMode.rawValue)
 
-        // The next launch opens with the default mode, and the user's preference never changed.
+        // The next launch opens with the default mode.
         let nextLaunch = ZforgeDefaults.resolve(arguments: ["Zforge", argument], environment: [:])
+        #expect(nextLaunch !== UserDefaults.standard)
         #expect(FileBrowserPreferences(defaults: nextLaunch).viewMode == defaultMode)
-        #expect(UserDefaults.standard.object(forKey: Self.viewModeKey) as? String == userValue)
-        nextLaunch.removePersistentDomain(forName: ZforgeDefaults.fixtureSuite)
+        nextLaunch.removeTestSuite(named: ZforgeDefaults.fixtureSuite)
     }
 
     @Test("A fixture launch that names its suite keeps it across launches, for relaunch tests")
     func namedSuitePersistsAcrossLaunches() throws {
-        let suite = "ZforgeFixtureRelaunch-\(UUID().uuidString)"
-        defer { UserDefaults(suiteName: suite)?.removePersistentDomain(forName: suite) }
+        let suite = "ZforgeTestSuite.ZforgeFixtureRelaunch-\(UUID().uuidString)"
+        defer { UserDefaults(suiteName: suite)?.removeTestSuite(named: suite) }
         let environment = ["ZFORGE_UI_PREFERENCES_SUITE": suite]
         let first = ZforgeDefaults.resolve(arguments: ["Zforge", "--ui-fixtures"], environment: environment)
         FileBrowserPreferences(defaults: first).viewMode = .columns
@@ -57,16 +60,15 @@ struct UIFixturePreferencesIsolationTests {
         #expect(!ZforgeDefaults.isUITestLaunch(arguments: ["Zforge"]))
         #expect(!ZforgeDefaults.isUITestLaunch(arguments: ["--ui-fixtures"]), "Only arguments after the program name count")
         #expect(!ZforgeDefaults.isUITestLaunch(arguments: ["Zforge", "-NSDocumentRevisionsDebugMode", "YES"]))
-        #expect(!ZforgeDefaults.isUITestLaunch, "The unit test host is an ordinary launch")
-        #expect(ZforgeDefaults.application === UserDefaults.standard)
+        #expect(!ZforgeDefaults.isUITestLaunch, "The unit test host has no UI test argument")
+        #expect(ZforgeDefaults.isTestHost && ZforgeDefaults.isIsolatedLaunch, "The unit test host is isolated (ZF-54)")
     }
 
     @Test("A UI test launch's sidebar favorites live in its own suite")
     func pinnedFoldersFollowTheLaunchDefaults() throws {
-        let userFavorites = UserDefaults.standard.data(forKey: "sidebarPinnedFolders.v1")
         let launch = ZforgeDefaults.resolve(arguments: ["Zforge", "--ui-archive-drag-fixtures"], environment: [:])
         try #require(launch !== UserDefaults.standard)
-        defer { launch.removePersistentDomain(forName: ZforgeDefaults.fixtureSuite) }
+        defer { launch.removeTestSuite(named: ZforgeDefaults.fixtureSuite) }
         let folder = FileManager.default.temporaryDirectory.appendingPathComponent("PinnedIsolation-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: folder) }
@@ -74,7 +76,7 @@ struct UIFixturePreferencesIsolationTests {
         #expect(store.urls == PinnedFolderStore.defaultURLs.map { $0.standardizedFileURL.resolvingSymlinksInPath() },
                 "A UI test launch starts from the default favorites, not the user's")
         try store.pin([folder])
-        #expect(launch.data(forKey: "sidebarPinnedFolders.v1") != nil)
-        #expect(UserDefaults.standard.data(forKey: "sidebarPinnedFolders.v1") == userFavorites, "The user's favorites are untouched")
+        #expect(launch.data(forKey: "sidebarPinnedFolders.v1") != nil, "The pin is saved in the launch's own suite")
+        #expect(store.urls.contains(folder.standardizedFileURL.resolvingSymlinksInPath()))
     }
 }

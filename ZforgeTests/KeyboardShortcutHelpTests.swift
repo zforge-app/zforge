@@ -42,9 +42,9 @@ struct KeyboardShortcutHelpTests {
 
     @Test("Portuguese help shows the localized title and the folder selection shortcut")
     func portugueseSnapshot() throws {
-        let suite = "ShortcutHelpSnapshot-\(UUID().uuidString)"
+        let suite = "ZforgeTestSuite.ShortcutHelpSnapshot-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite) }
+        defer { defaults.removeTestSuite(named: suite) }
         let preferences = FileBrowserPreferences(defaults: defaults)
         preferences.language = .portugueseBrazil
         ZforgeSnapshot.assert(

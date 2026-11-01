@@ -65,7 +65,7 @@ private final class ControlledSearcher: BrowserSearching {
 private final class SearchFixture {
     let root: URL
     let defaults: UserDefaults
-    let suite = "ZforgeBrowserSearch-\(UUID().uuidString)"
+    let suite = "ZforgeTestSuite.ZforgeBrowserSearch-\(UUID().uuidString)"
     let gate = DebounceGate()
 
     init() throws {
@@ -99,7 +99,7 @@ private final class SearchFixture {
     }
 
     func cleanUp() {
-        defaults.removePersistentDomain(forName: suite)
+        defaults.removeTestSuite(named: suite)
         try? FileManager.default.removeItem(at: root)
     }
 }
@@ -345,9 +345,9 @@ struct BrowserSearchStateTests {
 
     @Test("Leaving a search shows the origin's listing again", arguments: SearchOrigin.allCases, SearchExit.allCases)
     func leavingSearchRestoresOriginListing(origin: SearchOrigin, exit: SearchExit) async throws {
-        let suite = "ZforgeSearchOrigin-\(UUID().uuidString)"
+        let suite = "ZforgeTestSuite.ZforgeSearchOrigin-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite) }
+        defer { defaults.removeTestSuite(named: suite) }
         let preferences = FileBrowserPreferences(defaults: defaults)
         preferences.language = .english
         let gate = DebounceGate()
@@ -578,9 +578,9 @@ struct BrowserSearchPresentationTests {
 
     @Test("The expanded field and the scope bar in light and dark", arguments: ZforgeSnapshot.appearances)
     func snapshots(appearance: (name: String, appearance: NSAppearance.Name)) async throws {
-        let suite = "SearchSnapshot-\(UUID().uuidString)"
+        let suite = "ZforgeTestSuite.SearchSnapshot-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite) }
+        defer { defaults.removeTestSuite(named: suite) }
         let state = browser(defaults)
         defer { state.close() }
         let folder = URL(fileURLWithPath: "/ZforgeFixtures/Fixture Folder")
@@ -607,9 +607,9 @@ struct BrowserSearchPresentationTests {
         (650.0, true), (720.0, false), (860.0, false), (1_100.0, false)
     ])
     func overflowSearch(width: Double, offersSearch: Bool) async throws {
-        let suite = "SearchOverflow-\(UUID().uuidString)"
+        let suite = "ZforgeTestSuite.SearchOverflow-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite) }
+        defer { defaults.removeTestSuite(named: suite) }
         let state = browser(defaults)
         defer { state.close() }
         let contents = BrowserToolbarLayout.stage(for: CGFloat(width)).overflowMenuContents

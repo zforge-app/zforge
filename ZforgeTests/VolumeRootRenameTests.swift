@@ -33,13 +33,13 @@ struct VolumeRootRenameTests {
     @Test("The startup volume at the computer level can't start a rename from any entry point",
           arguments: BrowserViewMode.allCases)
     func startupVolumeCannotBeRenamed(mode: BrowserViewMode) async throws {
-        let suite = "VolumeRootRename-\(UUID().uuidString)"
+        let suite = "ZforgeTestSuite.VolumeRootRename-\(UUID().uuidString)"
         // `/` is a volume root on every Mac.
         let startup = SidebarVolume(url: URL(fileURLWithPath: "/", isDirectory: true), name: "Macintosh HD",
                                     kind: .internalDisk, isEjectable: false, isRemovable: false,
                                     isRootFileSystem: true)
         let (state, defaults) = try makeState(suite: suite, volumes: [startup])
-        defer { state.close(); defaults.removePersistentDomain(forName: suite) }
+        defer { state.close(); defaults.removeTestSuite(named: suite) }
         state.viewMode = mode
         await state.navigateToComputer()
         let root = try #require(state.sortedColumnItems(at: .computer).first { $0.localURL?.path == "/" })
@@ -64,13 +64,13 @@ struct VolumeRootRenameTests {
 
     @Test("An ordinary folder still starts the inline rename from the same entry points")
     func folderCanStillBeRenamed() async throws {
-        let suite = "VolumeRootRenameFolder-\(UUID().uuidString)"
+        let suite = "ZforgeTestSuite.VolumeRootRenameFolder-\(UUID().uuidString)"
         let base = FileManager.default.temporaryDirectory.resolvingSymlinksInPath()
             .appendingPathComponent("VolumeRootRename-\(UUID().uuidString)", isDirectory: true)
         try FileManager.default.createDirectory(at: base.appendingPathComponent("Folder"), withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: base.appendingPathComponent("Other"), withIntermediateDirectories: true)
         let (state, defaults) = try makeState(suite: suite)
-        defer { state.close(); defaults.removePersistentDomain(forName: suite); try? FileManager.default.removeItem(at: base) }
+        defer { state.close(); defaults.removeTestSuite(named: suite); try? FileManager.default.removeItem(at: base) }
         await state.navigateToSidebar(base, name: base.lastPathComponent)
         let folder = try #require(state.items.first { $0.name == "Folder" })
         let other = try #require(state.items.first { $0.name == "Other" })

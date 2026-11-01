@@ -98,9 +98,9 @@ struct FileOperationServiceTests {
         for viewMode in BrowserViewMode.allCases {
             let root = try makeTemporaryDirectory()
             defer { try? FileManager.default.removeItem(at: root) }
-            let suiteName = "ZforgeRenameTest-\(UUID().uuidString)"
+            let suiteName = "ZforgeTestSuite.ZforgeRenameTest-\(UUID().uuidString)"
             let defaults = try #require(UserDefaults(suiteName: suiteName))
-            defer { defaults.removePersistentDomain(forName: suiteName) }
+            defer { defaults.removeTestSuite(named: suiteName) }
             let preferences = FileBrowserPreferences(defaults: defaults)
             preferences.viewMode = viewMode
             preferences.language = .english
@@ -185,9 +185,9 @@ struct FileOperationServiceTests {
         try Data("Copy".utf8).write(to: copySource)
         try Data("Move".utf8).write(to: moveSource)
 
-        let suiteName = "ZforgePasteTest-\(UUID().uuidString)"
+        let suiteName = "ZforgeTestSuite.ZforgePasteTest-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suiteName))
-        defer { defaults.removePersistentDomain(forName: suiteName) }
+        defer { defaults.removeTestSuite(named: suiteName) }
         let state = FileBrowserState(
             preferences: FileBrowserPreferences(defaults: defaults),
             fileSystem: FileSystemService(),
@@ -243,9 +243,9 @@ struct FileOperationServiceTests {
         try Data("Zforge".utf8).write(to: source)
         try FileManager.default.createDirectory(at: destination, withIntermediateDirectories: false)
 
-        let suiteName = "ZforgePasteProgressTest-\(UUID().uuidString)"
+        let suiteName = "ZforgeTestSuite.ZforgePasteProgressTest-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suiteName))
-        defer { defaults.removePersistentDomain(forName: suiteName) }
+        defer { defaults.removeTestSuite(named: suiteName) }
         let preferences = FileBrowserPreferences(defaults: defaults)
         preferences.language = .english
         let fileOperations = SuspendedTransferFileOperationService()
@@ -286,9 +286,9 @@ struct FileOperationServiceTests {
         try FileManager.default.createDirectory(at: source, withIntermediateDirectories: false)
         try Data("Zforge".utf8).write(to: source.appendingPathComponent("README.txt"))
 
-        let suiteName = "ZforgeColumnPasteTest-\(UUID().uuidString)"
+        let suiteName = "ZforgeTestSuite.ZforgeColumnPasteTest-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suiteName))
-        defer { defaults.removePersistentDomain(forName: suiteName) }
+        defer { defaults.removeTestSuite(named: suiteName) }
         let preferences = FileBrowserPreferences(defaults: defaults)
         preferences.viewMode = .columns
         preferences.language = .english
@@ -378,9 +378,9 @@ struct FileOperationServiceTests {
         try Data("Zforge".utf8).write(to: source)
         try FileManager.default.createDirectory(at: destination, withIntermediateDirectories: false)
 
-        let suiteName = "ZforgeDropTest-\(UUID().uuidString)"
+        let suiteName = "ZforgeTestSuite.ZforgeDropTest-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suiteName))
-        defer { defaults.removePersistentDomain(forName: suiteName) }
+        defer { defaults.removeTestSuite(named: suiteName) }
         let state = FileBrowserState(
             preferences: FileBrowserPreferences(defaults: defaults),
             fileSystem: FileSystemService(),
@@ -457,9 +457,9 @@ struct FileOperationServiceTests {
     func undoReversesFileOperations() async throws {
         let root = try makeTemporaryDirectory()
         defer { try? FileManager.default.removeItem(at: root) }
-        let suiteName = "ZforgeUndoTest-\(UUID().uuidString)"
+        let suiteName = "ZforgeTestSuite.ZforgeUndoTest-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suiteName))
-        defer { defaults.removePersistentDomain(forName: suiteName) }
+        defer { defaults.removeTestSuite(named: suiteName) }
         let preferences = FileBrowserPreferences(defaults: defaults)
         preferences.language = .english
         let state = FileBrowserState(
@@ -557,9 +557,9 @@ struct FileOperationServiceTests {
         defer { try? FileManager.default.removeItem(at: root) }
         let source = root.appendingPathComponent("Delete.txt")
         try Data("Zforge".utf8).write(to: source)
-        let suiteName = "ZforgePermanentDeletionTest-\(UUID().uuidString)"
+        let suiteName = "ZforgeTestSuite.ZforgePermanentDeletionTest-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suiteName))
-        defer { defaults.removePersistentDomain(forName: suiteName) }
+        defer { defaults.removeTestSuite(named: suiteName) }
         let preferences = FileBrowserPreferences(defaults: defaults)
         preferences.language = .english
         let state = FileBrowserState(

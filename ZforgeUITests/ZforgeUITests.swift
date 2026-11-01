@@ -145,7 +145,7 @@ final class ZforgeUITests: XCTestCase {
         // WindowViewModeTests; this keeps the real shortcut, toolbar, close, Quit
         // and relaunch path for one representative sequence.
         let app = XCUIApplication()
-        app.launchEnvironment["ZFORGE_UI_PREFERENCES_SUITE"] = "ZforgeViewRelaunch-\(UUID().uuidString)"
+        app.launchEnvironment["ZFORGE_UI_PREFERENCES_SUITE"] = "ZforgeTestSuite.ZforgeViewRelaunch-\(UUID().uuidString)"
         app.launchArguments = [
             "--ui-fixtures", "--ui-window-width", "1100", "--ui-view-mode", "icons",
             "-appLanguagePreference", "english"
@@ -810,7 +810,7 @@ final class ZforgeUITests: XCTestCase {
     @MainActor
     func testListHeaderDividerResizesAndHeaderBodyReorders() throws {
         let app = XCUIApplication()
-        app.launchEnvironment["ZFORGE_UI_PREFERENCES_SUITE"] = "ZforgeListHeaderUI-\(UUID().uuidString)"
+        app.launchEnvironment["ZFORGE_UI_PREFERENCES_SUITE"] = "ZforgeTestSuite.ZforgeListHeaderUI-\(UUID().uuidString)"
         app.launchArguments = ["--ui-fixtures", "--ui-window-width", "1100", "--ui-view-mode", "list",
             "-appLanguagePreference", "english"]
         launchWithBrowserWindow(app)

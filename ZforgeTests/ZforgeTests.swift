@@ -86,9 +86,9 @@ struct ZforgeTests {
     @Test("The sidebar places the real user directory in Locations")
     @MainActor
     func sidebarUsesRealUserHome() throws {
-        let suite = "SidebarDefaults-\(UUID())"
+        let suite = "ZforgeTestSuite.SidebarDefaults-\(UUID())"
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite) }
+        defer { defaults.removeTestSuite(named: suite) }
         let sidebar = SidebarState()
         sidebar.pinnedFolders = PinnedFolderStore(defaults: defaults)
 
@@ -258,9 +258,9 @@ struct ZforgeTests {
     @Test("Archive preferences persist defaults and clamp their ranges")
     @MainActor
     func archivePreferences() throws {
-        let suiteName = "ZforgeTests.archivePreferences.\(UUID().uuidString)"
+        let suiteName = "ZforgeTestSuite.ZforgeTests.archivePreferences.\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suiteName))
-        defer { defaults.removePersistentDomain(forName: suiteName) }
+        defer { defaults.removeTestSuite(named: suiteName) }
 
         let preferences = FileBrowserPreferences(defaults: defaults)
         #expect(preferences.archiveNestingLimit == 5)
@@ -291,9 +291,9 @@ struct ZforgeTests {
     @Test("A root size limit saved in whole GB before the slider is read as decimal bytes")
     @MainActor
     func legacyArchiveRootSizeLimit() throws {
-        let suiteName = "ZforgeTests.legacyArchiveRootSizeLimit.\(UUID().uuidString)"
+        let suiteName = "ZforgeTestSuite.ZforgeTests.legacyArchiveRootSizeLimit.\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suiteName))
-        defer { defaults.removePersistentDomain(forName: suiteName) }
+        defer { defaults.removeTestSuite(named: suiteName) }
 
         defaults.set(3, forKey: "archive.rootSizeLimitGB")
         let preferences = FileBrowserPreferences(defaults: defaults)
@@ -308,9 +308,9 @@ struct ZforgeTests {
     @Test("Compression profiles persist settings but never persist passwords")
     @MainActor
     func compressionProfiles() throws {
-        let suiteName = "ZforgeTests.compressionProfiles.\(UUID().uuidString)"
+        let suiteName = "ZforgeTestSuite.ZforgeTests.compressionProfiles.\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suiteName))
-        defer { defaults.removePersistentDomain(forName: suiteName) }
+        defer { defaults.removeTestSuite(named: suiteName) }
 
         let preferences = FileBrowserPreferences(defaults: defaults)
         #expect(preferences.defaultCompressionProfile.name == "Auto")
@@ -336,9 +336,9 @@ struct ZforgeTests {
     @Test("The former built-in profile name migrates to Auto")
     @MainActor
     func defaultCompressionProfileNameMigration() throws {
-        let suiteName = "ZforgeTests.defaultCompressionProfileNameMigration.\(UUID().uuidString)"
+        let suiteName = "ZforgeTestSuite.ZforgeTests.defaultCompressionProfileNameMigration.\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suiteName))
-        defer { defaults.removePersistentDomain(forName: suiteName) }
+        defer { defaults.removeTestSuite(named: suiteName) }
         let oldProfile = CompressionProfile(name: "Default", options: CompressionOptions(format: .sevenZip))
         defaults.set(try JSONEncoder().encode([oldProfile]), forKey: "archive.compressionProfiles")
         defaults.set(oldProfile.id.uuidString, forKey: "archive.defaultCompressionProfileID")
@@ -575,9 +575,9 @@ struct ZforgeTests {
         try Data("Zforge".utf8).write(to: sourceDirectory.appendingPathComponent("readme.txt"))
         defer { try? FileManager.default.removeItem(at: root) }
 
-        let suiteName = "ZforgeColumnCompression-\(UUID().uuidString)"
+        let suiteName = "ZforgeTestSuite.ZforgeColumnCompression-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suiteName))
-        defer { defaults.removePersistentDomain(forName: suiteName) }
+        defer { defaults.removeTestSuite(named: suiteName) }
         let preferences = FileBrowserPreferences(defaults: defaults)
         preferences.viewMode = .columns
         preferences.language = .english
@@ -616,9 +616,9 @@ struct ZforgeTests {
         let source = root.appendingPathComponent("readme.txt")
         try Data("Profile settings".utf8).write(to: source)
 
-        let suiteName = "ZforgeCompressionProfile-\(UUID().uuidString)"
+        let suiteName = "ZforgeTestSuite.ZforgeCompressionProfile-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suiteName))
-        defer { defaults.removePersistentDomain(forName: suiteName) }
+        defer { defaults.removeTestSuite(named: suiteName) }
         let preferences = FileBrowserPreferences(defaults: defaults)
         let id = preferences.createCompressionProfile(
             name: "High compression",
@@ -655,9 +655,9 @@ struct ZforgeTests {
         )
         defer { try? FileManager.default.removeItem(at: root) }
 
-        let suiteName = "ZforgeColumnExtraction-\(UUID().uuidString)"
+        let suiteName = "ZforgeTestSuite.ZforgeColumnExtraction-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suiteName))
-        defer { defaults.removePersistentDomain(forName: suiteName) }
+        defer { defaults.removeTestSuite(named: suiteName) }
         let preferences = FileBrowserPreferences(defaults: defaults)
         preferences.viewMode = .columns
         preferences.language = .english
@@ -733,9 +733,9 @@ struct ZforgeTests {
             progress: { _ in }
         )
 
-        let suiteName = "ZforgeNestedArchiveExtraction-\(UUID().uuidString)"
+        let suiteName = "ZforgeTestSuite.ZforgeNestedArchiveExtraction-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suiteName))
-        defer { defaults.removePersistentDomain(forName: suiteName) }
+        defer { defaults.removeTestSuite(named: suiteName) }
         let preferences = FileBrowserPreferences(defaults: defaults)
         preferences.viewMode = .columns
         preferences.language = .english
@@ -807,9 +807,9 @@ struct ZforgeTests {
         )
         defer { try? FileManager.default.removeItem(at: root) }
 
-        let suiteName = "ZforgeColumnArchiveDeletion-\(UUID().uuidString)"
+        let suiteName = "ZforgeTestSuite.ZforgeColumnArchiveDeletion-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suiteName))
-        defer { defaults.removePersistentDomain(forName: suiteName) }
+        defer { defaults.removeTestSuite(named: suiteName) }
         let preferences = FileBrowserPreferences(defaults: defaults)
         preferences.viewMode = .columns
         preferences.language = .english
@@ -871,9 +871,9 @@ struct ZforgeTests {
     @Test("Preview visibility persists independently for every browser mode")
     @MainActor
     func previewVisibility() async throws {
-        let suiteName = "ZforgeTests.preview.\(UUID().uuidString)"
+        let suiteName = "ZforgeTestSuite.ZforgeTests.preview.\(UUID().uuidString)"
         let defaults = try! #require(UserDefaults(suiteName: suiteName))
-        defer { defaults.removePersistentDomain(forName: suiteName) }
+        defer { defaults.removeTestSuite(named: suiteName) }
         let preferences = FileBrowserPreferences(defaults: defaults)
         preferences.viewMode = .list
         let state = FileBrowserState(
@@ -922,9 +922,9 @@ struct ZforgeTests {
     @Test("A pending preview never publishes after the focused item changes")
     @MainActor
     func obsoletePreviewIsDiscarded() async throws {
-        let suite = "ZforgeObsoletePreview-\(UUID().uuidString)"
+        let suite = "ZforgeTestSuite.ZforgeObsoletePreview-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite) }
+        defer { defaults.removeTestSuite(named: suite) }
         let preferences = FileBrowserPreferences(defaults: defaults)
         preferences.viewMode = .icons
         preferences.setPreviewVisible(true, in: .icons)
@@ -950,9 +950,9 @@ struct ZforgeTests {
     @Test("Multiple selection previews every eligible file alongside static items")
     @MainActor
     func multipleSelectionPreviewsEligibleFiles() throws {
-        let suiteName = "ZforgeMultiplePreview-\(UUID().uuidString)"
+        let suiteName = "ZforgeTestSuite.ZforgeMultiplePreview-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suiteName))
-        defer { defaults.removePersistentDomain(forName: suiteName) }
+        defer { defaults.removeTestSuite(named: suiteName) }
         let state = FileBrowserState(
             preferences: FileBrowserPreferences(defaults: defaults),
             fileSystem: UIFixtureFileSystemService(),
@@ -1046,9 +1046,9 @@ struct ZforgeTests {
         try Data("Preview".utf8).write(to: documentURL)
         defer { try? FileManager.default.removeItem(at: rootURL) }
 
-        let suiteName = "ZforgeEnterRightColumn-\(UUID().uuidString)"
+        let suiteName = "ZforgeTestSuite.ZforgeEnterRightColumn-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suiteName))
-        defer { defaults.removePersistentDomain(forName: suiteName) }
+        defer { defaults.removeTestSuite(named: suiteName) }
         let preferences = FileBrowserPreferences(defaults: defaults)
         preferences.viewMode = .columns
         let state = FileBrowserState(
@@ -1100,9 +1100,9 @@ struct ZforgeTests {
     @Test("Rapid column archive selection cancels the previous load before opening the next")
     @MainActor
     func rapidColumnArchiveSelectionPublishesOnlyCurrentArchive() async throws {
-        let suiteName = "ZforgeColumnArchiveRace-\(UUID().uuidString)"
+        let suiteName = "ZforgeTestSuite.ZforgeColumnArchiveRace-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suiteName))
-        defer { defaults.removePersistentDomain(forName: suiteName) }
+        defer { defaults.removeTestSuite(named: suiteName) }
         let preferences = FileBrowserPreferences(defaults: defaults)
         preferences.viewMode = .columns
         preferences.language = .english
@@ -1305,9 +1305,9 @@ struct ZforgeTests {
         try Data("original".utf8).write(to: original)
         try Data("added".utf8).write(to: addition)
         try await engine.createArchive(from: [original], outputURL: archive, format: format, progress: { _ in })
-        let suiteName = "ZforgeArchiveConfirmation-\(UUID().uuidString)"
+        let suiteName = "ZforgeTestSuite.ZforgeArchiveConfirmation-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suiteName))
-        defer { defaults.removePersistentDomain(forName: suiteName) }
+        defer { defaults.removeTestSuite(named: suiteName) }
         let preferences = FileBrowserPreferences(defaults: defaults)
         preferences.language = .english
         preferences.viewMode = .list
@@ -1395,9 +1395,9 @@ struct ZforgeTests {
                 format: destination == archive ? format : .zip, progress: { _ in }
             )
         }
-        let suiteName = "ZforgeInlineUpdate-\(UUID().uuidString)"
+        let suiteName = "ZforgeTestSuite.ZforgeInlineUpdate-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suiteName))
-        defer { defaults.removePersistentDomain(forName: suiteName) }
+        defer { defaults.removeTestSuite(named: suiteName) }
         let preferences = FileBrowserPreferences(defaults: defaults)
         preferences.viewMode = .list
         let state = FileBrowserState(
@@ -1870,9 +1870,9 @@ struct ZforgeTests {
         )
         defer { try? FileManager.default.removeItem(at: root) }
 
-        let suiteName = "ZforgeColumnExternalExtraction-\(UUID().uuidString)"
+        let suiteName = "ZforgeTestSuite.ZforgeColumnExternalExtraction-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suiteName))
-        defer { defaults.removePersistentDomain(forName: suiteName) }
+        defer { defaults.removeTestSuite(named: suiteName) }
         let preferences = FileBrowserPreferences(defaults: defaults)
         preferences.viewMode = .columns
         preferences.language = .english

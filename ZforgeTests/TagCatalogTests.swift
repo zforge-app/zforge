@@ -411,9 +411,9 @@ struct TagCatalogTests {
         let name = "Zforge navigation \(UUID())"
         for url in [first, second, folder] { try writeTags([name + "\n6"], to: url) }
         try writeTags([name + " other\n4"], to: wrong)
-        let suite = "TagNavigation-\(UUID())"
+        let suite = "ZforgeTestSuite.TagNavigation-\(UUID())"
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite) }
+        defer { defaults.removeTestSuite(named: suite) }
         let state = FileBrowserState(
             preferences: FileBrowserPreferences(defaults: defaults),
             fileSystem: FileSystemService(),
@@ -466,9 +466,9 @@ struct TagCatalogTests {
         let name = "Zforge edit \(UUID())"
         let file = root.appendingPathComponent("A/first.txt")
         try writeTags(["Keep\n4"], to: file)
-        let suite = "TagEditing-\(UUID())"
+        let suite = "ZforgeTestSuite.TagEditing-\(UUID())"
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite) }
+        defer { defaults.removeTestSuite(named: suite) }
         let state = FileBrowserState(
             preferences: FileBrowserPreferences(defaults: defaults),
             fileSystem: FileSystemService(), grants: UIFixtureAccessGrantStore(),
@@ -535,9 +535,9 @@ struct TagCatalogTests {
     @Test("Native menu circles share the current selection's applied tag state")
     @MainActor
     func nativeMenuAppliedState() async throws {
-        let suite = "TagMenu-\(UUID())"
+        let suite = "ZforgeTestSuite.TagMenu-\(UUID())"
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite) }
+        defer { defaults.removeTestSuite(named: suite) }
         let state = FileBrowserState(preferences: FileBrowserPreferences(defaults: defaults),
             fileSystem: UIFixtureFileSystemService(), recentItems: UIFixtureRecentItemsService(),
             grants: UIFixtureAccessGrantStore(), archives: UIFixtureArchiveEngine())
@@ -567,9 +567,9 @@ struct TagCatalogTests {
     @Test("Quick tag row keeps a single hovered circle and names it in the editor item")
     @MainActor
     func quickTagRowHover() async throws {
-        let suite = "TagMenuHover-\(UUID())"
+        let suite = "ZforgeTestSuite.TagMenuHover-\(UUID())"
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite) }
+        defer { defaults.removeTestSuite(named: suite) }
         let state = FileBrowserState(preferences: FileBrowserPreferences(defaults: defaults),
             fileSystem: UIFixtureFileSystemService(), recentItems: UIFixtureRecentItemsService(),
             grants: UIFixtureAccessGrantStore(), archives: UIFixtureArchiveEngine())

@@ -258,9 +258,9 @@ struct SettingsSliderTests {
         ("dark-pt-BR", NSAppearance.Name.darkAqua, AppLanguagePreference.portugueseBrazil),
     ])
     func settingsSection(name: String, appearance: NSAppearance.Name, language: AppLanguagePreference) async throws {
-        let suite = "SettingsSliderTests-\(UUID().uuidString)"
+        let suite = "ZforgeTestSuite.SettingsSliderTests-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite) }
+        defer { defaults.removeTestSuite(named: suite) }
         let preferences = FileBrowserPreferences(defaults: defaults)
         preferences.language = language
         preferences.archiveRootSizeLimit = 1_531_250_000

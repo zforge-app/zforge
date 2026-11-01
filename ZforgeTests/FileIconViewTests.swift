@@ -179,9 +179,9 @@ struct FileIconViewTests {
     @Test("Folder expansion uses the open icon only in List and archive states have separate cache entries")
     @MainActor
     func archiveExpansionIconState() throws {
-        let defaultsName = "ArchiveExpansionIcons-\(UUID().uuidString)"
+        let defaultsName = "ZforgeTestSuite.ArchiveExpansionIcons-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: defaultsName))
-        defer { defaults.removePersistentDomain(forName: defaultsName) }
+        defer { defaults.removeTestSuite(named: defaultsName) }
         let state = FileBrowserState(
             preferences: FileBrowserPreferences(defaults: defaults),
             fileSystem: UIFixtureFileSystemService(),

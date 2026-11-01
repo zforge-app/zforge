@@ -360,14 +360,14 @@ private struct SiriArchiveFixture: Sendable {
         container = FileManager.default.temporaryDirectory.appendingPathComponent("SiriArchive-" + UUID().uuidString)
         root = container.appendingPathComponent("Allowed")
         archive = root.appendingPathComponent("Example.zip")
-        suite = "SiriArchiveTests-" + UUID().uuidString
+        suite = "ZforgeTestSuite.SiriArchiveTests-" + UUID().uuidString
         store = AutomationGrantStore(defaults: try #require(UserDefaults(suiteName: suite)))
         service = AutomationArchiveEntities(access: store)
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
         try Data("Entity metadata fixture".utf8).write(to: archive)
     }
     func cleanUp() {
-        UserDefaults(suiteName: suite)?.removePersistentDomain(forName: suite)
+        UserDefaults(suiteName: suite)?.removeTestSuite(named: suite)
         try? FileManager.default.removeItem(at: container)
     }
 }

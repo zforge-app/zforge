@@ -52,7 +52,7 @@ actor AutomationGrantStore: AutomationAuthorizing {
     private let defaults: UserDefaults
     private let key = "automationSecurityScopedFolders"
 
-    init(defaults: UserDefaults = .standard) { self.defaults = defaults }
+    init(defaults: UserDefaults = ZforgeDefaults.application) { self.defaults = defaults }
 
     func authorizedFolders() async -> [String] { bookmarks().keys.sorted() }
 

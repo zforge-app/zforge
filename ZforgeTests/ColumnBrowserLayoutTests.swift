@@ -135,7 +135,7 @@ struct ColumnBrowserLayoutTests {
 @MainActor
 private final class ColumnFixture {
     let state: FileBrowserState
-    private let defaultsName = "ColumnBrowserLayout-\(UUID().uuidString)"
+    private let defaultsName = "ZforgeTestSuite.ColumnBrowserLayout-\(UUID().uuidString)"
     private let window: NSWindow
     private let host: NSView
 
@@ -169,7 +169,7 @@ private final class ColumnFixture {
     func close() {
         state.close()
         window.close()
-        UserDefaults.standard.removePersistentDomain(forName: defaultsName)
+        UserDefaults.standard.removeTestSuite(named: defaultsName)
     }
 
     func activate(_ name: String, in location: BrowserLocation) async {

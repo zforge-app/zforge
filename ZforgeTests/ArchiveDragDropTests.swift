@@ -184,9 +184,9 @@ struct ArchiveDragDropTests {
             var requests: [FileBrowserState.ArchiveTransferConfirmation] = []
             state.archiveTransferConfirmation = { requests.append($0); return true }
             let payload = try await revealPayload(in: state)
-            let suite = "ArchiveDragOtherWindow-\(UUID().uuidString)"
+            let suite = "ZforgeTestSuite.ArchiveDragOtherWindow-\(UUID().uuidString)"
             let defaults = try #require(UserDefaults(suiteName: suite))
-            defer { defaults.removePersistentDomain(forName: suite) }
+            defer { defaults.removeTestSuite(named: suite) }
             let preferences = FileBrowserPreferences(defaults: defaults)
             preferences.language = .english; preferences.viewMode = .list
             let other = FileBrowserState(preferences: preferences, fileSystem: FileSystemService(),
@@ -387,9 +387,9 @@ struct ArchiveDragDropTests {
         let engine = NativeSevenZipArchiveEngine()
         try await engine.createArchive(from: [inside, target], outputURL: archive, format: .zip, progress: { _ in })
         try FileManager.default.removeItem(at: staging)
-        let suite = "ArchiveDragDrop-\(UUID().uuidString)"
+        let suite = "ZforgeTestSuite.ArchiveDragDrop-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite) }
+        defer { defaults.removeTestSuite(named: suite) }
         let preferences = FileBrowserPreferences(defaults: defaults)
         preferences.language = .english
         preferences.viewMode = mode

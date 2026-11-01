@@ -49,9 +49,9 @@ struct LocalizationTests {
 
     @Test("Every explicit language survives reopening preferences", arguments: AppLanguagePreference.allCases)
     func languagePersistence(language: AppLanguagePreference) throws {
-        let suite = "ZforgeLocalization-\(UUID().uuidString)"
+        let suite = "ZforgeTestSuite.ZforgeLocalization-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite) }
+        defer { defaults.removeTestSuite(named: suite) }
         let preferences = FileBrowserPreferences(defaults: defaults)
         #expect(preferences.language == .system)
         preferences.language = language
@@ -61,9 +61,9 @@ struct LocalizationTests {
 
     @Test("Legacy saved preferences remain compatible and corrupt values fall back to system")
     func legacyPreferences() throws {
-        let suite = "ZforgeLocalizationLegacy-\(UUID().uuidString)"
+        let suite = "ZforgeTestSuite.ZforgeLocalizationLegacy-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite) }
+        defer { defaults.removeTestSuite(named: suite) }
         for (raw, expected) in [("english", AppLanguagePreference.english), ("portugueseBrazil", .portugueseBrazil), ("invalid", .system)] {
             defaults.set(raw, forKey: AppLanguagePreference.defaultsKey)
             #expect(FileBrowserPreferences(defaults: defaults).language == expected)

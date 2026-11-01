@@ -28,10 +28,10 @@ struct ArchiveIndexTests {
 
     @Test("Contextual grants notify already-open observers after successful persistence")
     func grantChangeNotification() async throws {
-        let suite = "ArchiveIndexNotification-" + UUID().uuidString
+        let suite = "ZforgeTestSuite.ArchiveIndexNotification-" + UUID().uuidString
         let root = FileManager.default.temporaryDirectory.appendingPathComponent(suite)
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
-        defer { UserDefaults(suiteName: suite)?.removePersistentDomain(forName: suite); try? FileManager.default.removeItem(at: root) }
+        defer { UserDefaults(suiteName: suite)?.removeTestSuite(named: suite); try? FileManager.default.removeItem(at: root) }
         let count = Mutex(0)
         let store = AutomationGrantStore(defaults: try #require(UserDefaults(suiteName: suite)))
         let observer = NotificationCenter.default.addObserver(forName: Notification.Name("ZforgeAutomationGrantsChanged"), object: store, queue: nil) { _ in
@@ -338,14 +338,14 @@ private struct IndexFixture: Sendable {
         container = FileManager.default.temporaryDirectory.appendingPathComponent("ArchiveIndex-" + UUID().uuidString).resolvingSymlinksInPath()
         root = container.appendingPathComponent("Allowed")
         archive = root.appendingPathComponent("Example.zip")
-        suite = "ArchiveIndex-" + UUID().uuidString
+        suite = "ZforgeTestSuite.ArchiveIndex-" + UUID().uuidString
         store = AutomationGrantStore(defaults: try #require(UserDefaults(suiteName: suite)))
         discovery = AutomationArchiveEntities(access: store)
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
         try Data("Archive metadata fixture".utf8).write(to: archive)
     }
     func cleanUp() {
-        UserDefaults(suiteName: suite)?.removePersistentDomain(forName: suite)
+        UserDefaults(suiteName: suite)?.removeTestSuite(named: suite)
         try? FileManager.default.removeItem(at: container)
     }
 }

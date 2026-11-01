@@ -59,9 +59,9 @@ struct ListHierarchyPerformanceTests {
         try FileManager.default.createDirectory(at: projectTwo, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: root) }
 
-        let suiteName = "ZforgeExpandedHierarchy-\(UUID().uuidString)"
+        let suiteName = "ZforgeTestSuite.ZforgeExpandedHierarchy-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suiteName))
-        defer { defaults.removePersistentDomain(forName: suiteName) }
+        defer { defaults.removeTestSuite(named: suiteName) }
         let preferences = FileBrowserPreferences(defaults: defaults)
         preferences.viewMode = .list
         preferences.sort = BrowserSort(field: .name, ascending: true)
@@ -114,9 +114,9 @@ struct ListHierarchyPerformanceTests {
         try FileManager.default.createDirectory(at: uiDemo, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: root) }
 
-        let suiteName = "ZforgeContextualDestination-\(UUID().uuidString)"
+        let suiteName = "ZforgeTestSuite.ZforgeContextualDestination-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suiteName))
-        defer { defaults.removePersistentDomain(forName: suiteName) }
+        defer { defaults.removeTestSuite(named: suiteName) }
         let preferences = FileBrowserPreferences(defaults: defaults)
         preferences.viewMode = .list
         preferences.sort = BrowserSort(field: .name, ascending: true)
@@ -166,9 +166,9 @@ struct ListHierarchyPerformanceTests {
         try Data("Zforge".utf8).write(to: source)
         defer { try? FileManager.default.removeItem(at: root) }
 
-        let suiteName = "ZforgeColumnTransfer-" + UUID().uuidString
+        let suiteName = "ZforgeTestSuite.ZforgeColumnTransfer-" + UUID().uuidString
         let defaults = try #require(UserDefaults(suiteName: suiteName))
-        defer { defaults.removePersistentDomain(forName: suiteName) }
+        defer { defaults.removeTestSuite(named: suiteName) }
         let preferences = FileBrowserPreferences(defaults: defaults)
         preferences.viewMode = .columns
         preferences.language = .english
@@ -239,9 +239,9 @@ struct ListHierarchyPerformanceTests {
         )
         defer { try? FileManager.default.removeItem(at: root) }
 
-        let suiteName = "ZforgeColumnDeletion-" + UUID().uuidString
+        let suiteName = "ZforgeTestSuite.ZforgeColumnDeletion-" + UUID().uuidString
         let defaults = try #require(UserDefaults(suiteName: suiteName))
-        defer { defaults.removePersistentDomain(forName: suiteName) }
+        defer { defaults.removeTestSuite(named: suiteName) }
         let preferences = FileBrowserPreferences(defaults: defaults)
         preferences.viewMode = .columns
         preferences.language = .english
@@ -288,9 +288,9 @@ struct ListHierarchyPerformanceTests {
         try Data("old".utf8).write(to: file)
         defer { try? FileManager.default.removeItem(at: root) }
 
-        let suiteName = "ZforgeColumnFileDeletion-" + UUID().uuidString
+        let suiteName = "ZforgeTestSuite.ZforgeColumnFileDeletion-" + UUID().uuidString
         let defaults = try #require(UserDefaults(suiteName: suiteName))
-        defer { defaults.removePersistentDomain(forName: suiteName) }
+        defer { defaults.removeTestSuite(named: suiteName) }
         let preferences = FileBrowserPreferences(defaults: defaults)
         preferences.viewMode = .columns
         preferences.language = .english
@@ -334,9 +334,9 @@ struct ListHierarchyPerformanceTests {
         try Data("content".utf8).write(to: original.appendingPathComponent("child.txt"))
         defer { try? FileManager.default.removeItem(at: root) }
 
-        let suiteName = "ZforgeColumnRename-" + UUID().uuidString
+        let suiteName = "ZforgeTestSuite.ZforgeColumnRename-" + UUID().uuidString
         let defaults = try #require(UserDefaults(suiteName: suiteName))
-        defer { defaults.removePersistentDomain(forName: suiteName) }
+        defer { defaults.removeTestSuite(named: suiteName) }
         let preferences = FileBrowserPreferences(defaults: defaults)
         preferences.viewMode = .columns
         preferences.language = .english

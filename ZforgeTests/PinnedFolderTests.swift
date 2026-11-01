@@ -12,14 +12,14 @@ struct PinnedFolderTests {
         for name in ["A", "B", "C"] {
             try FileManager.default.createDirectory(at: root.appendingPathComponent(name), withIntermediateDirectories: true)
         }
-        let suite = "PinnedFolderTests.\(UUID())"
+        let suite = "ZforgeTestSuite.PinnedFolderTests.\(UUID())"
         return (root, UserDefaults(suiteName: suite)!, suite)
     }
 
     @Test("Insertion order and removals survive relaunch without changing folders")
     func persistsOrderAndRemoval() throws {
         let (root, defaults, suite) = try fixture()
-        defer { defaults.removePersistentDomain(forName: suite); try? FileManager.default.removeItem(at: root) }
+        defer { defaults.removeTestSuite(named: suite); try? FileManager.default.removeItem(at: root) }
         let a = root.appendingPathComponent("A"), b = root.appendingPathComponent("B"), c = root.appendingPathComponent("C")
         let store = PinnedFolderStore(defaults: defaults, initialURLs: [a, b])
         try store.pin([c], before: b)
@@ -34,7 +34,7 @@ struct PinnedFolderTests {
     @Test("Repeated folders and symlink paths do not create duplicate favorites")
     func deduplicatesCanonicalFolders() throws {
         let (root, defaults, suite) = try fixture()
-        defer { defaults.removePersistentDomain(forName: suite); try? FileManager.default.removeItem(at: root) }
+        defer { defaults.removeTestSuite(named: suite); try? FileManager.default.removeItem(at: root) }
         let a = root.appendingPathComponent("A"), link = root.appendingPathComponent("link")
         try FileManager.default.createSymbolicLink(at: link, withDestinationURL: a)
         let store = PinnedFolderStore(defaults: defaults, initialURLs: [])
@@ -42,7 +42,7 @@ struct PinnedFolderTests {
         #expect(store.urls == [a.resolvingSymlinksInPath()])
         try store.pin([link])
         #expect(store.urls.count == 1)
-        defaults.removePersistentDomain(forName: suite)
+        defaults.removeTestSuite(named: suite)
         let seeded = PinnedFolderStore(defaults: defaults, initialURLs: [link])
         try seeded.pin([a])
         #expect(seeded.urls.count == 1)
@@ -51,7 +51,7 @@ struct PinnedFolderTests {
     @Test("A mixed file/folder batch is rejected without partial insertion")
     func rejectsFilesAtomically() throws {
         let (root, defaults, suite) = try fixture()
-        defer { defaults.removePersistentDomain(forName: suite); try? FileManager.default.removeItem(at: root) }
+        defer { defaults.removeTestSuite(named: suite); try? FileManager.default.removeItem(at: root) }
         let file = root.appendingPathComponent("file.zip")
         try Data().write(to: file)
         let store = PinnedFolderStore(defaults: defaults, initialURLs: [])
@@ -63,7 +63,7 @@ struct PinnedFolderTests {
     @Test("Packages and virtual/non-file destinations cannot be pinned")
     func rejectsPackagesAndRemoteURLs() throws {
         let (root, defaults, suite) = try fixture()
-        defer { defaults.removePersistentDomain(forName: suite); try? FileManager.default.removeItem(at: root) }
+        defer { defaults.removeTestSuite(named: suite); try? FileManager.default.removeItem(at: root) }
         let app = root.appendingPathComponent("Sample.app")
         try FileManager.default.createDirectory(at: app, withIntermediateDirectories: true)
         let store = PinnedFolderStore(defaults: defaults, initialURLs: [])
@@ -79,7 +79,7 @@ struct PinnedFolderTests {
         let store = PinnedFolderStore.shared
         defer {
             for url in [a, b] { store.remove(url.resolvingSymlinksInPath()) }
-            defaults.removePersistentDomain(forName: suite)
+            defaults.removeTestSuite(named: suite)
             try? FileManager.default.removeItem(at: root)
         }
         let browser = FileBrowserState(preferences: FileBrowserPreferences(defaults: defaults),
@@ -108,7 +108,7 @@ struct PinnedFolderTests {
         let store = PinnedFolderStore.shared
         defer {
             store.remove(folder.resolvingSymlinksInPath())
-            defaults.removePersistentDomain(forName: suite)
+            defaults.removeTestSuite(named: suite)
             try? FileManager.default.removeItem(at: root)
         }
         let browser = FileBrowserState(preferences: FileBrowserPreferences(defaults: defaults),
@@ -133,9 +133,9 @@ struct PinnedFolderTests {
 
     @Test("The merged native menu offers sidebar pinning alongside quick tags")
     func nativeMenuKeepsPinAndTags() async throws {
-        let suite = "SidebarNativeMenu-\(UUID())"
+        let suite = "ZforgeTestSuite.SidebarNativeMenu-\(UUID())"
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite) }
+        defer { defaults.removeTestSuite(named: suite) }
         let state = FileBrowserState(preferences: FileBrowserPreferences(defaults: defaults),
             fileSystem: UIFixtureFileSystemService(), recentItems: UIFixtureRecentItemsService(),
             grants: UIFixtureAccessGrantStore(), archives: UIFixtureArchiveEngine())
@@ -155,7 +155,7 @@ struct PinnedFolderTests {
     @Test("An explicitly empty favorites list stays empty after relaunch")
     func preservesEmptyList() throws {
         let (root, defaults, suite) = try fixture()
-        defer { defaults.removePersistentDomain(forName: suite); try? FileManager.default.removeItem(at: root) }
+        defer { defaults.removeTestSuite(named: suite); try? FileManager.default.removeItem(at: root) }
         let a = root.appendingPathComponent("A")
         let store = PinnedFolderStore(defaults: defaults, initialURLs: [a])
         store.remove(a)

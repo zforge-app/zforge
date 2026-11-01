@@ -257,9 +257,9 @@ struct ToolbarOverflowMenuTests {
 struct ZoomStepTests {
     @Test("Zoom shortcuts step by ten percent from Actual Size")
     func zoomSteps() throws {
-        let suite = "ZforgeZoomSteps-\(UUID().uuidString)"
+        let suite = "ZforgeTestSuite.ZforgeZoomSteps-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite) }
+        defer { defaults.removeTestSuite(named: suite) }
         let preferences = FileBrowserPreferences(defaults: defaults)
         preferences.zoomIn()
         preferences.resetZoom()
@@ -275,7 +275,7 @@ struct ZoomStepTests {
 @MainActor
 private final class BrowserFixture {
     let state: FileBrowserState
-    private let suite = "ZforgeWindowLayout-\(UUID().uuidString)"
+    private let suite = "ZforgeTestSuite.ZforgeWindowLayout-\(UUID().uuidString)"
 
     init() throws {
         let defaults = try #require(UserDefaults(suiteName: suite))
@@ -295,7 +295,7 @@ private final class BrowserFixture {
 
     func close() {
         state.close()
-        UserDefaults.standard.removePersistentDomain(forName: suite)
+        UserDefaults.standard.removeTestSuite(named: suite)
     }
 }
 

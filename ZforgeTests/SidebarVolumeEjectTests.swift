@@ -185,9 +185,9 @@ struct SidebarVolumeEjectTests {
             .appendingPathComponent("EjectVolume-\(UUID().uuidString)", isDirectory: true)
         try FileManager.default.createDirectory(at: volume.appendingPathComponent("Folder"), withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: volume) }
-        let suite = "SidebarVolumeEject-\(UUID().uuidString)"
+        let suite = "ZforgeTestSuite.SidebarVolumeEject-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite) }
+        defer { defaults.removeTestSuite(named: suite) }
         let preferences = FileBrowserPreferences(defaults: defaults)
         preferences.language = .english
         let state = FileBrowserState(preferences: preferences, fileSystem: FileSystemService(),
