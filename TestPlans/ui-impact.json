@@ -16,7 +16,7 @@
   ],
   "rules": [
     {
-      "name": "Shared state and models: semantics are proven by the Unit plan; UI-Smoke checks the interaction wiring in every layer",
+      "name": "Shared state and models: semantics are proven by the Unit plan; UI-Smoke checks the interaction wiring in every layer; the toolbar search state lives in FileBrowserState",
       "paths": [
         "Zforge/State/*",
         "Zforge/Models/BrowserModels.swift",
@@ -34,6 +34,7 @@
         "Zforge/Services/PinnedFolderStore.swift"
       ],
       "tests": [
+        "ZforgeUITests/BrowserSearchUITests/testCommandFFocusesToolbarSearchAndEscapeCollapsesIt",
         "ZforgeUITests/ZforgeUITests/testBlankAreaUsesMoreMenuInEveryView",
         "ZforgeUITests/ZforgeUITests/testFileOpenNavigatesSelectedFolderAndArchiveInColumnsMode",
         "ZforgeUITests/ZforgeUITests/testListKeyboardZoomAndArrowNavigationAfterChangingView",

@@ -95,6 +95,29 @@ struct BrowserWindowLayoutTests {
         try await host.waitUntil { contentHasFocus() && host.window.firstResponder === contentResponder }
     }
 
+    @Test("Deleting the toolbar field's text shows Recents again in every mode", arguments: BrowserViewMode.allCases)
+    func deletingSearchTextRestoresRecents(mode: BrowserViewMode) async throws {
+        let host = try await BrowserWindowHost(width: 1_100)
+        defer { host.close() }
+        host.state.viewMode = mode
+        let recents = ["Welcome.txt", "Sample.zip", "Another.txt"]
+        try await host.waitUntil { host.state.items.map(\.name) == recents }
+        host.state.beginSearch()
+        try await host.waitUntil {
+            ((host.window.firstResponder as? NSTextView)?.delegate as? NSTextField)?.accessibilityIdentifier() == "toolbar-search-field"
+        }
+        let editor = try #require(host.window.firstResponder as? NSTextView)
+        editor.insertText("Another", replacementRange: editor.selectedRange())
+        try await host.waitUntil { host.state.fileSearch != nil && host.state.items.map(\.name) == ["Another.txt"] }
+
+        editor.selectAll(nil)
+        editor.deleteBackward(nil)
+        try await host.waitUntil { host.state.fileSearch == nil && !host.state.isLoading }
+        #expect(host.state.items.map(\.name) == recents, "Recents in \(mode)")
+        #expect(host.state.title == "Recents")
+        #expect(host.state.isSearchPresented, "The emptied field stays open while it has focus")
+    }
+
     @Test("Moving the focus away from an empty toolbar field collapses it")
     func emptySearchFieldCollapsesOnFocusLoss() async throws {
         let host = try await BrowserWindowHost(width: 1_100)

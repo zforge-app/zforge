@@ -590,6 +590,7 @@ Pending: in-app check of the row and the computer level in the four modes (light
 - [x] Scopes This Mac (Spotlight `NSMetadataQuery` in authorized roots) and Current Folder (recursive folder walk or open-archive listing), streamed in batches, cancelled by new queries, reloads and window close (`BrowserSearchService.swift`).
 - [x] Virtual results location `Searching “query”` in the four modes with history, path bar of the selected result, opening results at their real path (`FileBrowserState`).
 - [x] Nine String Catalog keys translated into all 21 languages; `Find ⌘F` in the shortcut help.
+- [x] Clearing the search from Recents or a tag lists that place again (D-64, 2026-11-01; preexisting): the reload no longer runs in the cancelled debounce task. Offscreen: `BrowserSearchStateTests.leavingSearchRestoresOriginListing` (5 origins × 3 exits), `BrowserWindowLayoutTests.deletingSearchTextRestoresRecents` (four modes).
 - [x] ⌘F focus (D-61, 2026-11-01): the field never took keyboard focus because SwiftUI focus does not reach toolbar items; `ToolbarSearchTextField` takes the first responder itself, Escape returns focus to the content. Offscreen: `BrowserWindowLayoutTests.findFocusesToolbarSearchField`, `emptySearchFieldCollapsesOnFocusLoss`.
 - [ ] Real-window visual review (four modes, light/dark, long language, narrow widths, VoiceOver, Reduce Motion) and the mapped UI tests (not run by the agent).
 - [ ] OR-24 gaps: This Mac beyond authorized folders, content matching and tokens, live result updates, restoration.

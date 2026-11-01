@@ -331,6 +331,76 @@ struct BrowserSearchStateTests {
         #expect(!browser.isSearchPresented, "Clicking away from an empty field collapses it")
     }
 
+    /// Where a search can begin; each origin reloads its listing in its own way.
+    enum SearchOrigin: String, CaseIterable {
+        case recents, folder, archive, tag, network
+    }
+
+    /// How the user leaves the results: deleting the text (as the clear button does), Return in
+    /// the emptied field before the pause ends, or Escape. Each goes through the same task the
+    /// field's typing uses, never a direct call.
+    enum SearchExit: String, CaseIterable {
+        case deleteText, returnInEmptyField, escape
+    }
+
+    @Test("Leaving a search shows the origin's listing again", arguments: SearchOrigin.allCases, SearchExit.allCases)
+    func leavingSearchRestoresOriginListing(origin: SearchOrigin, exit: SearchExit) async throws {
+        let suite = "ZforgeSearchOrigin-\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let preferences = FileBrowserPreferences(defaults: defaults)
+        preferences.language = .english
+        let gate = DebounceGate()
+        let fileSystem = UIFixtureFileSystemService()
+        let browser = FileBrowserState(
+            preferences: preferences, fileSystem: fileSystem,
+            recentItems: UIFixtureRecentItemsService(includesArchiveSessionCopies: false),
+            taggedItems: UIFixtureTaggedItemsService(), grants: UIFixtureAccessGrantStore(),
+            archives: UIFixtureArchiveEngine(), searcher: UIFixtureSearchService(),
+            searchDebounce: { try await gate.wait() }
+        )
+        defer { browser.close() }
+        await browser.start()
+        switch origin {
+        case .recents: break
+        case .folder: await browser.open(try await fileSystem.item(at: URL(fileURLWithPath: "/ZforgeFixtures/Fixture Folder")))
+        case .archive: await browser.open(try await fileSystem.item(at: URL(fileURLWithPath: "/ZforgeFixtures/Sample.zip")))
+        case .tag: await browser.navigateToTag("Red")
+        case .network: await browser.navigateToNetwork()
+        }
+        try await waitUntil { !browser.isLoading }
+        let originLocation = browser.location
+        let originTitle = browser.title
+        let originItems = browser.items.map(\.name)
+        if origin != .network {
+            #expect(!originItems.isEmpty, "The \(origin) fixture lists items to compare against")
+        }
+
+        browser.beginSearch()
+        browser.updateSearchText("Another")
+        try await waitUntil { gate.pendingCount == 1 }
+        gate.releaseAll()
+        try await waitUntil { browser.fileSearch != nil && !browser.isLoading }
+        #expect(browser.items.map(\.name) == ["Another.txt"])
+
+        switch exit {
+        case .deleteText:
+            browser.updateSearchText("")
+            try await waitUntil { gate.pendingCount == 1 }
+            gate.releaseAll()
+        case .returnInEmptyField:
+            browser.updateSearchText("")
+            browser.submitSearch()
+        case .escape:
+            await browser.cancelSearch()
+        }
+        try await waitUntil { browser.fileSearch == nil && !browser.isLoading }
+        #expect(browser.location == originLocation)
+        #expect(browser.title == originTitle)
+        #expect(browser.items.map(\.name) == originItems, "The \(origin) listing after \(exit)")
+        #expect(browser.isSearchPresented == (exit != .escape), "Only Escape collapses the field")
+    }
+
     @Test("Switching scope searches again in place; Recents only offers This Mac")
     func scopes() async throws {
         let fixture = try SearchFixture()
