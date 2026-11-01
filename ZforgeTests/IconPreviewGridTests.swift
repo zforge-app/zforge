@@ -10,6 +10,17 @@ import Testing
 @Suite("Icon preview grid", .serialized, .timeLimit(.minutes(2)))
 @MainActor
 struct IconPreviewGridTests {
+    @Test("The load observer in the environment compares by identity, so it does not change on every update")
+    func loadObserverIdentity() {
+        let observer = IconPreviewLoadObserver { _, _ in }
+        let copy = observer
+        #expect(copy == observer)
+        #expect(IconPreviewLoadObserver { _, _ in } != observer)
+        var environment = EnvironmentValues()
+        environment.iconPreviewLoadObserver = observer
+        #expect(environment.iconPreviewLoadObserver == observer)
+    }
+
     static let previewNames = ["Preview.png", "Preview.jpg", "Preview.pdf", "Preview.txt", "Preview.html", "Preview.mov"]
     static let fallbackNames = ["Unsupported.bin", "Empty Folder", "Sample.zip"]
     /// The fixture window is 1200 pt wide; the content excludes the sidebar's ideal width.
@@ -361,9 +372,9 @@ final class OffscreenHost {
         let recorder = loads
         let root = content(.constant(false))
             .frame(width: size.width, height: size.height)
-            .environment(\.iconPreviewLoadObserver) { id, isShowingPreview in
+            .environment(\.iconPreviewLoadObserver, IconPreviewLoadObserver { id, isShowingPreview in
                 recorder.record(id, isShowingPreview)
-            }
+            })
         let hosting = NSHostingView(rootView: root)
         hosting.frame = CGRect(origin: .zero, size: size)
         hosting.appearance = NSAppearance(named: appearance)

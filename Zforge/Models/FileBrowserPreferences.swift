@@ -4,20 +4,7 @@ import SwiftUI
 @MainActor
 @Observable
 final class FileBrowserPreferences {
-    static let shared = FileBrowserPreferences(defaults: applicationDefaults)
-
-    private static var applicationDefaults: UserDefaults {
-        // UI fixtures must not read or overwrite the user's preferences.
-        let process = ProcessInfo.processInfo
-        let usesFixtures = process.arguments.contains("--ui-fixtures")
-            || process.arguments.contains("--ui-icon-preview-fixtures")
-        if usesFixtures,
-           let suite = process.environment["ZFORGE_UI_PREFERENCES_SUITE"],
-           let defaults = UserDefaults(suiteName: suite) {
-            return defaults
-        }
-        return .standard
-    }
+    static let shared = FileBrowserPreferences(defaults: ZforgeDefaults.application)
 
     private enum Key {
         static let viewMode = "browser.viewMode"

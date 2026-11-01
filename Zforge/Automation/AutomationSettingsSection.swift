@@ -93,7 +93,7 @@ struct AutomationSettingsSection: View {
     private func reload() async { folders = await AutomationGrantStore.shared.folders() }
 
     private func chooseFolder() {
-        let panel = NSOpenPanel()
+        let panel = UITestLaunchIsolation.openPanel()
         panel.title = AppLocalization.string("Allow Folder for Automation")
         panel.prompt = AppLocalization.string("Allow")
         panel.canChooseDirectories = true

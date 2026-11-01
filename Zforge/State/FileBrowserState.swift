@@ -439,7 +439,7 @@ final class FileBrowserState {
         case .addToArchive:
             let sources = selected.compactMap(\.localURL)
             guard sources.count == selected.count else { return nil }
-            let panel = NSOpenPanel()
+            let panel = UITestLaunchIsolation.openPanel()
             panel.title = AppLocalization.string("Choose an Archive", locale: preferences.language.locale)
             panel.prompt = AppLocalization.string("Choose", locale: preferences.language.locale)
             panel.canChooseFiles = true
@@ -525,7 +525,7 @@ final class FileBrowserState {
             return result
         case .extractHere, .extractNamed, .extractChoose:
             if action == .extractChoose {
-                let panel = NSOpenPanel()
+                let panel = UITestLaunchIsolation.openPanel()
                 panel.canChooseFiles = false
                 panel.canChooseDirectories = true
                 panel.canCreateDirectories = true
@@ -1135,6 +1135,11 @@ final class FileBrowserState {
             searchScope = BrowserFileSearch.supportsCurrentFolder(location) ? .currentFolder : .thisMac
         }
         isSearchPresented = true
+        focusSearchField()
+    }
+
+    /// Moves the keyboard focus into the expanded toolbar field, for example after Clear Search.
+    func focusSearchField() {
         searchFieldFocusRequest &+= 1
     }
 
@@ -1142,19 +1147,28 @@ final class FileBrowserState {
     func updateSearchText(_ text: String) {
         guard text != searchText else { return }
         searchText = text
-        searchDebounceTask?.cancel()
-        let debounce = searchDebounce
-        searchDebounceTask = Task { [weak self] in
-            do { try await debounce() } catch { return }
-            guard !Task.isCancelled else { return }
-            await self?.applySearchText()
-        }
+        scheduleSearchText(after: searchDebounce)
     }
 
     /// Return searches immediately.
     func submitSearch() {
+        scheduleSearchText(after: nil)
+    }
+
+    /// Applies the field's text once `wait` ends; a newer keystroke cancels the wait. Once
+    /// applying begins the task is no longer the pending debounce: ending the search cancels
+    /// the pending debounce, and must not cancel the reload of the listing it returns to
+    /// (a cancelled reload of Recents or a tag listed nothing).
+    private func scheduleSearchText(after wait: (@Sendable () async throws -> Void)?) {
         searchDebounceTask?.cancel()
-        searchDebounceTask = Task { [weak self] in await self?.applySearchText() }
+        searchDebounceTask = Task { [weak self] in
+            if let wait {
+                do { try await wait() } catch { return }
+            }
+            guard !Task.isCancelled, let self else { return }
+            self.searchDebounceTask = nil
+            await self.applySearchText()
+        }
     }
 
     /// Shows the results for the field's text and scope. Refining the query or
@@ -3429,7 +3443,7 @@ final class FileBrowserState {
     }
 
     func chooseFoldersForSidebar() {
-        let panel = NSOpenPanel()
+        let panel = UITestLaunchIsolation.openPanel()
         panel.canChooseDirectories = true
         panel.canChooseFiles = false
         panel.allowsMultipleSelection = true
@@ -4210,7 +4224,7 @@ final class FileBrowserState {
     func chooseApplicationForOpening(_ items: [BrowserItem], always: Bool = false) {
         guard !items.isEmpty, items.allSatisfy({ !$0.isContainer }),
               !always || items.allSatisfy({ $0.localURL != nil }) else { return }
-        let panel = NSOpenPanel()
+        let panel = UITestLaunchIsolation.openPanel()
         panel.allowedContentTypes = [.application]
         panel.canChooseDirectories = false
         panel.allowsMultipleSelection = false

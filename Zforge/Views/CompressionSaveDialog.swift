@@ -227,7 +227,7 @@ private struct CompressionSaveDialog: View {
     }
 
     private func chooseDirectory() {
-        let chooser = NSOpenPanel()
+        let chooser = UITestLaunchIsolation.openPanel()
         chooser.title = AppLocalization.string("Choose Folder…", locale: preferences.language.locale)
         chooser.prompt = AppLocalization.string("Choose", locale: preferences.language.locale)
         chooser.canChooseFiles = false

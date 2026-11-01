@@ -4,7 +4,7 @@ import Foundation
 /// strings produced by services and models outside the SwiftUI environment.
 nonisolated enum AppLocalization {
     static var currentLocale: Locale {
-        let rawValue = UserDefaults.standard.string(forKey: AppLanguagePreference.defaultsKey)
+        let rawValue = ZforgeDefaults.application.string(forKey: AppLanguagePreference.defaultsKey)
         let preference = AppLanguagePreference(rawValue: rawValue ?? "") ?? .system
         return preference.locale
     }

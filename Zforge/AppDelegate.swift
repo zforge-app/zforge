@@ -16,6 +16,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var launchWindow: (id: UUID, deadline: ContinuousClock.Instant)?
     private var interactionMonitor: Any?
 
+    func applicationWillFinishLaunching(_ notification: Notification) {
+        // UI test launches keep window frames out of the user's preferences (D-63).
+        UITestLaunchIsolation.startIfNeeded()
+    }
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         Self.current = self
         if !ProcessInfo.processInfo.arguments.contains("--ui-fixtures"),
