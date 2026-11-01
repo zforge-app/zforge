@@ -131,6 +131,43 @@ struct ColumnBrowserLayoutTests {
     }
 }
 
+extension ColumnBrowserLayoutTests {
+    /// The real-window failure of `testArchiveInternalCopyConfirmationKeepsHistoryAndAncestorColumns`
+    /// (2026-11-01): while a folder's column loaded, the column before it kept the terminal width
+    /// and the pending slot added another, so the columns briefly measured 1,721 pt instead of
+    /// 1,120 pt. A scroll to the end in that moment stayed about 600 pt to the right once the
+    /// columns fit again, and the active column sat under the sidebar.
+    @Test("When a folder is opened, the columns never grow wider than they will be once its column shows")
+    func openingAFolderDoesNotWidenTheColumns() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("ColumnPending-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: root.appendingPathComponent("Sample/Inside/Deep"), withIntermediateDirectories: true)
+        for path in ["Local.txt", "Sample/Target.txt", "Sample/Inside/Payload.txt", "Sample/Inside/Deep/DeepPayload.txt"] {
+            try Data("x".utf8).write(to: root.appendingPathComponent(path))
+        }
+        defer { try? FileManager.default.removeItem(at: root) }
+        let fixture = try ColumnFixture(columnWidth: 260, contentWidth: 1_120, fileSystem: FileSystemService())
+        defer { fixture.close() }
+        let state = fixture.state
+        await state.navigateToSidebar(root, name: "Root")
+        _ = try await fixture.settle { !$0.rows.isEmpty && $0.rows[0].contains("Sample") }
+        var location = state.location
+        for (name, next) in [("Sample", "Inside"), ("Inside", "Deep")] {
+            let item = try #require(state.sortedColumnItems(at: location).first { $0.name == name })
+            let activation = state.activateColumnItem(item, in: location)
+            // The moment between the activation and the opening of the folder, laid out at once.
+            let opening = try #require(fixture.layoutNow())
+            #expect(opening.documentWidth <= opening.visible.width + 1,
+                    "Opening \(name): columns of \(opening.documentWidth) pt in \(opening.visible.width) pt; \(opening)")
+            await activation.value
+            location = state.location
+            let opened = try await fixture.settle { ($0.rows.last ?? []).contains(next) }
+            #expect(opened.documentWidth <= opened.visible.width + 1)
+            #expect(opened.isScrolledToTrailingEdge)
+            #expect((opened.columns.last?.minX ?? -1) >= opened.visible.minX, "The active column is visible")
+        }
+    }
+}
+
 /// A browser state plus the real column view hosted offscreen.
 @MainActor
 private final class ColumnFixture {
@@ -170,6 +207,12 @@ private final class ColumnFixture {
         state.close()
         window.close()
         UserDefaults.standard.removeTestSuite(named: defaultsName)
+    }
+
+    /// Lays the view out now, without yielding, and reads it.
+    func layoutNow() -> ColumnLayoutSnapshot? {
+        host.layoutSubtreeIfNeeded()
+        return ColumnLayoutSnapshot(host: host)
     }
 
     func activate(_ name: String, in location: BrowserLocation) async {

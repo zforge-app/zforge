@@ -28,6 +28,11 @@ final class FinderExtensionUITests: XCTestCase {
         XCTAssertTrue(finderWindow.waitForExistence(timeout: 15), finder.debugDescription)
         addTeardownBlock { self.closeFixtureWindows(in: finder) }
         finder.activate()
+        // Finder opens a new folder in the user's default view (D-67: Icons on this Mac); the
+        // scenario uses the list, so the fixture window, frontmost since it just opened, is
+        // switched to View > as List (⌘2). The fixture folder is temporary, so the user's own
+        // default view is unchanged.
+        finder.typeKey("2", modifierFlags: .command)
         // The row in the file list, not the path bar's item with the same name.
         let archive = finderWindow.outlines["ListView"].textFields["Sample.zip"].firstMatch
         XCTAssertTrue(archive.waitForExistence(timeout: 10), finderWindow.debugDescription)
