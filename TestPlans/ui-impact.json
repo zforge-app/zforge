@@ -122,6 +122,32 @@
       ]
     },
     {
+      "name": "UI test window placement: every UI test that sizes its window with --ui-window-width (D-70)",
+      "paths": [
+        "Zforge/Services/UITestWindowPlacement.swift"
+      ],
+      "tests": [
+        "ZforgeUITests/BrowserSearchUITests/testCommandFFocusesToolbarSearchAndEscapeCollapsesIt",
+        "ZforgeUITests/IconPreviewUITests/testSettingsToggleUpdatesTheOpenGridAndKeepsSelection",
+        "ZforgeUITests/LocalizationUITests/testLanguageSelectionUpdatesOpenMenuAndPersists",
+        "ZforgeUITests/ZforgeUITests/testArchiveCopyIntoAnotherZforgeWindow",
+        "ZforgeUITests/ZforgeUITests/testArchiveDragCopiesIntoSidebarFolder",
+        "ZforgeUITests/ZforgeUITests/testArchiveInternalCopyConfirmationKeepsHistoryAndAncestorColumns",
+        "ZforgeUITests/ZforgeUITests/testArchivePromisesPublishIntoFinderBeforeRemovingOriginal",
+        "ZforgeUITests/ZforgeUITests/testBlankAreaUsesMoreMenuInEveryView",
+        "ZforgeUITests/ZforgeUITests/testColumnPreviewRefitsAfterUserScrollsLeft",
+        "ZforgeUITests/ZforgeUITests/testCompactToolbarMenusOpenFromTheirToolbarButtons",
+        "ZforgeUITests/ZforgeUITests/testFileOpenNavigatesSelectedFolderAndArchiveInColumnsMode",
+        "ZforgeUITests/ZforgeUITests/testFileOpenPrecedesOpenWithAndTracksSelectionInListMode",
+        "ZforgeUITests/ZforgeUITests/testFolderSelectionMenuAlternatesWithOptionInListMode",
+        "ZforgeUITests/ZforgeUITests/testListHeaderDividerResizesAndHeaderBodyReorders",
+        "ZforgeUITests/ZforgeUITests/testListKeyboardZoomAndArrowNavigationAfterChangingView",
+        "ZforgeUITests/ZforgeUITests/testNewFolderWithSelectionMenuAndShortcutInListMode",
+        "ZforgeUITests/ZforgeUITests/testTagEditorIsSharedByToolbarAndContextMenu",
+        "ZforgeUITests/ZforgeUITests/testViewModeIsPerWindowAndLastClosedWindowRestoresIt"
+      ]
+    },
+    {
       "name": "Localization",
       "paths": [
         "Zforge/Localizable.xcstrings",
