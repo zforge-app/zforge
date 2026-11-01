@@ -439,7 +439,7 @@ final class FileBrowserState {
         case .addToArchive:
             let sources = selected.compactMap(\.localURL)
             guard sources.count == selected.count else { return nil }
-            let panel = NSOpenPanel()
+            let panel = UITestLaunchIsolation.openPanel()
             panel.title = AppLocalization.string("Choose an Archive", locale: preferences.language.locale)
             panel.prompt = AppLocalization.string("Choose", locale: preferences.language.locale)
             panel.canChooseFiles = true
@@ -525,7 +525,7 @@ final class FileBrowserState {
             return result
         case .extractHere, .extractNamed, .extractChoose:
             if action == .extractChoose {
-                let panel = NSOpenPanel()
+                let panel = UITestLaunchIsolation.openPanel()
                 panel.canChooseFiles = false
                 panel.canChooseDirectories = true
                 panel.canCreateDirectories = true
@@ -3443,7 +3443,7 @@ final class FileBrowserState {
     }
 
     func chooseFoldersForSidebar() {
-        let panel = NSOpenPanel()
+        let panel = UITestLaunchIsolation.openPanel()
         panel.canChooseDirectories = true
         panel.canChooseFiles = false
         panel.allowsMultipleSelection = true
@@ -4224,7 +4224,7 @@ final class FileBrowserState {
     func chooseApplicationForOpening(_ items: [BrowserItem], always: Bool = false) {
         guard !items.isEmpty, items.allSatisfy({ !$0.isContainer }),
               !always || items.allSatisfy({ $0.localURL != nil }) else { return }
-        let panel = NSOpenPanel()
+        let panel = UITestLaunchIsolation.openPanel()
         panel.allowedContentTypes = [.application]
         panel.canChooseDirectories = false
         panel.allowsMultipleSelection = false

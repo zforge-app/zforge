@@ -4,34 +4,7 @@ import SwiftUI
 @MainActor
 @Observable
 final class FileBrowserPreferences {
-    static let shared = FileBrowserPreferences(defaults: applicationDefaults)
-
-    private static var applicationDefaults: UserDefaults {
-        let process = ProcessInfo.processInfo
-        return applicationDefaults(arguments: process.arguments, environment: process.environment)
-    }
-
-    /// The private suite of UI fixture launches that do not name their own.
-    static let fixtureDefaultsSuite = "ZforgeUIFixturePreferences"
-
-    /// UI fixtures must not read or overwrite the user's preferences. A UI test that checks
-    /// persistence across launches names its own suite (`ZFORGE_UI_PREFERENCES_SUITE`); any
-    /// other fixture launch starts from the defaults, in a private suite cleared at each
-    /// launch, so one test's settings (such as `--ui-view-mode`) cannot reach the next test.
-    static func applicationDefaults(arguments: [String], environment: [String: String]) -> UserDefaults {
-        let usesFixtures = arguments.contains("--ui-fixtures")
-            || arguments.contains("--ui-icon-preview-fixtures")
-        guard usesFixtures else { return .standard }
-        if let suite = environment["ZFORGE_UI_PREFERENCES_SUITE"], let defaults = UserDefaults(suiteName: suite) {
-            return defaults
-        }
-        // Only the app's own identifier and the global domain are refused as suite names.
-        guard let defaults = UserDefaults(suiteName: fixtureDefaultsSuite) else {
-            preconditionFailure("The UI fixture preferences suite could not be created")
-        }
-        defaults.removePersistentDomain(forName: fixtureDefaultsSuite)
-        return defaults
-    }
+    static let shared = FileBrowserPreferences(defaults: ZforgeDefaults.application)
 
     private enum Key {
         static let viewMode = "browser.viewMode"

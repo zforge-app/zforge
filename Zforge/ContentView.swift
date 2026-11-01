@@ -685,7 +685,7 @@ struct ContentView: View {
     private func presentAuthorizationPanel(for intendedURL: URL) {
         guard !authorizationPanelPresented else { return }
         authorizationPanelPresented = true
-        let panel = NSOpenPanel()
+        let panel = UITestLaunchIsolation.openPanel()
         panel.title = AppLocalization.string(
             "Allow Zforge to Access This Folder",
             locale: browser.preferences.language.locale

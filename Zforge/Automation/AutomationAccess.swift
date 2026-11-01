@@ -47,7 +47,7 @@ nonisolated struct AutomationFolder: Identifiable, Sendable {
 }
 
 actor AutomationGrantStore: AutomationAuthorizing {
-    static let shared = AutomationGrantStore()
+    static let shared = AutomationGrantStore(defaults: ZforgeDefaults.application)
     nonisolated static let changed = Notification.Name("ZforgeAutomationGrantsChanged")
     private let defaults: UserDefaults
     private let key = "automationSecurityScopedFolders"

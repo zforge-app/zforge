@@ -5,7 +5,7 @@ import Observation
 @MainActor
 @Observable
 final class PinnedFolderStore {
-    static let shared = PinnedFolderStore()
+    static let shared = PinnedFolderStore(defaults: ZforgeDefaults.application)
     private struct Entry: Codable {
         var path: String
         var bookmark: Data?

@@ -12,12 +12,12 @@ struct UIFixturePreferencesIsolationTests {
 
     @Test("An ordinary launch uses the user's preferences")
     func ordinaryLaunchUsesStandardDefaults() {
-        let defaults = FileBrowserPreferences.applicationDefaults(arguments: ["Zforge"], environment: [:])
+        let defaults = ZforgeDefaults.resolve(arguments: ["Zforge"], environment: [:])
         #expect(defaults === UserDefaults.standard)
     }
 
-    @Test("A fixture launch without its own suite starts from the defaults, whatever the previous launch saved",
-          arguments: ["--ui-fixtures", "--ui-icon-preview-fixtures"])
+    @Test("A UI test launch without its own suite starts from the defaults, whatever the previous launch saved",
+          arguments: ["--ui-fixtures", "--ui-icon-preview-fixtures", "--ui-archive-drag-fixtures", "--ui-finder-fixtures", "--ui-window-width"])
     func fixtureLaunchStartsClean(argument: String) throws {
         let userValue = UserDefaults.standard.object(forKey: Self.viewModeKey) as? String
         let pristine = try #require(UserDefaults(suiteName: "ZforgePristine-\(UUID().uuidString)"))
@@ -25,16 +25,17 @@ struct UIFixturePreferencesIsolationTests {
         let otherMode: BrowserViewMode = defaultMode == .gallery ? .list : .gallery
 
         // The previous UI test's launch changes the default view mode, as `--ui-view-mode` does.
-        let previousLaunch = FileBrowserPreferences.applicationDefaults(arguments: ["Zforge", argument], environment: [:])
-        #expect(previousLaunch !== UserDefaults.standard)
+        let previousLaunch = ZforgeDefaults.resolve(arguments: ["Zforge", argument], environment: [:])
+        // Stop before writing if the launch would use the user's own preferences.
+        try #require(previousLaunch !== UserDefaults.standard)
         FileBrowserPreferences(defaults: previousLaunch).viewMode = otherMode
         #expect(FileBrowserPreferences(defaults: previousLaunch).viewMode == otherMode)
 
         // The next launch opens with the default mode, and the user's preference never changed.
-        let nextLaunch = FileBrowserPreferences.applicationDefaults(arguments: ["Zforge", argument], environment: [:])
+        let nextLaunch = ZforgeDefaults.resolve(arguments: ["Zforge", argument], environment: [:])
         #expect(FileBrowserPreferences(defaults: nextLaunch).viewMode == defaultMode)
         #expect(UserDefaults.standard.object(forKey: Self.viewModeKey) as? String == userValue)
-        nextLaunch.removePersistentDomain(forName: FileBrowserPreferences.fixtureDefaultsSuite)
+        nextLaunch.removePersistentDomain(forName: ZforgeDefaults.fixtureSuite)
     }
 
     @Test("A fixture launch that names its suite keeps it across launches, for relaunch tests")
@@ -42,10 +43,38 @@ struct UIFixturePreferencesIsolationTests {
         let suite = "ZforgeFixtureRelaunch-\(UUID().uuidString)"
         defer { UserDefaults(suiteName: suite)?.removePersistentDomain(forName: suite) }
         let environment = ["ZFORGE_UI_PREFERENCES_SUITE": suite]
-        let first = FileBrowserPreferences.applicationDefaults(arguments: ["Zforge", "--ui-fixtures"], environment: environment)
+        let first = ZforgeDefaults.resolve(arguments: ["Zforge", "--ui-fixtures"], environment: environment)
         FileBrowserPreferences(defaults: first).viewMode = .columns
-        let second = FileBrowserPreferences.applicationDefaults(arguments: ["Zforge", "--ui-fixtures"], environment: environment)
+        let second = ZforgeDefaults.resolve(arguments: ["Zforge", "--ui-fixtures"], environment: environment)
         #expect(second !== UserDefaults.standard)
         #expect(FileBrowserPreferences(defaults: second).viewMode == .columns)
+    }
+
+    @Test("Every UI test argument marks a UI test launch; the program name and other arguments do not")
+    func uiTestLaunchDetection() {
+        #expect(ZforgeDefaults.isUITestLaunch(arguments: ["Zforge", "--ui-archive-drag-fixtures"]))
+        #expect(ZforgeDefaults.isUITestLaunch(arguments: ["Zforge", "-appLanguagePreference", "english", "--ui-view-mode", "list"]))
+        #expect(!ZforgeDefaults.isUITestLaunch(arguments: ["Zforge"]))
+        #expect(!ZforgeDefaults.isUITestLaunch(arguments: ["--ui-fixtures"]), "Only arguments after the program name count")
+        #expect(!ZforgeDefaults.isUITestLaunch(arguments: ["Zforge", "-NSDocumentRevisionsDebugMode", "YES"]))
+        #expect(!ZforgeDefaults.isUITestLaunch, "The unit test host is an ordinary launch")
+        #expect(ZforgeDefaults.application === UserDefaults.standard)
+    }
+
+    @Test("A UI test launch's sidebar favorites live in its own suite")
+    func pinnedFoldersFollowTheLaunchDefaults() throws {
+        let userFavorites = UserDefaults.standard.data(forKey: "sidebarPinnedFolders.v1")
+        let launch = ZforgeDefaults.resolve(arguments: ["Zforge", "--ui-archive-drag-fixtures"], environment: [:])
+        try #require(launch !== UserDefaults.standard)
+        defer { launch.removePersistentDomain(forName: ZforgeDefaults.fixtureSuite) }
+        let folder = FileManager.default.temporaryDirectory.appendingPathComponent("PinnedIsolation-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let store = PinnedFolderStore(defaults: launch)
+        #expect(store.urls == PinnedFolderStore.defaultURLs.map { $0.standardizedFileURL.resolvingSymlinksInPath() },
+                "A UI test launch starts from the default favorites, not the user's")
+        try store.pin([folder])
+        #expect(launch.data(forKey: "sidebarPinnedFolders.v1") != nil)
+        #expect(UserDefaults.standard.data(forKey: "sidebarPinnedFolders.v1") == userFavorites, "The user's favorites are untouched")
     }
 }

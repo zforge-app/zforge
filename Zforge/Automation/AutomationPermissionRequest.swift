@@ -202,7 +202,7 @@ final class AutomationFolderPermissionPanel: NSObject, NSOpenSavePanelDelegate {
             app.setActivationPolicy(.accessory)
         }
         app.activate()
-        let panel = NSOpenPanel()
+        let panel = UITestLaunchIsolation.openPanel()
         self.panel = panel
         panel.title = AppLocalization.string("Authorize Folder to Continue")
         panel.prompt = AppLocalization.string("Authorize and Continue")
@@ -214,6 +214,7 @@ final class AutomationFolderPermissionPanel: NSObject, NSOpenSavePanelDelegate {
         panel.allowsMultipleSelection = false
         panel.delegate = self
         panel.identifier = NSUserInterfaceItemIdentifier("automation-contextual-access")
+        UITestLaunchIsolation.isolate(panel)
         Logger(subsystem: "io.libor.Zforge", category: "Automation").info("Presenting contextual folder permission panel.")
         panel.begin { [weak self] response in
             guard let self, let active = self.active, active.id == request.id else { return }
