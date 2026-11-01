@@ -31,7 +31,12 @@ struct BrowserToolbarSearchControl: View {
                 .transition(.opacity)
             }
         }
-        .animation(reduceMotion ? nil : .snappy(duration: 0.22), value: state.isSearchPresented)
+        .animation(Self.expansionAnimation(reduceMotion: reduceMotion), value: state.isSearchPresented)
+    }
+
+    /// The field expands and collapses with a short snappy animation, instantly with Reduce Motion.
+    static func expansionAnimation(reduceMotion: Bool) -> Animation? {
+        reduceMotion ? nil : .snappy(duration: 0.22)
     }
 
     private var field: some View {

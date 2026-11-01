@@ -19,11 +19,26 @@ enum BrowserToolbarLayout {
         var includesSearchAction = false
     }
 
-    static func stage(for windowWidth: CGFloat) -> Stage {
-        if windowWidth < 678 { return .unifiedOverflow }
-        if windowWidth < 840 { return .compactWithActionsOverflow }
-        if windowWidth < 900 { return .compactWithArchiveAction }
+    /// How much more toolbar width the expanded search field takes than its button.
+    static let expandedSearchExtraWidth: CGFloat = 150
+
+    /// The stage for a window width. While the search field is expanded the stage is chosen
+    /// as if the window were narrower by the field's extra width, so controls move into the
+    /// toolbar menu first: `NSToolbar` would otherwise move the field itself into its own
+    /// overflow menu, where it cannot be typed into.
+    static func stage(for windowWidth: CGFloat, searchFieldExpanded: Bool = false) -> Stage {
+        let width = searchFieldExpanded ? windowWidth - expandedSearchExtraWidth : windowWidth
+        if width < 678 { return .unifiedOverflow }
+        if width < 840 { return .compactWithActionsOverflow }
+        if width < 900 { return .compactWithArchiveAction }
         return .expanded
+    }
+
+    /// In the smallest stage the expanded field only fits without the toolbar title, so the
+    /// title leaves the toolbar while the field is open (the field shows the query; the
+    /// window keeps its title for the Window menu).
+    static func hidesTitle(for windowWidth: CGFloat, searchFieldExpanded: Bool) -> Bool {
+        searchFieldExpanded && stage(for: windowWidth, searchFieldExpanded: true) == .unifiedOverflow
     }
 }
 
@@ -141,6 +156,7 @@ struct ContentView: View {
             .toolbarTitleDisplayMode(.inline)
             .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
             .toolbar { browserPrimaryToolbar(windowWidth: windowWidth) }
+            .toolbar(removing: BrowserToolbarLayout.hidesTitle(for: windowWidth, searchFieldExpanded: browser.isSearchPresented) ? .title : nil)
         }
         .environment(\.locale, browser.preferences.language.locale)
         .focusedSceneValue(\.fileBrowserState, browser)
@@ -372,7 +388,7 @@ struct ContentView: View {
     @ToolbarContentBuilder
     private func browserPrimaryToolbar(windowWidth: CGFloat) -> some ToolbarContent {
         ToolbarSpacer(.fixed, placement: .primaryAction)
-        switch BrowserToolbarLayout.stage(for: windowWidth) {
+        switch BrowserToolbarLayout.stage(for: windowWidth, searchFieldExpanded: browser.isSearchPresented) {
         case .unifiedOverflow:
             ToolbarItem(id: "toolbar-overflow-menu-unified", placement: .primaryAction) {
                 Button {

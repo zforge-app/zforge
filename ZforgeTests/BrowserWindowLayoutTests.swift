@@ -118,6 +118,43 @@ struct BrowserWindowLayoutTests {
         #expect(host.state.isSearchPresented, "The emptied field stays open while it has focus")
     }
 
+    /// `NSToolbar` moves an item that does not fit into its own overflow menu, where a text
+    /// field cannot be typed into. Opening the search must leave the field in the toolbar.
+    @Test("At every supported width the opened search field is in the toolbar, whole, and takes typing",
+          arguments: Array(stride(from: 640, through: 1_200, by: 20)))
+    func searchFieldFitsAtEveryWidth(width: Int) async throws {
+        let host = try await BrowserWindowHost(width: CGFloat(width))
+        defer { host.close() }
+        try await host.waitUntil { !host.state.items.isEmpty }
+        host.state.beginSearch()
+        func field() -> NSTextField? {
+            host.window.toolbar?.items.first { $0.itemIdentifier.rawValue == "toolbar-search" }?.view?
+                .descendants(of: NSTextField.self).first { $0.accessibilityIdentifier() == "toolbar-search-field" }
+        }
+        try await host.waitUntil {
+            guard let field = field(), field.window === host.window,
+                  let editor = host.window.firstResponder as? NSTextView else { return false }
+            return editor.delegate === field
+        }
+        let searchField = try #require(field())
+        let inWindow = searchField.convert(searchField.bounds, to: nil)
+        let windowBounds = try #require(host.window.contentView?.superview?.bounds)
+        #expect(windowBounds.contains(inWindow), "Field \(inWindow) inside the window at \(width) pt")
+        // The 200 pt control is never narrowed: its text keeps well over 150 pt beside the magnifying glass.
+        #expect(searchField.bounds.width >= 150, "Text width at \(width) pt: \(searchField.bounds.width) pt")
+        let editor = try #require(host.window.firstResponder as? NSTextView)
+        editor.insertText("Another", replacementRange: editor.selectedRange())
+        #expect(host.state.searchText == "Another")
+        // The longer “Searching …” title must not push the field out once the results show.
+        try await host.waitUntil { host.state.fileSearch != nil && host.state.items.map(\.name) == ["Another.txt"] }
+        try await host.waitUntil {
+            guard let field = field(), field.window === host.window else { return false }
+            return (host.window.firstResponder as? NSTextView)?.delegate === field
+                && windowBounds.contains(field.convert(field.bounds, to: nil))
+        }
+        #expect(host.window.title == "Searching “Another”", "The window keeps its title for the Window menu")
+    }
+
     @Test("Moving the focus away from an empty toolbar field collapses it")
     func emptySearchFieldCollapsesOnFocusLoss() async throws {
         let host = try await BrowserWindowHost(width: 1_100)

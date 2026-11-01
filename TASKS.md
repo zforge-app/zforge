@@ -590,15 +590,18 @@ Pending: in-app check of the row and the computer level in the four modes (light
 - [x] Scopes This Mac (Spotlight `NSMetadataQuery` in authorized roots) and Current Folder (recursive folder walk or open-archive listing), streamed in batches, cancelled by new queries, reloads and window close (`BrowserSearchService.swift`).
 - [x] Virtual results location `Searching “query”` in the four modes with history, path bar of the selected result, opening results at their real path (`FileBrowserState`).
 - [x] Nine String Catalog keys translated into all 21 languages; `Find ⌘F` in the shortcut help.
+- [x] The open field stays in the toolbar at every supported width (D-66, 2026-11-01; preexisting): search-aware stages and no toolbar title in the smallest stage. Offscreen: `BrowserWindowLayoutTests.searchFieldFitsAtEveryWidth` (640–1,200 pt), `ToolbarLayoutTests.expandedSearchStages`.
 - [x] Clearing the search from Recents or a tag lists that place again (D-64, 2026-11-01; preexisting): the reload no longer runs in the cancelled debounce task. Offscreen: `BrowserSearchStateTests.leavingSearchRestoresOriginListing` (5 origins × 3 exits), `BrowserWindowLayoutTests.deletingSearchTextRestoresRecents` (four modes).
 - [x] ⌘F focus (D-61, 2026-11-01): the field never took keyboard focus because SwiftUI focus does not reach toolbar items; `ToolbarSearchTextField` takes the first responder itself, Escape returns focus to the content. Offscreen: `BrowserWindowLayoutTests.findFocusesToolbarSearchField`, `emptySearchFieldCollapsesOnFocusLoss`.
-- [ ] Real-window visual review (four modes, light/dark, long language, narrow widths, VoiceOver, Reduce Motion) and the mapped UI tests (not run by the agent).
+- [x] Visual review of the field (2026-11-01, offscreen captures of the real window; REGRESSION-COVERAGE “Search field visual review”): four modes, light/dark, German, 640–1,200 pt, accessibility label and keyboard focus, Reduce Motion. Found and fixed D-66. Still unreviewed: a real VoiceOver session and the Liquid Glass look on screen (offscreen captures draw no sidebar material).
 - [ ] OR-24 gaps: This Mac beyond authorized folders, content matching and tokens, live result updates, restoration.
 
 ### ZF-54 — UI test isolation from saved preferences (2026-11-01, D-63)
 
 **Implemented; offscreen tests added; results in REGRESSION-COVERAGE.** `testCompactToolbarMenusOpenFromTheirToolbarButtons` failed after `testBlankAreaUsesMoreMenuInEveryView` because fixture launches without a named suite shared the user's `UserDefaults.standard`.
 - [x] `FileBrowserPreferences.applicationDefaults(arguments:environment:)`: private `ZforgeUIFixturePreferences` suite cleared at each fixture launch; named suites and ordinary launches unchanged (`UIFixturePreferencesIsolationTests`).
-- [ ] Audit other `.standard` state written by fixture launches (window frames, toolbar configuration, `AppLocalization.currentLocale` reading the language from `.standard`).
-- [ ] The user's own Default View may have been set to Gallery by earlier UI runs (D-63); the user decides whether to reset it.
+- [x] Audit (2026-11-01, read-only, results in REGRESSION-COVERAGE “Preferences audit”): the user's `browser.viewMode` is now `list` (not `gallery`); the original value is unknown. Test traces found in the user's domain: fixture window frames, test tag names in `browser.knownSidebarTags`, a `/tmp/ZforgeAutomationSmoke-20261007` automation folder; 35,555 leftover unit-test suite files in the container.
+- [ ] Fixture launches still write to `.standard` after D-63: `PinnedFolderStore.shared` (reads the user's favorites and rewrites them unchanged at launch), AppKit window and split-view frame autosaves, open-panel state (including the `automation-contextual-access` panel of `AutomationPermissionUIFixture`), and `AppLocalization.currentLocale` reads the language from `.standard`. Isolating them is not done.
+- [ ] Unit test suites (`UserDefaults(suiteName: "<Name>-<UUID>")` + `removePersistentDomain`) leave an empty plist per run in the container; a cleanup or a shared suite per test class is not done.
+- [ ] The user decides what to restore (list in REGRESSION-COVERAGE); nothing was changed by the agent.
 

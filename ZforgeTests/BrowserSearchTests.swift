@@ -597,6 +597,12 @@ struct BrowserSearchPresentationTests {
             size: CGSize(width: 520, height: 36), appearance: appearance.appearance, named: "scope-bar-\(appearance.name)")
     }
 
+    @Test("The field expands with a snappy animation, and instantly with Reduce Motion")
+    func expansionAnimationHonorsReduceMotion() {
+        #expect(BrowserToolbarSearchControl.expansionAnimation(reduceMotion: true) == nil)
+        #expect(BrowserToolbarSearchControl.expansionAnimation(reduceMotion: false) == .snappy(duration: 0.22))
+    }
+
     @Test("The overflow menu offers Search only when the toolbar has no room for it", arguments: [
         (650.0, true), (720.0, false), (860.0, false), (1_100.0, false)
     ])

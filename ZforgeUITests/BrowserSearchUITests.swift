@@ -26,6 +26,9 @@ final class BrowserSearchUITests: XCTestCase {
         app.typeKey("f", modifierFlags: .command)
         let field = app.textFields["toolbar-search-field"]
         XCTAssertTrue(field.waitForExistence(timeout: 2))
+        // VoiceOver follows the accessibility keyboard focus, which the field reports.
+        XCTAssertEqual(field.value(forKey: "hasKeyboardFocus") as? Bool, true, "The field has the keyboard focus")
+        XCTAssertEqual(field.label, "Search")
         // Typing goes straight into the field, so ⌘F made it first responder.
         app.typeText("Another")
         XCTAssertTrue(app.staticTexts["Another.txt"].waitForExistence(timeout: 3))
