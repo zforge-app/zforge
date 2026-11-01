@@ -23,7 +23,7 @@ struct ComputerLocationTests {
 
         func tearDown() {
             state.close()
-            defaults.removePersistentDomain(forName: suite)
+            defaults.removeTestSuite(named: suite)
             try? FileManager.default.removeItem(at: root)
         }
     }
@@ -35,7 +35,7 @@ struct ComputerLocationTests {
         for folder in [volumeA.appendingPathComponent("Inside"), volumeB] {
             try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         }
-        let suite = "ComputerLocationTests-\(UUID().uuidString)"
+        let suite = "ZforgeTestSuite.ComputerLocationTests-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))
         let volumes = StubVolumeCatalog(
             volumes: [Self.volume(volumeA, "Macintosh HD"), Self.volume(volumeB, "Backup", kind: .removable)]
@@ -98,9 +98,9 @@ struct ComputerLocationTests {
 
     @Test("The computer item is shown by default and its Settings choice persists")
     func visibilityPreferencePersists() throws {
-        let suite = "ComputerVisibility-\(UUID().uuidString)"
+        let suite = "ZforgeTestSuite.ComputerVisibility-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite) }
+        defer { defaults.removeTestSuite(named: suite) }
         let preferences = FileBrowserPreferences(defaults: defaults)
         #expect(preferences.isSidebarLocationVisible(.computer))
         preferences.setSidebarLocation(.computer, visible: false)

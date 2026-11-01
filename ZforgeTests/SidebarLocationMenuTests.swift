@@ -180,9 +180,9 @@ struct SidebarLocationMenuTests {
 
     @Test("Hidden Locations categories persist and can be shown again")
     func hiddenCategoriesPersist() throws {
-        let suite = "SidebarLocationsHidden-\(UUID())"
+        let suite = "ZforgeTestSuite.SidebarLocationsHidden-\(UUID())"
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite) }
+        defer { defaults.removeTestSuite(named: suite) }
         let preferences = FileBrowserPreferences(defaults: defaults)
         #expect(SidebarLocationCategory.allCases.allSatisfy(preferences.isSidebarLocationVisible))
 
@@ -206,9 +206,9 @@ struct SidebarLocationMenuTests {
 
     @Test("Remove from Sidebar on a volume hides its category and leaves Favorites alone")
     func removeFromSidebarHidesCategory() throws {
-        let suite = "SidebarLocationsRemove-\(UUID())"
+        let suite = "ZforgeTestSuite.SidebarLocationsRemove-\(UUID())"
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite) }
+        defer { defaults.removeTestSuite(named: suite) }
         let browser = state(defaults: defaults)
         defer { browser.close() }
         let sidebar = SidebarState()
@@ -230,9 +230,9 @@ struct SidebarLocationMenuTests {
 
     @Test("The computer item's menu only removes it, hiding the computer category")
     func computerMenuRemovesComputer() throws {
-        let suite = "SidebarLocationsComputer-\(UUID())"
+        let suite = "ZforgeTestSuite.SidebarLocationsComputer-\(UUID())"
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite) }
+        defer { defaults.removeTestSuite(named: suite) }
         let browser = state(defaults: defaults)
         defer { browser.close() }
         let actions = SidebarItemMenuActions(browser: browser, sidebar: SidebarState())
@@ -247,9 +247,9 @@ struct SidebarLocationMenuTests {
 
     @Test("The Network item's menu only removes it, hiding the Network category until Settings shows it again")
     func networkMenuRemovesNetwork() throws {
-        let suite = "SidebarLocationsNetwork-\(UUID())"
+        let suite = "ZforgeTestSuite.SidebarLocationsNetwork-\(UUID())"
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite) }
+        defer { defaults.removeTestSuite(named: suite) }
         let browser = state(defaults: defaults)
         defer { browser.close() }
         browser.preferences.language = .english
@@ -280,9 +280,9 @@ struct SidebarLocationMenuTests {
         let old = base.appendingPathComponent("OldName", isDirectory: true)
         let new = base.appendingPathComponent("NewName", isDirectory: true)
         try FileManager.default.createDirectory(at: old.appendingPathComponent("Sub"), withIntermediateDirectories: true)
-        let suite = "SidebarLocationsFollow-\(UUID())"
+        let suite = "ZforgeTestSuite.SidebarLocationsFollow-\(UUID())"
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite); try? FileManager.default.removeItem(at: base) }
+        defer { defaults.removeTestSuite(named: suite); try? FileManager.default.removeItem(at: base) }
         let browser = state(defaults: defaults)
         defer { browser.close() }
         await browser.navigateToSidebar(old.appendingPathComponent("Sub"), name: "Sub")

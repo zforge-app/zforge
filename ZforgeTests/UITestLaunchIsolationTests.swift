@@ -13,53 +13,80 @@ struct UITestLaunchIsolationTests {
         #expect(UITestLaunchIsolation.panelIdentifier(for: "automation-contextual-access") == "ZforgeUITest-automation-contextual-access")
 
         let plain = NSOpenPanel()
-        UITestLaunchIsolation.isolate(plain, isUITestLaunch: true)
+        UITestLaunchIsolation.isolate(plain, isolated: true)
         #expect(plain.identifier?.rawValue == "ZforgeUITest")
         let named = NSOpenPanel()
         named.identifier = NSUserInterfaceItemIdentifier("automation-contextual-access")
-        UITestLaunchIsolation.isolate(named, isUITestLaunch: true)
+        UITestLaunchIsolation.isolate(named, isolated: true)
         #expect(named.identifier?.rawValue == "ZforgeUITest-automation-contextual-access")
 
         let ordinary = NSOpenPanel()
-        UITestLaunchIsolation.isolate(ordinary, isUITestLaunch: false)
+        UITestLaunchIsolation.isolate(ordinary, isolated: false)
         #expect(ordinary.identifier == nil, "Ordinary launches keep the panel's usual state")
     }
 
-    /// The window and split view write under names unique to this test, removed afterwards.
-    @Test("A window and its split view stop saving their frames")
-    func frameAutosaveDisabled() throws {
-        let name = "ZforgeIsolationTest-\(UUID().uuidString)"
-        let key = "NSWindow Frame \(name)"
-        let splitKey = "NSSplitView Subview Frames \(name)-split"
-        defer {
-            UserDefaults.standard.removeObject(forKey: key)
-            UserDefaults.standard.removeObject(forKey: splitKey)
+    /// Stand-ins that keep their autosave names without AppKit reading or writing the
+    /// application's preferences; that nothing is saved in a real launch is checked by the
+    /// preference re-audits after the UI and Unit runs (REGRESSION-COVERAGE, ZF-54).
+    private final class NamedWindow: NSWindow {
+        var name = ""
+        override var frameAutosaveName: NSWindow.FrameAutosaveName { name }
+        override func setFrameAutosaveName(_ name: NSWindow.FrameAutosaveName) -> Bool {
+            self.name = name
+            return true
         }
-        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 400, height: 300),
-                              styleMask: [.titled, .resizable], backing: .buffered, defer: false)
+    }
+
+    private final class NamedSplitView: NSSplitView {
+        var name: NSSplitView.AutosaveName?
+        override var autosaveName: NSSplitView.AutosaveName? {
+            get { name }
+            set { name = newValue }
+        }
+    }
+
+    @Test("A window and the split view inside it stop saving their frames")
+    func frameAutosaveDisabled() {
+        let window = NamedWindow(contentRect: NSRect(x: 0, y: 0, width: 400, height: 300),
+                                 styleMask: [.titled, .resizable], backing: .buffered, defer: false)
         window.isReleasedWhenClosed = false
         defer { window.close() }
-        let splitView = NSSplitView(frame: NSRect(x: 0, y: 0, width: 400, height: 300))
+        let splitView = NamedSplitView(frame: NSRect(x: 0, y: 0, width: 400, height: 300))
         let host = NSView(frame: splitView.frame)
         host.addSubview(splitView)
         window.contentView = host
-        splitView.autosaveName = "\(name)-split"
-        window.setFrameAutosaveName(name)
-        window.setFrame(NSRect(x: 10, y: 10, width: 420, height: 310), display: false)
-        #expect(UserDefaults.standard.string(forKey: key) != nil, "AppKit saves a named window's frame")
-        UserDefaults.standard.removeObject(forKey: key)
+        window.name = "browser-AppWindow-1"
+        splitView.name = "SidebarNavigationSplitView"
 
         UITestLaunchIsolation.disableFrameAutosave(in: window)
         #expect(window.frameAutosaveName.isEmpty)
         #expect(splitView.autosaveName == nil)
-        window.setFrame(NSRect(x: 20, y: 20, width: 440, height: 320), display: false)
-        window.saveFrame(usingName: window.frameAutosaveName)
-        #expect(UserDefaults.standard.string(forKey: key) == nil, "No frame is saved once autosave is off")
     }
 
-    @Test("Ordinary launches do not observe windows")
-    func ordinaryLaunchLeavesWindowsAlone() {
-        UITestLaunchIsolation.startIfNeeded(isUITestLaunch: false)
-        #expect(!UITestLaunchIsolation.isObservingWindows)
+    @Test("A split view below the search depth is left alone, so window updates stay cheap")
+    func splitViewSearchIsBounded() {
+        let window = NamedWindow(contentRect: NSRect(x: 0, y: 0, width: 400, height: 300),
+                                 styleMask: [.titled], backing: .buffered, defer: false)
+        window.isReleasedWhenClosed = false
+        defer { window.close() }
+        var parent = NSView(frame: window.contentLayoutRect)
+        window.contentView = parent
+        for _ in 0..<UITestLaunchIsolation.splitViewSearchDepth {
+            let child = NSView(frame: parent.bounds)
+            parent.addSubview(child)
+            parent = child
+        }
+        let deep = NamedSplitView(frame: parent.bounds)
+        deep.name = "Deep"
+        parent.addSubview(deep)
+        UITestLaunchIsolation.disableFrameAutosave(in: window)
+        #expect(deep.autosaveName == "Deep")
+    }
+
+    @Test("Starting again in an ordinary launch changes nothing")
+    func ordinaryLaunchStartsNothing() {
+        let wasObserving = UITestLaunchIsolation.isObservingWindows
+        UITestLaunchIsolation.startIfNeeded(isolated: false)
+        #expect(UITestLaunchIsolation.isObservingWindows == wasObserving)
     }
 }

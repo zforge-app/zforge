@@ -42,7 +42,7 @@ struct BrowserPreviewOcclusionTests {
 private final class OcclusionWindowHost {
     let window: NSWindow
     let state: FileBrowserState
-    private let suite = "ZforgePreviewOcclusion-\(UUID().uuidString)"
+    private let suite = "ZforgeTestSuite.ZforgePreviewOcclusion-\(UUID().uuidString)"
 
     struct Row {
         let source: ArchiveDragSourceView
@@ -99,7 +99,7 @@ private final class OcclusionWindowHost {
         window.close()
         window.contentViewController = nil
         state.close()
-        UserDefaults.standard.removePersistentDomain(forName: suite)
+        UserDefaults.standard.removeTestSuite(named: suite)
     }
 }
 

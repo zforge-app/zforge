@@ -57,7 +57,7 @@ final class IconPreviewUITests: XCTestCase {
             "-browser.scale", "1", "-browser.previewVisible.icons", "NO",
             "-appLanguagePreference", "english"
         ]
-        app.launchEnvironment["ZFORGE_UI_PREFERENCES_SUITE"] = "ZforgeIconPreviewUI-\(UUID().uuidString)"
+        app.launchEnvironment["ZFORGE_UI_PREFERENCES_SUITE"] = "ZforgeTestSuite.ZforgeIconPreviewUI-\(UUID().uuidString)"
         return app
     }
 

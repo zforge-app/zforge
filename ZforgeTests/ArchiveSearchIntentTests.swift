@@ -120,7 +120,7 @@ struct ArchiveSearchIntentTests {
         let fixture = try ArchiveSearchFixture()
         defer { fixture.cleanUp() }
         var lease: AutomationAccessLease? = AutomationAccessLease()
-        weak var observed = lease
+        weak let observed = lease
         let search = StubArchiveSearch(urls: [fixture.archive], lease: try #require(lease))
         lease = nil
         let browser = try fixture.browser(search: search, initialSearch: "Vega Demo")
@@ -256,7 +256,7 @@ private struct ArchiveSearchFixture: Sendable {
         container = FileManager.default.temporaryDirectory.appendingPathComponent("ArchiveSearch-" + UUID().uuidString)
         root = container.appendingPathComponent("Allowed")
         archive = root.appendingPathComponent("Vega Demo.zip")
-        suite = "ArchiveSearchTests-" + UUID().uuidString
+        suite = "ZforgeTestSuite.ArchiveSearchTests-" + UUID().uuidString
         store = AutomationGrantStore(defaults: try #require(UserDefaults(suiteName: suite)))
         search = AuthorizedArchiveSearch(access: store)
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
@@ -273,7 +273,7 @@ private struct ArchiveSearchFixture: Sendable {
     }
 
     func cleanUp() {
-        UserDefaults(suiteName: suite)?.removePersistentDomain(forName: suite)
+        UserDefaults(suiteName: suite)?.removeTestSuite(named: suite)
         try? FileManager.default.removeItem(at: container)
     }
 }

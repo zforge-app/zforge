@@ -192,9 +192,9 @@ struct FileMenuCommandTests {
         try Data("welcome".utf8).write(to: root.appendingPathComponent("Welcome.txt"))
         try Data("another".utf8).write(to: root.appendingPathComponent("Another.txt"))
 
-        let suite = "FileMenuOpen-\(UUID().uuidString)"
+        let suite = "ZforgeTestSuite.FileMenuOpen-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite) }
+        defer { defaults.removeTestSuite(named: suite) }
         let preferences = FileBrowserPreferences(defaults: defaults)
         preferences.viewMode = mode
         preferences.language = .english

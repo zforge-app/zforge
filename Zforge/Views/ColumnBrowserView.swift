@@ -129,9 +129,13 @@ struct ColumnBrowserView: View {
                                 isActive: component.location == (state.activeColumnLocation ?? state.location),
                                 selectedID: state.columnSelections[component.location],
                                 scale: scale,
+                                // While the next column loads, its pending slot takes the
+                                // terminal width; keeping it here too would briefly widen the
+                                // columns, and a scroll to their end then hid the new column.
                                 width: state.previewVisible && previewItemIDs.isEmpty
                                     && index == visibleComponents.count - 1
                                     && index > 0
+                                    && !isAwaitingTerminalColumn
                                     ? terminalColumnWidth(
                                         availableWidth: geometry.size.width,
                                         precedingCount: index

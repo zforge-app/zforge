@@ -343,7 +343,7 @@ struct FolderWithSelectionTests {
 
     @MainActor
     private func makeState(mode: BrowserViewMode, fileSystem: any FileSystemServing = FileSystemService()) -> FileBrowserState {
-        let defaults = UserDefaults(suiteName: "FolderSelectionPreferences-\(UUID().uuidString)")!
+        let defaults = UserDefaults(suiteName: "ZforgeTestSuite.FolderSelectionPreferences-\(UUID().uuidString)")!
         let preferences = FileBrowserPreferences(defaults: defaults)
         preferences.viewMode = mode
         preferences.language = .english

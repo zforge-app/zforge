@@ -100,9 +100,9 @@ struct ArchiveMutationTests {
         let password = encrypted ? "Test password" : nil
         try await engine.createArchive(from: [inside], outputURL: archive, options: options,
             password: password, progress: { _ in })
-        let defaultsName = "ArchiveOutbound-\(UUID().uuidString)"
+        let defaultsName = "ZforgeTestSuite.ArchiveOutbound-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: defaultsName))
-        defer { defaults.removePersistentDomain(forName: defaultsName) }
+        defer { defaults.removeTestSuite(named: defaultsName) }
         let preferences = FileBrowserPreferences(defaults: defaults)
         preferences.viewMode = .list
         let state = FileBrowserState(preferences: preferences, fileSystem: FileSystemService(),
@@ -195,9 +195,9 @@ struct ArchiveMutationTests {
         try Data("second".utf8).write(to: second)
         let archive = root.appendingPathComponent("Target.zip")
         try await engine.createArchive(from: [first, second], outputURL: archive, format: .zip, progress: { _ in })
-        let suite = "ArchiveFailure-\(UUID().uuidString)"
+        let suite = "ZforgeTestSuite.ArchiveFailure-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite) }
+        defer { defaults.removeTestSuite(named: suite) }
         let state = FileBrowserState(preferences: FileBrowserPreferences(defaults: defaults),
             fileSystem: FileSystemService(), grants: UIFixtureAccessGrantStore(), archives: engine)
         state.archiveTransferConfirmation = { _ in true }
@@ -421,7 +421,7 @@ struct ArchiveMutationTests {
     @MainActor
     func rejectedConfirmation(internalDrop: Bool) async throws {
         try await withReorganizationFixture { engine, root, archive, _, _, _ in
-            let defaults = try #require(UserDefaults(suiteName: "Cancel-\(UUID().uuidString)"))
+            let defaults = try #require(UserDefaults(suiteName: "ZforgeTestSuite.Cancel-\(UUID().uuidString)"))
             let state = FileBrowserState(preferences: FileBrowserPreferences(defaults: defaults), fileSystem: FileSystemService(),
                 grants: UIFixtureAccessGrantStore(), archives: engine)
             defer { state.close() }
@@ -482,9 +482,9 @@ struct ArchiveMutationTests {
     @MainActor
     func internalRefresh(mode: BrowserViewMode, moving: Bool) async throws {
         try await withReorganizationFixture { engine, root, _, _, _, _ in
-            let suite = "ReorganizationRefresh-\(UUID().uuidString)"
+            let suite = "ZforgeTestSuite.ReorganizationRefresh-\(UUID().uuidString)"
             let defaults = try #require(UserDefaults(suiteName: suite))
-            defer { defaults.removePersistentDomain(forName: suite) }
+            defer { defaults.removeTestSuite(named: suite) }
             let preferences = FileBrowserPreferences(defaults: defaults); preferences.viewMode = mode
             let state = FileBrowserState(preferences: preferences, fileSystem: FileSystemService(), grants: UIFixtureAccessGrantStore(), archives: engine)
             // Changing Settings affects future windows, not this window's
@@ -621,9 +621,9 @@ struct ArchiveMutationTests {
         let archive = root.appendingPathComponent("Navigation.\(format.fileExtension)")
         let engine = NativeSevenZipArchiveEngine()
         try await engine.createArchive(from: [root.appendingPathComponent("Inside")], outputURL: archive, format: format, progress: { _ in })
-        let suite = "ArchiveNavigation-\(UUID().uuidString)"
+        let suite = "ZforgeTestSuite.ArchiveNavigation-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite) }
+        defer { defaults.removeTestSuite(named: suite) }
         let preferences = FileBrowserPreferences(defaults: defaults); preferences.viewMode = mode
         let state = FileBrowserState(preferences: preferences, fileSystem: FileSystemService(), grants: UIFixtureAccessGrantStore(), archives: engine)
         state.archiveTransferConfirmation = { _ in true }
@@ -642,9 +642,9 @@ struct ArchiveMutationTests {
     @MainActor
     func rejectedPromise() async throws {
         try await withReorganizationFixture { engine, root, archive, _, _, _ in
-            let suite = "PromiseCancel-\(UUID().uuidString)"
+            let suite = "ZforgeTestSuite.PromiseCancel-\(UUID().uuidString)"
             let defaults = try #require(UserDefaults(suiteName: suite))
-            defer { defaults.removePersistentDomain(forName: suite) }
+            defer { defaults.removeTestSuite(named: suite) }
             let preferences = FileBrowserPreferences(defaults: defaults); preferences.viewMode = .list
             let state = FileBrowserState(preferences: preferences, fileSystem: FileSystemService(), grants: UIFixtureAccessGrantStore(), archives: engine)
             state.archiveTransferConfirmation = { _ in false }

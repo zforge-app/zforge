@@ -235,7 +235,7 @@ struct SiriArchiveIntentTests {
         }
         try await fixture.store.add(fixture.root)
         var lease: AutomationAccessLease? = try await fixture.store.authorize([fixture.archive])
-        weak var observed = lease
+        weak let observed = lease
         let delegate = AppDelegate()
         try await AutomationArchiveOpening.open(fixture.archive, lease: try #require(lease), delegate: delegate)
         lease = nil
@@ -278,7 +278,7 @@ struct SiriArchiveIntentTests {
         try await engine.createArchive(from: [payload], outputURL: archive, options: options, password: "Opening password", progress: { _ in })
         try await fixture.store.add(fixture.root)
         var lease: AutomationAccessLease? = try await fixture.store.authorize([archive])
-        weak var observed = lease
+        weak let observed = lease
         let fileSystem = SuspendedOpeningFileSystem(suspendOnCall: 3)
         let browser = FileBrowserState(preferences: FileBrowserPreferences(defaults: try #require(UserDefaults(suiteName: fixture.suite))),
             fileSystem: fileSystem, grants: UIFixtureAccessGrantStore(), archives: engine, initialURL: archive, automationAccessLease: lease)
@@ -360,14 +360,14 @@ private struct SiriArchiveFixture: Sendable {
         container = FileManager.default.temporaryDirectory.appendingPathComponent("SiriArchive-" + UUID().uuidString)
         root = container.appendingPathComponent("Allowed")
         archive = root.appendingPathComponent("Example.zip")
-        suite = "SiriArchiveTests-" + UUID().uuidString
+        suite = "ZforgeTestSuite.SiriArchiveTests-" + UUID().uuidString
         store = AutomationGrantStore(defaults: try #require(UserDefaults(suiteName: suite)))
         service = AutomationArchiveEntities(access: store)
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
         try Data("Entity metadata fixture".utf8).write(to: archive)
     }
     func cleanUp() {
-        UserDefaults(suiteName: suite)?.removePersistentDomain(forName: suite)
+        UserDefaults(suiteName: suite)?.removeTestSuite(named: suite)
         try? FileManager.default.removeItem(at: container)
     }
 }

@@ -145,7 +145,7 @@ final class ZforgeUITests: XCTestCase {
         // WindowViewModeTests; this keeps the real shortcut, toolbar, close, Quit
         // and relaunch path for one representative sequence.
         let app = XCUIApplication()
-        app.launchEnvironment["ZFORGE_UI_PREFERENCES_SUITE"] = "ZforgeViewRelaunch-\(UUID().uuidString)"
+        app.launchEnvironment["ZFORGE_UI_PREFERENCES_SUITE"] = "ZforgeTestSuite.ZforgeViewRelaunch-\(UUID().uuidString)"
         app.launchArguments = [
             "--ui-fixtures", "--ui-window-width", "1100", "--ui-view-mode", "icons",
             "-appLanguagePreference", "english"
@@ -519,7 +519,10 @@ final class ZforgeUITests: XCTestCase {
     @MainActor
     func testArchiveCopyIntoAnotherZforgeWindow() throws {
         let app = XCUIApplication()
-        app.launchArguments = ["--ui-archive-drag-fixtures", "--ui-window-width", "780", "--ui-view-mode", "list", "-appLanguagePreference", "english"]
+        // Side by side: the source window at the leading edge, the new one at the trailing
+        // edge, so neither covers the other's rows (D-70).
+        app.launchArguments = ["--ui-archive-drag-fixtures", "--ui-window-width", "780", "--ui-window-side-by-side",
+            "--ui-view-mode", "list", "-appLanguagePreference", "english"]
         launchWithBrowserWindow(app)
         let firstTitle = app.windows.firstMatch.title
         let sourceWindow = app.windows.matching(NSPredicate(format: "title == %@", firstTitle)).firstMatch
@@ -532,9 +535,10 @@ final class ZforgeUITests: XCTestCase {
         app.typeKey("n", modifierFlags: [.command])
         let second = app.windows.matching(NSPredicate(format: "title != %@ AND title BEGINSWITH %@", firstTitle, "ArchiveDragFixture-")).firstMatch
         XCTAssertTrue(second.waitForExistence(timeout: 8), app.debugDescription)
-        let origin = second.coordinate(withNormalizedOffset: .zero)
-        origin.withOffset(CGVector(dx: 400, dy: 6)).click(forDuration: 0.3,
-            thenDragTo: origin.withOffset(CGVector(dx: 1200 - second.frame.minX, dy: 44 - second.frame.minY)))
+        // The fixture places the new window asynchronously after it appears.
+        let apart = NSPredicate { _, _ in !second.frame.intersects(sourceWindow.frame) }
+        XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: apart, object: nil)], timeout: 5),
+                       .completed, "The windows overlap: \(sourceWindow.frame) and \(second.frame)")
         // Drop onto a directory row in the new window, then inspect its contents.
         let target = second.descendants(matching: .any).matching(identifier: "browser-item-Dropped").firstMatch.staticTexts["Dropped"].firstMatch
         payload.staticTexts["Payload.txt"].firstMatch.click(forDuration: 0.3, thenDragTo: target)
@@ -810,7 +814,7 @@ final class ZforgeUITests: XCTestCase {
     @MainActor
     func testListHeaderDividerResizesAndHeaderBodyReorders() throws {
         let app = XCUIApplication()
-        app.launchEnvironment["ZFORGE_UI_PREFERENCES_SUITE"] = "ZforgeListHeaderUI-\(UUID().uuidString)"
+        app.launchEnvironment["ZFORGE_UI_PREFERENCES_SUITE"] = "ZforgeTestSuite.ZforgeListHeaderUI-\(UUID().uuidString)"
         app.launchArguments = ["--ui-fixtures", "--ui-window-width", "1100", "--ui-view-mode", "list",
             "-appLanguagePreference", "english"]
         launchWithBrowserWindow(app)

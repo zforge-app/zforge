@@ -65,7 +65,7 @@ private final class ControlledSearcher: BrowserSearching {
 private final class SearchFixture {
     let root: URL
     let defaults: UserDefaults
-    let suite = "ZforgeBrowserSearch-\(UUID().uuidString)"
+    let suite = "ZforgeTestSuite.ZforgeBrowserSearch-\(UUID().uuidString)"
     let gate = DebounceGate()
 
     init() throws {
@@ -99,7 +99,7 @@ private final class SearchFixture {
     }
 
     func cleanUp() {
-        defaults.removePersistentDomain(forName: suite)
+        defaults.removeTestSuite(named: suite)
         try? FileManager.default.removeItem(at: root)
     }
 }
@@ -345,9 +345,9 @@ struct BrowserSearchStateTests {
 
     @Test("Leaving a search shows the origin's listing again", arguments: SearchOrigin.allCases, SearchExit.allCases)
     func leavingSearchRestoresOriginListing(origin: SearchOrigin, exit: SearchExit) async throws {
-        let suite = "ZforgeSearchOrigin-\(UUID().uuidString)"
+        let suite = "ZforgeTestSuite.ZforgeSearchOrigin-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite) }
+        defer { defaults.removeTestSuite(named: suite) }
         let preferences = FileBrowserPreferences(defaults: defaults)
         preferences.language = .english
         let gate = DebounceGate()
@@ -516,14 +516,9 @@ struct BrowserSearchWorkloadTests {
         let fixture = try SearchFixture()
         defer { fixture.cleanUp() }
         let tree = fixture.url("Workload")
-        for folder in 0..<200 {
-            let directory = tree.appendingPathComponent("Folder \(folder)", isDirectory: true)
-            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-            for file in 0..<100 {
-                let name = file == 0 ? "Needle \(folder).txt" : "Item \(file).txt"
-                FileManager.default.createFile(atPath: directory.appendingPathComponent(name).path, contents: nil)
-            }
-        }
+        // The 20,000 files are created off the main actor (D-71): the setup is not the
+        // behaviour under test and would hold the shared main actor for many seconds.
+        try await Task.detached { try Self.createWorkload(at: tree) }.value
         let browser = fixture.browser(searcher: nil, initialURL: tree)
         defer { browser.close() }
         await browser.start()
@@ -563,6 +558,18 @@ struct BrowserSearchWorkloadTests {
         #expect(browser.items.count == 200)
         print("BrowserSearchWorkload first=\(firstResult) total=\(total) longestMainStall=\(longestStall) idleStall=\(idleStall) results=\(browser.items.count)")
     }
+
+    /// 200 folders of 100 empty files; one name per folder matches the search.
+    nonisolated private static func createWorkload(at tree: URL) throws {
+        for folder in 0..<200 {
+            let directory = tree.appendingPathComponent("Folder \(folder)", isDirectory: true)
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+            for file in 0..<100 {
+                let name = file == 0 ? "Needle \(folder).txt" : "Item \(file).txt"
+                FileManager.default.createFile(atPath: directory.appendingPathComponent(name).path, contents: nil)
+            }
+        }
+    }
 }
 
 @Suite("Toolbar search presentation")
@@ -578,9 +585,9 @@ struct BrowserSearchPresentationTests {
 
     @Test("The expanded field and the scope bar in light and dark", arguments: ZforgeSnapshot.appearances)
     func snapshots(appearance: (name: String, appearance: NSAppearance.Name)) async throws {
-        let suite = "SearchSnapshot-\(UUID().uuidString)"
+        let suite = "ZforgeTestSuite.SearchSnapshot-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite) }
+        defer { defaults.removeTestSuite(named: suite) }
         let state = browser(defaults)
         defer { state.close() }
         let folder = URL(fileURLWithPath: "/ZforgeFixtures/Fixture Folder")
@@ -607,9 +614,9 @@ struct BrowserSearchPresentationTests {
         (650.0, true), (720.0, false), (860.0, false), (1_100.0, false)
     ])
     func overflowSearch(width: Double, offersSearch: Bool) async throws {
-        let suite = "SearchOverflow-\(UUID().uuidString)"
+        let suite = "ZforgeTestSuite.SearchOverflow-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite) }
+        defer { defaults.removeTestSuite(named: suite) }
         let state = browser(defaults)
         defer { state.close() }
         let contents = BrowserToolbarLayout.stage(for: CGFloat(width)).overflowMenuContents

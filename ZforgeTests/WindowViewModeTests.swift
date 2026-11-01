@@ -8,9 +8,9 @@ import Testing
 struct WindowViewModeTests {
     @Test("All four modes remain independent with shared preferences")
     func independentModes() throws {
-        let suite = "ZforgeWindowModes-\(UUID().uuidString)"
+        let suite = "ZforgeTestSuite.ZforgeWindowModes-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite) }
+        defer { defaults.removeTestSuite(named: suite) }
         let preferences = FileBrowserPreferences(defaults: defaults)
         preferences.viewMode = .icons
         let first = makeState(preferences)
@@ -30,9 +30,9 @@ struct WindowViewModeTests {
 
     @Test("Default View affects future windows and survives preference reload")
     func defaultAppliesToFutureWindows() throws {
-        let suite = "ZforgeWindowDefault-\(UUID().uuidString)"
+        let suite = "ZforgeTestSuite.ZforgeWindowDefault-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite) }
+        defer { defaults.removeTestSuite(named: suite) }
         let preferences = FileBrowserPreferences(defaults: defaults)
         preferences.viewMode = .list
         let existing = makeState(preferences)
@@ -54,9 +54,9 @@ struct WindowViewModeTests {
 
     @Test("Preview lookup uses each window's active mode")
     func previewUsesLocalMode() throws {
-        let suite = "ZforgeWindowPreview-\(UUID().uuidString)"
+        let suite = "ZforgeTestSuite.ZforgeWindowPreview-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite) }
+        defer { defaults.removeTestSuite(named: suite) }
         let preferences = FileBrowserPreferences(defaults: defaults)
         preferences.setPreviewVisible(false, in: .list)
         preferences.setPreviewVisible(true, in: .icons)
@@ -84,9 +84,9 @@ struct WindowViewModeTests {
     @Test("The last native window closed supplies the next mode in either close order",
           arguments: BrowserViewMode.allCases, [true, false])
     func lastClosedWindow(mode: BrowserViewMode, closeFirst: Bool) throws {
-        let suite = "ZforgeWindowClose-\(UUID().uuidString)"
+        let suite = "ZforgeTestSuite.ZforgeWindowClose-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite) }
+        defer { defaults.removeTestSuite(named: suite) }
         let preferences = FileBrowserPreferences(defaults: defaults)
         let otherMode: BrowserViewMode = mode == .gallery ? .list : .gallery
         preferences.viewMode = otherMode
@@ -121,9 +121,9 @@ struct WindowViewModeTests {
     @Test("Quit preserves the frontmost remaining browser and ignores auxiliary windows",
           arguments: BrowserViewMode.allCases)
     func quitWithOpenWindows(mode: BrowserViewMode) throws {
-        let suite = "ZforgeWindowQuit-\(UUID().uuidString)"
+        let suite = "ZforgeTestSuite.ZforgeWindowQuit-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite) }
+        defer { defaults.removeTestSuite(named: suite) }
         let preferences = FileBrowserPreferences(defaults: defaults)
         preferences.viewMode = mode == .icons ? .gallery : .icons
         let back = makeState(preferences)
@@ -146,9 +146,9 @@ struct WindowViewModeTests {
 
     @Test("Scene replacement and unrelated closes do not save an obsolete browser mode")
     func replacementAndUnrelatedWindows() throws {
-        let suite = "ZforgeWindowReplacement-\(UUID().uuidString)"
+        let suite = "ZforgeTestSuite.ZforgeWindowReplacement-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite) }
+        defer { defaults.removeTestSuite(named: suite) }
         let preferences = FileBrowserPreferences(defaults: defaults)
         preferences.viewMode = .icons
         let original = makeState(preferences)

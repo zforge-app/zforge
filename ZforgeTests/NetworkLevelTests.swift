@@ -22,7 +22,7 @@ struct NetworkLevelTests {
 
         func tearDown() {
             state.close()
-            defaults.removePersistentDomain(forName: suite)
+            defaults.removeTestSuite(named: suite)
             try? FileManager.default.removeItem(at: root)
         }
 
@@ -40,7 +40,7 @@ struct NetworkLevelTests {
         for folder in [volume, share.appendingPathComponent("Movies")] {
             try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         }
-        let suite = "NetworkLevelTests-\(UUID().uuidString)"
+        let suite = "ZforgeTestSuite.NetworkLevelTests-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))
         let preferences = FileBrowserPreferences(defaults: defaults)
         preferences.language = .english

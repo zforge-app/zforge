@@ -28,6 +28,11 @@ final class FinderExtensionUITests: XCTestCase {
         XCTAssertTrue(finderWindow.waitForExistence(timeout: 15), finder.debugDescription)
         addTeardownBlock { self.closeFixtureWindows(in: finder) }
         finder.activate()
+        // Finder opens a new folder in the user's default view (D-67: Icons on this Mac); the
+        // scenario uses the list, so the fixture window, frontmost since it just opened, is
+        // switched to View > as List (⌘2). The fixture folder is temporary, so the user's own
+        // default view is unchanged.
+        finder.typeKey("2", modifierFlags: .command)
         // The row in the file list, not the path bar's item with the same name.
         let archive = finderWindow.outlines["ListView"].textFields["Sample.zip"].firstMatch
         XCTAssertTrue(archive.waitForExistence(timeout: 10), finderWindow.debugDescription)
@@ -94,10 +99,14 @@ final class FinderExtensionUITests: XCTestCase {
 
     /// Finder's File > Open With menu also lists Zforge, closed and offscreen;
     /// the shortcut menu's item is the visible one.
+    @MainActor
     private func visibleZforgeItem(in finder: XCUIApplication) throws -> XCUIElement {
         let candidates = finder.menuItems.matching(NSPredicate(format: "title == %@", "Zforge"))
+        // XCTWaiter evaluates the predicate on the main thread, where XCUIElement lives.
         let visible = XCTNSPredicateExpectation(predicate: NSPredicate { object, _ in
-            ((object as? XCUIElementQuery)?.allElementsBoundByIndex.contains { $0.isHittable }) == true
+            MainActor.assumeIsolated {
+                ((object as? XCUIElementQuery)?.allElementsBoundByIndex.contains { $0.isHittable }) == true
+            }
         }, object: candidates)
         XCTAssertEqual(XCTWaiter.wait(for: [visible], timeout: 5), .completed, "Is the Zforge Finder extension enabled?")
         return try XCTUnwrap(candidates.allElementsBoundByIndex.first { $0.isHittable })
@@ -105,6 +114,7 @@ final class FinderExtensionUITests: XCTestCase {
 
     /// Finder shows extension images as they are: each symbol must contrast with the
     /// menu like its title (light on a dark menu, dark on a light one).
+    @MainActor
     private func assertSymbolsContrast(in menu: XCUIElement, titles: [String]) throws {
         for title in titles {
             let item = menu.menuItems[title]

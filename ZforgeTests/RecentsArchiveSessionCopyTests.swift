@@ -7,9 +7,9 @@ import Testing
 struct RecentsArchiveSessionCopyTests {
     @Test("Recents lists the original archive once when archive sessions contain copies")
     func originalArchiveAppearsOnce() async throws {
-        let defaultsName = "RecentsSessionCopies-\(UUID().uuidString)"
+        let defaultsName = "ZforgeTestSuite.RecentsSessionCopies-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: defaultsName))
-        defer { defaults.removePersistentDomain(forName: defaultsName) }
+        defer { defaults.removeTestSuite(named: defaultsName) }
         let preferences = FileBrowserPreferences(defaults: defaults)
         preferences.viewMode = .list
         preferences.language = .english

@@ -588,22 +588,21 @@ struct ContentView: View {
 
         Task { @MainActor in
             await Task.yield()
-            guard let window = NSApp.keyWindow ?? NSApp.windows.first else { return }
+            // This view's own window once registered; a new window is not always key yet.
+            guard let window = BrowserWindowLifecycle.shared.window(for: browser)
+                ?? NSApp.keyWindow ?? NSApp.windows.first else { return }
             let visibleFrame = NSScreen.main?.visibleFrame
             let height = min(window.contentView?.bounds.height ?? 720, (visibleFrame?.height ?? 820) - 100)
             window.setContentSize(NSSize(width: width, height: height))
             // Keep native cascading when visible so one fixture window cannot
             // cover another window's close control. Clamp only offscreen frames.
-            // `--ui-window-leading` anchors the window to the screen's leading edge
-            // for tests that need the rest of the screen free (Finder drops).
             if let visibleFrame {
-                let minX = arguments.contains("--ui-window-leading") ? visibleFrame.minX : window.frame.minX
-                window.setFrameOrigin(NSPoint(
-                    x: min(max(minX, visibleFrame.minX),
-                           max(visibleFrame.minX, visibleFrame.maxX - window.frame.width)),
-                    y: min(max(window.frame.minY, visibleFrame.minY),
-                           max(visibleFrame.minY, visibleFrame.maxY - window.frame.height))
-                ))
+                let isFirstWindow = !NSApp.windows.contains {
+                    $0 !== window && $0.isVisible && $0.identifier?.rawValue.hasPrefix("browser") == true
+                }
+                window.setFrameOrigin(UITestWindowPlacement.origin(
+                    for: window.frame.size, current: window.frame.origin, visibleFrame: visibleFrame,
+                    isFirstWindow: isFirstWindow, arguments: arguments))
             }
         }
     }

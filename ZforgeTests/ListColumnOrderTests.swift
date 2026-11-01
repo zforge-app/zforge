@@ -93,7 +93,7 @@ struct ListColumnOrderTests {
 private final class PreferencesFixture {
     let defaults: UserDefaults
     let preferences: FileBrowserPreferences
-    private let suite = "ZforgeListColumnOrder-\(UUID().uuidString)"
+    private let suite = "ZforgeTestSuite.ZforgeListColumnOrder-\(UUID().uuidString)"
 
     init() throws {
         defaults = try #require(UserDefaults(suiteName: suite))
@@ -101,6 +101,6 @@ private final class PreferencesFixture {
     }
 
     func close() {
-        defaults.removePersistentDomain(forName: suite)
+        defaults.removeTestSuite(named: suite)
     }
 }

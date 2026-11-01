@@ -23,9 +23,9 @@ struct AutomationTests {
     func grantPersistence() async throws {
         let fixture = try AutomationFixture()
         defer { fixture.remove() }
-        let suite = "ZforgeAutomationTests-" + UUID().uuidString
+        let suite = "ZforgeTestSuite.ZforgeAutomationTests-" + UUID().uuidString
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite) }
+        defer { defaults.removeTestSuite(named: suite) }
         defaults.set([fixture.root.path: Data()], forKey: "securityScopedBookmarks")
         let store = AutomationGrantStore(defaults: try #require(UserDefaults(suiteName: suite)))
         #expect(await store.folders().isEmpty)
@@ -48,9 +48,9 @@ struct AutomationTests {
         defer { try? FileManager.default.removeItem(at: outside) }
         let link = fixture.root.appendingPathComponent("Escape")
         try FileManager.default.createSymbolicLink(at: link, withDestinationURL: outside)
-        let suite = "ZforgeAutomationTests-" + UUID().uuidString
+        let suite = "ZforgeTestSuite.ZforgeAutomationTests-" + UUID().uuidString
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite) }
+        defer { defaults.removeTestSuite(named: suite) }
         let store = AutomationGrantStore(defaults: try #require(UserDefaults(suiteName: suite)))
         try await store.add(fixture.root)
         await #expect(throws: AutomationError.authorizationRequired) {
@@ -65,9 +65,9 @@ struct AutomationTests {
         let alias = fixture.root.deletingLastPathComponent().appendingPathComponent("Alias-" + UUID().uuidString)
         try FileManager.default.createSymbolicLink(at: alias, withDestinationURL: fixture.root)
         defer { try? FileManager.default.removeItem(at: alias) }
-        let suite = "ZforgeAutomationTests-" + UUID().uuidString
+        let suite = "ZforgeTestSuite.ZforgeAutomationTests-" + UUID().uuidString
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite) }
+        defer { defaults.removeTestSuite(named: suite) }
         let store = AutomationGrantStore(defaults: try #require(UserDefaults(suiteName: suite)))
         try await store.add(fixture.root)
         let lease = try await store.authorize([alias.appendingPathComponent("Input.txt"), alias.appendingPathComponent("New.zip")])
@@ -101,9 +101,9 @@ struct AutomationTests {
     func systemNoFollowPaths() async throws {
         let fixture = try AutomationFixture()
         defer { fixture.remove() }
-        let suite = "ZforgeAutomationTests-" + UUID().uuidString
+        let suite = "ZforgeTestSuite.ZforgeAutomationTests-" + UUID().uuidString
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite) }
+        defer { defaults.removeTestSuite(named: suite) }
         let store = AutomationGrantStore(defaults: try #require(UserDefaults(suiteName: suite)))
         try await store.add(fixture.root)
         let physical = fixture.root.resolvingSymlinksInPath()

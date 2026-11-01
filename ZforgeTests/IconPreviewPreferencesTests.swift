@@ -7,9 +7,9 @@ import Testing
 struct IconPreviewPreferencesTests {
     @Test("Icon previews are enabled when no preference was saved")
     func enabledByDefault() throws {
-        let suite = "ZforgeIconPreviewDefault-\(UUID().uuidString)"
+        let suite = "ZforgeTestSuite.ZforgeIconPreviewDefault-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite) }
+        defer { defaults.removeTestSuite(named: suite) }
 
         let preferences = FileBrowserPreferences(defaults: defaults)
         #expect(preferences.showIconPreviews)
@@ -18,9 +18,9 @@ struct IconPreviewPreferencesTests {
 
     @Test("Both enabled and disabled choices survive preference reload", arguments: [false, true])
     func savedChoiceIsRestored(isEnabled: Bool) throws {
-        let suite = "ZforgeIconPreviewPersistence-\(UUID().uuidString)"
+        let suite = "ZforgeTestSuite.ZforgeIconPreviewPersistence-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite) }
+        defer { defaults.removeTestSuite(named: suite) }
 
         let preferences = FileBrowserPreferences(defaults: defaults)
         preferences.showIconPreviews = isEnabled
@@ -33,9 +33,9 @@ struct IconPreviewPreferencesTests {
 
     @Test("Icon previews remain independent from preview panels in every mode")
     func independentFromPreviewPanels() throws {
-        let suite = "ZforgeIconPreviewPanels-\(UUID().uuidString)"
+        let suite = "ZforgeTestSuite.ZforgeIconPreviewPanels-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite) }
+        defer { defaults.removeTestSuite(named: suite) }
 
         let preferences = FileBrowserPreferences(defaults: defaults)
         for mode in BrowserViewMode.allCases {
@@ -60,9 +60,9 @@ struct IconPreviewPreferencesTests {
 
     @Test("Windows sharing application preferences observe icon preview changes")
     func sharedAcrossWindows() throws {
-        let suite = "ZforgeIconPreviewWindows-\(UUID().uuidString)"
+        let suite = "ZforgeTestSuite.ZforgeIconPreviewWindows-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite) }
+        defer { defaults.removeTestSuite(named: suite) }
 
         let preferences = FileBrowserPreferences(defaults: defaults)
         let first = makeState(preferences)

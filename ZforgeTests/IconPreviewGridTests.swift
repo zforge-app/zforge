@@ -251,7 +251,7 @@ final class IconPreviewGridFixture {
     init(language: AppLanguagePreference = .english) async throws {
         directory = FileManager.default.temporaryDirectory
             .appendingPathComponent("IconPreviewGrid-\(UUID().uuidString)", isDirectory: true)
-        defaultsName = "IconPreviewGrid-\(UUID().uuidString)"
+        defaultsName = "ZforgeTestSuite.IconPreviewGrid-\(UUID().uuidString)"
         defaults = try #require(UserDefaults(suiteName: defaultsName))
         preferences = FileBrowserPreferences(defaults: defaults)
         preferences.viewMode = .icons
@@ -319,7 +319,7 @@ final class IconPreviewGridFixture {
         state.close()
         relaunched.forEach { $0.close() }
         guard ownsFiles else { return }
-        defaults.removePersistentDomain(forName: defaultsName)
+        defaults.removeTestSuite(named: defaultsName)
         try? FileManager.default.removeItem(at: directory)
     }
 }

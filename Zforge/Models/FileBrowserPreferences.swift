@@ -318,7 +318,7 @@ final class FileBrowserPreferences {
         }
     }
 
-    init(defaults: UserDefaults = .standard) {
+    init(defaults: UserDefaults = ZforgeDefaults.application) {
         self.defaults = defaults
         viewMode = BrowserViewMode(rawValue: defaults.string(forKey: Key.viewMode) ?? "") ?? .icons
         let storedScale = defaults.double(forKey: Key.scale)

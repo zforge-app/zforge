@@ -26,7 +26,8 @@ struct ArchiveDragDropTests {
             let payload = try #require(state.items.first(where: { $0.name == "DeepPayload.txt" }))
             let leaf = try #require(state.items.first(where: { $0.name == "Leaf" }))
             let view = ArchiveDropDestinationView()
-            view.address = try #require(leaf.location.archiveDropAddress)
+            let leafAddress: ArchiveAddress = try #require(leaf.location.archiveDropAddress)
+            view.address = leafAddress
             let before = try Data(contentsOf: archive)
 
             // Escape in the confirmation leaves the archive and the view untouched.
@@ -147,7 +148,8 @@ struct ArchiveDragDropTests {
             let archiveItem = try #require(state.items.first(where: { $0.name == "Sample.zip" }))
             let target = try #require(state.expandedChildren[archiveItem.id]?.first(where: { $0.name == "Target" }))
             let view = ArchiveDropDestinationView()
-            view.address = try #require(target.location.archiveDropAddress)
+            let targetAddress: ArchiveAddress = try #require(target.location.archiveDropAddress)
+            view.address = targetAddress
             #expect(await drop([payload], from: state, onto: view, option: false) == .move)
             #expect(requests.count == 1)
             #expect(requests.last?.moving == true)
@@ -166,7 +168,8 @@ struct ArchiveDragDropTests {
             let before = try Data(contentsOf: archive)
 
             let copyView = ArchiveDropDestinationView()
-            copyView.address = try #require(survivingInside.location.archiveDropAddress)
+            let insideAddress: ArchiveAddress = try #require(survivingInside.location.archiveDropAddress)
+            copyView.address = insideAddress
             #expect(await drop([moved], from: state, onto: copyView, option: true) == .copy)
             #expect(requests.count == 2)
             #expect(requests.last?.moving == false)
@@ -184,9 +187,9 @@ struct ArchiveDragDropTests {
             var requests: [FileBrowserState.ArchiveTransferConfirmation] = []
             state.archiveTransferConfirmation = { requests.append($0); return true }
             let payload = try await revealPayload(in: state)
-            let suite = "ArchiveDragOtherWindow-\(UUID().uuidString)"
+            let suite = "ZforgeTestSuite.ArchiveDragOtherWindow-\(UUID().uuidString)"
             let defaults = try #require(UserDefaults(suiteName: suite))
-            defer { defaults.removePersistentDomain(forName: suite) }
+            defer { defaults.removeTestSuite(named: suite) }
             let preferences = FileBrowserPreferences(defaults: defaults)
             preferences.language = .english; preferences.viewMode = .list
             let other = FileBrowserState(preferences: preferences, fileSystem: FileSystemService(),
@@ -195,7 +198,8 @@ struct ArchiveDragDropTests {
             await other.navigateToSidebar(root, name: root.lastPathComponent)
             let droppedItem = try #require(other.items.first(where: { $0.name == "Dropped" }))
             let view = ArchiveDropDestinationView()
-            view.directory = try #require(droppedItem.localURL)
+            let droppedURL: URL = try #require(droppedItem.localURL)
+            view.directory = droppedURL
             let before = try Data(contentsOf: archive)
             #expect(await drop([payload], from: state, onto: view, option: false) == .copy)
             #expect(requests.isEmpty)
@@ -387,9 +391,9 @@ struct ArchiveDragDropTests {
         let engine = NativeSevenZipArchiveEngine()
         try await engine.createArchive(from: [inside, target], outputURL: archive, format: .zip, progress: { _ in })
         try FileManager.default.removeItem(at: staging)
-        let suite = "ArchiveDragDrop-\(UUID().uuidString)"
+        let suite = "ZforgeTestSuite.ArchiveDragDrop-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite) }
+        defer { defaults.removeTestSuite(named: suite) }
         let preferences = FileBrowserPreferences(defaults: defaults)
         preferences.language = .english
         preferences.viewMode = mode

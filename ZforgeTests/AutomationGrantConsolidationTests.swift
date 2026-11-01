@@ -136,13 +136,13 @@ private struct GrantFixture: Sendable {
         root = container.appendingPathComponent("Parent")
         child = root.appendingPathComponent("Child")
         file = child.appendingPathComponent("Input.txt")
-        suite = "GrantConsolidationTests-" + UUID().uuidString
+        suite = "ZforgeTestSuite.GrantConsolidationTests-" + UUID().uuidString
         store = AutomationGrantStore(defaults: try #require(UserDefaults(suiteName: suite)))
         try FileManager.default.createDirectory(at: child, withIntermediateDirectories: true)
         try Data("Consolidation fixture".utf8).write(to: file)
     }
     func cleanUp() {
-        defaults.removePersistentDomain(forName: suite)
+        defaults.removeTestSuite(named: suite)
         try? FileManager.default.removeItem(at: container)
     }
 }

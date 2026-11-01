@@ -13,7 +13,7 @@ final class LocalizationUITests: XCTestCase {
     func testLanguageSelectionUpdatesOpenMenuAndPersists() throws {
         continueAfterFailure = false
         let app = XCUIApplication()
-        let suite = "ZforgeLocalizationUI-\(UUID().uuidString)"
+        let suite = "ZforgeTestSuite.ZforgeLocalizationUI-\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
         defaults.set("english", forKey: "appLanguagePreference")
         defer { defaults.removePersistentDomain(forName: suite) }

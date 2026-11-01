@@ -443,7 +443,7 @@ struct FinderIntegrationTests {
     }
 
     private func makeState(grants: FinderTestGrants, request: FinderMenuRequest? = nil) throws -> (FileBrowserState, () -> Void) {
-        let suite = "ZforgeFinderIntegration-\(UUID().uuidString)"
+        let suite = "ZforgeTestSuite.ZforgeFinderIntegration-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))
         let preferences = FileBrowserPreferences(defaults: defaults)
         preferences.language = .english
@@ -453,7 +453,7 @@ struct FinderIntegrationTests {
             recentItems: FinderTestRecents(), grants: grants, archives: NativeSevenZipArchiveEngine(),
             initialFinderRequest: request
         )
-        return (state, { state.close(); defaults.removePersistentDomain(forName: suite) })
+        return (state, { state.close(); defaults.removeTestSuite(named: suite) })
     }
 }
 

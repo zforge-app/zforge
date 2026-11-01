@@ -6,7 +6,7 @@ final class SettingsUITests: XCTestCase {
     @MainActor
     func testListColumnsReorderByDragging() throws {
         let app = XCUIApplication()
-        app.launchEnvironment["ZFORGE_UI_PREFERENCES_SUITE"] = "ZforgeSettingsUI-\(UUID().uuidString)"
+        app.launchEnvironment["ZFORGE_UI_PREFERENCES_SUITE"] = "ZforgeTestSuite.ZforgeSettingsUI-\(UUID().uuidString)"
         app.launchArguments = ["--ui-fixtures", "-appLanguagePreference", "english", "-ApplePersistenceIgnoreState", "YES"]
         app.launch()
         app.activate()
@@ -67,7 +67,7 @@ final class SettingsUITests: XCTestCase {
     @MainActor
     func testArchiveSizeLimitSliderHoldsRoundValuesWhileDragging() throws {
         let app = XCUIApplication()
-        app.launchEnvironment["ZFORGE_UI_PREFERENCES_SUITE"] = "ZforgeSettingsUI-\(UUID().uuidString)"
+        app.launchEnvironment["ZFORGE_UI_PREFERENCES_SUITE"] = "ZforgeTestSuite.ZforgeSettingsUI-\(UUID().uuidString)"
         app.launchArguments = ["--ui-fixtures", "-appLanguagePreference", "english", "-ApplePersistenceIgnoreState", "YES"]
         app.launch()
         app.activate()

@@ -164,7 +164,13 @@ enum ArchiveFolderIconComposer {
         NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: source)
         image.draw(in: NSRect(origin: .zero, size: image.size))
         NSGraphicsContext.restoreGraphicsState()
-        for y in 0..<side {
+        // Bilinear warp of 1024 × 1024 pixels. The arithmetic is per pixel and channel as
+        // written; the loops avoid per-sample closures and generic range iteration, which made
+        // one open icon cost seconds on the main actor in Debug builds (D-71).
+        let sourceRow = source.bytesPerRow, targetRow = target.bytesPerRow
+        var y = 0
+        while y < side {
+            defer { y += 1 }
             let normalizedY = 1 - (Double(y) + 0.5) / Double(side)
             let t = (normalizedY - 0.13) / 0.53
             guard t >= 0, t <= 1 else { continue }
@@ -173,18 +179,22 @@ enum ArchiveFolderIconComposer {
             let sourceY = (1 - (0.13 + 0.60 * t)) * Double(side) - 0.5
             let y0 = Int(floor(sourceY)), fy = sourceY - Double(y0)
             guard y0 >= 0, y0 + 1 < side else { continue }
-            for x in 0..<side {
+            let upperRow = sourceBytes + y0 * sourceRow, lowerRow = upperRow + sourceRow
+            let output = targetBytes + y * targetRow
+            var x = 0
+            while x < side {
+                defer { x += 1 }
                 let normalizedX = (Double(x) + 0.5) / Double(side)
                 let sourceX = (normalizedX - margin) / (1 - 2 * margin) * Double(side) - 0.5
                 let x0 = Int(floor(sourceX)), fx = sourceX - Double(x0)
                 guard x0 >= 0, x0 + 1 < side else { continue }
-                for channel in 0..<4 {
-                    func sample(_ sx: Int, _ sy: Int) -> Double {
-                        Double(sourceBytes[sy * source.bytesPerRow + sx * 4 + channel])
-                    }
-                    let upper = sample(x0, y0) * (1 - fx) + sample(x0 + 1, y0) * fx
-                    let lower = sample(x0, y0 + 1) * (1 - fx) + sample(x0 + 1, y0 + 1) * fx
-                    targetBytes[y * target.bytesPerRow + x * 4 + channel] = UInt8((upper * (1 - fy) + lower * fy).rounded())
+                let left = x0 * 4, right = left + 4, pixel = x * 4
+                var channel = 0
+                while channel < 4 {
+                    let upper = Double(upperRow[left + channel]) * (1 - fx) + Double(upperRow[right + channel]) * fx
+                    let lower = Double(lowerRow[left + channel]) * (1 - fx) + Double(lowerRow[right + channel]) * fx
+                    output[pixel + channel] = UInt8((upper * (1 - fy) + lower * fy).rounded())
+                    channel += 1
                 }
             }
         }

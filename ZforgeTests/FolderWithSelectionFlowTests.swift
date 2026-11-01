@@ -98,9 +98,9 @@ struct FolderWithSelectionFlowTests {
                                                 withIntermediateDirectories: false)
         try Data("local".utf8).write(to: root.appendingPathComponent("Local.txt"))
 
-        let suite = "FolderSelectionFlow-\(UUID().uuidString)"
+        let suite = "ZforgeTestSuite.FolderSelectionFlow-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite) }
+        defer { defaults.removeTestSuite(named: suite) }
         let preferences = FileBrowserPreferences(defaults: defaults)
         preferences.viewMode = mode
         preferences.language = .english

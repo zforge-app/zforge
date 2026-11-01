@@ -87,9 +87,9 @@ struct CompressionPanelLayoutTests {
 
     @Test("Settings offers the default compression profile and the profile editor")
     func compressionSettingsSection() throws {
-        let suite = "CompressionSettings-\(UUID().uuidString)"
+        let suite = "ZforgeTestSuite.CompressionSettings-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite) }
+        defer { defaults.removeTestSuite(named: suite) }
         let preferences = FileBrowserPreferences(defaults: defaults)
         preferences.language = .english
 
@@ -136,7 +136,7 @@ private final class PanelFixture {
     private let suite: String
 
     init(format: ArchiveCompressionFormat) throws {
-        suite = "CompressionPanel-\(UUID().uuidString)"
+        suite = "ZforgeTestSuite.CompressionPanel-\(UUID().uuidString)"
         defaults = try #require(UserDefaults(suiteName: suite))
         let preferences = FileBrowserPreferences(defaults: defaults)
         preferences.language = .english
@@ -150,7 +150,7 @@ private final class PanelFixture {
 
     func close() {
         panel.close()
-        defaults.removePersistentDomain(forName: suite)
+        defaults.removeTestSuite(named: suite)
     }
 
     private var host: NSView { panel.contentView! }

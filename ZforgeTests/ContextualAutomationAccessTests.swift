@@ -14,9 +14,9 @@ struct ContextualAutomationAccessTests {
         defer { try? FileManager.default.removeItem(at: root) }
         let source = sourceFolder.appendingPathComponent("Input.txt")
         try Data("Contextual permission fixture".utf8).write(to: source)
-        let suite = "ContextualAccessTests-" + UUID().uuidString
+        let suite = "ZforgeTestSuite.ContextualAccessTests-" + UUID().uuidString
         let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite) }
+        defer { defaults.removeTestSuite(named: suite) }
         let store = AutomationGrantStore(defaults: try #require(UserDefaults(suiteName: suite)))
         let initialCount = await store.authorizedFolders().count
         #expect(initialCount == 0)
@@ -178,7 +178,7 @@ private struct PermissionFixture: Sendable {
         destination = root.appendingPathComponent("Destination", isDirectory: true)
         input = source.appendingPathComponent("Input.txt")
         output = destination.appendingPathComponent("Output.zip")
-        suite = "ContextualPermissionTests-" + UUID().uuidString
+        suite = "ZforgeTestSuite.ContextualPermissionTests-" + UUID().uuidString
         store = AutomationGrantStore(defaults: UserDefaults(suiteName: suite)!)
         try FileManager.default.createDirectory(at: source, withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: destination, withIntermediateDirectories: true)
@@ -186,7 +186,7 @@ private struct PermissionFixture: Sendable {
     }
     func cleanUp() {
         try? FileManager.default.removeItem(at: root)
-        UserDefaults(suiteName: suite)?.removePersistentDomain(forName: suite)
+        UserDefaults(suiteName: suite)?.removeTestSuite(named: suite)
     }
 }
 
