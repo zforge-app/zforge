@@ -60,9 +60,10 @@ final class SettingsUITests: XCTestCase {
         XCTAssertEqual(headers.map(\.frame.minX), headers.map(\.frame.minX).sorted(), "List header order")
     }
 
-    /// The scale's steps and holds are covered offscreen by `SettingsSliderTests`, which call
-    /// the slider's action directly. Only real mouse tracking proves that the knob, while
-    /// AppKit drags it, holds on a round value and then continues with the next step.
+    /// The scale's steps, holds and the drag distances at this width are covered offscreen by
+    /// `SettingsSliderTests`, which call the slider's action directly. Only real mouse tracking
+    /// proves that the knob, while AppKit drags it, holds on a round value and then continues
+    /// with the next step, including in a slow drag of many small movements.
     @MainActor
     func testArchiveSizeLimitSliderHoldsRoundValuesWhileDragging() throws {
         let app = XCUIApplication()
@@ -88,21 +89,32 @@ final class SettingsUITests: XCTestCase {
             slider.coordinate(withNormalizedOffset: CGVector(dx: 0, dy: 0.3))
                 .withOffset(CGVector(dx: 10 + travel / 3, dy: 0))
         }
-        func drag(by distance: CGFloat) {
-            knob().click(forDuration: 0.3, thenDragTo: knob().withOffset(CGVector(dx: distance, dy: 0)))
+        func drag(by distance: CGFloat, from offset: CGFloat = 0) {
+            let start = knob().withOffset(CGVector(dx: offset, dy: 0))
+            start.click(forDuration: 0.3, thenDragTo: start.withOffset(CGVector(dx: distance, dy: 0)))
         }
 
-        // One step is about 2 pt at this width: without the hold, 2 pt would read 1.03 GB.
+        // Each doubling is about 66 pt long at this width, in 32 steps on a logarithmic track, so
+        // the first step after 1 GB is about 2.9 pt: without the hold, 2 pt would read 1.03 GB.
         drag(by: 2)
         XCTAssertEqual(slider.value as? String, "1 GB", "The knob holds on the round value")
-        // Past the hold (about 4 pt), the very next steps follow: 1.03 GB, then 1.06 GB.
-        drag(by: 8)
-        XCTAssertEqual(slider.value as? String, "1.06 GB", "Steps continue right after the hold")
+        // Past the hold (about 4 pt), the very next steps follow: 1.03 GB from about 5.4 pt,
+        // then 1.06 GB from about 8.3 pt to 11.2 pt (distances: `SettingsSliderTests`). A slow
+        // drag, as a person makes, crosses the hold in many small movements on its way.
+        // (`press(forDuration:thenDragTo:withVelocity:...)` synthesizes no events on this slider.)
+        knob().click(forDuration: 0.3, thenDragTo: knob().withOffset(CGVector(dx: 10, dy: 0)),
+                     withVelocity: XCUIGestureVelocity(20), thenHoldForDuration: 0.1)
+        XCTAssertEqual(slider.value as? String, "1.06 GB", "A slow drag leaves the hold and continues step by step")
         XCTAssertTrue(settingsWindow.staticTexts["1.06 GB"].exists, "The row shows the dragged value")
 
         let capture = XCTAttachment(screenshot: settingsWindow.screenshot())
         capture.name = "Root archive size limit after drag"
         capture.lifetime = .keepAlways
         add(capture)
+
+        // One quick movement back from where the knob now is crosses the hold again and stops on it.
+        drag(by: -10, from: 10)
+        XCTAssertEqual(slider.value as? String, "1 GB", "Dragging back stops on the round value")
+        XCTAssertTrue(settingsWindow.staticTexts["1 GB"].exists, "The row shows the dragged value")
     }
 }

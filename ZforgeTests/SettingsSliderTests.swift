@@ -182,6 +182,38 @@ struct SettingsSliderTests {
         #expect(reported == [384 * Self.megabyte, 392 * Self.megabyte], "Unchanged values are not reported again")
     }
 
+    /// The distances `SettingsUITests` drags at the real Settings width (510 pt). Measured on
+    /// macOS 27 (2026-11-01), AppKit proposes the press position plus the pointer's travel over
+    /// the knob's travel, also inside a hold, so the slider's action is driven the same way here.
+    /// Each doubling is about 66 pt long in 32 logarithmic steps: the first step after 1 GB is
+    /// about 2.9 pt, wider than the 2 pt average, so 8 pt still reads 1.03 GB (D-62).
+    @Test("At the Settings width, drags from 1 GB hold, then continue step by step")
+    func dragDistancesAtSettingsWidth() throws {
+        let view = makeSizeSlider(value: Self.gigabyte)
+        view.frame.size.width = 510
+        view.layoutSubtreeIfNeeded()
+        let travel = view.trackX(at: 1) - view.trackX(at: 0)
+        let start = view.slider.doubleValue
+        func value(afterDragging distance: CGFloat) -> Int64 {
+            moveKnob(view, to: start + Double(distance / travel))
+            defer { view.value = Self.gigabyte }
+            return view.value
+        }
+        #expect(value(afterDragging: 2) == Self.gigabyte, "Inside the hold")
+        #expect(value(afterDragging: 3.5) == Self.gigabyte, "Inside the hold")
+        #expect(value(afterDragging: 6.5) == 1_031_250_000)
+        #expect(value(afterDragging: 8) == 1_031_250_000, "The 8 pt the UI test first assumed reads 1.03 GB")
+        #expect(value(afterDragging: 10) == 1_062_500_000)
+        #expect(value(afterDragging: -2) == Self.gigabyte, "Inside the hold")
+        // Every half point of a slow 12 pt drag lands on the hold or the step that follows the previous one.
+        var steps: [Int64] = []
+        for half in 0...24 {
+            let current = value(afterDragging: CGFloat(half) / 2)
+            if steps.last != current { steps.append(current) }
+        }
+        #expect(steps == [Self.gigabyte, 1_031_250_000, 1_062_500_000, 1_093_750_000])
+    }
+
     @Test("Arrow keys move one step, Option moves to the next round value")
     func keyboardSteps() throws {
         var reported: [Int64] = []

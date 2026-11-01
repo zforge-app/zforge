@@ -1135,6 +1135,11 @@ final class FileBrowserState {
             searchScope = BrowserFileSearch.supportsCurrentFolder(location) ? .currentFolder : .thisMac
         }
         isSearchPresented = true
+        focusSearchField()
+    }
+
+    /// Moves the keyboard focus into the expanded toolbar field, for example after Clear Search.
+    func focusSearchField() {
         searchFieldFocusRequest &+= 1
     }
 

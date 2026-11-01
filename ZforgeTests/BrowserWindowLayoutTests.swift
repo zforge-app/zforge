@@ -53,6 +53,60 @@ struct BrowserWindowLayoutTests {
         try await host.waitUntil { !identifiers().contains("toolbar-search") }
     }
 
+    /// Toolbar items are hosted outside the window's SwiftUI focus system, so this checks the
+    /// AppKit first responder of the real window rather than any SwiftUI focus value.
+    @Test("Find gives the toolbar field keyboard focus; typing searches, Return submits and Escape collapses it")
+    func findFocusesToolbarSearchField() async throws {
+        let host = try await BrowserWindowHost(width: 1_100)
+        defer { host.close() }
+        try await host.waitUntil { !host.state.items.isEmpty }
+        func contentHasFocus() -> Bool {
+            guard let responder = host.window.firstResponder as? NSView, let content = host.window.contentView else { return false }
+            return responder.isDescendant(of: content) && !(responder is NSText)
+        }
+        try await host.waitUntil(contentHasFocus)
+        let contentResponder = host.window.firstResponder
+        func searchFieldEditor() -> NSTextView? {
+            guard let editor = host.window.firstResponder as? NSTextView,
+                  (editor.delegate as? NSTextField)?.accessibilityIdentifier() == "toolbar-search-field" else { return nil }
+            return editor
+        }
+
+        host.state.beginSearch()
+        try await host.waitUntil { searchFieldEditor() != nil }
+        #expect(host.state.searchFieldHasFocus, "The field reports its focus so content focus and menu keys leave it alone")
+
+        let editor = try #require(searchFieldEditor())
+        editor.insertText("Another", replacementRange: editor.selectedRange())
+        #expect(host.state.searchText == "Another")
+        editor.doCommand(by: #selector(NSResponder.insertNewline(_:)))
+        try await host.waitUntil { host.state.location == .recents && host.state.items.map(\.name) == ["Another.txt"] }
+        #expect(searchFieldEditor() != nil, "Return keeps the focus in the field")
+
+        // ⌘F while the field already has the focus keeps it there.
+        host.state.beginSearch()
+        try await host.waitUntil { searchFieldEditor() != nil }
+
+        editor.doCommand(by: #selector(NSResponder.cancelOperation(_:)))
+        try await host.waitUntil { !host.state.isSearchPresented && host.state.items.map(\.name) == ["Welcome.txt", "Sample.zip", "Another.txt"] }
+        #expect(host.state.searchText.isEmpty)
+        try await host.waitUntil { searchFieldEditor() == nil && !host.state.searchFieldHasFocus }
+        // The keyboard focus returns to the browser content, so the arrow keys move the selection again.
+        try await host.waitUntil { contentHasFocus() && host.window.firstResponder === contentResponder }
+    }
+
+    @Test("Moving the focus away from an empty toolbar field collapses it")
+    func emptySearchFieldCollapsesOnFocusLoss() async throws {
+        let host = try await BrowserWindowHost(width: 1_100)
+        defer { host.close() }
+        host.state.beginSearch()
+        try await host.waitUntil {
+            ((host.window.firstResponder as? NSTextView)?.delegate as? NSTextField)?.accessibilityIdentifier() == "toolbar-search-field"
+        }
+        host.window.makeFirstResponder(nil)
+        try await host.waitUntil { !host.state.isSearchPresented && !host.state.searchFieldHasFocus }
+    }
+
     @Test("The sidebar cannot consume the content's last 360 points")
     func sidebarLeavesMinimumContentWidth() async throws {
         let host = try await BrowserWindowHost(width: 900)
@@ -173,7 +227,9 @@ private final class BrowserFixture {
             recentItems: UIFixtureRecentItemsService(),
             taggedItems: UIFixtureTaggedItemsService(),
             grants: UIFixtureAccessGrantStore(),
-            archives: UIFixtureArchiveEngine()
+            archives: UIFixtureArchiveEngine(),
+            // As with `--ui-fixtures`: the toolbar search lists fixture names, never Spotlight results.
+            searcher: UIFixtureSearchService()
         )
     }
 

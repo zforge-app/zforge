@@ -525,6 +525,8 @@ Pending: the mapped UI tests (they take over the screen) and a look at the real 
 
 Pending: `SettingsUITests.testArchiveSizeLimitSliderHoldsRoundValuesWhileDragging` and the other mapped UI tests (blocked: a Debug Zforge held by Xcode's debugger could not be terminated), and a look at the sliders in the running app (drag feel, haptics on a Force Touch trackpad, both themes, VoiceOver).
 
+2026-11-01 (D-62): the real-drag UI test failed on `7ea66ec` because its 8 pt drag expected 1.06 GB where the specified scale gives 1.03 GB at the real 510 pt width; the app was correct. Test corrected to a slow 10 pt drag plus a drag back, expectations kept; offscreen `SettingsSliderTests.dragDistancesAtSettingsWidth`. The UI test now passes (REGRESSION-COVERAGE). Still pending: the look and feel in the running app (haptics on a Force Touch trackpad, both themes, VoiceOver).
+
 ### ZF-48 — Sidebar icon tint like Finder (2026-10-29)
 
 **Implemented; offscreen tests added; Unit plan, snapshot review and in-app check pending (see REGRESSION-COVERAGE).** The user compared the sidebar with Finder: Locations icons must be light gray rather than accent, and every icon must turn gray in an inactive window, as the Remote icon already did.
@@ -588,5 +590,14 @@ Pending: in-app check of the row and the computer level in the four modes (light
 - [x] Scopes This Mac (Spotlight `NSMetadataQuery` in authorized roots) and Current Folder (recursive folder walk or open-archive listing), streamed in batches, cancelled by new queries, reloads and window close (`BrowserSearchService.swift`).
 - [x] Virtual results location `Searching “query”` in the four modes with history, path bar of the selected result, opening results at their real path (`FileBrowserState`).
 - [x] Nine String Catalog keys translated into all 21 languages; `Find ⌘F` in the shortcut help.
+- [x] ⌘F focus (D-61, 2026-11-01): the field never took keyboard focus because SwiftUI focus does not reach toolbar items; `ToolbarSearchTextField` takes the first responder itself, Escape returns focus to the content. Offscreen: `BrowserWindowLayoutTests.findFocusesToolbarSearchField`, `emptySearchFieldCollapsesOnFocusLoss`.
 - [ ] Real-window visual review (four modes, light/dark, long language, narrow widths, VoiceOver, Reduce Motion) and the mapped UI tests (not run by the agent).
 - [ ] OR-24 gaps: This Mac beyond authorized folders, content matching and tokens, live result updates, restoration.
+
+### ZF-54 — UI test isolation from saved preferences (2026-11-01, D-63)
+
+**Implemented; offscreen tests added; results in REGRESSION-COVERAGE.** `testCompactToolbarMenusOpenFromTheirToolbarButtons` failed after `testBlankAreaUsesMoreMenuInEveryView` because fixture launches without a named suite shared the user's `UserDefaults.standard`.
+- [x] `FileBrowserPreferences.applicationDefaults(arguments:environment:)`: private `ZforgeUIFixturePreferences` suite cleared at each fixture launch; named suites and ordinary launches unchanged (`UIFixturePreferencesIsolationTests`).
+- [ ] Audit other `.standard` state written by fixture launches (window frames, toolbar configuration, `AppLocalization.currentLocale` reading the language from `.standard`).
+- [ ] The user's own Default View may have been set to Gallery by earlier UI runs (D-63); the user decides whether to reset it.
+
