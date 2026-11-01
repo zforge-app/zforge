@@ -85,6 +85,17 @@ struct ComputerLocationTests {
 
     // MARK: Visibility preference
 
+    @Test("The model code is read as UTF-8 up to its null terminator")
+    func modelCodeDecoding() {
+        func buffer(_ bytes: [UInt8]) -> [CChar] { bytes.map { CChar(bitPattern: $0) } }
+        #expect(ComputerIdentity.string(fromNullTerminated: buffer(Array("Mac16,13".utf8) + [0])) == "Mac16,13")
+        // sysctl reports the size with the terminator; anything after it is ignored.
+        #expect(ComputerIdentity.string(fromNullTerminated: buffer(Array("Mac15,3".utf8) + [0, 0x41])) == "Mac15,3")
+        #expect(ComputerIdentity.string(fromNullTerminated: buffer(Array("Mäc".utf8) + [0])) == "Mäc")
+        #expect(ComputerIdentity.string(fromNullTerminated: buffer([0])).isEmpty)
+        #expect(ComputerIdentity.string(fromNullTerminated: []).isEmpty)
+    }
+
     @Test("The computer item is shown by default and its Settings choice persists")
     func visibilityPreferencePersists() throws {
         let suite = "ComputerVisibility-\(UUID().uuidString)"

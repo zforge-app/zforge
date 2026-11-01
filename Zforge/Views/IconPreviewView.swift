@@ -36,7 +36,7 @@ struct IconPreviewView: View {
         .accessibilityHidden(true)
         .onChange(of: isShowingPreview, initial: true) { _, value in
             isLoaded = value
-            loadObserver?(item.id, value)
+            loadObserver?.report(item.id, value)
         }
         .task(id: request) {
             await model.load(item: item, pixelSize: pixelSize, enabled: enabled) { item, pixels in
@@ -52,8 +52,21 @@ struct IconPreviewView: View {
     }
 }
 
+/// Observes whether each Icons cell shows its content thumbnail rather than the fallback
+/// icon, so hosted views can await loading without the accessibility tree. Observers compare
+/// by identity: a closure cannot be compared, so the environment would otherwise treat every
+/// update as a change and invalidate every cell that reads it.
+struct IconPreviewLoadObserver: Equatable {
+    private let id = UUID()
+    let report: @MainActor (BrowserItemID, Bool) -> Void
+
+    init(_ report: @escaping @MainActor (BrowserItemID, Bool) -> Void) {
+        self.report = report
+    }
+
+    static func == (lhs: Self, rhs: Self) -> Bool { lhs.id == rhs.id }
+}
+
 extension EnvironmentValues {
-    /// Observes whether each Icons cell shows its content thumbnail rather than the fallback
-    /// icon, so hosted views can await loading without the accessibility tree.
-    @Entry var iconPreviewLoadObserver: (@MainActor (BrowserItemID, Bool) -> Void)?
+    @Entry var iconPreviewLoadObserver: IconPreviewLoadObserver?
 }
