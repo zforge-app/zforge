@@ -90,7 +90,7 @@ struct FileIconViewTests {
 
     @Test("Local folders share archive material and contents geometry without the compression seal")
     @MainActor
-    func localFoldersHaveConsistentUnstampedStates() throws {
+    func localFoldersHaveConsistentUnstampedStates() async throws {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent("LocalFolderStates-\(UUID().uuidString)")
         defer { try? FileManager.default.removeItem(at: root) }
         func bitmap(_ image: NSImage) throws -> NSBitmapImageRep {
@@ -103,9 +103,12 @@ struct FileIconViewTests {
             if hasContents { try Data().write(to: folder.appendingPathComponent("file.txt")) }
             for isOpen in [false, true] {
                 let local = try bitmap(isOpen ? FileIconCache.shared.openFolderIcon(for: folder) : FileIconCache.shared.icon(for: folder))
+                await Task.yield()
                 let archive = try bitmap(FileIconCache.shared.archiveDirectoryIcon(size: 190, containsFiles: hasContents, isExpanded: isOpen))
                 var changedSealPixels = 0
                 for y in stride(from: 0, to: local.pixelsHigh, by: 6) {
+                    // The comparison is long; other main-actor tests run between rows (D-71).
+                    await Task.yield()
                     for x in stride(from: 0, to: local.pixelsWide, by: 6) {
                         let a = try #require(local.colorAt(x: x, y: y)?.usingColorSpace(.deviceRGB))
                         let b = try #require(archive.colorAt(x: x, y: y)?.usingColorSpace(.deviceRGB))
@@ -178,7 +181,7 @@ struct FileIconViewTests {
 
     @Test("Folder expansion uses the open icon only in List and archive states have separate cache entries")
     @MainActor
-    func archiveExpansionIconState() throws {
+    func archiveExpansionIconState() async throws {
         let defaultsName = "ZforgeTestSuite.ArchiveExpansionIcons-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: defaultsName))
         defer { defaults.removeTestSuite(named: defaultsName) }
@@ -221,6 +224,8 @@ struct FileIconViewTests {
         #expect(state.usesOpenFolderIcon(for: localFolder))
         for size: CGFloat in [16, 24, 32, 48, 64, 190] {
             for hasFiles in [false, true] {
+                // Each pair renders two icons; other main-actor tests run in between (D-71).
+                await Task.yield()
                 let open = FileIconCache.shared.archiveDirectoryIcon(size: size, containsFiles: hasFiles, isExpanded: true)
                 let closed = FileIconCache.shared.archiveDirectoryIcon(size: size, containsFiles: hasFiles)
                 #expect(open !== closed)
@@ -232,12 +237,13 @@ struct FileIconViewTests {
 
     @Test("Open archive folders preserve the closed folder material through the face tilt")
     @MainActor
-    func openArchiveFolderPreservesMaterial() throws {
+    func openArchiveFolderPreservesMaterial() async throws {
         func bitmap(_ image: NSImage) throws -> NSBitmapImageRep {
             var bounds = NSRect(origin: .zero, size: image.size)
             return NSBitmapImageRep(cgImage: try #require(image.cgImage(forProposedRect: &bounds, context: nil, hints: nil)))
         }
         let closed = try bitmap(FileIconCache.shared.archiveDirectoryIcon(size: 190))
+        await Task.yield()
         let open = try bitmap(FileIconCache.shared.archiveDirectoryIcon(size: 190, isExpanded: true))
         func color(_ bitmap: NSBitmapImageRep, x: Double, y: Double) throws -> NSColor {
             try #require(bitmap.colorAt(x: Int(x * Double(bitmap.pixelsWide)),

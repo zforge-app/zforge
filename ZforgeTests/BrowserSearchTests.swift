@@ -516,14 +516,9 @@ struct BrowserSearchWorkloadTests {
         let fixture = try SearchFixture()
         defer { fixture.cleanUp() }
         let tree = fixture.url("Workload")
-        for folder in 0..<200 {
-            let directory = tree.appendingPathComponent("Folder \(folder)", isDirectory: true)
-            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-            for file in 0..<100 {
-                let name = file == 0 ? "Needle \(folder).txt" : "Item \(file).txt"
-                FileManager.default.createFile(atPath: directory.appendingPathComponent(name).path, contents: nil)
-            }
-        }
+        // The 20,000 files are created off the main actor (D-71): the setup is not the
+        // behaviour under test and would hold the shared main actor for many seconds.
+        try await Task.detached { try Self.createWorkload(at: tree) }.value
         let browser = fixture.browser(searcher: nil, initialURL: tree)
         defer { browser.close() }
         await browser.start()
@@ -562,6 +557,18 @@ struct BrowserSearchWorkloadTests {
 
         #expect(browser.items.count == 200)
         print("BrowserSearchWorkload first=\(firstResult) total=\(total) longestMainStall=\(longestStall) idleStall=\(idleStall) results=\(browser.items.count)")
+    }
+
+    /// 200 folders of 100 empty files; one name per folder matches the search.
+    nonisolated private static func createWorkload(at tree: URL) throws {
+        for folder in 0..<200 {
+            let directory = tree.appendingPathComponent("Folder \(folder)", isDirectory: true)
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+            for file in 0..<100 {
+                let name = file == 0 ? "Needle \(folder).txt" : "Item \(file).txt"
+                FileManager.default.createFile(atPath: directory.appendingPathComponent(name).path, contents: nil)
+            }
+        }
     }
 }
 

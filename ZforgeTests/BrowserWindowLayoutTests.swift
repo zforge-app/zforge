@@ -5,7 +5,9 @@ import Testing
 
 /// Lays out the real browser window offscreen (never ordered front), so the
 /// responsive toolbar and the sidebar limit are checked without XCUITest.
-@Suite("Browser window layout")
+/// Serialized (D-71): each case lays out a whole window synchronously on the main actor;
+/// dozens of them in parallel held the shared main actor for long stretches.
+@Suite("Browser window layout", .serialized)
 @MainActor
 struct BrowserWindowLayoutTests {
     @Test("Each toolbar stage presents its controls in the real window", arguments: [
