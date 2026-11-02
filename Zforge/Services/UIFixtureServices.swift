@@ -208,18 +208,9 @@ actor UIFixtureArchiveEngine: ArchiveServing {
         self.itemsGate = itemsGate
     }
 
-    func openArchive(
-        at url: URL,
-        password: String?,
-        policy: ArchiveBrowsingPolicy
-    ) async throws -> ArchiveOpenResult {
-        return ArchiveOpenResult(
-            address: ArchiveAddress(
-                sessionID: sessionID,
-                archiveID: UUID(),
-                internalPath: "",
-                maximumNestedArchiveDepth: policy.maximumNestedArchiveDepth
-            ),
+    func openArchive(at url: URL, password: String?) async throws -> ArchiveOpenResult {
+        ArchiveOpenResult(
+            address: ArchiveAddress(sessionID: sessionID, archiveID: UUID(), internalPath: ""),
             displayName: url.lastPathComponent
         )
     }
@@ -229,10 +220,7 @@ actor UIFixtureArchiveEngine: ArchiveServing {
         let childAddress = ArchiveAddress(
             sessionID: address.sessionID,
             archiveID: address.archiveID,
-            internalPath: address.internalPath.isEmpty ? "Inside.txt" : "\(address.internalPath)/Inside.txt",
-            allowsNestedArchives: address.allowsNestedArchives,
-            nestedArchiveDepth: address.nestedArchiveDepth,
-            maximumNestedArchiveDepth: address.maximumNestedArchiveDepth
+            internalPath: address.internalPath.isEmpty ? "Inside.txt" : "\(address.internalPath)/Inside.txt"
         )
         return [BrowserItem(
             id: BrowserItemID(rawValue: "fixture-archive:Inside.txt"), name: "Inside.txt",
@@ -242,24 +230,6 @@ actor UIFixtureArchiveEngine: ArchiveServing {
             accessDate: nil, tags: [], contentTypeIdentifier: "public.plain-text",
             encrypted: false, checksum: nil, compressionMethod: "Deflate"
         )]
-    }
-
-    func openNestedArchive(item: BrowserItem, password: String?) async throws -> ArchiveOpenResult {
-        guard case let .archive(address) = item.location,
-              address.canOpenNestedArchive else {
-            throw ArchiveEngineError.nestedArchiveNotAllowed
-        }
-        return ArchiveOpenResult(
-            address: ArchiveAddress(
-                sessionID: sessionID,
-                archiveID: UUID(),
-                internalPath: "",
-                allowsNestedArchives: address.allowsNestedArchives,
-                nestedArchiveDepth: address.nestedArchiveDepth + 1,
-                maximumNestedArchiveDepth: address.maximumNestedArchiveDepth
-            ),
-            displayName: item.name
-        )
     }
 
     func materialize(item: BrowserItem, purpose: ArchiveMaterializationPurpose, automaticLimit: Int64?) async throws -> URL {

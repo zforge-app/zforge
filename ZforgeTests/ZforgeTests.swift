@@ -174,13 +174,10 @@ struct ZforgeTests {
         #expect(rootArchive.canExpandInlineInList)
         #expect(rootArchive.usesStaticIconPreview)
 
-        let address = ArchiveAddress(
-            sessionID: UUID(),
-            archiveID: UUID(),
-            internalPath: "inner.zip",
-            allowsNestedArchives: true
-        )
-        let nestedArchive = BrowserItem(
+        // D-73: an archive inside an archive is an ordinary file. It is neither browsed in
+        // place nor expanded; opening it shows it in its own window.
+        let address = ArchiveAddress(sessionID: UUID(), archiveID: UUID(), internalPath: "inner.zip")
+        let innerArchive = BrowserItem(
             id: BrowserItemID(rawValue: "inner.zip"), name: "inner.zip", location: .archive(address),
             isContainer: false, isDirectory: false, isPackage: false,
             isSymbolicLink: false, isHidden: false, isArchive: true, size: 100,
@@ -188,28 +185,12 @@ struct ZforgeTests {
             tags: [], contentTypeIdentifier: nil, encrypted: false, checksum: nil,
             compressionMethod: "Deflate"
         )
-        #expect(nestedArchive.canExpandInlineInList)
-        #expect(nestedArchive.canNavigateAsArchive)
+        #expect(!innerArchive.canExpandInlineInList)
+        #expect(!innerArchive.canNavigateAsArchive)
+        #expect(!innerArchive.isNavigableContainer)
+        #expect(innerArchive.opensAsInnerArchive)
 
-        let blockedAddress = ArchiveAddress(
-            sessionID: address.sessionID,
-            archiveID: address.archiveID,
-            internalPath: "blocked.zip",
-            allowsNestedArchives: false
-        )
-        let blockedArchive = BrowserItem(
-            id: BrowserItemID(rawValue: "blocked.zip"), name: "blocked.zip", location: .archive(blockedAddress),
-            isContainer: false, isDirectory: false, isPackage: false,
-            isSymbolicLink: false, isHidden: false, isArchive: true, size: 100,
-            packedSize: 50, creationDate: nil, modificationDate: nil, accessDate: nil,
-            tags: [], contentTypeIdentifier: nil, encrypted: false, checksum: nil,
-            compressionMethod: "Deflate"
-        )
-        #expect(!blockedArchive.canExpandInlineInList)
-        #expect(!blockedArchive.canNavigateAsArchive)
-        #expect(!blockedArchive.isNavigableContainer)
-
-        let nestedRAR = BrowserItem(
+        let innerRAR = BrowserItem(
             id: BrowserItemID(rawValue: "inner.rar"), name: "inner.rar", location: .archive(address),
             isContainer: false, isDirectory: false, isPackage: false,
             isSymbolicLink: false, isHidden: false, isArchive: true, size: 100,
@@ -217,92 +198,42 @@ struct ZforgeTests {
             tags: [], contentTypeIdentifier: nil, encrypted: false, checksum: nil,
             compressionMethod: nil
         )
-        #expect(nestedRAR.canNavigateAsArchive)
-        #expect(!nestedRAR.canExpandInlineInList)
+        #expect(!innerRAR.canNavigateAsArchive)
+        #expect(!innerRAR.canExpandInlineInList)
+        #expect(innerRAR.opensAsInnerArchive)
+        #expect(!rootArchive.opensAsInnerArchive)
     }
 
-    @Test("Nested archive policy uses configurable size and depth limits")
-    func nestedArchivePolicy() {
-        let limit: Int64 = 3 * 1_000_000_000
-        let policy = ArchiveBrowsingPolicy(maximumNestedArchiveDepth: 7, rootSizeLimit: limit)
-        #expect(policy.maximumNestedArchiveDepth == 7)
-        #expect(policy.rootSizeLimit == limit)
-        #expect(policy.allowsNestedArchives(forOutermostSize: limit - 1))
-        #expect(!policy.allowsNestedArchives(forOutermostSize: limit))
-        #expect(!policy.allowsNestedArchives(forOutermostSize: limit + 1))
-        #expect(!policy.allowsNestedArchives(forOutermostSize: nil))
-
-        let clamped = ArchiveBrowsingPolicy(
-            maximumNestedArchiveDepth: 50,
-            rootSizeLimit: 20 * 1_000_000_000
-        )
-        #expect(clamped.maximumNestedArchiveDepth == 10)
-        #expect(clamped.rootSizeLimit == 16 * 1_000_000_000)
-        let raised = ArchiveBrowsingPolicy(maximumNestedArchiveDepth: 0, rootSizeLimit: 100_000_000)
-        #expect(raised.maximumNestedArchiveDepth == 1)
-        #expect(raised.rootSizeLimit == 256_000_000)
-
-        let address = ArchiveAddress(
-            sessionID: UUID(), archiveID: UUID(), internalPath: "Folder",
-            allowsNestedArchives: true,
-            nestedArchiveDepth: 7,
-            maximumNestedArchiveDepth: 7
-        )
-        let childAddress = address.appending("Inner.zip")
-        #expect(childAddress.allowsNestedArchives)
-        #expect(childAddress.nestedArchiveDepth == 7)
-        #expect(childAddress.maximumNestedArchiveDepth == 7)
-        #expect(!childAddress.canOpenNestedArchive)
+    // D-73 removed the nesting policy (depth and root-size limits); the address keeps its path rule.
+    @Test("Archive addresses append internal paths")
+    func archiveAddressAppending() {
+        let root = ArchiveAddress(sessionID: UUID(), archiveID: UUID(), internalPath: "")
+        let folder = root.appending("Folder")
+        #expect(folder.internalPath == "Folder")
+        let child = folder.appending("Inner.zip")
+        #expect(child.internalPath == "Folder/Inner.zip")
+        #expect(child.sessionID == root.sessionID && child.archiveID == root.archiveID)
     }
 
-    @Test("Archive preferences persist defaults and clamp their ranges")
+    // D-73 removed the nesting depth and root size limits with nested-archive navigation;
+    // their stored values are deleted and the remaining archive preference persists.
+    @Test("Archive preferences persist and the removed nesting limits are deleted from storage")
     @MainActor
     func archivePreferences() throws {
         let suiteName = "ZforgeTestSuite.ZforgeTests.archivePreferences.\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suiteName))
         defer { defaults.removeTestSuite(named: suiteName) }
-
-        let preferences = FileBrowserPreferences(defaults: defaults)
-        #expect(preferences.archiveNestingLimit == 5)
-        #expect(preferences.archiveRootSizeLimit == 1_000_000_000)
-        #expect(preferences.archiveBrowsingPolicy == .standard)
-        #expect(preferences.defaultCompressionFormat == .zip)
-
-        preferences.archiveNestingLimit = 30
-        preferences.archiveRootSizeLimit = 30_000_000_000
-        preferences.defaultCompressionFormat = .gzip
-        #expect(preferences.archiveNestingLimit == 10)
-        #expect(preferences.archiveRootSizeLimit == 16_000_000_000)
-
-        let reloaded = FileBrowserPreferences(defaults: defaults)
-        #expect(reloaded.archiveNestingLimit == 10)
-        #expect(reloaded.archiveRootSizeLimit == 16_000_000_000)
-        #expect(reloaded.defaultCompressionFormat == .gzip)
-
-        // Any step of the slider persists exactly, not only round values.
-        reloaded.archiveRootSizeLimit = 392_000_000
-        reloaded.archiveNestingLimit = 0
-        #expect(FileBrowserPreferences(defaults: defaults).archiveRootSizeLimit == 392_000_000)
-        #expect(FileBrowserPreferences(defaults: defaults).archiveNestingLimit == 1)
-        reloaded.archiveRootSizeLimit = 1
-        #expect(reloaded.archiveRootSizeLimit == 256_000_000)
-    }
-
-    @Test("A root size limit saved in whole GB before the slider is read as decimal bytes")
-    @MainActor
-    func legacyArchiveRootSizeLimit() throws {
-        let suiteName = "ZforgeTestSuite.ZforgeTests.legacyArchiveRootSizeLimit.\(UUID().uuidString)"
-        let defaults = try #require(UserDefaults(suiteName: suiteName))
-        defer { defaults.removeTestSuite(named: suiteName) }
-
+        defaults.set(7, forKey: "archive.nestingLimit")
+        defaults.set(3_000_000_000, forKey: "archive.rootSizeLimitBytes")
         defaults.set(3, forKey: "archive.rootSizeLimitGB")
-        let preferences = FileBrowserPreferences(defaults: defaults)
-        #expect(preferences.archiveRootSizeLimit == 3_000_000_000)
-        #expect(preferences.archiveBrowsingPolicy.rootSizeLimit == 3_000_000_000)
 
-        // Once the slider saves a byte count, that value wins over the old setting.
-        preferences.archiveRootSizeLimit = 768_000_000
-        #expect(FileBrowserPreferences(defaults: defaults).archiveRootSizeLimit == 768_000_000)
+        let preferences = FileBrowserPreferences(defaults: defaults)
+        #expect(preferences.defaultCompressionFormat == .zip)
+        for key in ["archive.nestingLimit", "archive.rootSizeLimitBytes", "archive.rootSizeLimitGB"] {
+            #expect(defaults.object(forKey: key) == nil, "\(key) remained stored")
+        }
+        preferences.defaultCompressionFormat = .gzip
+        #expect(FileBrowserPreferences(defaults: defaults).defaultCompressionFormat == .gzip)
     }
 
     @Test("Compression profiles persist settings but never persist passwords")
@@ -686,7 +617,7 @@ struct ZforgeTests {
         )
     }
 
-    @Test("Extracting from nested archives preserves every archive boundary")
+    @Test("Extracting from archives opened inside archives preserves every archive boundary")
     @MainActor
     func columnNestedArchiveExtractionPreservesHierarchy() async throws {
         let fileManager = FileManager.default
@@ -739,32 +670,50 @@ struct ZforgeTests {
         let preferences = FileBrowserPreferences(defaults: defaults)
         preferences.viewMode = .columns
         preferences.language = .english
-        let state = FileBrowserState(
-            preferences: preferences,
-            fileSystem: FileSystemService(),
-            fileOperations: FileOperationService(),
-            grants: UIFixtureAccessGrantStore(),
-            archives: engine
-        )
+        // D-73: each inner archive opens in its own window sharing the engine; the
+        // extraction still lands beside the archive on disk, with every archive boundary.
+        let requests = WindowRequestLog()
+        func browser(_ handoff: ArchiveSessionHandoff? = nil) -> FileBrowserState {
+            let state = FileBrowserState(
+                preferences: preferences,
+                fileSystem: FileSystemService(),
+                fileOperations: FileOperationService(),
+                grants: UIFixtureAccessGrantStore(),
+                archives: ArchiveSessionClient(engine: engine),
+                initialArchiveSession: handoff
+            )
+            state.configureOpenArchiveWindowAction { requests.append($0) }
+            return state
+        }
+        let state = browser()
         defer { state.close() }
 
         await state.navigateToSidebar(browsingRoot, name: browsingRoot.lastPathComponent)
         let outerArchive = try #require(state.items.first(where: { $0.name == "Archive 2.zip" }))
         await state.activateColumnItem(outerArchive, in: state.location).value
         let middleArchive = try #require(state.items.first(where: { $0.name == "Archive.zip" }))
-        await state.activateColumnItem(middleArchive, in: state.location).value
-        let workArchive = try #require(state.items.first(where: { $0.name == "work.zip" }))
-        await state.activateColumnItem(workArchive, in: state.location).value
+        #expect(!middleArchive.isNavigableContainer)
+        await state.open(middleArchive)
+        let middle = browser(try #require(requests.last?.archiveSession))
+        defer { middle.close() }
+        await middle.start()
+        #expect(middle.title == "Archive 2.zip › Archive.zip")
+        let workArchive = try #require(middle.items.first(where: { $0.name == "work.zip" }))
+        await middle.open(workArchive)
+        let work = browser(try #require(requests.last?.archiveSession))
+        defer { work.close() }
+        await work.start()
+        #expect(work.pathComponents.map(\.name) == ["Archive 2.zip › Archive.zip › work.zip"])
 
         for folderName in ["work", "qintess", "sgo", "gestao-orcamentaria-nginx"] {
-            let folder = try #require(state.items.first(where: { $0.name == folderName }))
-            await state.activateColumnItem(folder, in: state.location).value
+            let folder = try #require(work.items.first(where: { $0.name == folderName }))
+            await work.activateColumnItem(folder, in: work.location).value
         }
-        let readme = try #require(state.items.first(where: { $0.name == "README.md" }))
-        state.select(readme)
+        let readme = try #require(work.items.first(where: { $0.name == "README.md" }))
+        work.select(readme)
 
-        #expect(state.archiveToolbarAction == .extractSelected)
-        #expect(await state.performArchiveToolbarAction() != nil)
+        #expect(work.archiveToolbarAction == .extractSelected)
+        #expect(await work.performArchiveToolbarAction() != nil)
         let expectedURL = browsingRoot
             .appendingPathComponent("Archive 2", isDirectory: true)
             .appendingPathComponent("Archive", isDirectory: true)
@@ -775,11 +724,8 @@ struct ZforgeTests {
             .appendingPathComponent("gestao-orcamentaria-nginx", isDirectory: true)
             .appendingPathComponent("README.md")
         #expect(fileManager.fileExists(atPath: expectedURL.path))
-        #expect(
-            state.columnItems[.fileSystem(browsingRoot)]?.contains(where: {
-                $0.name == "Archive 2"
-            }) == true
-        )
+        let sessions = ZforgeTemporaryStorage.archiveSessionsRoot().path
+        #expect(!expectedURL.path.hasPrefix(sessions), "Extracted into the temporary copy")
     }
 
     @Test("Column action extracts an external archive selected in the base column")
@@ -1138,7 +1084,8 @@ struct ZforgeTests {
             throw error
         }
         #expect(state.archiveOperationInProgress)
-        #expect(state.archiveOperationDescription == "Loading…")
+        // D-73 stage 3: the opening progress names the archive being opened.
+        #expect(state.archiveOperationDescription == "Opening “First.zip”…")
         let secondActivation = state.activateColumnItem(secondArchive, in: rootLocation)
 
         await secondActivation.value
@@ -1160,7 +1107,7 @@ struct ZforgeTests {
     func archiveRaceSignalBeforeWaiter() async throws {
         let engine = ColumnArchiveRaceEngine()
         _ = try await engine.openArchive(at: URL(fileURLWithPath: "/tmp/Second.zip"),
-                                         password: nil, policy: .standard)
+                                         password: nil)
         try await engine.waitUntilStarted("Second.zip")
         #expect(await engine.pendingWaiterCount() == 0)
         await engine.shutdown()
@@ -1191,7 +1138,7 @@ struct ZforgeTests {
         let engine = ColumnArchiveRaceEngine()
         let loading = Task {
             try await engine.openArchive(at: URL(fileURLWithPath: "/tmp/First.zip"),
-                                         password: nil, policy: .standard)
+                                         password: nil)
         }
         do { try await engine.waitUntilStarted("First.zip") }
         catch {
@@ -1342,7 +1289,8 @@ struct ZforgeTests {
             Issue.record("Updated archive did not reopen")
             return
         }
-        #expect(newAddress.sessionID != oldAddress.sessionID)
+        // D-73: the shared session is updated in place, so addresses stay valid in every window.
+        #expect(newAddress.sessionID == oldAddress.sessionID)
         #expect(newAddress.internalPath.isEmpty)
         #expect(state.pathComponents.first?.location == .fileSystem(root))
         let addedItems: [BrowserItem]
@@ -1695,7 +1643,8 @@ struct ZforgeTests {
         await engine.closeSession(opened.address.sessionID)
     }
 
-    @Test("List recursively expands fast nested archives when the outer archive is small")
+    // D-73: archives inside archives no longer expand; they are ordinary files.
+    @Test("List expands fast archives inline, and an archive inside one is an ordinary file")
     @MainActor
     func listInlineArchiveExpansion() async throws {
         let fileSystem = FileSystemService()
@@ -1733,10 +1682,11 @@ struct ZforgeTests {
         )
 
         #expect(innerArchive.isArchive)
-        #expect(innerArchive.canExpandInlineInList)
+        #expect(!innerArchive.canExpandInlineInList)
+        #expect(!innerArchive.isContainer)
         await state.toggleExpansion(innerArchive)
-        #expect(state.expandedItems.contains(innerArchive.id))
-        #expect(state.expandedChildren[innerArchive.id]?.contains(where: { $0.name == "hello.txt" }) == true)
+        #expect(!state.expandedItems.contains(innerArchive.id))
+        #expect(state.expandedChildren[innerArchive.id] == nil)
     }
 
     @Test("Encrypted archive requires and accepts an in-memory password")
@@ -1784,56 +1734,29 @@ struct ZforgeTests {
         await engine.closeSession(opened.address.sessionID)
     }
 
-    @Test("Nested archives open recursively in the same session")
-    func nestedArchive() async throws {
+    // D-73: an archive inside an archive opens as its own root session over a writable
+    // copy owned by that session (replaces recursive nesting in the outer session).
+    @Test("An archive inside an archive opens in its own session, named after both archives")
+    func innerArchiveSession() async throws {
         let engine = NativeSevenZipArchiveEngine()
-        let policy = ArchiveBrowsingPolicy(maximumNestedArchiveDepth: 1, rootSizeLimit: 1_000_000_000)
-        let outer = try await engine.openArchive(
-            at: fixturesURL.appendingPathComponent("nested.7z"),
-            password: nil,
-            policy: policy
-        )
+        defer { Task { await engine.closeAllSessions() } }
+        let outer = try await engine.openArchive(at: fixturesURL.appendingPathComponent("nested.7z"), password: nil)
         let outerItems = try await engine.items(at: outer.address)
         let inner = try #require(outerItems.first(where: { $0.name == "inner.zip" && $0.isArchive }))
-        #expect(inner.canNavigateAsArchive)
-        let nested = try await engine.openNestedArchive(item: inner, password: nil)
-        #expect(nested.address.nestedArchiveDepth == 1)
-        #expect(nested.address.maximumNestedArchiveDepth == 1)
-        #expect(!nested.address.canOpenNestedArchive)
-        let hierarchy = try await engine.archiveHierarchy(for: nested.address)
-        #expect(
-            hierarchy == ["nested.7z", "inner.zip"],
-            "Unexpected archive hierarchy: \(hierarchy)"
-        )
-        let nestedItems = try await engine.items(at: nested.address)
-        #expect(nestedItems.contains(where: { $0.name == "hello.txt" }))
-        await engine.closeSession(outer.address.sessionID)
-    }
-
-    @Test("Archive engine rejects a nested archive when its root session disallows recursion")
-    func blockedNestedArchive() async {
-        let engine = NativeSevenZipArchiveEngine()
-        let address = ArchiveAddress(
-            sessionID: UUID(), archiveID: UUID(), internalPath: "inner.zip",
-            allowsNestedArchives: false
-        )
-        let inner = BrowserItem(
-            id: BrowserItemID(rawValue: "blocked-inner"), name: "inner.zip", location: .archive(address),
-            isContainer: false, isDirectory: false, isPackage: false,
-            isSymbolicLink: false, isHidden: false, isArchive: true, size: 100,
-            packedSize: 50, creationDate: nil, modificationDate: nil, accessDate: nil,
-            tags: [], contentTypeIdentifier: nil, encrypted: false, checksum: nil,
-            compressionMethod: "Deflate"
-        )
-
-        do {
-            _ = try await engine.openNestedArchive(item: inner, password: nil)
-            Issue.record("A nested archive was opened despite the root size policy")
-        } catch let error as ArchiveEngineError {
-            #expect(error == .nestedArchiveNotAllowed)
-        } catch {
-            Issue.record("Unexpected error: \(error)")
-        }
+        #expect(!inner.canNavigateAsArchive)
+        let opened = try await engine.openInnerArchive(item: inner, password: nil)
+        #expect(opened.address.sessionID != outer.address.sessionID)
+        #expect(opened.parentSessionID == outer.address.sessionID)
+        #expect(opened.displayName == "nested.7z › inner.zip")
+        #expect(!opened.isReadOnly)
+        let hierarchy = try await engine.archiveHierarchy(for: opened.address)
+        #expect(hierarchy == ["nested.7z", "inner.zip"], "Unexpected archive hierarchy: \(hierarchy)")
+        #expect(try await engine.outermostArchiveURL(for: opened.address) == fixturesURL.appendingPathComponent("nested.7z"))
+        let copy = try await engine.archiveRootURL(for: opened.address)
+        #expect(copy.path.hasPrefix(ZforgeTemporaryStorage.archiveSessionsRoot().path + "/" + opened.address.sessionID.uuidString + "/"))
+        #expect(FileManager.default.isWritableFile(atPath: copy.path))
+        let innerItems = try await engine.items(at: opened.address)
+        #expect(innerItems.contains(where: { $0.name == "hello.txt" }))
     }
 
     private var projectRoot: URL {
@@ -1956,11 +1879,7 @@ private actor ColumnArchiveRaceEngine: ArchiveServing {
     private var waiters: [UUID: Waiter] = [:]
     private var isShutDown = false
 
-    func openArchive(
-        at url: URL,
-        password: String?,
-        policy: ArchiveBrowsingPolicy
-    ) async throws -> ArchiveOpenResult {
+    func openArchive(at url: URL, password: String?) async throws -> ArchiveOpenResult {
         let name = url.lastPathComponent
         record("started:\(name)")
         do {
@@ -1979,12 +1898,7 @@ private actor ColumnArchiveRaceEngine: ArchiveServing {
         namesByArchiveID[archiveID] = name
         events.append("completed:\(name)")
         return ArchiveOpenResult(
-            address: ArchiveAddress(
-                sessionID: UUID(),
-                archiveID: archiveID,
-                internalPath: "",
-                maximumNestedArchiveDepth: policy.maximumNestedArchiveDepth
-            ),
+            address: ArchiveAddress(sessionID: UUID(), archiveID: archiveID, internalPath: ""),
             displayName: name
         )
     }
@@ -2062,10 +1976,6 @@ private actor ColumnArchiveRaceEngine: ArchiveServing {
 
     func eventsSnapshot() -> [String] { events }
 
-    func openNestedArchive(item: BrowserItem, password: String?) async throws -> ArchiveOpenResult {
-        throw ArchiveEngineError.itemNotFound
-    }
-
     func materialize(
         item: BrowserItem,
         purpose: ArchiveMaterializationPurpose,
@@ -2109,4 +2019,12 @@ private actor ColumnArchiveRaceEngine: ArchiveServing {
     func closeAllSessions() async {}
     func cancelAllOperations() async {}
     func cleanupStaleSessions() async {}
+}
+
+/// Browser window requests a test's browser asked to open.
+@MainActor
+final class WindowRequestLog {
+    private(set) var requests: [BrowserWindowRequest] = []
+    var last: BrowserWindowRequest? { requests.last }
+    func append(_ request: BrowserWindowRequest) { requests.append(request) }
 }

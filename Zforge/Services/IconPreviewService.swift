@@ -5,7 +5,8 @@ import Observation
 @MainActor
 final class IconPreviewService {
     static let shared = IconPreviewService()
-    static let archiveByteLimit: Int64 = 10 * 1_024 * 1_024
+    /// The default thumbnail limit for items inside archives (D-73: 8 MB, set in Settings).
+    static let archiveByteLimit: Int64 = ArchivePreviewLimits.defaults.thumbnailLimit
 
     typealias Renderer = @MainActor (BrowserItem, URL, Int) async throws -> CGImage?
     private let render: Renderer
@@ -29,12 +30,13 @@ final class IconPreviewService {
         }
     }
 
-    func image(for item: BrowserItem, pixelSize: Int, archives: any ArchiveServing) async throws -> CGImage? {
+    func image(for item: BrowserItem, pixelSize: Int, archives: any ArchiveServing,
+               limits: ArchivePreviewLimits = .defaults, volume: ArchiveVolumeKind = .internalDisk) async throws -> CGImage? {
         guard !item.usesStaticIconPreview, !item.isDirectory else { return nil }
         if item.localURL == nil {
-            // Unlike an explicit inspector request, a grid must never expand an
-            // unbounded/large entry merely because it scrolled into view.
-            guard let size = item.size, size <= Self.archiveByteLimit else { return nil }
+            // Unlike an explicit inspector request, a grid must never expand an unbounded or
+            // large entry (or its solid block) merely because it scrolled into view.
+            guard limits.allowsAutomaticThumbnail(of: item, on: volume) else { return nil }
         }
         let pixels = min(max(pixelSize, 32), 256)
         let key = PreviewKey(item: item, pixels: pixels)
@@ -54,7 +56,7 @@ final class IconPreviewService {
             try await materialization.acquire()
             do {
                 try Task.checkCancellation()
-                url = try await archives.materialize(item: item, purpose: .preview, automaticLimit: Self.archiveByteLimit)
+                url = try await archives.materialize(item: item, purpose: .preview, automaticLimit: nil)
                 materialization.release()
             } catch {
                 materialization.release()

@@ -262,7 +262,8 @@ struct ArchiveMutationTests {
         }
         try FileManager.default.removeItem(at: volume)
         try Data("new".utf8).write(to: source)
-        try await engine.addItems(from: [source], to: archive, internalPath: "", password: nil, progress: { _ in })
+        // Another writer (D-73: the engine's own writes update its shared sessions in place).
+        try await NativeSevenZipArchiveEngine().addItems(from: [source], to: archive, internalPath: "", password: nil, progress: { _ in })
         let changed = try Data(contentsOf: archive)
         await #expect(throws: ArchiveEngineError.archiveChanged) {
             try await engine.removeItems([file], password: nil, progress: { _ in })
@@ -407,7 +408,8 @@ struct ArchiveMutationTests {
             #expect(try Data(contentsOf: archive) == before)
             let new = root.appendingPathComponent("New.txt")
             try Data("new".utf8).write(to: new)
-            try await engine.addItems(from: [new], to: archive, internalPath: "", password: "Test password", progress: { _ in })
+            // Another writer (D-73: the engine's own writes update its shared sessions in place).
+            try await NativeSevenZipArchiveEngine().addItems(from: [new], to: archive, internalPath: "", password: "Test password", progress: { _ in })
             let changed = try Data(contentsOf: archive)
             await #expect(throws: ArchiveEngineError.archiveChanged) {
                 try await engine.reorganizeItems([source], to: target, moving: true, password: "Test password",
@@ -555,7 +557,8 @@ struct ArchiveMutationTests {
             }
             #expect(state.error == nil)
             guard case let .archive(updated) = state.location else { Issue.record("Mutation left archive"); return }
-            #expect(updated.sessionID != oldAddress.sessionID)
+            // D-73: the shared session is updated in place, so addresses stay valid in every window.
+            #expect(updated.sessionID == oldAddress.sessionID)
             #expect(updated.internalPath == "Inside/Deep")
             #expect(state.canGoForward)
             for (index, component) in state.pathComponents.enumerated() {

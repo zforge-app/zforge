@@ -77,13 +77,15 @@ private struct BrowserWindowRoot: View {
             tabSourceWindowNumber: request.tabSourceWindowNumber,
             automationAccess: request.automationAccess,
             archiveSearch: request.archiveSearch,
-            finderRequest: request.finderRequest
+            finderRequest: request.finderRequest,
+            archiveSession: request.archiveSession
         )
             .id(request.id)
             .onAppear {
                 // A file can arrive after SwiftUI computes the default scene value.
                 // In that case, use the first new window for the archive.
-                if !hasAppeared && request.initialURL == nil && request.archiveSearch == nil && request.finderRequest == nil,
+                if !hasAppeared && request.initialURL == nil && request.archiveSearch == nil && request.finderRequest == nil
+                    && request.archiveSession == nil,
                    let pending = appDelegate.takeNextArchiveRequest() {
                     appDelegate.releaseLaunchWindow(request.id)
                     request = pending
@@ -391,7 +393,11 @@ struct ZforgeSettingsView: View {
 
             CompressionSettingsSection(preferences: preferences, draft: compressionDraft)
 
-            ArchiveNavigationSettingsSection(preferences: preferences)
+            ArchivePreviewSettingsSection(preferences: preferences)
+
+            if ScaleSliderUIFixtureSection.isRequested {
+                ScaleSliderUIFixtureSection()
+            }
         }
         .formStyle(.grouped)
         .padding()
@@ -480,60 +486,119 @@ enum ListColumnReorder {
     }
 }
 
-/// The Settings section that chooses the default compression profile and edits profiles.
-/// The nesting depth uses a linear slider with a stop per value; the root size limit uses
-/// a logarithmic one whose fine steps and held round values are defined by
-/// `ArchiveSizeLimitSliderScale`.
-struct ArchiveNavigationSettingsSection: View {
+/// Automatic previews and thumbnails of items inside archives (D-73). Every limit uses the
+/// logarithmic size slider: equal track per doubling, a tick per doubling, held round values.
+struct ArchivePreviewSettingsSection: View {
     @Bindable var preferences: FileBrowserPreferences
 
-    private static let depthScale = LinearSettingsSliderScale(
-        range: Int64(ArchiveBrowsingPolicy.nestingDepthRange.lowerBound)...Int64(ArchiveBrowsingPolicy.nestingDepthRange.upperBound)
-    )
-    private static let sizeScale = ArchiveSizeLimitSliderScale()
+    /// The formats whose items can be in solid blocks (format names, the same in every language).
+    static let solidFormats = "7z, RAR, CAB, WIM/ESD, tar.gz/tgz, tar.bz2/tbz, tar.xz/txz, tar.zst/tzst, gz, bz2, xz, zst, lzma"
 
     var body: some View {
         let locale = preferences.language.locale
-        Section("Archive Navigation") {
-            VStack(alignment: .leading, spacing: 5) {
-                LabeledContent("Maximum nesting depth") {
-                    Text(preferences.archiveNestingLimit.formatted())
-                        .monospacedDigit()
-                }
-                ScaleSlider(
-                    scale: Self.depthScale,
-                    value: Binding(
-                        get: { Int64(preferences.archiveNestingLimit) },
-                        set: { preferences.archiveNestingLimit = Int($0) }
-                    ),
-                    tickLabels: ArchiveBrowsingPolicy.nestingDepthRange.map { $0.formatted(.number.locale(locale)) },
-                    accessibilityLabel: AppLocalization.string("Maximum nesting depth", locale: locale),
-                    accessibilityIdentifier: "settings-archive-nesting-depth",
-                    describe: { $0.formatted(.number.locale(locale)) }
-                )
-                Text("Limits how many compressed files can be opened inside one another. The root archive is not counted.")
+        Section("Previews in Archives") {
+            ArchiveSizeLimitRow(
+                title: "Preview size limit", value: $preferences.previewSizeLimit, scale: .preview,
+                identifier: "settings-preview-size-limit", locale: locale,
+                caption: "Larger items inside archives show their icon until you load the preview."
+            )
+            ArchiveSizeLimitRow(
+                title: "Thumbnail size limit", value: $preferences.thumbnailSizeLimit, scale: .thumbnail,
+                identifier: "settings-thumbnail-size-limit", locale: locale,
+                caption: "Applies to thumbnails of items inside archives in the icon view and in multiple selections."
+            )
+            VStack(alignment: .leading, spacing: 3) {
+                Toggle("Preview solid archives", isOn: $preferences.previewSolidArchives)
+                    .accessibilityIdentifier("settings-preview-solid-archives")
+                Text(verbatim: Self.solidFormats)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                Text("An item in a solid block is measured by the compressed size of its block.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
-
-            VStack(alignment: .leading, spacing: 5) {
-                LabeledContent("Root archive size limit") {
-                    Text(AppLocalization.byteCount(preferences.archiveRootSizeLimit, locale: locale))
-                        .monospacedDigit()
-                }
-                ScaleSlider(
-                    scale: Self.sizeScale,
-                    value: $preferences.archiveRootSizeLimit,
-                    tickLabels: ArchiveSizeLimitSliderScale.doublings.map { AppLocalization.byteCount($0, locale: locale) },
-                    accessibilityLabel: AppLocalization.string("Root archive size limit", locale: locale),
-                    accessibilityIdentifier: "settings-archive-root-size-limit",
-                    describe: { AppLocalization.byteCount($0, locale: locale) }
+            Toggle("Preview on removable drives", isOn: $preferences.previewOnRemovableVolumes.animation())
+                .accessibilityIdentifier("settings-preview-removable")
+            if preferences.previewOnRemovableVolumes {
+                ArchiveSizeLimitRow(
+                    title: "Size limit on removable drives", value: $preferences.removableVolumePreviewLimit,
+                    scale: .preview, identifier: "settings-preview-removable-limit", locale: locale, caption: nil
                 )
-                Text("Sub-archives are only navigable when the combined size of the root archive and its volumes is below this limit.")
+            }
+            Toggle("Preview on network volumes", isOn: $preferences.previewOnNetworkVolumes.animation())
+                .accessibilityIdentifier("settings-preview-network")
+            if preferences.previewOnNetworkVolumes {
+                ArchiveSizeLimitRow(
+                    title: "Size limit on network volumes", value: $preferences.networkVolumePreviewLimit,
+                    scale: .preview, identifier: "settings-preview-network-limit", locale: locale, caption: nil
+                )
+            }
+        }
+    }
+}
+
+/// A size limit: its title with the current value, the logarithmic slider and a caption.
+struct ArchiveSizeLimitRow: View {
+    let title: String.LocalizationValue
+    @Binding var value: Int64
+    let scale: ArchiveSizeLimitSliderScale
+    let identifier: String
+    let locale: Locale
+    let caption: String.LocalizationValue?
+
+    var body: some View {
+        let titleString = AppLocalization.string(title, locale: locale)
+        VStack(alignment: .leading, spacing: 5) {
+            LabeledContent(titleString) {
+                Text(AppLocalization.byteCount(value, locale: locale))
+                    .monospacedDigit()
+            }
+            ScaleSlider(
+                scale: scale,
+                value: $value,
+                tickLabels: scale.doublingValues.map { AppLocalization.byteCount($0, locale: locale) },
+                accessibilityLabel: titleString,
+                accessibilityIdentifier: identifier,
+                describe: { AppLocalization.byteCount($0, locale: locale) }
+            )
+            if let caption {
+                Text(AppLocalization.string(caption, locale: locale))
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+
+}
+
+/// UI test fixture only (`--ui-scale-slider-fixture`): the logarithmic size slider that
+/// the preview limits of a later ZF-55 stage reuse, so that real mouse tracking of its
+/// holds stays covered after the nesting limits were removed (D-73). Never shown otherwise.
+struct ScaleSliderUIFixtureSection: View {
+    static var isRequested: Bool { ProcessInfo.processInfo.arguments.contains("--ui-scale-slider-fixture") }
+    private static let sizeScale = ArchiveSizeLimitSliderScale()
+    @State private var value: Int64 = 1_000_000_000
+
+    var body: some View {
+        let locale = Locale(identifier: "en_US")
+        Section {
+            VStack(alignment: .leading, spacing: 5) {
+                LabeledContent {
+                    Text(verbatim: AppLocalization.byteCount(value, locale: locale)).monospacedDigit()
+                } label: {
+                    Text(verbatim: "Size slider fixture")
+                }
+                ScaleSlider(
+                    scale: Self.sizeScale,
+                    value: $value,
+                    tickLabels: ArchiveSizeLimitSliderScale.doublings.map { AppLocalization.byteCount($0, locale: locale) },
+                    accessibilityLabel: "Size slider fixture",
+                    accessibilityIdentifier: "ui-fixture-size-slider",
+                    describe: { AppLocalization.byteCount($0, locale: locale) }
+                )
             }
         }
     }

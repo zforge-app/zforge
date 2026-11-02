@@ -165,8 +165,7 @@ struct BrowserSearchEngineTests {
     @Test("Inside an archive the listing is searched below the current folder")
     func archiveSearch() async throws {
         let engine = UIFixtureArchiveEngine()
-        let opened = try await engine.openArchive(at: URL(fileURLWithPath: "/tmp/Sample.zip"), password: nil,
-                                                  policy: .standard)
+        let opened = try await engine.openArchive(at: URL(fileURLWithPath: "/tmp/Sample.zip"), password: nil)
         let found = try await collect(ArchiveNameSearch.results(query: "INSIDE", root: opened.address,
                                                                 archives: engine, limit: 10))
         guard case let .item(item)? = found.first else {

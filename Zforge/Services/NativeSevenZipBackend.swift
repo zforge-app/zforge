@@ -1,6 +1,30 @@
 import Foundation
 import Darwin
 
+/// Counts the bytes native operations read from archives and their volumes (instrumentation
+/// for the in-place reading contract; production engines do not install one).
+nonisolated final class ArchiveSourceReadMeter: @unchecked Sendable {
+    private let lock = NSLock()
+    private var total: UInt64 = 0
+    private var cancelled = 0
+    private var observer: (@Sendable (UInt64) -> Void)?
+    var bytesRead: UInt64 { lock.withLock { total } }
+    /// Operations that ended cancelled in the bridge.
+    var cancelledOperations: Int { lock.withLock { cancelled } }
+    /// Called on the native thread after each read, with that operation's bytes so far.
+    var onRead: (@Sendable (UInt64) -> Void)? {
+        get { lock.withLock { observer } }
+        set { lock.withLock { observer = newValue } }
+    }
+    func reset() { lock.withLock { total = 0; cancelled = 0 } }
+    fileprivate func finish(_ operation: ZFSevenZipOperation) {
+        lock.withLock {
+            total += operation.sourceBytesRead
+            if operation.isCancelled { cancelled += 1 }
+        }
+    }
+}
+
 /// Owns cancellation handles; the native calls run on workers and never hold the UI actor.
 nonisolated final class NativeSevenZipBackend: @unchecked Sendable {
     private final class Operation: @unchecked Sendable {
@@ -13,6 +37,9 @@ nonisolated final class NativeSevenZipBackend: @unchecked Sendable {
 
     private let lock = NSLock()
     private var operations: [UUID: Operation] = [:]
+    private let readMeter: ArchiveSourceReadMeter?
+
+    init(readMeter: ArchiveSourceReadMeter? = nil) { self.readMeter = readMeter }
 
     func cancelAll() {
         lock.lock()
@@ -34,8 +61,12 @@ nonisolated final class NativeSevenZipBackend: @unchecked Sendable {
         resource: URL, _ body: @escaping @Sendable (ZFSevenZipOperation) throws -> T
     ) async throws -> T {
         let operation = Operation(resource: resource)
+        if let readMeter { operation.native.readObserver = { readMeter.onRead?($0) } }
         lock.withLock { operations[operation.id] = operation }
-        defer { _ = lock.withLock { operations.removeValue(forKey: operation.id) } }
+        defer {
+            _ = lock.withLock { operations.removeValue(forKey: operation.id) }
+            readMeter?.finish(operation.native)
+        }
         return try await withTaskCancellationHandler {
             try Task.checkCancellation()
             return try await withCheckedThrowingContinuation { continuation in
@@ -58,6 +89,7 @@ nonisolated final class NativeSevenZipBackend: @unchecked Sendable {
         case 3: return ArchiveEngineError.sizeLimitExceeded
         case 4: return ArchiveEngineError.cancelled
         case 6: return ArchiveEngineError.insufficientSpace
+        case 8: return ArchiveEngineError.archiveChangedSinceOpening
         default: return ArchiveEngineError.invalidArchive(AppLocalization.string("archive.empty_or_unsupported"))
         }
     }
@@ -67,22 +99,35 @@ nonisolated final class NativeSevenZipBackend: @unchecked Sendable {
         return value.int64Value
     }
 
-    func list(at url: URL, password: String?) async throws -> [String: ArchiveEntry] {
-        try await perform(resource: url) { operation in
+    /// `cancellationScope` registers the read under a session folder, so closing that session
+    /// cancels it even though the archive is read in place elsewhere.
+    func list(at url: URL, password: String?, cancellationScope: URL? = nil) async throws -> [String: ArchiveEntry] {
+        try await listing(at: url, password: password, cancellationScope: cancellationScope).entries
+    }
+
+    /// The listing and whether reading it needed the password (encrypted names).
+    func listing(at url: URL, password: String?, cancellationScope: URL? = nil) async throws
+        -> (entries: [String: ArchiveEntry], needsPassword: Bool) {
+        try await perform(resource: cancellationScope ?? url) { operation in
             let records = try ZFSevenZipBridge.entries(atPath: url.path, password: password, operation: operation)
             var entries: [String: ArchiveEntry] = [:]
             let fallback = url.deletingPathExtension().lastPathComponent
             for record in records {
                 let path = try ArchivePathPolicy.safePath(record.path.isEmpty ? fallback : record.path)
                 guard !path.isEmpty else { continue }
-                entries[path] = ArchiveEntry(
+                var entry = ArchiveEntry(
                     path: path, isDirectory: record.directory, size: Self.signedSize(record.size),
                     packedSize: Self.signedSize(record.packedSize), modified: record.modified,
                     created: record.created, accessed: record.accessed, encrypted: record.encrypted,
                     checksum: record.checksum, method: record.method, attributes: record.symbolicLink ? "l" : nil
                 )
+                entry.nativeIndex = UInt32(clamping: record.index)
+                if record.solidBlock {
+                    entry.solidBlock = ArchiveSolidBlock(packedSize: Self.signedSize(record.solidBlockPackedSize))
+                }
+                entries[path] = entry
             }
-            return ArchiveEntry.withParents(entries)
+            return (ArchiveEntry.withParents(entries), operation.passwordRequested)
         }
     }
 
@@ -115,7 +160,7 @@ nonisolated final class NativeSevenZipBackend: @unchecked Sendable {
         }
     }
 
-    private static func prepareDirectory(_ directory: URL, under root: URL) throws {
+    fileprivate static func prepareDirectory(_ directory: URL, under root: URL) throws {
         let relative = directory.path == root.path ? "" : String(directory.path.dropFirst(root.path.count + 1))
         var descriptor = open(root.path, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC)
         guard descriptor >= 0 else { throw ArchiveEngineError.unsafePath }
@@ -147,56 +192,98 @@ nonisolated final class NativeSevenZipBackend: @unchecked Sendable {
         }
     }
 
-    func extract(at url: URL, password: String?, paths: [String], destination: URL,
-                 outputFile: URL? = nil, byteLimit: UInt64 = .max) async throws {
-        try await perform(resource: url) { operation in
-            let records = try ZFSevenZipBridge.entries(atPath: url.path, password: password, operation: operation)
-            let fm = FileManager.default
-            let root = destination.standardizedFileURL.resolvingSymlinksInPath()
-            var indices: [NSNumber] = []
-            var destinations: [String] = []
-            var outputs: [(ZFSevenZipEntry, URL)] = []
-            var preparedDirectories = Set<String>()
-            var resolver = ContainmentResolver()
-            let fallback = url.deletingPathExtension().lastPathComponent
-            let selection = ArchivePathSelection(paths)
-            for record in records {
-                let path = try ArchivePathPolicy.safePath(record.path.isEmpty ? fallback : record.path)
-                guard paths.isEmpty || selection.contains(path) else { continue }
-                if let outputFile, !record.directory {
-                    indices.append(NSNumber(value: record.index)); destinations.append(outputFile.standardizedFileURL.resolvingSymlinksInPath().path)
-                    outputs.append((record, outputFile))
-                    break
-                }
-                let output = root.appendingPathComponent(path).standardizedFileURL
-                guard resolver.resolvedPath(of: output).hasPrefix(root.path + "/") else { throw ArchiveEngineError.unsafePath }
-                if record.directory {
-                    if preparedDirectories.insert(output.path).inserted { try Self.prepareDirectory(output, under: root) }
-                } else {
-                    // Existing destinations were resolved by the Swift conflict policy. Keep means skip.
-                    if fm.fileExists(atPath: output.path) { continue }
-                    let parent = output.deletingLastPathComponent()
-                    if preparedDirectories.insert(parent.path).inserted { try Self.prepareDirectory(parent, under: root) }
-                    if record.symbolicLink && (record.size?.uint64Value ?? 0) > 4096 { throw ArchiveEngineError.unsafePath }
-                    indices.append(NSNumber(value: record.index)); destinations.append(output.path)
-                    outputs.append((record, output) )
-                }
+    /// Decides the destination of each archive record. Shared by indexed extraction, which
+    /// plans every record before the native call, and sequential (compressed tar) extraction,
+    /// which plans each record as the stream reaches it.
+    private final class ExtractionPlan {
+        let fileManager = FileManager.default
+        let root: URL
+        let paths: [String]
+        let selection: ArchivePathSelection
+        let outputFile: URL?
+        let fallback: String
+        /// Archive path whose own contents land directly in `root` (no ancestors).
+        let base: String
+        private var preparedDirectories = Set<String>()
+        private var resolver = ContainmentResolver()
+        private var outputFileAssigned = false
+        private(set) var outputs: [(ZFSevenZipEntry, URL)] = []
+
+        init(root: URL, paths: [String], outputFile: URL?, fallback: String, base: String) {
+            self.root = root; self.paths = paths; selection = ArchivePathSelection(paths)
+            self.outputFile = outputFile; self.fallback = fallback; self.base = base
+        }
+
+        /// Destination path for the record, or nil when nothing is written for it.
+        func destination(for record: ZFSevenZipEntry) throws -> String? {
+            guard !outputFileAssigned else { return nil }
+            let path = try ArchivePathPolicy.safePath(record.path.isEmpty ? fallback : record.path)
+            guard paths.isEmpty || selection.contains(path) else { return nil }
+            if let outputFile, !record.directory {
+                outputFileAssigned = true
+                outputs.append((record, outputFile))
+                return outputFile.standardizedFileURL.resolvingSymlinksInPath().path
             }
-            try ZFSevenZipBridge.extract(atPath: url.path, password: password, indices: indices,
-                destinations: destinations, rootPath: root.path, byteLimit: byteLimit, operation: operation)
-            var links: [(URL, String)] = []
-            for (record, output) in outputs {
-                if record.symbolicLink && outputFile == nil {
-                    let data = try Data(contentsOf: output)
-                    guard let target = String(data: data, encoding: .utf8), !target.hasPrefix("/"),
-                          !target.utf8.contains(0) else { throw ArchiveEngineError.unsafePath }
-                    let resolved = output.deletingLastPathComponent().appendingPathComponent(target)
-                        .standardizedFileURL.resolvingSymlinksInPath()
-                    guard resolved.path.hasPrefix(root.path + "/") else { throw ArchiveEngineError.unsafePath }
-                    links.append((output, target))
-                } else {
-                    // Native metadata is applied on the already-open output descriptor.
+            var relative = path
+            if !base.isEmpty {
+                if path == base {
+                    // The base itself is the root: it already exists.
+                    guard record.directory else { throw ArchiveEngineError.unsafePath }
+                    return nil
                 }
+                if path.hasPrefix(base + "/") { relative = String(path.dropFirst(base.count + 1)) }
+            }
+            let output = root.appendingPathComponent(relative).standardizedFileURL
+            guard resolver.resolvedPath(of: output).hasPrefix(root.path + "/") else { throw ArchiveEngineError.unsafePath }
+            if record.directory {
+                if preparedDirectories.insert(output.path).inserted { try NativeSevenZipBackend.prepareDirectory(output, under: root) }
+                return nil
+            }
+            // Existing destinations were resolved by the Swift conflict policy. Keep means skip.
+            if fileManager.fileExists(atPath: output.path) { return nil }
+            let parent = output.deletingLastPathComponent()
+            if preparedDirectories.insert(parent.path).inserted { try NativeSevenZipBackend.prepareDirectory(parent, under: root) }
+            if record.symbolicLink && (record.size?.uint64Value ?? 0) > 4096 { throw ArchiveEngineError.unsafePath }
+            outputs.append((record, output))
+            return output.path
+        }
+    }
+
+    /// Extracts the selected paths (all when empty) below `destination`. `base` strips that
+    /// archive path from the outputs, so a selected folder's contents land in `destination`.
+    /// `lastIndex` bounds a sequential pass: decompression stops after that native index.
+    /// `verify` runs once the archive is open, before anything is written: false fails with
+    /// `archiveChangedSinceOpening`.
+    func extract(at url: URL, password: String?, paths: [String], destination: URL,
+                 outputFile: URL? = nil, byteLimit: UInt64 = .max, base: String = "",
+                 lastIndex: UInt32? = nil, cancellationScope: URL? = nil,
+                 verify: (@Sendable () -> Bool)? = nil) async throws {
+        try await perform(resource: cancellationScope ?? url) { operation in
+            let root = destination.standardizedFileURL.resolvingSymlinksInPath()
+            let plan = ExtractionPlan(root: root, paths: paths, outputFile: outputFile,
+                fallback: url.deletingPathExtension().lastPathComponent, base: base)
+            // One opening lists and extracts; `verify` confirms it is still the archive the
+            // caller listed before anything is written (D-73: never items of a replaced archive).
+            var plannerError: Error?
+            do {
+                try ZFSevenZipBridge.extractPlanned(atPath: url.path, password: password, rootPath: root.path,
+                    byteLimit: byteLimit, last: lastIndex ?? UInt32.max, planner: { record, abort in
+                        do { return try plan.destination(for: record) } catch {
+                            plannerError = error; abort.pointee = true; return nil
+                        }
+                    }, ready: verify.map { check in { check() } }, operation: operation)
+            } catch {
+                throw plannerError ?? error
+            }
+            var links: [(URL, String)] = []
+            for (record, output) in plan.outputs where record.symbolicLink && outputFile == nil {
+                let data = try Data(contentsOf: output)
+                guard let target = String(data: data, encoding: .utf8), !target.hasPrefix("/"),
+                      !target.utf8.contains(0) else { throw ArchiveEngineError.unsafePath }
+                let resolved = output.deletingLastPathComponent().appendingPathComponent(target)
+                    .standardizedFileURL.resolvingSymlinksInPath()
+                guard resolved.path.hasPrefix(root.path + "/") else { throw ArchiveEngineError.unsafePath }
+                links.append((output, target))
             }
             var installed: [URL] = []
             do {
@@ -213,12 +300,24 @@ nonisolated final class NativeSevenZipBackend: @unchecked Sendable {
                 for output in installed { try? Self.changeLink(at: output, under: root, target: nil) }
                 throw error
             }
-
         }
+    }
+
+    /// A file or folder read in place and stored under `archivePath`.
+    struct WriteSource: Sendable {
+        let url: URL
+        let archivePath: String
     }
 
     func write(to url: URL, updating original: URL? = nil, options: CompressionOptions,
                password: String?, names: [String], directory: URL, excludingPaths: [String] = []) async throws {
+        try await write(to: url, updating: original, options: options, password: password,
+            sources: names.map { WriteSource(url: directory.appendingPathComponent($0), archivePath: $0) },
+            excludingPaths: excludingPaths)
+    }
+
+    func write(to url: URL, updating original: URL? = nil, options: CompressionOptions,
+               password: String?, sources items: [WriteSource], excludingPaths: [String] = []) async throws {
         let options = options.normalized()
         try await perform(resource: url) { operation in
             let properties = try options.nativeProperties(password: password)
@@ -245,7 +344,7 @@ nonisolated final class NativeSevenZipBackend: @unchecked Sendable {
                     }
                 }
             }
-            for name in names { try append(directory.appendingPathComponent(name), name: name) }
+            for item in items { try append(item.url, name: item.archivePath) }
             try ZFSevenZipBridge.write(atPath: url.path, format: options.format.nativeHandlerName,
                 updatingPath: original?.path, sources: sources, properties: properties,
                 excludingPaths: excludingPaths, password: options.requiresPassword || original != nil ? password : nil, operation: operation)

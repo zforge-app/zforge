@@ -221,7 +221,9 @@ struct SiriArchiveIntentTests {
         #expect(access.take() == nil)
     }
 
-    @MainActor @Test("Opening keeps access across suspension and releases it after success, error or cancellation", arguments: ["success", "error", "cancelled"])
+    // D-73: archives are read in place for the whole session, so a successful opening keeps
+    // the grant until its window closes; errors and cancellation still release it at once.
+    @MainActor @Test("Opening keeps access across suspension, keeps it while the opened archive is shown and releases it after closing, error or cancellation", arguments: ["success", "error", "cancelled"])
     func openingScopeLifetime(outcome: String) async throws {
         let fixture = try SiriArchiveFixture()
         defer { fixture.cleanUp() }
@@ -253,18 +255,23 @@ struct SiriArchiveIntentTests {
         if outcome == "cancelled" { opening.cancel() }
         await fileSystem.resume()
         await opening.value
-        #expect(observed == nil)
         if outcome == "success" {
+            #expect(observed != nil)
             #expect(browser.items.contains { $0.name == "Payload.txt" })
             #expect(browser.error == nil)
+            browser.close()
+            #expect(observed == nil)
         } else {
+            #expect(observed == nil)
             if outcome == "error" { #expect(browser.error != nil) }
             else { #expect(browser.error == nil); #expect(browser.location == .recents) }
             #expect(!browser.items.contains { $0.name == "Payload.txt" })
         }
     }
 
-    @MainActor @Test("Encrypted opening retains its scope through incorrect passwords and releases it after completion or dismissal", arguments: ["complete", "dismiss", "close", "closeDuringRetry", "dismissDuringRetry"])
+    // D-73: a completed opening keeps the scope while the archive is shown (read in place) and
+    // releases it when the window closes.
+    @MainActor @Test("Encrypted opening retains its scope through incorrect passwords, while the opened archive is shown, and releases it after closing or dismissal", arguments: ["complete", "dismiss", "close", "closeDuringRetry", "dismissDuringRetry"])
     func encryptedOpeningScope(outcome: String) async throws {
         let fixture = try SiriArchiveFixture()
         defer { fixture.cleanUp() }
@@ -311,6 +318,8 @@ struct SiriArchiveIntentTests {
             #expect(browser.passwordOperation == nil)
             #expect(browser.items.contains { $0.name == "Secret.txt" })
             #expect(browser.error == nil)
+            #expect(observed != nil)
+            browser.close()
         }
         #expect(observed == nil)
     }

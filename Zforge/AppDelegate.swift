@@ -23,6 +23,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         Self.current = self
+        // Inner archives write back into their outer archives when their last window closes.
+        ArchiveWriteBackCoordinator.shared.start()
         if !ProcessInfo.processInfo.arguments.contains("--ui-fixtures"),
            ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil,
            NSClassFromString("XCTestCase") == nil {
@@ -36,6 +38,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             self?.endLaunchWindowOffer()
             return event
         }
+    }
+
+    /// Quitting waits for inner archives to be written back (D-73): their windows close
+    /// first, innermost first, and the write-backs run with visible progress.
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        let coordinator = ArchiveWriteBackCoordinator.shared
+        guard ArchiveWindowRegistry.shared.showsInnerArchives || !coordinator.isIdle else { return .terminateNow }
+        Task { @MainActor in
+            await ArchiveWindowRegistry.shared.closeAllWindows()
+            await coordinator.finishPendingWriteBacks()
+            sender.reply(toApplicationShouldTerminate: true)
+        }
+        return .terminateLater
     }
 
     func applicationWillTerminate(_ notification: Notification) {

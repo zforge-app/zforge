@@ -100,9 +100,7 @@ actor AutomationOperations {
         let result = try await reader.openArchive(at: url, password: password)
         do {
             let root = result.address
-            let address = ArchiveAddress(sessionID: root.sessionID, archiveID: root.archiveID, internalPath: internalPath,
-                allowsNestedArchives: root.allowsNestedArchives, nestedArchiveDepth: root.nestedArchiveDepth,
-                maximumNestedArchiveDepth: root.maximumNestedArchiveDepth)
+            let address = ArchiveAddress(sessionID: root.sessionID, archiveID: root.archiveID, internalPath: internalPath)
             let items = try await reader.items(at: address)
             guard items.count <= 10_000 else { throw AutomationError.listingTooLarge }
             let page = try Self.page(items.map(AutomationItem.init), offset: offset, limit: limit)

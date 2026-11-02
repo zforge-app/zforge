@@ -400,7 +400,7 @@ private actor SuspendedGroupingRefreshFileSystem: FileSystemServing {
     func resolveNavigationURL(_ url: URL) async throws -> URL { try await service.resolveNavigationURL(url) }
 }
 
-private final class FailingSelectionFileManager: FileManager, @unchecked Sendable {
+private final class FailingSelectionFileManager: FileManager {
     private var moveCount = 0
     private let failingMoves: Set<Int>
 
@@ -416,7 +416,7 @@ private final class FailingSelectionFileManager: FileManager, @unchecked Sendabl
     }
 }
 
-private final class CancellingSelectionFileManager: FileManager, @unchecked Sendable {
+private final class CancellingSelectionFileManager: FileManager {
     private var hasCancelled = false
 
     override func moveItem(at srcURL: URL, to dstURL: URL) throws {

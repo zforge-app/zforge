@@ -26,7 +26,7 @@ struct ArchiveDragDropTests {
             let payload = try #require(state.items.first(where: { $0.name == "DeepPayload.txt" }))
             let leaf = try #require(state.items.first(where: { $0.name == "Leaf" }))
             let view = ArchiveDropDestinationView()
-            let leafAddress: ArchiveAddress = try #require(leaf.location.archiveDropAddress)
+            let leafAddress: ArchiveAddress = try #require(state.archiveDropAddress(for: leaf.location))
             view.address = leafAddress
             let before = try Data(contentsOf: archive)
 
@@ -148,7 +148,7 @@ struct ArchiveDragDropTests {
             let archiveItem = try #require(state.items.first(where: { $0.name == "Sample.zip" }))
             let target = try #require(state.expandedChildren[archiveItem.id]?.first(where: { $0.name == "Target" }))
             let view = ArchiveDropDestinationView()
-            let targetAddress: ArchiveAddress = try #require(target.location.archiveDropAddress)
+            let targetAddress: ArchiveAddress = try #require(state.archiveDropAddress(for: target.location))
             view.address = targetAddress
             #expect(await drop([payload], from: state, onto: view, option: false) == .move)
             #expect(requests.count == 1)
@@ -168,7 +168,7 @@ struct ArchiveDragDropTests {
             let before = try Data(contentsOf: archive)
 
             let copyView = ArchiveDropDestinationView()
-            let insideAddress: ArchiveAddress = try #require(survivingInside.location.archiveDropAddress)
+            let insideAddress: ArchiveAddress = try #require(state.archiveDropAddress(for: survivingInside.location))
             copyView.address = insideAddress
             #expect(await drop([moved], from: state, onto: copyView, option: true) == .copy)
             #expect(requests.count == 2)

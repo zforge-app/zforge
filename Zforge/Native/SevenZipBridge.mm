@@ -1,7 +1,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 // Zforge native adapter; see Vendor/7zip/DOC/copying.txt.
 #include <atomic>
+#include <chrono>
+#include <condition_variable>
 #include <fcntl.h>
+#include <memory>
+#include <mutex>
+#include <thread>
 #include <unistd.h>
 #include <sys/stat.h>
 #include <vector>
@@ -31,9 +36,12 @@ extern "C" HRESULT CreateObject(const GUID *, const GUID *, void **);
 @implementation ZFSevenZipSource
 - (instancetype)init { if ((self = [super init])) { _path = @""; _archivePath = @""; _modified = [NSDate date]; } return self; }
 @end
-@implementation ZFSevenZipOperation { @public std::atomic<bool> stopped; }
-- (instancetype)init { if ((self = [super init])) stopped.store(false); return self; }
+@implementation ZFSevenZipOperation { @public std::atomic<bool> stopped; std::atomic<uint64_t> bytesRead; std::atomic<bool> askedPassword; }
+- (instancetype)init { if ((self = [super init])) { stopped.store(false); bytesRead.store(0); askedPassword.store(false); } return self; }
+- (BOOL)passwordRequested { return askedPassword.load(); }
+- (BOOL)isCancelled { return stopped.load(); }
 - (void)cancel { stopped.store(true); }
+- (uint64_t)sourceBytesRead { return bytesRead.load(); }
 @end
 
 namespace {
@@ -75,15 +83,54 @@ struct Context {
     NSString *password;
     int failure = 0;
     bool passwordRequested = false;
+    // Total size of the archive files opened by the successful handler (all volumes).
+    UInt64 sourceSize = 0;
     HRESULT check() { return operation->stopped.load() ? E_ABORT : S_OK; }
     HRESULT secret(BSTR *result) {
         *result = nullptr;
         passwordRequested = true;
+        operation->askedPassword.store(true);
         if (!password) { failure = 1; return E_ABORT; }
         *result = Password(password);
         return *result ? S_OK : E_OUTOFMEMORY;
     }
 };
+/// Reads the archive in place and counts the bytes read for the operation.
+class SourceStream final : public IInStream, public IStreamGetSize, public CMyUnknownImp {
+    Z7_COM_UNKNOWN_IMP_3(IInStream, ISequentialInStream, IStreamGetSize)
+    Z7_IFACE_COM7_IMP(ISequentialInStream)
+    Z7_IFACE_COM7_IMP(IInStream)
+    Z7_IFACE_COM7_IMP(IStreamGetSize)
+public:
+    CMyComPtr<IInStream> file;
+    UInt64 length = 0;
+    ZFSevenZipOperation *operation = nil;
+};
+Z7_COM7F_IMF(SourceStream::Read(void *data, UInt32 size, UInt32 *processed)) {
+    UInt32 done = 0;
+    HRESULT result = file->Read(data, size, &done);
+    const uint64_t total = operation->bytesRead.fetch_add(done) + done;
+    if (auto observer = operation.readObserver) observer(total);
+    if (processed) *processed = done;
+    return result;
+}
+Z7_COM7F_IMF(SourceStream::Seek(Int64 offset, UInt32 origin, UInt64 *position)) {
+    return file->Seek(offset, origin, position);
+}
+Z7_COM7F_IMF(SourceStream::GetSize(UInt64 *size)) { *size = length; return S_OK; }
+HRESULT OpenSource(NSString *path, Context &ctx, CMyComPtr<IInStream> &result, UInt64 *length) {
+    CInFileStream *file = new CInFileStream;
+    CMyComPtr<IInStream> owner = file;
+    if (!file->Open(path.fileSystemRepresentation)) return S_FALSE;
+    UInt64 size = 0;
+    if (!file->GetLength(size)) return E_FAIL;
+    SourceStream *source = new SourceStream;
+    result = source;
+    source->file = owner; source->length = size; source->operation = ctx.operation;
+    ctx.sourceSize += size;
+    if (length) *length = size;
+    return S_OK;
+}
 class OpenCallback final : public IArchiveOpenCallback, public ICryptoGetTextPassword,
     public IArchiveOpenVolumeCallback, public CMyUnknownImp {
     Z7_IFACES_IMP_UNK_3(IArchiveOpenCallback, ICryptoGetTextPassword, IArchiveOpenVolumeCallback)
@@ -111,25 +158,22 @@ Z7_COM7F_IMF(OpenCallback::GetStream(const wchar_t *name, IInStream **stream)) {
     if (!component || ![component isEqualToString:component.lastPathComponent] || [component isEqualToString:@".."])
         return E_FAIL;
     NSString *candidate = [path.stringByDeletingLastPathComponent stringByAppendingPathComponent:component];
-    // Only staged sibling files are available to the handler.
-    CInFileStream *input = new CInFileStream;
-    CMyComPtr<IInStream> owner = input;
-    if (!input->Open(candidate.fileSystemRepresentation)) return S_FALSE;
+    // Only sibling files of the authorized archive are available to the handler.
+    CMyComPtr<IInStream> owner;
+    if (OpenSource(candidate, *context, owner, nullptr) != S_OK) return S_FALSE;
     *stream = owner.Detach(); return context->check();
 }
 struct Archive {
     CMyComPtr<IInArchive> handler;
     CMyComPtr<IInStream> input;
+    NSString *format = nil;
     ~Archive() { if (handler) handler->Close(); }
 };
-HRESULT Input(NSString *path, CMyComPtr<IInStream> &result) {
+HRESULT Input(NSString *path, Context &ctx, CMyComPtr<IInStream> &result) {
     NSString *base = path.stringByDeletingPathExtension;
     bool split = [path.pathExtension isEqualToString:@"001"] &&
         ([@"7z" isEqualToString:base.pathExtension.lowercaseString] || [@"zip" isEqualToString:base.pathExtension.lowercaseString]);
-    if (!split) {
-        CInFileStream *file = new CInFileStream; result = file;
-        return file->Open(path.fileSystemRepresentation) ? S_OK : E_FAIL;
-    }
+    if (!split) return OpenSource(path, ctx, result, nullptr) == S_OK ? S_OK : E_FAIL;
     NSArray<NSString *> *siblings = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:path.stringByDeletingLastPathComponent error:nil];
     NSString *prefix = [base.lastPathComponent stringByAppendingString:@"."];
     NSMutableArray<NSString *> *volumes = [NSMutableArray array];
@@ -144,11 +188,9 @@ HRESULT Input(NSString *path, CMyComPtr<IInStream> &result) {
     unsigned index = 1;
     for (NSString *name in volumes) {
         if (name.pathExtension.intValue != index++) return E_FAIL;
-        CInFileStream *file = new CInFileStream;
         CMultiStream::CSubStreamInfo sub;
-        sub.Stream = file;
         NSString *volume = [path.stringByDeletingLastPathComponent stringByAppendingPathComponent:name];
-        if (!file->Open(volume.fileSystemRepresentation) || !file->GetLength(sub.Size)) return E_FAIL;
+        if (OpenSource(volume, ctx, sub.Stream, &sub.Size) != S_OK) return E_FAIL;
         multi->Streams.Add(sub);
     }
     return multi->Streams.IsEmpty() ? E_FAIL : multi->Init();
@@ -175,7 +217,8 @@ HRESULT Open(NSString *path, Context &ctx, Archive &arc) {
         CMyComPtr<IInArchive> handler;
         if (CreateObject(&cls, &IID_IInArchive, (void **)&handler) != S_OK) continue;
         CMyComPtr<IInStream> input;
-        RINOK(Input(path, input))
+        ctx.sourceSize = 0;
+        RINOK(Input(path, ctx, input))
         OpenCallback *callback = new OpenCallback;
         CMyComPtr<IArchiveOpenCallback> owner = callback;
         callback->context = &ctx; callback->path = path;
@@ -183,11 +226,287 @@ HRESULT Open(NSString *path, Context &ctx, Archive &arc) {
         HRESULT result = handler->Open(input, &scan, owner);
         if (ctx.passwordRequested && ctx.password && (result == S_FALSE || result == E_FAIL)) ctx.failure = 2;
         if (ctx.failure || result == E_ABORT) return E_ABORT;
-        if (result == S_OK) { arc.handler = handler; arc.input = input; return S_OK; }
+        if (result == S_OK) {
+            CPropVariant name; RINOK(GetHandlerProperty2(i, NArchive::NHandlerPropID::kName, &name))
+            arc.handler = handler; arc.input = input;
+            arc.format = name.vt == VT_BSTR ? String(name.bstrVal) : @"";
+            return S_OK;
+        }
         handler->Close();
     }
     return S_FALSE;
 }
+ZFSevenZipEntry *MakeEntry(IInArchive *arc, UInt32 i) {
+    ZFSevenZipEntry *entry = [ZFSevenZipEntry new]; entry.index = i;
+    auto name = Property(arc, i, kpidPath);
+    entry.path = name.vt == VT_BSTR ? String(name.bstrVal) : @"";
+    auto folder = Property(arc, i, kpidIsDir);
+    entry.directory = folder.vt == VT_BOOL && folder.boolVal != VARIANT_FALSE;
+    auto crypt = Property(arc, i, kpidEncrypted);
+    entry.encrypted = crypt.vt == VT_BOOL && crypt.boolVal != VARIANT_FALSE;
+    entry.size = Number(Property(arc, i, kpidSize));
+    entry.packedSize = Number(Property(arc, i, kpidPackSize));
+    auto mode = Property(arc, i, kpidPosixAttrib);
+    entry.posixMode = Number(mode);
+    auto attributes = Property(arc, i, kpidAttrib);
+    if (!entry.posixMode && attributes.vt == VT_UI4 && (attributes.ulVal & 0x8000)) entry.posixMode = @(attributes.ulVal >> 16);
+    auto link = Property(arc, i, kpidSymLink);
+    entry.symbolicLink = ([entry.posixMode unsignedIntValue] & 0170000) == 0120000 || link.vt == VT_BSTR;
+    entry.modified = Date(Property(arc, i, kpidMTime));
+    entry.created = Date(Property(arc, i, kpidCTime));
+    entry.accessed = Date(Property(arc, i, kpidATime));
+    auto crc = Property(arc, i, kpidCRC);
+    if (crc.vt == VT_UI4) entry.checksum = [NSString stringWithFormat:@"%08X", crc.ulVal];
+    auto method = Property(arc, i, kpidMethod);
+    if (method.vt == VT_BSTR) entry.method = String(method.bstrVal);
+    return entry;
+}
+/// The tar handler cannot read sparse entries from a sequential stream (it indexes its
+/// random-access item table), so such entries stop the operation instead.
+bool IsSparse(IInArchive *arc, UInt32 i) {
+    auto characts = Property(arc, i, kpidCharacts);
+    if (characts.vt != VT_BSTR) return false;
+    return [[String(characts.bstrVal) componentsSeparatedByString:@" "] containsObject:@"SPARSE"];
+}
+bool IsStreamFormat(NSString *format) {
+    return [@[@"gzip", @"bzip2", @"xz", @"zstd", @"zstd2", @"lzma", @"lzma86", @"Z"] containsObject:format];
+}
+bool IsCompressedTar(NSString *path) {
+    NSString *name = path.lastPathComponent.lowercaseString;
+    for (NSString *suffix in @[@".tar.gz", @".tgz", @".tar.bz2", @".tbz", @".tbz2", @".tar.xz", @".txz", @".tar.zst", @".tzst"])
+        if ([name hasSuffix:suffix]) return true;
+    return false;
+}
+HRESULT CreateHandler(NSString *format, const GUID *iid, void **result) {
+    UInt32 count = 0; RINOK(GetNumberOfFormats(&count))
+    for (UInt32 i = 0; i < count; ++i) {
+        CPropVariant name; GetHandlerProperty2(i, NArchive::NHandlerPropID::kName, &name);
+        if (name.vt != VT_BSTR || ![String(name.bstrVal) isEqualToString:format]) continue;
+        CPropVariant id; GetHandlerProperty2(i, NArchive::NHandlerPropID::kClassID, &id);
+        if (id.vt != VT_BSTR || SysStringByteLen(id.bstrVal) != sizeof(GUID)) continue;
+        GUID cls; memcpy(&cls, id.bstrVal, sizeof(cls));
+        return CreateObject(&cls, iid, result);
+    }
+    return E_NOINTERFACE;
+}
+
+/// Marks entries whose decoding starts before them: members of a block shared with other
+/// files. Block sizes come from the index; where a handler does not expose the block's
+/// compressed size (CAB folders, WIM/ESD solid resources) an upper bound is used.
+void ApplySolidBlocks(const Archive &arc, NSArray<ZFSevenZipEntry *> *entries, UInt64 sourceSize) {
+    NSString *format = arc.format;
+    if (IsStreamFormat(format)) {
+        for (ZFSevenZipEntry *entry in entries) { entry.solidBlock = YES; entry.solidBlockPackedSize = @(sourceSize); }
+        return;
+    }
+    bool sevenZip = [format isEqualToString:@"7z"], cab = [format isEqualToString:@"Cab"];
+    bool rar = [format isEqualToString:@"Rar"] || [format isEqualToString:@"Rar5"];
+    bool wim = [format isEqualToString:@"wim"];
+    if (!sevenZip && !cab && !rar && !wim) return;
+    // Block key per file entry; files of one block share a key.
+    std::vector<std::pair<ZFSevenZipEntry *, Int64>> members;
+    Int64 run = -1;
+    UInt64 largestSolid = 0;
+    for (ZFSevenZipEntry *entry in entries) {
+        if (entry.directory) continue;
+        if (sevenZip || cab) {
+            auto block = Property(arc.handler, (UInt32)entry.index, kpidBlock);
+            if (block.vt == VT_UI4) members.push_back({entry, (Int64)block.ulVal});
+            else if (block.vt == VT_I4 && block.lVal >= 0) members.push_back({entry, (Int64)block.lVal});
+        } else if (rar) {
+            // A solid RAR entry continues the dictionary of the previous file entry.
+            auto solid = Property(arc.handler, (UInt32)entry.index, kpidSolid);
+            bool continues = solid.vt == VT_BOOL && solid.boolVal != VARIANT_FALSE;
+            if (!continues || run < 0) run = (Int64)entry.index;
+            members.push_back({entry, run});
+        } else {
+            auto solid = Property(arc.handler, (UInt32)entry.index, kpidSolid);
+            if (solid.vt == VT_BOOL && solid.boolVal != VARIANT_FALSE) {
+                members.push_back({entry, 0});
+                largestSolid = std::max(largestSolid, (UInt64)entry.packedSize.unsignedLongLongValue);
+            }
+        }
+    }
+    std::map<Int64, std::pair<unsigned, UInt64>> blocks;
+    for (auto &member : members) {
+        auto &block = blocks[member.second];
+        block.first += 1;
+        block.second += member.first.packedSize.unsignedLongLongValue;
+    }
+    for (auto &member : members) {
+        const auto &block = blocks[member.second];
+        if (!wim && block.first < 2) continue;
+        member.first.solidBlock = YES;
+        // Upper bounds where the handler does not report the block's size.
+        UInt64 size = cab || (wim && largestSolid == 0) ? sourceSize : wim ? largestSolid : block.second;
+        member.first.solidBlockPackedSize = @(size);
+    }
+}
+
+/// Bounded in-memory pipe between the outer stream handler (producer thread) and the tar
+/// handler reading sequentially (operation thread). Nothing is written to disk.
+struct StreamPipe {
+    std::mutex mutex;
+    std::condition_variable changed;
+    std::vector<Byte> ring;
+    size_t head = 0, count = 0;
+    bool finished = false, closed = false;
+    HRESULT result = S_OK;
+    Int32 itemResult = NArchive::NExtract::NOperationResult::kOK;
+    ZFSevenZipOperation *operation;
+    StreamPipe(size_t capacity, ZFSevenZipOperation *operation) : ring(capacity), operation(operation) {}
+    bool stopped() const { return operation->stopped.load(); }
+    bool succeeded() {
+        std::lock_guard<std::mutex> lock(mutex);
+        return finished && result == S_OK && itemResult == NArchive::NExtract::NOperationResult::kOK;
+    }
+};
+class PipeWriter final : public ISequentialOutStream, public CMyUnknownImp {
+    Z7_IFACES_IMP_UNK_1(ISequentialOutStream)
+public:
+    std::shared_ptr<StreamPipe> pipe;
+};
+Z7_COM7F_IMF(PipeWriter::Write(const void *data, UInt32 size, UInt32 *processed)) {
+    if (processed) *processed = 0;
+    std::unique_lock<std::mutex> lock(pipe->mutex);
+    const size_t capacity = pipe->ring.size();
+    UInt32 done = 0;
+    while (done < size) {
+        while (pipe->count == capacity && !pipe->closed && !pipe->stopped())
+            pipe->changed.wait_for(lock, std::chrono::milliseconds(50));
+        if (pipe->closed || pipe->stopped()) return E_ABORT;
+        const size_t tail = (pipe->head + pipe->count) % capacity;
+        const size_t chunk = std::min({capacity - pipe->count, capacity - tail, (size_t)(size - done)});
+        memcpy(pipe->ring.data() + tail, (const Byte *)data + done, chunk);
+        pipe->count += chunk; done += (UInt32)chunk;
+        if (processed) *processed = done;
+        pipe->changed.notify_all();
+    }
+    return S_OK;
+}
+class PipeReader final : public ISequentialInStream, public CMyUnknownImp {
+    Z7_IFACES_IMP_UNK_1(ISequentialInStream)
+public:
+    std::shared_ptr<StreamPipe> pipe;
+};
+Z7_COM7F_IMF(PipeReader::Read(void *data, UInt32 size, UInt32 *processed)) {
+    if (processed) *processed = 0;
+    if (size == 0) return S_OK;
+    std::unique_lock<std::mutex> lock(pipe->mutex);
+    while (pipe->count == 0 && !pipe->finished && !pipe->stopped())
+        pipe->changed.wait_for(lock, std::chrono::milliseconds(50));
+    if (pipe->stopped()) return E_ABORT;
+    if (pipe->count == 0) {
+        // End of the decompressed stream; a failed outer stream is an error, not an end.
+        bool ok = pipe->result == S_OK && pipe->itemResult == NArchive::NExtract::NOperationResult::kOK;
+        return ok ? S_OK : E_FAIL;
+    }
+    const size_t capacity = pipe->ring.size();
+    const size_t chunk = std::min({pipe->count, capacity - pipe->head, (size_t)size});
+    memcpy(data, pipe->ring.data() + pipe->head, chunk);
+    pipe->head = (pipe->head + chunk) % capacity; pipe->count -= chunk;
+    if (processed) *processed = (UInt32)chunk;
+    pipe->changed.notify_all();
+    return S_OK;
+}
+class PipeProducerCallback final : public IArchiveExtractCallback, public CMyUnknownImp {
+    Z7_IFACES_IMP_UNK_1(IArchiveExtractCallback)
+    Z7_IFACE_COM7_IMP(IProgress)
+public:
+    std::shared_ptr<StreamPipe> pipe;
+    CMyComPtr<ISequentialOutStream> writer;
+    HRESULT check() { return pipe->stopped() ? E_ABORT : S_OK; }
+};
+Z7_COM7F_IMF(PipeProducerCallback::SetTotal(UInt64)) { return check(); }
+Z7_COM7F_IMF(PipeProducerCallback::SetCompleted(const UInt64 *)) { return check(); }
+Z7_COM7F_IMF(PipeProducerCallback::PrepareOperation(Int32)) { return check(); }
+Z7_COM7F_IMF(PipeProducerCallback::GetStream(UInt32 index, ISequentialOutStream **stream, Int32 askMode)) {
+    *stream = nullptr; RINOK(check())
+    if (index != 0 || askMode != NArchive::NExtract::NAskMode::kExtract) return S_OK;
+    *stream = writer; (*stream)->AddRef(); return S_OK;
+}
+Z7_COM7F_IMF(PipeProducerCallback::SetOperationResult(Int32 result)) {
+    std::lock_guard<std::mutex> lock(pipe->mutex);
+    pipe->itemResult = result;
+    return S_OK;
+}
+/// A compressed tar opened for one sequential pass. The outer handler decompresses on a
+/// producer thread; the tar handler reads the pipe through `IArchiveOpenSeq`.
+struct TarStream {
+    Archive outer;
+    CMyComPtr<IInArchive> tar;
+    std::shared_ptr<StreamPipe> pipe;
+    CMyComPtr<ISequentialInStream> reader;
+    std::thread producer;
+    ~TarStream() { stop(); if (tar) tar->Close(); }
+    void stop() {
+        if (pipe) {
+            { std::lock_guard<std::mutex> lock(pipe->mutex); pipe->closed = true; }
+            pipe->changed.notify_all();
+        }
+        if (producer.joinable()) producer.join();
+    }
+    /// Reads the rest of the stream so the outer handler verifies its checksum.
+    HRESULT drain() {
+        std::vector<Byte> buffer(1 << 16);
+        for (;;) {
+            UInt32 read = 0;
+            RINOK(reader->Read(buffer.data(), (UInt32)buffer.size(), &read))
+            if (read == 0) return S_OK;
+        }
+    }
+    HRESULT open(NSString *path, Context &ctx) {
+        RINOK(Open(path, ctx, outer))
+        if (!IsStreamFormat(outer.format)) return S_FALSE;
+        UInt32 count = 0; RINOK(outer.handler->GetNumberOfItems(&count))
+        if (count < 1) return S_FALSE;
+        RINOK(CreateHandler(@"tar", &IID_IInArchive, (void **)&tar))
+        CMyComPtr<IArchiveOpenSeq> sequential;
+        tar.QueryInterface(IID_IArchiveOpenSeq, &sequential);
+        if (!sequential) return E_NOINTERFACE;
+        pipe = std::make_shared<StreamPipe>(1 << 20, ctx.operation);
+        PipeReader *readerSpec = new PipeReader; reader = readerSpec; readerSpec->pipe = pipe;
+        RINOK(sequential->OpenSeq(reader))
+        // The producer owns its COM objects: their reference counts are not thread-safe.
+        IInArchive *handler = outer.handler;
+        std::shared_ptr<StreamPipe> shared = pipe;
+        producer = std::thread([handler, shared] {
+            PipeWriter *writerSpec = new PipeWriter;
+            CMyComPtr<ISequentialOutStream> writer = writerSpec; writerSpec->pipe = shared;
+            PipeProducerCallback *callbackSpec = new PipeProducerCallback;
+            CMyComPtr<IArchiveExtractCallback> callback = callbackSpec;
+            callbackSpec->pipe = shared; callbackSpec->writer = writer;
+            const UInt32 index = 0;
+            HRESULT result;
+            try { result = handler->Extract(&index, 1, 0, callback); } catch (...) { result = E_FAIL; }
+            callback.Release(); writer.Release();
+            { std::lock_guard<std::mutex> lock(shared->mutex); shared->finished = true; shared->result = result; }
+            shared->changed.notify_all();
+        });
+        return S_OK;
+    }
+};
+class ListCallback final : public IArchiveExtractCallback, public CMyUnknownImp {
+    Z7_IFACES_IMP_UNK_1(IArchiveExtractCallback)
+    Z7_IFACE_COM7_IMP(IProgress)
+public:
+    Context *context;
+    IInArchive *archive;
+    NSMutableArray<ZFSevenZipEntry *> *entries;
+};
+Z7_COM7F_IMF(ListCallback::SetTotal(UInt64)) { return context->check(); }
+Z7_COM7F_IMF(ListCallback::SetCompleted(const UInt64 *)) { return context->check(); }
+Z7_COM7F_IMF(ListCallback::PrepareOperation(Int32)) { return context->check(); }
+Z7_COM7F_IMF(ListCallback::SetOperationResult(Int32)) { return context->check(); }
+Z7_COM7F_IMF(ListCallback::GetStream(UInt32 index, ISequentialOutStream **stream, Int32)) {
+    *stream = nullptr; RINOK(context->check())
+    try {
+        if (IsSparse(archive, index)) { context->failure = 5; return E_ABORT; }
+        [entries addObject:MakeEntry(archive, index)];
+    } catch (...) { return E_FAIL; }
+    return S_OK; // no stream: the handler skips the data
+}
+
 int OpenOutput(NSString *path, NSString *rootPath, int root,
     std::map<std::string, int> &parents) {
     NSString *prefix = [rootPath isEqualToString:@"/"] ? rootPath : [rootPath stringByAppendingString:@"/"];
@@ -263,6 +582,14 @@ public:
     std::map<std::string, int> parents;
     NSString *rootPath = nil;
     int root = -1;
+    // A file promise grants only its own URL: without a root folder, the single output is
+    // opened by that exact path and nothing else can be written.
+    NSString *exactPath = nil;
+    // Sequential (compressed tar) mode: destinations come from the planner per entry.
+    NSString * _Nullable (^planner)(ZFSevenZipEntry *, BOOL *) = nil;
+    UInt32 lastIndex = UINT32_MAX;
+    UInt32 current = UINT32_MAX;
+    bool stoppedEarly = false;
     ~ExtractCallback() { for (auto &parent : parents) close(parent.second); if (root >= 0) close(root); }
 };
 Z7_COM7F_IMF(ExtractCallback::SetTotal(UInt64)) { return context->check(); }
@@ -284,17 +611,36 @@ Z7_COM7F_IMF(ExtractCallback::SetOperationResult(Int32 result)) {
         if (result == NArchive::NExtract::NOperationResult::kWrongPassword) context->failure = 2;
         return E_FAIL;
     }
+    // Every requested entry is written: stop decompressing the rest of the stream.
+    if (planner && current == lastIndex) { stoppedEarly = true; return E_ABORT; }
     return context->check();
 }
 Z7_COM7F_IMF(ExtractCallback::GetStream(UInt32 index, ISequentialOutStream **stream, Int32 askMode)) {
     *stream = nullptr; file = nullptr; output.Release(); RINOK(context->check())
-    if (askMode != NArchive::NExtract::NAskMode::kExtract) return S_OK;
-    if (index >= positions.size() || positions[index] == kUnselected) return S_OK;
-    NSString *destination = destinations[positions[index]];
-    if (destination.length == 0) return S_OK; // directory, created by Swift
+    NSString *destination = nil;
+    if (planner) {
+        if (index > lastIndex) { stoppedEarly = true; return E_ABORT; }
+        ZFSevenZipEntry *entry = nil;
+        try {
+            if (IsSparse(archive, index)) { context->failure = 5; return E_ABORT; }
+            entry = MakeEntry(archive, index);
+        } catch (...) { return E_FAIL; }
+        BOOL abort = NO;
+        destination = planner(entry, &abort);
+        if (abort) { context->failure = 7; return E_ABORT; }
+        current = index;
+        if (askMode != NArchive::NExtract::NAskMode::kExtract || destination.length == 0) return S_OK;
+    } else {
+        if (askMode != NArchive::NExtract::NAskMode::kExtract) return S_OK;
+        if (index >= positions.size() || positions[index] == kUnselected) return S_OK;
+        destination = destinations[positions[index]];
+        if (destination.length == 0) return S_OK; // directory, created by Swift
+    }
     file = new Output;
     output = file; file->context = context; file->limit = limit;
-    file->fd = OpenOutput(destination, rootPath, root, parents);
+    if (root >= 0) file->fd = OpenOutput(destination, rootPath, root, parents);
+    else if (exactPath && [destination isEqualToString:exactPath])
+        file->fd = open(destination.fileSystemRepresentation, O_WRONLY | O_CREAT | O_EXCL | O_NOFOLLOW | O_CLOEXEC, 0600);
     if (file->fd < 0) { file = nullptr; output.Release(); return E_FAIL; }
     auto mode = Property(archive, index, kpidPosixAttrib);
     auto attributes = Property(archive, index, kpidAttrib);
@@ -304,6 +650,15 @@ Z7_COM7F_IMF(ExtractCallback::GetStream(UInt32 index, ISequentialOutStream **str
     }
     file->modified = Date(Property(archive, index, kpidMTime));
     *stream = output; (*stream)->AddRef(); return S_OK;
+}
+/// Opens the destination folder, or, when the destination itself does not exist yet (a file
+/// promise), restricts the extraction to creating exactly that path.
+bool OpenRoot(ExtractCallback *callback, NSString *rootPath) {
+    callback->root = open(rootPath.fileSystemRepresentation, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+    if (callback->root >= 0) return true;
+    if (errno != ENOENT) return false;
+    callback->exactPath = rootPath;
+    return true;
 }
 class UpdateCallback final : public IArchiveUpdateCallback2, public ICryptoGetTextPassword2,
     public CMyUnknownImp {
@@ -390,39 +745,40 @@ bool Finish(HRESULT result, Context &context, NSError **error, int itemResult = 
     }
     return result;
 }
++ (BOOL)isCompressedTarPath:(NSString *)path { return IsCompressedTar(path); }
 + (NSArray<ZFSevenZipEntry *> *)entriesAtPath:(NSString *)path password:(NSString *)password
     operation:(ZFSevenZipOperation *)operation error:(NSError **)error {
     Context ctx{operation, password};
     try {
+        if (IsCompressedTar(path)) {
+            // One decompression pass reads every tar header; nothing is written.
+            TarStream stream;
+            if (!Finish(stream.open(path, ctx), ctx, error)) return nil;
+            NSMutableArray *entries = [NSMutableArray array];
+            ListCallback *callback = new ListCallback;
+            CMyComPtr<IArchiveExtractCallback> owner = callback;
+            callback->context = &ctx; callback->archive = stream.tar; callback->entries = entries;
+            HRESULT result = stream.tar->Extract(nullptr, (UInt32)-1, 0, owner);
+            if (result == S_OK) result = stream.drain();
+            stream.stop();
+            if (result == S_OK && !stream.pipe->succeeded()) result = E_FAIL;
+            if (result == S_OK && entries.count == 0) {
+                CPropVariant flags;
+                if (stream.tar->GetArchiveProperty(kpidErrorFlags, &flags) == S_OK && flags.vt == VT_UI4 && flags.ulVal)
+                    result = S_FALSE;
+            }
+            if (!Finish(result, ctx, error)) return nil;
+            for (ZFSevenZipEntry *entry in entries) { entry.solidBlock = YES; entry.solidBlockPackedSize = @(ctx.sourceSize); }
+            return entries;
+        }
         Archive arc; if (!Finish(Open(path, ctx, arc), ctx, error)) return nil;
         UInt32 count; if (!Finish(arc.handler->GetNumberOfItems(&count), ctx, error)) return nil;
         NSMutableArray *entries = [NSMutableArray arrayWithCapacity:count];
         for (UInt32 i = 0; i < count; ++i) {
             if (!Finish(ctx.check(), ctx, error)) return nil;
-            ZFSevenZipEntry *entry = [ZFSevenZipEntry new]; entry.index = i;
-            auto name = Property(arc.handler, i, kpidPath);
-            entry.path = name.vt == VT_BSTR ? String(name.bstrVal) : @"";
-            auto folder = Property(arc.handler, i, kpidIsDir);
-            entry.directory = folder.vt == VT_BOOL && folder.boolVal != VARIANT_FALSE;
-            auto crypt = Property(arc.handler, i, kpidEncrypted);
-            entry.encrypted = crypt.vt == VT_BOOL && crypt.boolVal != VARIANT_FALSE;
-            entry.size = Number(Property(arc.handler, i, kpidSize));
-            entry.packedSize = Number(Property(arc.handler, i, kpidPackSize));
-            auto mode = Property(arc.handler, i, kpidPosixAttrib);
-            entry.posixMode = Number(mode);
-            auto attributes = Property(arc.handler, i, kpidAttrib);
-            if (!entry.posixMode && attributes.vt == VT_UI4 && (attributes.ulVal & 0x8000)) entry.posixMode = @(attributes.ulVal >> 16);
-            auto link = Property(arc.handler, i, kpidSymLink);
-            entry.symbolicLink = ([entry.posixMode unsignedIntValue] & 0170000) == 0120000 || link.vt == VT_BSTR;
-            entry.modified = Date(Property(arc.handler, i, kpidMTime));
-            entry.created = Date(Property(arc.handler, i, kpidCTime));
-            entry.accessed = Date(Property(arc.handler, i, kpidATime));
-            auto crc = Property(arc.handler, i, kpidCRC);
-            if (crc.vt == VT_UI4) entry.checksum = [NSString stringWithFormat:@"%08X", crc.ulVal];
-            auto method = Property(arc.handler, i, kpidMethod);
-            if (method.vt == VT_BSTR) entry.method = String(method.bstrVal);
-            [entries addObject:entry];
+            [entries addObject:MakeEntry(arc.handler, i)];
         }
+        ApplySolidBlocks(arc, entries, ctx.sourceSize);
         return entries;
     } catch (...) { Finish(E_FAIL, ctx, error); return nil; }
 }
@@ -457,6 +813,9 @@ bool Finish(HRESULT result, Context &context, NSError **error, int itemResult = 
         UInt32 position = 0;
         for (NSNumber *number in indices) {
             UInt32 index = number.unsignedIntValue;
+            // The archive is read in place: if it was replaced since it was listed, an index
+            // can be past its items, and the handlers do not check (out-of-bounds read).
+            if (index >= count) return Finish(E_INVALIDARG, ctx, error);
             selected.push_back(index);
             if (index < count && callback->positions[index] == kUnselected) callback->positions[index] = position;
             ++position;
@@ -466,8 +825,63 @@ bool Finish(HRESULT result, Context &context, NSError **error, int itemResult = 
         callback->context = &ctx; callback->archive = arc.handler;
         callback->destinations = destinations; callback->limit = byteLimit;
         callback->rootPath = rootPath;
-        callback->root = open(rootPath.fileSystemRepresentation, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
-        if (callback->root < 0) return Finish(E_FAIL, ctx, error);
+        if (!OpenRoot(callback, rootPath)) return Finish(E_FAIL, ctx, error);
+        HRESULT result = selected.empty() ? S_OK : arc.handler->Extract(selected.data(), (UInt32)selected.size(), 0, owner);
+        return Finish(result, ctx, error, callback->itemResult);
+    } catch (...) { return Finish(E_FAIL, ctx, error); }
+}
++ (BOOL)extractPlannedAtPath:(NSString *)path password:(NSString *)password rootPath:(NSString *)rootPath
+    byteLimit:(uint64_t)byteLimit lastIndex:(uint32_t)lastIndex
+    planner:(NSString * _Nullable (^)(ZFSevenZipEntry *, BOOL *))planner
+    ready:(BOOL (^)(void))ready
+    operation:(ZFSevenZipOperation *)operation error:(NSError **)error {
+    Context ctx{operation, password};
+    try {
+        // The archive is read in place: plan and extract from this one opening, after the
+        // caller confirmed it is still the archive it listed (nothing written before that).
+        if (IsCompressedTar(path)) {
+            TarStream stream;
+            if (!Finish(stream.open(path, ctx), ctx, error)) return NO;
+            if (ready && !ready()) { ctx.failure = 8; return Finish(E_ABORT, ctx, error); }
+            ExtractCallback *callback = new ExtractCallback;
+            CMyComPtr<IArchiveExtractCallback> owner = callback;
+            callback->context = &ctx; callback->archive = stream.tar;
+            callback->limit = byteLimit; callback->rootPath = rootPath;
+            callback->planner = planner; callback->lastIndex = lastIndex;
+            if (!OpenRoot(callback, rootPath)) return Finish(E_FAIL, ctx, error);
+            HRESULT result = stream.tar->Extract(nullptr, (UInt32)-1, 0, owner);
+            const bool early = callback->stoppedEarly && result == E_ABORT && !ctx.failure && !operation->stopped.load();
+            if (early) result = S_OK;
+            // A full pass also verifies the outer stream (its checksum follows the tar data).
+            else if (result == S_OK) result = stream.drain();
+            stream.stop();
+            if (result == S_OK && !early && !stream.pipe->succeeded()) result = E_FAIL;
+            return Finish(result, ctx, error, callback->itemResult);
+        }
+        Archive arc;
+        if (!Finish(Open(path, ctx, arc), ctx, error)) return NO;
+        if (ready && !ready()) { ctx.failure = 8; return Finish(E_ABORT, ctx, error); }
+        UInt32 count = 0;
+        if (!Finish(arc.handler->GetNumberOfItems(&count), ctx, error)) return NO;
+        ExtractCallback *callback = new ExtractCallback;
+        CMyComPtr<IArchiveExtractCallback> owner = callback;
+        callback->positions.assign(count, kUnselected);
+        NSMutableArray<NSString *> *destinations = [NSMutableArray array];
+        std::vector<UInt32> selected;
+        for (UInt32 i = 0; i < count; ++i) {
+            if (!Finish(ctx.check(), ctx, error)) return NO;
+            BOOL abort = NO;
+            NSString *destination = planner(MakeEntry(arc.handler, i), &abort);
+            if (abort) { ctx.failure = 7; return Finish(E_ABORT, ctx, error); }
+            if (destination.length == 0) continue;
+            callback->positions[i] = (UInt32)destinations.count;
+            [destinations addObject:destination];
+            selected.push_back(i);
+        }
+        callback->context = &ctx; callback->archive = arc.handler;
+        callback->destinations = destinations; callback->limit = byteLimit;
+        callback->rootPath = rootPath;
+        if (!OpenRoot(callback, rootPath)) return Finish(E_FAIL, ctx, error);
         HRESULT result = selected.empty() ? S_OK : arc.handler->Extract(selected.data(), (UInt32)selected.size(), 0, owner);
         return Finish(result, ctx, error, callback->itemResult);
     } catch (...) { return Finish(E_FAIL, ctx, error); }
@@ -482,17 +896,8 @@ bool Finish(HRESULT result, Context &context, NSError **error, int itemResult = 
         if (updatingPath) {
             if (!Finish(Open(updatingPath, ctx, old), ctx, error)) return NO;
             if (!Finish(old.handler->QueryInterface(IID_IOutArchive, (void **)&writer), ctx, error)) return NO;
-        } else {
-            UInt32 count = 0; GetNumberOfFormats(&count);
-            for (UInt32 i = 0; i < count; ++i) {
-                CPropVariant name; GetHandlerProperty2(i, NArchive::NHandlerPropID::kName, &name);
-                if (name.vt != VT_BSTR || ![String(name.bstrVal) isEqualToString:format]) continue;
-                CPropVariant id; GetHandlerProperty2(i, NArchive::NHandlerPropID::kClassID, &id);
-                if (id.vt != VT_BSTR || SysStringByteLen(id.bstrVal) != sizeof(GUID)) continue;
-                GUID cls; memcpy(&cls, id.bstrVal, sizeof(cls));
-                if (!Finish(CreateObject(&cls, &IID_IOutArchive, (void **)&writer), ctx, error)) return NO;
-                break;
-            }
+        } else if (CreateHandler(format, &IID_IOutArchive, (void **)&writer) != S_OK) {
+            writer.Release();
         }
         if (!writer) return Finish(E_NOINTERFACE, ctx, error);
         NSMutableDictionary *effective = [properties mutableCopy];
