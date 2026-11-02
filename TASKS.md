@@ -606,6 +606,16 @@ Pending: in-app check of the row and the computer level in the four modes (light
 - [x] Test suites named `ZforgeTestSuite.…`, emptied at the end of each test and swept once per run, so at most one run's files remain (2026-11-01, D-68); snapshot recording through attachments (`Scripts/export-snapshots.py`).
 - [ ] The user decides what to restore (list in REGRESSION-COVERAGE); nothing was changed by the agent.
 
+
+### ZF-55 — In-place archive reading, nested-archive removal and preview limits (2026-11-01, D-73)
+
+**Implementation requested by the user on 2026-11-02.** Contract: OPEN-REQUIREMENTS “In-place archive reading, nested-archive removal and preview limits (D-73)”. Steps proposed:
+- [ ] Characterize the affected contracts and tests (opening, staging, materialization, nesting, extraction, validation, add/remove/reorganize, preview limits, Settings) and record the baseline run. Performance acceptance is structural, not timed (user, 2026-11-02: no execution-time measurements based on archive size in tests): tests assert that opening and browsing create no copy of the archive or its volumes, that bytes read from the source while listing stay bounded by the index (instrumented stream), that previews and thumbnails respect the limits and the solid-block rule, and that extraction, validation and writes use no temporary copy of the archive.
+- [ ] Read in place with a file fingerprint; parent-to-children index; streaming compressed tar; one-pass write next to the original; no copies for extraction and validation.
+- [ ] Remove nested navigation and its settings; open an inner archive in a new window with a shared session and write-back on the last close.
+- [ ] Preview/thumbnail limits, the solid-archives checkbox and removable/remote settings with the generalized logarithmic slider; localization of every new string.
+- [ ] Synchronize CURRENT-STATE, PRODUCT-REQUIREMENTS, REGRESSION-COVERAGE and D-73; run `Scripts/affected-tests.py --run`.
+
 ### ZF-56 — UI tests offscreen by default (2026-11-01, RNF-Q08)
 
 **Implemented; equivalence recorded for the 16 simulable UI tests; results in REGRESSION-COVERAGE “UI tests offscreen by default”.** The user asked to run the existing XCUITests without taking over the screen, without a VM or a second macOS user; the sibling tool `zforge-xcuitest-sim` does it.

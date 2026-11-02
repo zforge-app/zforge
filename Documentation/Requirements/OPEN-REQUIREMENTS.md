@@ -205,3 +205,48 @@ The Network level (CURRENT-STATE §2) is implemented within the App Sandbox. Ope
 - **Connecting feedback:** no in-window “Connecting…” indicator while the system flow is open; the system's own dialogs are the feedback.
 - **Other servers:** only `_smb._tcp` and `_afpovertcp._tcp` are browsed; NFS, WebDAV, screen sharing and the Mac model icon of advertising Macs (Finder's `_device-info._tcp`) are not shown.
 - **Verification:** real Bonjour discovery, the Local Network prompt and denial, and a real SMB mount have not been checked in the app (no server available to the agent). The Add Remote bar and the sidebar Network row (2026-10-30) were verified offscreen only; their in-window look in all four modes, long languages and narrow widths is pending.
+
+## In-place archive reading, nested-archive removal and preview limits (D-73) — under definition, 2026-11-01
+
+Status: **contract defined with the user on 2026-11-01; implementation requested on 2026-11-02 (ZF-55).** Performance acceptance is structural, not timed: tests must not measure execution time as a function of archive size (user, 2026-11-02); they assert absence of archive copies, bounded source reads while listing, the limits and the solid-block rule. Nothing below changes CURRENT-STATE until it is implemented. Origin: D-73 (opening copies the whole archive and its volumes).
+
+Decided direction (user, 2026-11-01):
+- **Read in place.** Opening, listing, browsing, preview, thumbnails, export, extraction and validation read the authorized original and its volumes; the session holds only materialized items. The consistency, ejection and disconnection risks of reading the original are not reasons to keep a copy. Writes (add/remove/reorganize) proposed: the engine reads the original and writes the new archive once, next to the original, then validates and replaces it; change detection by a file fingerprint instead of byte comparison.
+- **Remove nested archives.** Archives inside archives are shown and handled as ordinary files (no disclosure, chevron, new column or nested session). Rationale: every object is discovered from the archive's metadata, and nesting is the only browsing feature whose cost grows beyond the index; nesting is considered an authoring error. The depth and root-size nesting settings go away with it.
+- **Preview size limit:** setting from 32 MB to 2 GB, default 512 MB (replaces the fixed 10 MiB automatic limit).
+- **Thumbnail size limit:** setting from 4 MB to 64 MB, default 8 MB, with a slider in Settings.
+- **Archives without an index** (whose structure cannot be known without decompressing, such as compressed tar streams): a Settings checkbox enables or disables their preview. (Broadened to all solid archives below.)
+- **Removable and remote volumes:** one checkbox each enables preview there; enabling one shows its own size-limit slider (32 MB to 2 GB).
+
+Decisions from the review (user, 2026-11-01):
+- **No-index archives** (compressed tar streams): the limit is measured against the size of the compressed archive itself (the `.tar.gz`).
+- **Sliders** follow the existing Settings slider behavior (`ArchiveSizeLimitSliderScale`): logarithmic track with one equal length per doubling, tick marks at each doubling and snapping on round values.
+- **Removable/remote limits replace** the general preview limit on those volumes. **When a volume type is off,** automatic previews and thumbnails stop there and the manual load action remains. **Explicit actions** (Quick Look with Space, Open) bypass the limits, with progress and cancellation. **Scope:** only items inside archives. **Classification:** removable = local volume that is not internal (USB flash drive, external disk, card); remote = non-local volume (SMB, AFP, NFS, WebDAV). **Defaults:** both off; when enabled, each starts at 32 MB.
+- **Cloud File Provider folders:** out of scope until Zforge browses them.
+- **Accepted additions:** a parent-to-children index built once at opening (folder listing must not scan every entry); progress and cancellation when opening archives whose listing reads many headers or the whole stream (RAR4/TAR with many entries, compressed tar); prompt cancellation of native reads on fast selection changes, including network reads; thumbnails in the multiple-selection stack and Gallery follow the thumbnail limit.
+
+Further decisions (user, 2026-11-01):
+- **Solid blocks:** for an item stored in a solid block (7z, RAR, CAB), the general preview limit is compared with the compressed size of the block that contains it; compressed tar is the case where the block is the whole archive. Items of ZIP and non-solid archives are measured by their own size.
+- **Compressed tar:** streaming. Opening runs one decompression pass that reads the tar headers without writing the `.tar`; each preview decompresses from the start up to the item. The temporary `.tar` (`StreamPayload`) goes away.
+- **Sliders:** the existing logarithmic scale is generalized: preview 32 MB to 2 GB, thumbnails 4 MB to 64 MB, removable and remote 32 MB to 2 GB.
+- **Archive inside an archive:** double click / Open materializes it and opens it as a root archive in a new Zforge window.
+- **Storage budget:** no total cap for materialized previews/thumbnails for now; per-item limits and the existing free-space check apply.
+
+- **Solid archives preview checkbox** (supersedes the “no-index” checkbox, user 2026-11-01): labeled **Preview solid archives** (pt-BR: “Pré-visualizar arquivos compactados sólidos”), **on by default** (user, 2026-11-01, after the review showed that default 7z archives are solid), with a smaller-font list of the affected types below it. It covers every item whose decoding cannot start at the item: items in solid blocks of 7z, RAR, CAB and WIM/ESD, compressed tar (`.tar.gz`/`.tgz`, `.tar.bz2`/`.tbz`/`.tbz2`, `.tar.xz`/`.txz`, `.tar.zst`/`.tzst`) and single-file compressed streams (`.gz`, `.bz2`, `.xz`, `.zst`, `.lzma`). Solidity is detected per archive and block from the index, so non-solid 7z/RAR items follow the ordinary limits even when the checkbox is off. It has no slider of its own: the preview limit of each volume type (general, removable, remote) applies, compared with the compressed size of the block (the whole archive for compressed streams).
+- **Archive opened from inside another archive:** it is editable. When its window closes after it was modified, the outer archive is rebuilt with the modified archive replacing the original entry, and the outer archive file is replaced by the rebuilt one.
+
+Write-back rules (user, 2026-11-01):
+- Outer archives that cannot be updated (RAR, compressed tar, ISO and other read-only formats, multi-volume ZIP/7z): the inner window is read-only, with write actions disabled.
+- Chains write back in order: closing a window that has inner windows open closes those first, writing back from the innermost up.
+- Quitting waits for pending write-backs, with visible progress; a crash loses unsaved changes.
+- Opening an inner archive that is already open shows the same session in the new window: every window of that archive shows the same session content, and changes in one appear in all. The write-back runs when the last window of that session closes.
+- If the outer archive was changed by something else (fingerprint), ask before replacing: Replace Anyway, Save Inner Archive As…, Discard Changes.
+- A failed write-back keeps the modified copy and offers Try Again and Save Inner Archive As….
+- The window closes immediately and the rebuild runs in the background with visible progress; cancelling leads to the failure options.
+- An encrypted outer archive uses the password kept in its session, asking only if none is known.
+- An open window of the outer archive reloads its listing after the write-back, keeping its selection.
+- The path bar and title of the inner window show `outer archive › inner archive`, never the temporary folder.
+
+- **Shared sessions for every archive** (user, 2026-11-01): all windows and tabs showing the same archive, root or inner, show one shared session; a change made in one appears in all.
+
+- **Thumbnails in solid blocks** (user, 2026-11-01): follow the same checkbox (off: no thumbnails); when on, the thumbnail limit is compared with the block's compressed size.
