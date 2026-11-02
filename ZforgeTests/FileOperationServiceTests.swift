@@ -114,9 +114,10 @@ struct FileOperationServiceTests {
             await state.navigateToSidebar(root, name: root.lastPathComponent)
 
             let controller = NSHostingController(rootView: RenameBrowserHarness(state: state))
-            let window = NSWindow(contentViewController: controller)
+            let window = OffscreenHarnessWindow(contentViewController: controller)
             window.isReleasedWhenClosed = false
             window.setContentSize(NSSize(width: 760, height: 520))
+            window.setFrameOrigin(OffscreenHarnessWindow.origin)
             window.makeKeyAndOrderFront(nil)
 
             state.createNewFolder()
@@ -650,6 +651,15 @@ struct FileOperationServiceTests {
 }
 
 @MainActor
+/// The rename harness window orders in and becomes key like a browser window, so the rename
+/// editor's focus is real, but it stays off every screen: unit tests never show windows in front of
+/// the user (RNF-Q08). A titled window is normally pulled back onto a screen when it orders in.
+private final class OffscreenHarnessWindow: NSWindow {
+    static let origin = NSPoint(x: -10_000, y: -10_000)
+
+    override func constrainFrameRect(_ frameRect: NSRect, to screen: NSScreen?) -> NSRect { frameRect }
+}
+
 private struct RenameBrowserHarness: View {
     @Bindable var state: FileBrowserState
     @FocusState private var browserFocus: BrowserFocusTarget?

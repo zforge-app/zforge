@@ -75,6 +75,26 @@ nonisolated enum ZforgeDefaults {
     }
 }
 
+/// The unit test host stays out of the user's way (RNF-Q08, 2026-11-02). XCTest launches Zforge
+/// only to load the `Unit` plan while the user keeps working, so that launch opens no browser
+/// window (which would also ask for folder access, since the host has no grants) and keeps the
+/// app out of the Dock and the app switcher. UI test launches and ordinary launches are unchanged.
+nonisolated enum UnitTestHostPresentation {
+    static func isQuiet(arguments: [String], environment: [String: String]) -> Bool {
+        ZforgeDefaults.isTestHost(environment: environment) && !ZforgeDefaults.isUITestLaunch(arguments: arguments)
+    }
+
+    static let isQuietLaunch = isQuiet(
+        arguments: ProcessInfo.processInfo.arguments, environment: ProcessInfo.processInfo.environment)
+
+    /// Called before launch finishes, so the Dock never keeps the host's icon.
+    @MainActor
+    static func applyIfNeeded(to app: NSApplication, quiet: Bool = isQuietLaunch) {
+        guard quiet else { return }
+        app.setActivationPolicy(.accessory)
+    }
+}
+
 /// What AppKit itself keeps in the application's preferences: window and split-view frames
 /// (autosave) and the open panel's last folder and size. Test launches (UI tests and the unit
 /// test host) keep none of it in the user's preferences.

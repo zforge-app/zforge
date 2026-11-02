@@ -12,7 +12,9 @@ throwaway copies of a build without taking over the screen. The tests listed
 under `offscreen.realOnly` in the map leave the app process (Finder, drag and
 drop through the window server, out-of-process open panels); they run as real
 XCUITests afterwards and take over the screen. Without the tool, every UI test
-runs real.
+runs real. The tool is looked up next to this checkout, then next to the main
+checkout (so linked worktrees, such as ~/.t3/worktrees/..., find it), unless
+ZFORGE_XCUISIM names it.
 
 Usage:
   Scripts/affected-tests.py                 # list the selection for uncommitted changes
@@ -40,7 +42,7 @@ MAP = ROOT / "TestPlans" / "ui-impact.json"
 SMOKE_PLAN = ROOT / "TestPlans" / "UI-Smoke.xctestplan"
 UI_DIR = ROOT / "ZforgeUITests"
 SOURCE_DIRS = ["Zforge", "Shared", "ZforgeFinderExtension"]
-XCUISIM = Path(os.environ.get("ZFORGE_XCUISIM", ROOT.parent / "zforge-xcuitest-sim"))
+XCUISIM_NAME = "zforge-xcuitest-sim"
 XCUISIM_WORK = Path(os.environ.get("XCUISIM_WORK", Path.home() / "Library/Caches/dev.xcuitestsim"))
 XCUISIM_BUILT = ["libXCUISimAgent.dylib", "libXCUISimRunnerShim.dylib", "ScreenGuard"]
 DEFAULT_DURATION = 30
@@ -137,21 +139,46 @@ def lane_outcomes(summary, plan):
     return outcomes
 
 
-def xcuisim_missing():
+def xcuisim_candidates(root):
+    """Where the offscreen tool may be: next to this checkout, then next to the main checkout.
+
+    A linked worktree (for example one under ~/.t3/worktrees) has no sibling tool of its own;
+    the tool sits next to the main checkout, the parent of the shared git directory.
+    """
+    candidates = [root.parent / XCUISIM_NAME]
+    common = subprocess.run(["git", "rev-parse", "--path-format=absolute", "--git-common-dir"],
+                            cwd=root, capture_output=True, text=True)
+    if common.returncode == 0 and common.stdout.strip():
+        main = Path(common.stdout.strip()).resolve().parent
+        if main.parent / XCUISIM_NAME not in candidates:
+            candidates.append(main.parent / XCUISIM_NAME)
+    return candidates
+
+
+def locate_xcuisim(root, environment):
+    """The offscreen tool: `ZFORGE_XCUISIM` when set, else the first candidate that holds it."""
+    if environment.get("ZFORGE_XCUISIM"):
+        return Path(environment["ZFORGE_XCUISIM"])
+    candidates = xcuisim_candidates(root)
+    return next((c for c in candidates if (c / "Scripts" / "run-lanes.py").is_file()), candidates[0])
+
+
+def xcuisim_missing(location, searched=()):
     """Why the offscreen tool cannot run, or None."""
     for script in ("Scripts/run-lanes.py", "Scripts/build-for-testing.sh"):
-        if not (XCUISIM / script).is_file():
-            return f"zforge-xcuitest-sim not found at {XCUISIM} (set ZFORGE_XCUISIM)"
+        if not (location / script).is_file():
+            places = ", ".join(str(p) for p in searched) or str(location)
+            return f"zforge-xcuitest-sim not found at {places} (set ZFORGE_XCUISIM)"
     for product in XCUISIM_BUILT:
         if not (XCUISIM_WORK / "build" / product).exists():
-            return f"{product} is not built; run {XCUISIM}/Scripts/build-tools.sh"
+            return f"{product} is not built; run {location}/Scripts/build-tools.sh"
     return None
 
 
-def run_offscreen(tests, lanes, durations):
+def run_offscreen(xcuisim, tests, lanes, durations):
     """Builds into the tool's work directory and runs the tests in offscreen lanes. Returns failures."""
     derived = XCUISIM_WORK / "builds" / "zforge-affected-tests"
-    build = [str(XCUISIM / "Scripts" / "build-for-testing.sh"), str(derived), "-project", "Zforge.xcodeproj",
+    build = [str(xcuisim / "Scripts" / "build-for-testing.sh"), str(derived), "-project", "Zforge.xcodeproj",
              "-scheme", "Zforge", "-testPlan", "UI-Full", "-configuration", "Debug",
              "-destination", "platform=macOS,arch=arm64"]
     print("$ " + " ".join(build), flush=True)
@@ -160,7 +187,7 @@ def run_offscreen(tests, lanes, durations):
     plan = plan_lanes(tests, lanes, durations)
     name = time.strftime("affected-%Y%m%d-%H%M%S")
     results = XCUISIM_WORK / "affected-results"
-    command = [sys.executable, str(XCUISIM / "Scripts" / "run-lanes.py"), "--name", name, "--results", str(results),
+    command = [sys.executable, str(xcuisim / "Scripts" / "run-lanes.py"), "--name", name, "--results", str(results),
                "--watch", "Zforge", "--watch", "ZforgeUITests-Runner",
                "--products", str(derived / "Build" / "Products"), "--app-group-suffix",
                "--plist-suffix-key", "ZforgeAppGroupIdentifier"]
@@ -255,7 +282,9 @@ def main():
         print(f"  {test}")
     impact = load_map()
     offscreen, real = partition(selected, impact)
-    missing = xcuisim_missing() if args.ui_mode != "real" else "real mode requested"
+    xcuisim = locate_xcuisim(ROOT, os.environ)
+    searched = [] if os.environ.get("ZFORGE_XCUISIM") else xcuisim_candidates(ROOT)
+    missing = xcuisim_missing(xcuisim, searched) if args.ui_mode != "real" else "real mode requested"
     if missing and args.ui_mode == "offscreen":
         print(f"error: {missing}")
         return 2
@@ -270,7 +299,7 @@ def main():
     status = xcodebuild("Unit")
     if status != 0 or args.no_ui or not selected:
         return status
-    failures = run_offscreen(offscreen, args.lanes, impact["offscreen"]["durations"]) if offscreen else []
+    failures = run_offscreen(xcuisim, offscreen, args.lanes, impact["offscreen"]["durations"]) if offscreen else []
     real_status = 0
     if real:
         print(f"Running {len(real)} UI tests real: they take over the screen until they finish.", flush=True)

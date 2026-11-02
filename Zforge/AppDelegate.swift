@@ -19,6 +19,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationWillFinishLaunching(_ notification: Notification) {
         // UI test launches keep window frames out of the user's preferences (D-63).
         UITestLaunchIsolation.startIfNeeded()
+        // The unit test host stays out of the Dock and the app switcher (RNF-Q08).
+        UnitTestHostPresentation.applyIfNeeded(to: NSApplication.shared)
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {

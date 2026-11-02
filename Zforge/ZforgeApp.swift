@@ -27,6 +27,8 @@ struct ZforgeApp: App {
             appDelegate.makeDefaultWindowRequest()
         }
         .defaultSize(width: defaultWindowWidth, height: 720)
+        // The unit test host opens no browser window (RNF-Q08).
+        .defaultLaunchBehavior(UnitTestHostPresentation.isQuietLaunch ? .suppressed : .automatic)
         .environment(\.locale, preferences.language.locale)
         .commands {
             BrowserCommands()

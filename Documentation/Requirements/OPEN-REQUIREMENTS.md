@@ -196,6 +196,7 @@ At the user's request, `codex/apple-intelligence` is merged into `main`, superse
 Implemented: the test plans, the impact map and selection script, the snapshot testing layer, and the migration from 48 to 22 XCUITest tests. Pending verification:
 - **Kept UI tests:** all 22 have passed (2026-10-27), but not in one uninterrupted `UI-Full` run; see REGRESSION-COVERAGE. A clean full run on an idle machine is pending.
 - **Performance test:** a rerun of `ArchiveDiscoveryPerformanceTests` on an idle machine.
+- **Automation Mode during offscreen runs (2026-11-02, undecided):** offscreen UI runs show no app window and post no event to the session, but testmanagerd turns on macOS Automation Mode for every XCUITest session (seen during an offscreen lane run: `automationmodetool` reported it enabled) and may ask for authentication, which takes focus. User decision (2026-11-02): first remove the other sources of interruption (done: the tool's keyboard-focus fix and the quiet unit test host, see RNF-Q08), then a spike in `zforge-xcuitest-sim` that answers XCTest's UI-automation messages (element snapshots and attributes, accessibility actions, idle waits, application state, termination) without testmanagerd, so Automation Mode is never requested; validated first in a dual mode that compares against testmanagerd's answers. The `offscreen.realOnly` tests would still need Automation Mode. Not started.
 
 ## Network level gaps (ZF-52 follow-up) — 2026-10-30
 
