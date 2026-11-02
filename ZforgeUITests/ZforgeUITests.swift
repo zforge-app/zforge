@@ -285,6 +285,12 @@ final class ZforgeUITests: XCTestCase {
             let folderMenu = openFileMenu(in: app)
             XCTAssertTrue(folderMenu.menuItems["Open"].isEnabled, mode)
             assertOpenWithAvailability(in: folderMenu, app: app, enabled: false, context: mode)
+            // Left Arrow left the app menu open (the keyboard was at the menu bar level). Close it and
+            // wait until no menu is open, as the List-mode test does before its next menu command;
+            // clicking File ▸ Open while the app menu was still switching raced XCTest's traversal.
+            app.typeKey(.escape, modifierFlags: [])
+            let openMenuBarItem = app.menuBars.menuBarItems.matching(NSPredicate(format: "selected == true")).firstMatch
+            XCTAssertTrue(openMenuBarItem.waitForNonExistence(timeout: 5), "A menu is still open: \(mode)")
             folderMenu.menuItems["Open"].click()
             XCTAssertTrue(app.windows["Dropped"].firstMatch.waitForExistence(timeout: 8), mode)
 

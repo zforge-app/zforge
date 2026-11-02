@@ -196,6 +196,7 @@ At the user's request, `codex/apple-intelligence` is merged into `main`, superse
 Implemented: the test plans, the impact map and selection script, the snapshot testing layer, and the migration from 48 to 22 XCUITest tests. Pending verification:
 - **Kept UI tests:** all 22 have passed (2026-10-27), but not in one uninterrupted `UI-Full` run; see REGRESSION-COVERAGE. A clean full run on an idle machine is pending.
 - **Performance test:** a rerun of `ArchiveDiscoveryPerformanceTests` on an idle machine.
+- **Automation Mode during offscreen runs — resolved 2026-11-02** (RNF-Q08): offscreen runs no longer use it (`zforge-xcuitest-sim/Notes/no-automation-mode-spike-2026-11-02.md`, REGRESSION-COVERAGE). Still open: the `offscreen.realOnly` tests need it; one `Unable to monitor event loop` in 16 tests to explain; failure screenshots now come only from a test's own `screenshot()` calls.
 
 ## Network level gaps (ZF-52 follow-up) — 2026-10-30
 

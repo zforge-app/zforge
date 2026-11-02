@@ -1,9 +1,11 @@
-"""Tests for Scripts/affected-tests.py: the split between offscreen and real UI tests, the lane plan
-and the reading of an offscreen run summary.
+"""Tests for Scripts/affected-tests.py: the split between offscreen and real UI tests, the lane plan,
+the reading of an offscreen run summary and the location of the offscreen tool.
 
 Run: python3 -m unittest discover -s Scripts/tests -v
 """
 import importlib.util
+import subprocess
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -63,6 +65,78 @@ class OutcomeTests(unittest.TestCase):
 
     def test_an_aborted_run_leaves_every_test_not_run(self):
         self.assertEqual(affected.lane_outcomes({"error": "screen locked"}, [[A, B]]), {A: "not run", B: "not run"})
+
+
+class LocateToolTests(unittest.TestCase):
+    """The offscreen tool is a sibling of the main checkout; a linked worktree elsewhere still finds it."""
+
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        base = Path(self.temp.name).resolve()
+        self.main = base / "dev" / "Zforge"
+        self.main.mkdir(parents=True)
+        self.git("init", "-q")
+        self.git("-c", "user.name=Test", "-c", "user.email=test@example.com",
+                 "commit", "-q", "--allow-empty", "-m", "Initial commit")
+        self.worktree = base / "worktrees" / "Zforge" / "linked"
+        self.git("worktree", "add", "-q", "--detach", str(self.worktree))
+
+    def git(self, *args):
+        subprocess.run(["git", *args], cwd=self.main, check=True, capture_output=True)
+
+    def make_tool(self, parent):
+        tool = parent / affected.XCUISIM_NAME
+        (tool / "Scripts").mkdir(parents=True)
+        (tool / "Scripts" / "run-lanes.py").write_text("")
+        return tool
+
+    def test_a_linked_worktree_finds_the_tool_next_to_the_main_checkout(self):
+        tool = self.make_tool(self.main.parent)
+        self.assertEqual(affected.locate_xcuisim(self.worktree, {}), tool)
+
+    def test_the_main_checkout_finds_its_sibling_tool(self):
+        tool = self.make_tool(self.main.parent)
+        self.assertEqual(affected.locate_xcuisim(self.main, {}), tool)
+
+    def test_a_tool_next_to_the_worktree_comes_before_the_main_checkout_one(self):
+        self.make_tool(self.main.parent)
+        tool = self.make_tool(self.worktree.parent)
+        self.assertEqual(affected.locate_xcuisim(self.worktree, {}), tool)
+
+    def test_the_environment_variable_overrides_every_sibling(self):
+        self.make_tool(self.main.parent)
+        explicit = Path(self.temp.name) / "elsewhere"
+        self.assertEqual(affected.locate_xcuisim(self.worktree, {"ZFORGE_XCUISIM": str(explicit)}), explicit)
+
+    def test_without_a_tool_the_report_names_every_place_searched(self):
+        location = affected.locate_xcuisim(self.worktree, {})
+        self.assertEqual(location, self.worktree.parent / affected.XCUISIM_NAME)
+        message = affected.xcuisim_missing(location, affected.xcuisim_candidates(self.worktree))
+        self.assertIn(str(self.worktree.parent / affected.XCUISIM_NAME), message)
+        self.assertIn(str(self.main.parent / affected.XCUISIM_NAME), message)
+
+    def test_outside_a_git_checkout_only_the_sibling_is_searched(self):
+        plain = Path(self.temp.name).resolve() / "plain" / "Zforge"
+        plain.mkdir(parents=True)
+        self.assertEqual(affected.xcuisim_candidates(plain), [plain.parent / affected.XCUISIM_NAME])
+
+
+class OffscreenRunTests(unittest.TestCase):
+    def test_each_checkout_builds_into_its_own_directory(self):
+        main = affected.offscreen_build_dir(Path("/dev/Zforge"), "/work")
+        worktree = affected.offscreen_build_dir(Path("/worktrees/Zforge/t3-1234"), "/work")
+        self.assertNotEqual(main, worktree)
+        self.assertEqual(worktree, Path("/work/builds/zforge-affected-t3-1234"))
+
+    def test_lanes_run_without_automation_mode_by_default(self):
+        command = affected.lane_command(Path("/tool"), "run", "/results", "/products", [[A, C], [B]])
+        self.assertEqual(command[command.index("--env") + 1], "XCUISIM_NO_AUTOMATION_MODE=1")
+        self.assertEqual([command[i + 1] for i, part in enumerate(command) if part == "--lane"], [f"{A},{C}", B])
+
+    def test_automation_mode_goes_back_to_testmanagerd(self):
+        command = affected.lane_command(Path("/tool"), "run", "/results", "/products", [[A]], automation_mode=True)
+        self.assertNotIn("--env", command)
 
 
 class MapTests(unittest.TestCase):
