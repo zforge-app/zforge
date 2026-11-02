@@ -3,8 +3,8 @@ import SwiftUI
 import Testing
 @testable import Zforge
 
-/// Offscreen layout checks for the Compress Custom… panel and the Settings compression
-/// section. The panel is built by its production session but never presented, so no
+/// Offscreen layout checks for the Compress Custom… panel (Settings ▸ Compression is covered by
+/// `CompressionProfileSettingsTests`). The panel is built by its production session but never presented, so no
 /// window appears on screen. AppKit-backed controls (text fields, pop-up buttons and
 /// secure fields) are measured numerically; SwiftUI-drawn labels, buttons and checkboxes
 /// expose no offscreen frames, so their placement is guarded by the snapshots.
@@ -83,37 +83,6 @@ struct CompressionPanelLayoutTests {
             abs(panel.contentLayoutRect.height - compactHeight) < 5
         }
         #expect(try fixture.nameField().stringValue == "Welcome.zip")
-    }
-
-    @Test("Settings offers the default compression profile and the profile editor")
-    func compressionSettingsSection() throws {
-        let suite = "ZforgeTestSuite.CompressionSettings-\(UUID().uuidString)"
-        let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removeTestSuite(named: suite) }
-        let preferences = FileBrowserPreferences(defaults: defaults)
-        preferences.language = .english
-
-        // The Settings form embeds the section (read from its static body type, without building it).
-        let settingsBody = String(reflecting: ZforgeSettingsView.Body.self)
-        #expect(settingsBody.contains("CompressionSettingsSection"), "\(settingsBody)")
-
-        let section = Form {
-            CompressionSettingsSection(preferences: preferences, draft: CompressionDraft(preferences: preferences))
-        }
-        .formStyle(.grouped)
-        .environment(\.locale, preferences.language.locale)
-        let size = CGSize(width: 568, height: 520)
-        let host = NSHostingView(rootView: section.frame(width: size.width, height: size.height))
-        let window = NSWindow(contentRect: NSRect(origin: .zero, size: size), styleMask: [.titled], backing: .buffered, defer: false)
-        window.isReleasedWhenClosed = false
-        defer { window.close() }
-        window.contentView = host
-        host.layoutSubtreeIfNeeded()
-        // The pickers and buttons are drawn by SwiftUI; the snapshot shows them. The
-        // profile name is the section's only AppKit text field.
-        let names = host.descendants(of: NSTextField.self).filter(\.isEditable).map(\.stringValue)
-        #expect(names == ["Auto"], "Profile name: \(names)")
-        ZforgeSnapshot.assert(host, appearance: .aqua, named: "settings-compression")
     }
 
     private func expectSaveFields(_ fixture: PanelFixture, alignedWith rightEdge: NSView) throws {

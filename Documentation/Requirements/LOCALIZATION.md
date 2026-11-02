@@ -43,7 +43,7 @@ Romansh and additional regional translations are outside this request. Spanish u
 
 ## Catalog and grammatical rules
 
-The delivered catalog contains 415 keys with explicit entries for all 21 languages, including the language autonyms and the automation strings added in the shared working tree. English symbolic archive/browser error keys have readable messages. New strings must be populated in every supported language in the same change.
+The delivered catalog contains 415 keys with explicit entries for all 21 languages, including the language autonyms and the automation strings added in the shared working tree. English symbolic archive/browser error keys have readable messages. New strings must be populated in every supported language in the same change. ZF-58 (2026-11-02) added 12 keys for the two-column Settings window (pane title General, five pane descriptions, Profiles, Add Profile, Duplicate Profile, the delete confirmation and its message, and the Solid summary token) in all 21 languages; the catalog now has 478 keys. Their translations follow the existing terminology of each language and await native review (TASKS ZF-58).
 
 - Preserve all named intent parameters (`${files}`, `${archiveName}`, `${destinationFolder}` and related names) exactly. Their order may change with grammar.
 - Preserve the types and order of nonpositional printf arguments (`%lld`, `%@`). Destination and original-archive substitutions must retain their semantic roles.

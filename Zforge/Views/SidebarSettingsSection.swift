@@ -1,12 +1,12 @@
 import SwiftUI
 
-/// Finder's Settings ▸ Sidebar Locations checkboxes. "Remove from Sidebar" on a Locations item
+/// Finder's Settings ▸ Sidebar Locations checkboxes, in Settings ▸ Sidebar. "Remove from Sidebar" on a Locations item
 /// turns its category off here; turning it back on shows the items again in every window.
 struct SidebarSettingsSection: View {
     @Bindable var preferences: FileBrowserPreferences
 
     var body: some View {
-        Section("Sidebar") {
+        Section {
             Text("Choose the items shown in the sidebar Locations and Shared sections.")
                 .font(.caption)
                 .foregroundStyle(.secondary)

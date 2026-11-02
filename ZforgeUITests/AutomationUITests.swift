@@ -27,7 +27,7 @@ final class AutomationUITests: XCTestCase {
             app.launch()
             app.activate()
             defer { app.terminate() }
-            app.typeKey(",", modifierFlags: .command)
+            app.openSettingsPane("automation")
             let button = app.buttons["automation-copy-mcp"]
             XCTAssertTrue(button.waitForExistence(timeout: 5), app.debugDescription)
             let openShortcuts = app.buttons["automation-open-shortcuts"]

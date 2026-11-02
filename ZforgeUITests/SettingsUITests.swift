@@ -12,7 +12,7 @@ final class SettingsUITests: XCTestCase {
         app.activate()
         defer { app.terminate() }
 
-        app.typeKey(",", modifierFlags: .command)
+        app.openSettingsPane("viewOptions")
         func row(_ column: String) -> XCUIElement {
             app.descendants(matching: .any).matching(identifier: "settings-list-column-" + column).firstMatch
         }
@@ -76,8 +76,7 @@ final class SettingsUITests: XCTestCase {
         app.activate()
         defer { app.terminate() }
 
-        app.typeKey(",", modifierFlags: .command)
-        let settingsWindow = app.windows["com_apple_SwiftUI_Settings_window"]
+        let settingsWindow = app.openSettingsPane("previews")
         let slider = app.sliders["ui-fixture-size-slider"]
         XCTAssertTrue(slider.waitForExistence(timeout: 5), app.debugDescription)
         for _ in 0..<20 where !settingsWindow.frame.insetBy(dx: 0, dy: 40).contains(slider.frame) {
@@ -119,5 +118,91 @@ final class SettingsUITests: XCTestCase {
         drag(by: -10, from: 10)
         XCTAssertEqual(slider.value as? String, "1 GB", "Dragging back stops on the round value")
         XCTAssertTrue(settingsWindow.staticTexts["1 GB"].exists, "The row shows the dragged value")
+    }
+
+    /// Pushing a profile row, typing in the profile page, the toolbar back button and the
+    /// delete confirmation need real event delivery and sheet presentation (ZF-58). The list,
+    /// the summaries, saving while typing and Duplicate are covered offscreen by
+    /// `CompressionProfileSettingsTests`.
+    @MainActor
+    func testCompressionProfileOpensSavesAndDeletes() throws {
+        let app = XCUIApplication()
+        app.launchEnvironment["ZFORGE_UI_PREFERENCES_SUITE"] = "ZforgeTestSuite.ZforgeSettingsUI-\(UUID().uuidString)"
+        app.launchArguments = ["--ui-fixtures", "-appLanguagePreference", "english", "-ApplePersistenceIgnoreState", "YES"]
+        app.launch()
+        app.activate()
+        defer { app.terminate() }
+
+        let settings = app.openSettingsPane("compression")
+        // The window keeps a 220 pt sidebar beside the 568 pt detail column, so every English
+        // pane title fits on one line (D-75: SwiftUI had reset the sidebar to 144 pt).
+        let columns = settings.scrollViews.allElementsBoundByIndex.map(\.frame).sorted { $0.minX < $1.minX }
+        XCTAssertEqual(columns.first?.width ?? 0, 220, accuracy: 1, "Columns: \(columns)")
+        XCTAssertEqual(columns.last?.width ?? 0, 568, accuracy: 1, "Columns: \(columns)")
+        for pane in ["general", "viewOptions", "sidebar", "compression", "previews", "automation"] {
+            let title = settings.descendants(matching: .any).matching(identifier: "settings-pane-" + pane).firstMatch
+            XCTAssertLessThan(title.frame.height, 26, "\(pane) wraps: \(title.frame)")
+        }
+        func profileRow(_ name: String) -> XCUIElement {
+            settings.descendants(matching: .any).matching(identifier: "settings-compression-profile-" + name).firstMatch
+        }
+        XCTAssertTrue(profileRow("Auto").waitForExistence(timeout: 5), app.debugDescription)
+        let list = XCTAttachment(screenshot: settings.screenshot())
+        list.name = "Compression pane"
+        list.lifetime = .keepAlways
+        add(list)
+
+        // Add Profile opens the new profile's page, titled with its name.
+        settings.buttons["settings-add-compression-profile"].click()
+        let name = settings.textFields["settings-profile-name"]
+        XCTAssertTrue(name.waitForExistence(timeout: 5), app.debugDescription)
+        XCTAssertEqual(name.value as? String, "New Profile")
+        XCTAssertEqual(settings.title, "New Profile")
+
+        // Typing renames it at once; the window title follows.
+        name.click()
+        name.typeKey(.rightArrow, modifierFlags: .command)
+        name.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: "New Profile".count))
+        name.typeText("Sharing")
+        let renamed = NSPredicate { _, _ in settings.title == "Sharing" }
+        XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: renamed, object: nil)], timeout: 5),
+                       .completed, "Window title: \(settings.title)")
+        let capture = XCTAttachment(screenshot: settings.screenshot())
+        capture.name = "Compression profile page"
+        capture.lifetime = .keepAlways
+        add(capture)
+
+        // The toolbar's back button returns to the list, which shows the renamed profile.
+        let back = settings.toolbars.buttons.firstMatch
+        XCTAssertTrue(back.waitForExistence(timeout: 5), app.debugDescription)
+        back.click()
+        XCTAssertTrue(profileRow("Sharing").waitForExistence(timeout: 5), app.debugDescription)
+        XCTAssertEqual(settings.title, "Compression")
+
+        // A row opens its profile; Delete Profile asks first, and Cancel keeps it.
+        profileRow("Sharing").click()
+        XCTAssertTrue(name.waitForExistence(timeout: 5), app.debugDescription)
+        XCTAssertEqual(name.value as? String, "Sharing")
+        let delete = settings.buttons["settings-delete-compression-profile"]
+        delete.click()
+        let confirm = app.sheets.firstMatch
+        XCTAssertTrue(confirm.waitForExistence(timeout: 5), app.debugDescription)
+        XCTAssertTrue(confirm.staticTexts["Delete “Sharing”?"].exists, app.debugDescription)
+        confirm.buttons["Cancel"].click()
+        XCTAssertTrue(confirm.waitForNonExistence(timeout: 5))
+        XCTAssertEqual(name.value as? String, "Sharing")
+
+        // Confirming deletes it and returns to the list.
+        delete.click()
+        XCTAssertTrue(confirm.waitForExistence(timeout: 5), app.debugDescription)
+        confirm.buttons["Delete Profile"].click()
+        XCTAssertTrue(profileRow("Sharing").waitForNonExistence(timeout: 5), app.debugDescription)
+        XCTAssertTrue(profileRow("Auto").exists)
+        XCTAssertEqual(settings.title, "Compression")
+
+        // The last profile cannot be deleted.
+        profileRow("Auto").click()
+        XCTAssertTrue(delete.waitForExistence(timeout: 5), app.debugDescription)
+        XCTAssertFalse(delete.isEnabled, "The only profile cannot be deleted")
     }
 }

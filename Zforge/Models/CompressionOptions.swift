@@ -99,7 +99,32 @@ nonisolated struct CompressionOptions: Codable, Equatable, Sendable {
         return result
     }
 
+    /// The level names shown by the profile editors, by 7-Zip level.
+    static func levelTitleKey(_ level: Int) -> String.LocalizationValue {
+        switch level {
+        case 0: "Store"
+        case 1: "Fastest"
+        case 3: "Fast"
+        case 7: "Maximum"
+        case 9: "Ultra"
+        default: "Normal"
+        }
+    }
 
+    /// The line under a profile's name in Settings ▸ Compression: format, then the level and
+    /// method the format offers, then solid mode and password protection when they apply
+    /// (“7z · Normal · LZMA2 · Solid · Password”).
+    func summary(locale: Locale) -> String {
+        let options = normalized()
+        var parts = [options.format.title(locale: locale)]
+        if options.supportsLevel { parts.append(AppLocalization.string(Self.levelTitleKey(options.level), locale: locale)) }
+        if options.availableMethods.count > 1 && options.method != .automatic {
+            parts.append(AppLocalization.string(options.method.titleKey, locale: locale))
+        }
+        if options.format == .sevenZip && options.solid { parts.append(AppLocalization.string("Solid", locale: locale)) }
+        if options.requiresPassword { parts.append(AppLocalization.string("Password", locale: locale)) }
+        return parts.joined(separator: " · ")
+    }
 }
 
 nonisolated struct CompressionProfile: Codable, Equatable, Identifiable, Sendable {

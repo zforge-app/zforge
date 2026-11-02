@@ -2,11 +2,11 @@ import AppKit
 import Observation
 import SwiftUI
 
+/// The profile and options of one Compress Custom… operation; never written back to the profile.
 @MainActor
 @Observable
 final class CompressionDraft {
     var selectedProfileID: UUID
-    var profileName: String
     var options: CompressionOptions
     var password: String
     var confirmation: String
@@ -14,7 +14,6 @@ final class CompressionDraft {
     init(preferences: FileBrowserPreferences) {
         let profile = preferences.defaultCompressionProfile
         selectedProfileID = profile.id
-        profileName = profile.name
         options = profile.options
         let initialPassword = preferences.sessionPassword(for: profile.id)
         password = initialPassword
@@ -27,113 +26,47 @@ final class CompressionDraft {
 
     func load(_ profile: CompressionProfile, preferences: FileBrowserPreferences) {
         selectedProfileID = profile.id
-        profileName = profile.name
         options = profile.options
         password = preferences.sessionPassword(for: profile.id)
         confirmation = password
     }
-
-    func save(preferences: FileBrowserPreferences) {
-        preferences.updateCompressionProfile(selectedProfileID, name: profileName, options: options)
-        if options.requiresPassword && passwordIsValid {
-            preferences.setSessionPassword(password, for: selectedProfileID)
-        }
-    }
-
-    func saveAsNew(preferences: FileBrowserPreferences) {
-        let id = preferences.createCompressionProfile(name: profileName, options: options)
-        if options.requiresPassword && passwordIsValid {
-            preferences.setSessionPassword(password, for: id)
-        }
-        if let profile = preferences.compressionProfiles.first(where: { $0.id == id }) {
-            load(profile, preferences: preferences)
-        }
-    }
 }
 
+/// The profile choice and the options of one Compress Custom… operation. Profiles are
+/// created and edited in Settings ▸ Compression (`CompressionProfileDetailView`).
 struct CompressionProfileEditor: View {
     @Bindable var draft: CompressionDraft
     @Bindable var preferences: FileBrowserPreferences
-    var forSavePanel = false
     var onContentChange: (() -> Void)? = nil
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            if forSavePanel {
-                HStack(spacing: 10) {
-                    Text("Compression profile")
-                    FullWidthPopUp(
-                        label: AppLocalization.string("Compression profile", locale: preferences.language.locale),
-                        items: preferences.compressionProfiles.map { ($0.name, $0.id) },
-                        selection: $draft.selectedProfileID,
-                        onSelect: { loadSelectedProfile() }
-                    )
-                    .frame(maxWidth: .infinity)
-                }
-                .frame(width: CompressionSaveDialogLayout.contentWidth, alignment: .leading)
-            } else {
-                profilePicker
-            }
-
-            if forSavePanel {
-                Text("Changes apply to this archive only.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                CompressionOptionsFields(
-                    options: $draft.options,
-                    password: $draft.password,
-                    confirmation: $draft.confirmation,
-                    compact: true
+            HStack(spacing: 10) {
+                Text("Compression profile")
+                FullWidthPopUp(
+                    label: AppLocalization.string("Compression profile", locale: preferences.language.locale),
+                    items: preferences.compressionProfiles.map { ($0.name, $0.id) },
+                    selection: $draft.selectedProfileID,
+                    onSelect: { loadSelectedProfile() }
                 )
-            } else {
-                TextField("Profile name", text: $draft.profileName)
-                CompressionOptionsFields(options: $draft.options)
+                .frame(maxWidth: .infinity)
             }
+            .frame(width: CompressionSaveDialogLayout.contentWidth, alignment: .leading)
 
-            if !forSavePanel && draft.options.requiresPassword && draft.options.supportsPassword {
-                SecureField("Password", text: $draft.password)
-                SecureField("Confirm password", text: $draft.confirmation)
-                if !draft.password.isEmpty && draft.password != draft.confirmation {
-                    Text("Passwords do not match.")
-                        .font(.caption)
-                        .foregroundStyle(.red)
-                }
-                Text("Passwords stay in memory for this session and are never saved in profiles.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-
-            if !forSavePanel {
-                HStack {
-                    Button("Save Profile") { draft.save(preferences: preferences) }
-                    Button("Save as New Profile") { draft.saveAsNew(preferences: preferences) }
-                    Button("Delete Profile", role: .destructive) {
-                        let id = draft.selectedProfileID
-                        preferences.deleteCompressionProfile(id)
-                        if let profile = preferences.compressionProfiles.first {
-                            draft.load(profile, preferences: preferences)
-                        }
-                    }
-                    .disabled(preferences.compressionProfiles.count < 2)
-                }
-                .controlSize(.small)
-            }
+            Text("Changes apply to this archive only.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            CompressionOptionsFields(
+                options: $draft.options,
+                password: $draft.password,
+                confirmation: $draft.confirmation,
+                compact: true
+            )
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .onChange(of: draft.options) { _, _ in onContentChange?() }
         .onChange(of: draft.password) { _, _ in onContentChange?() }
         .onChange(of: draft.confirmation) { _, _ in onContentChange?() }
-    }
-
-    private var profilePicker: some View {
-        Picker("Compression profile", selection: $draft.selectedProfileID) {
-            ForEach(preferences.compressionProfiles) { profile in
-                Text(profile.name).tag(profile.id)
-            }
-        }
-        .onChange(of: draft.selectedProfileID) { _, _ in
-            loadSelectedProfile()
-        }
     }
 
     private func loadSelectedProfile() {
@@ -143,7 +76,8 @@ struct CompressionProfileEditor: View {
     }
 }
 
-private struct CompressionOptionsFields: View {
+/// The options of a profile: a compact two-column grid in Compress Custom…, Settings rows otherwise.
+struct CompressionOptionsFields: View {
     @Environment(\.locale) private var locale
     @Binding var options: CompressionOptions
     var password: Binding<String>? = nil

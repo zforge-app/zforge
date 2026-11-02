@@ -25,7 +25,7 @@ final class LocalizationUITests: XCTestCase {
         waitForBrowserWindow(app)
 
         for language in languages {
-            app.typeKey(",", modifierFlags: .command)
+            app.openSettingsPane("general")
             let picker = app.popUpButtons["settings-language"].firstMatch
             XCTAssertTrue(picker.waitForExistence(timeout: 5), "Language picker must be available")
             picker.click()

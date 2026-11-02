@@ -616,6 +616,17 @@ Pending: in-app check of the row and the computer level in the four modes (light
 - [x] Preview/thumbnail limits, the solid-archives checkbox and removable/remote settings with the generalized logarithmic slider; localization of every new string. *Stage 3, 2026-11-02; evidence: REGRESSION-COVERAGE “Preview limits and opening progress — ZF-55 stage 3”.*
 - [ ] Synchronize CURRENT-STATE, PRODUCT-REQUIREMENTS, REGRESSION-COVERAGE and D-73; run `Scripts/affected-tests.py --run`. *Done for stages 1 to 3 (2026-11-02).* Pending outside the implementation: checks on real removable and network volumes and a visual review of the real windows (see D-73).
 
+### ZF-58 — Settings in two columns, as System Settings (2026-11-02)
+
+**Implemented; unit, offscreen and real UI tests pass; results in REGRESSION-COVERAGE “Settings in two columns — ZF-58”.** User request: the Settings menu had become too long; split it into two columns like System Settings. Mockups approved in the conversation (View Options instead of List Columns, with Default View; the Finder extension in General; Compression profiles as a list that opens each profile).
+- [x] Sidebar of six panes in three groups, remembered pane, fixed 220 + 568 pt layout, unified toolbar (`SettingsWindow.swift`, `SettingsPane.swift`).
+- [x] Compression profile list with summaries and Default badge; Add Profile; profile page saved as you edit; Duplicate and Delete with confirmation (`CompressionProfileSettings.swift`, D-74).
+- [x] 12 new strings in all 21 languages.
+- [x] D-75 defects found in real runs and corrected (sidebar width reset by SwiftUI, preference toolbar, empty name field).
+- [x] User review in the user's build (2026-11-02): profile rows without icons; no pane header (the window title names the pane, the description moved to the sidebar row's help tag); sidebar tiles refined (fixed gradients, semibold white symbols, clearer symbols).
+- [ ] Second look at the refined tiles in the user's build (General `gear`, View Options `eye.fill`, Previews `rectangle.and.text.magnifyingglass` chosen by the user from rendered alternatives); if they still do not work, remove the tiles (user decision, 2026-11-02).
+- [ ] VoiceOver pass over the sidebar (rows and their description hints) and profile rows; reduced-motion and increased-contrast review of the window; native-speaker review of the new translations.
+
 ### ZF-57 — Block commits with build warnings (2026-11-02, RNF-Q07)
 
 **Implemented; results in REGRESSION-COVERAGE “Warning commit gate — ZF-57”.** The user saw two warnings in Xcode (`ComputerIdentity.swift` `String(cString:)`, `IconPreviewView.swift` closure in `@Entry`) and asked for commits with warnings to be blocked. Both were already fixed in `274ebf4`; a clean build of `c1c5d47` reports 0 warnings, so Xcode was showing diagnostics from an older build.

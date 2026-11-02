@@ -187,7 +187,6 @@ private struct CompressionSaveDialog: View {
             CompressionProfileEditor(
                 draft: draft,
                 preferences: preferences,
-                forSavePanel: true,
                 onContentChange: onContentChange
             )
             .padding(.horizontal, CompressionSaveDialogLayout.horizontalInset)

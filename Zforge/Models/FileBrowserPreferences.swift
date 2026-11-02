@@ -38,6 +38,7 @@ final class FileBrowserPreferences {
         static let defaultCompressionFormat = "archive.defaultCompressionFormat"
         static let compressionProfiles = "archive.compressionProfiles"
         static let defaultCompressionProfileID = "archive.defaultCompressionProfileID"
+        static let settingsPane = "settings.selectedPane"
     }
 
     private let defaults: UserDefaults
@@ -77,6 +78,8 @@ final class FileBrowserPreferences {
     }
     var showHiddenFiles: Bool { didSet { defaults.set(showHiddenFiles, forKey: Key.showHidden) } }
     var showIconPreviews: Bool { didSet { defaults.set(showIconPreviews, forKey: Key.showIconPreviews) } }
+    /// The Settings pane shown when the window opens: the last one chosen (ZF-58).
+    var settingsPane: SettingsPane { didSet { defaults.set(settingsPane.rawValue, forKey: Key.settingsPane) } }
     /// Automatic previews of items inside archives up to this size (decimal bytes, D-73).
     var previewSizeLimit: Int64 {
         didSet {
@@ -183,6 +186,20 @@ final class FileBrowserPreferences {
         let profile = CompressionProfile(name: unique, options: options)
         compressionProfiles.append(profile)
         return profile.id
+    }
+
+    /// Settings ▸ Compression ▸ Add Profile: a new profile with the standard options, named
+    /// “New Profile” (made unique), listed after the others.
+    func addCompressionProfile() -> UUID {
+        createCompressionProfile(name: "", options: CompressionOptions())
+    }
+
+    /// A copy of a profile named after it (“Name 2”), with its session password.
+    func duplicateCompressionProfile(_ id: UUID) -> UUID? {
+        guard let profile = compressionProfiles.first(where: { $0.id == id }) else { return nil }
+        let copy = createCompressionProfile(name: profile.name, options: profile.options)
+        setSessionPassword(sessionPassword(for: id), for: copy)
+        return copy
     }
 
     func updateCompressionProfile(_ id: UUID, name: String? = nil, options: CompressionOptions? = nil) {
@@ -378,6 +395,7 @@ final class FileBrowserPreferences {
         showIconPreviews = defaults.object(forKey: Key.showIconPreviews) == nil
             ? true
             : defaults.bool(forKey: Key.showIconPreviews)
+        settingsPane = defaults.string(forKey: Key.settingsPane).flatMap(SettingsPane.init(rawValue:)) ?? .general
         previewVisibleIcons = Self.storedPreviewVisibility(
             defaults: defaults,
             key: Key.previewVisibleIcons

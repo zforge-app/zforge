@@ -7,7 +7,7 @@ struct AutomationSettingsSection: View {
     @State private var copied = false
 
     var body: some View {
-        Section("Automation") {
+        Section {
             Text("Allow folders that agents and Zforge shortcuts may read and write. Existing browser permissions are separate. Removing a folder blocks new requests; running operations must be cancelled by their caller.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
