@@ -122,6 +122,23 @@ class LocateToolTests(unittest.TestCase):
         self.assertEqual(affected.xcuisim_candidates(plain), [plain.parent / affected.XCUISIM_NAME])
 
 
+class OffscreenRunTests(unittest.TestCase):
+    def test_each_checkout_builds_into_its_own_directory(self):
+        main = affected.offscreen_build_dir(Path("/dev/Zforge"), "/work")
+        worktree = affected.offscreen_build_dir(Path("/worktrees/Zforge/t3-1234"), "/work")
+        self.assertNotEqual(main, worktree)
+        self.assertEqual(worktree, Path("/work/builds/zforge-affected-t3-1234"))
+
+    def test_lanes_run_without_automation_mode_by_default(self):
+        command = affected.lane_command(Path("/tool"), "run", "/results", "/products", [[A, C], [B]])
+        self.assertEqual(command[command.index("--env") + 1], "XCUISIM_NO_AUTOMATION_MODE=1")
+        self.assertEqual([command[i + 1] for i, part in enumerate(command) if part == "--lane"], [f"{A},{C}", B])
+
+    def test_automation_mode_goes_back_to_testmanagerd(self):
+        command = affected.lane_command(Path("/tool"), "run", "/results", "/products", [[A]], automation_mode=True)
+        self.assertNotIn("--env", command)
+
+
 class MapTests(unittest.TestCase):
     def test_the_versioned_map_is_valid(self):
         self.assertEqual(affected.check(), 0)
