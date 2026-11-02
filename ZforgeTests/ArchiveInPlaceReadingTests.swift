@@ -186,6 +186,47 @@ struct ArchiveInPlaceReadingTests {
         #expect(try FileManager.default.contentsOfDirectory(atPath: destination.path).isEmpty)
     }
 
+    /// D-73 stage 3: an archive replaced, with the same paths and more items, between the
+    /// session's listing and an extraction is never extracted, not even its folders.
+    @Test("Extraction never writes items of an archive replaced after it was listed", arguments: [ArchiveCompressionFormat.zip, .sevenZip])
+    func replacedArchiveIsNeverExtracted(format: ArchiveCompressionFormat) async throws {
+        let fixture = try Workspace()
+        defer { fixture.cleanUp() }
+        let archive = try await fixture.storedArchive(format: format, largeFileBytes: 1 << 12, smallFiles: 3)
+        let engine = NativeSevenZipArchiveEngine()
+        defer { Task { await engine.closeAllSessions() } }
+        let opened = try await engine.openArchive(at: archive, password: nil)
+        let folder = try #require(try await engine.items(at: opened.address).first { $0.name == "Small" })
+        try await fixture.replace(archive, withMoreItemsOf: format)
+        let destination = fixture.root.appendingPathComponent("Output", isDirectory: true)
+        await #expect(throws: ArchiveEngineError.archiveChangedSinceOpening) {
+            try await engine.extractItems([folder], to: destination, password: nil,
+                resolveConflict: { _ in .cancel }, progress: { _ in })
+        }
+        #expect(try regularFiles(below: destination).isEmpty)
+    }
+
+    /// The same, when the replacement happens after the read has opened the archive: the
+    /// check runs on the opened archive, before the first folder or file is written.
+    @Test("A replacement after the read opened the archive is detected before anything is written")
+    func replacementAfterOpeningIsDetected() async throws {
+        let fixture = try Workspace()
+        defer { fixture.cleanUp() }
+        let archive = try await fixture.storedArchive(format: .zip, largeFileBytes: 1 << 12, smallFiles: 3)
+        let fingerprint = try ArchiveSourceFingerprint.capture([archive])
+        let destination = fixture.root.appendingPathComponent("Output", isDirectory: true)
+        try FileManager.default.createDirectory(at: destination, withIntermediateDirectories: true)
+        let replacement = try await fixture.makeReplacement(for: archive, format: .zip)
+        await #expect(throws: ArchiveEngineError.archiveChangedSinceOpening) {
+            try await NativeSevenZipBackend().extract(at: archive, password: nil, paths: [], destination: destination,
+                verify: {
+                    _ = try? FileManager.default.replaceItemAt(archive, withItemAt: replacement)
+                    return fingerprint.matches([archive])
+                })
+        }
+        #expect(try FileManager.default.contentsOfDirectory(atPath: destination.path).isEmpty)
+    }
+
     // MARK: Fingerprint
 
     @Test("The fingerprint detects size, date and file replacement, and is stable otherwise")
@@ -612,6 +653,24 @@ private struct Workspace {
     }
 
     func cleanUp() { try? FileManager.default.removeItem(at: root) }
+
+    /// A different archive at a sibling path: the same paths (other contents) and more items.
+    func makeReplacement(for archive: URL, format: ArchiveCompressionFormat) async throws -> URL {
+        let other = root.appendingPathComponent("Replacement-\(UUID().uuidString)", isDirectory: true)
+        let small = other.appendingPathComponent("Small", isDirectory: true)
+        try FileManager.default.createDirectory(at: small, withIntermediateDirectories: true)
+        for index in 0..<6 { try Data("replaced \(index)".utf8).write(to: small.appendingPathComponent("Item-\(index).txt")) }
+        try Data("replaced".utf8).write(to: other.appendingPathComponent("Large.bin"))
+        let output = root.appendingPathComponent("Replacement-\(UUID().uuidString).\(format.fileExtension)")
+        try await NativeSevenZipArchiveEngine().createArchive(
+            from: [other.appendingPathComponent("Large.bin"), small], outputURL: output,
+            options: CompressionOptions(format: format, level: 0), password: nil, progress: { _ in })
+        return output
+    }
+
+    func replace(_ archive: URL, withMoreItemsOf format: ArchiveCompressionFormat) async throws {
+        _ = try FileManager.default.replaceItemAt(archive, withItemAt: try await makeReplacement(for: archive, format: format))
+    }
 
     /// An archive (stored, level 0) holding `Large.bin` of random bytes and `Small/Item-N.txt`.
     func storedArchive(format: ArchiveCompressionFormat, largeFileBytes: Int, smallFiles: Int) async throws -> URL {

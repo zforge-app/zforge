@@ -271,11 +271,13 @@ final class ZforgeUITests: XCTestCase {
             ]
             launchWithBrowserWindow(app)
             defer { app.terminate() }
-            let initialTitle = app.windows.firstMatch.title
             let folder = app.descendants(matching: .any)
                 .matching(identifier: "browser-item-Dropped").firstMatch
                 .staticTexts["Dropped"].firstMatch
             XCTAssertTrue(folder.waitForExistence(timeout: 8), mode)
+            // The window shows Recents until its fixture folder opens; read the title once
+            // the fixture's rows are listed (it was read before, racing the fixture setup).
+            let initialTitle = app.windows.firstMatch.title
             // Command-click selects a container without expanding it in Columns.
             // Navigation below therefore has to come from the File command.
             XCUIElement.perform(withKeyModifiers: [.command]) { folder.click() }

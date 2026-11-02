@@ -294,6 +294,12 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
         let isSequential: Bool
         /// Listing needed the password (encrypted names): joining the session needs it too.
         let listingNeedsPassword: Bool
+
+        /// Whether the files are still the ones listed (checked again once a read has opened them).
+        var unchanged: @Sendable () -> Bool {
+            let fingerprint = fingerprint, sources = sources
+            return { fingerprint.matches(sources) }
+        }
     }
 
     /// Where an inner archive comes from: its outer session and its path there.
@@ -426,7 +432,8 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
             let outerPassword = outer.password ?? password
             try await nativeBackend.extract(at: outer.archive.fileURL, password: outerPassword,
                 paths: paths, destination: copyDirectory, outputFile: copy, byteLimit: UInt64(hardLimit),
-                lastIndex: lastNativeIndex(in: outer.archive, selecting: paths), cancellationScope: outer.readScope)
+                lastIndex: lastNativeIndex(in: outer.archive, selecting: paths), cancellationScope: outer.readScope,
+                verify: outer.archive.unchanged)
             try ensureUnchanged(outer.archive)
             if outer.password == nil, let outerPassword { sessions[origin.sessionID]?.password = outerPassword }
             // Writable whatever the stored permissions: it is edited and written back.
@@ -620,7 +627,8 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
             try await nativeBackend.extract(at: archive.fileURL, password: session.password,
                 paths: paths, destination: purposeDirectory,
                 outputFile: outputURL, byteLimit: UInt64(hardLimit),
-                lastIndex: lastNativeIndex(in: archive, selecting: paths), cancellationScope: session.readScope)
+                lastIndex: lastNativeIndex(in: archive, selecting: paths), cancellationScope: session.readScope,
+                verify: archive.unchanged)
             // Output read while the original changed is discarded, never published.
             try ensureUnchanged(archive)
         } catch {
@@ -817,7 +825,7 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
             try fileManager.createDirectory(at: output, withIntermediateDirectories: false)
             try await nativeBackend.extract(at: archive.fileURL, password: effectivePassword,
                 paths: [path], destination: output, base: path, lastIndex: lastIndex,
-                cancellationScope: session.readScope)
+                cancellationScope: session.readScope, verify: archive.unchanged)
             try Task.checkCancellation()
             let root = output.standardizedFileURL.resolvingSymlinksInPath()
             let candidates = (fileManager.enumerator(at: output, includingPropertiesForKeys: [.isSymbolicLinkKey])?
@@ -832,7 +840,7 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
             let destination = promised ? url : url.deletingLastPathComponent()
             try await nativeBackend.extract(at: archive.fileURL, password: effectivePassword,
                 paths: [path], destination: destination, outputFile: output, lastIndex: lastIndex,
-                cancellationScope: session.readScope)
+                cancellationScope: session.readScope, verify: archive.unchanged)
             try Task.checkCancellation()
         }
         try ensureUnchanged(archive)
@@ -1028,7 +1036,7 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
         try ensureUnchanged(archive)
         progress(ArchiveProgress(phase: .extracting, fraction: 0))
         try await nativeBackend.extract(at: url, password: password,
-            paths: [], destination: destinationURL)
+            paths: [], destination: destinationURL, verify: archive.unchanged)
 
         progress(ArchiveProgress(phase: .extracting, fraction: 1))
     }
@@ -1072,7 +1080,8 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
         try ensureUnchanged(archive)
         try await nativeBackend.extract(at: archive.fileURL, password: effectivePassword,
             paths: selection, destination: destinationURL,
-            lastIndex: lastNativeIndex(in: archive, selecting: selection), cancellationScope: session.readScope)
+            lastIndex: lastNativeIndex(in: archive, selecting: selection), cancellationScope: session.readScope,
+            verify: archive.unchanged)
         try ensureUnchanged(archive)
 
         if let password {

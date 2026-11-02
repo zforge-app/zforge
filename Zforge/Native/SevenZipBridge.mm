@@ -39,6 +39,7 @@ extern "C" HRESULT CreateObject(const GUID *, const GUID *, void **);
 @implementation ZFSevenZipOperation { @public std::atomic<bool> stopped; std::atomic<uint64_t> bytesRead; std::atomic<bool> askedPassword; }
 - (instancetype)init { if ((self = [super init])) { stopped.store(false); bytesRead.store(0); askedPassword.store(false); } return self; }
 - (BOOL)passwordRequested { return askedPassword.load(); }
+- (BOOL)isCancelled { return stopped.load(); }
 - (void)cancel { stopped.store(true); }
 - (uint64_t)sourceBytesRead { return bytesRead.load(); }
 @end
@@ -108,7 +109,8 @@ public:
 Z7_COM7F_IMF(SourceStream::Read(void *data, UInt32 size, UInt32 *processed)) {
     UInt32 done = 0;
     HRESULT result = file->Read(data, size, &done);
-    operation->bytesRead.fetch_add(done);
+    const uint64_t total = operation->bytesRead.fetch_add(done) + done;
+    if (auto observer = operation.readObserver) observer(total);
     if (processed) *processed = done;
     return result;
 }
@@ -828,28 +830,59 @@ bool Finish(HRESULT result, Context &context, NSError **error, int itemResult = 
         return Finish(result, ctx, error, callback->itemResult);
     } catch (...) { return Finish(E_FAIL, ctx, error); }
 }
-+ (BOOL)extractStreamAtPath:(NSString *)path password:(NSString *)password rootPath:(NSString *)rootPath
++ (BOOL)extractPlannedAtPath:(NSString *)path password:(NSString *)password rootPath:(NSString *)rootPath
     byteLimit:(uint64_t)byteLimit lastIndex:(uint32_t)lastIndex
     planner:(NSString * _Nullable (^)(ZFSevenZipEntry *, BOOL *))planner
+    ready:(BOOL (^)(void))ready
     operation:(ZFSevenZipOperation *)operation error:(NSError **)error {
     Context ctx{operation, password};
     try {
-        if (!IsCompressedTar(path)) return Finish(E_INVALIDARG, ctx, error);
-        TarStream stream;
-        if (!Finish(stream.open(path, ctx), ctx, error)) return NO;
+        // The archive is read in place: plan and extract from this one opening, after the
+        // caller confirmed it is still the archive it listed (nothing written before that).
+        if (IsCompressedTar(path)) {
+            TarStream stream;
+            if (!Finish(stream.open(path, ctx), ctx, error)) return NO;
+            if (ready && !ready()) { ctx.failure = 8; return Finish(E_ABORT, ctx, error); }
+            ExtractCallback *callback = new ExtractCallback;
+            CMyComPtr<IArchiveExtractCallback> owner = callback;
+            callback->context = &ctx; callback->archive = stream.tar;
+            callback->limit = byteLimit; callback->rootPath = rootPath;
+            callback->planner = planner; callback->lastIndex = lastIndex;
+            if (!OpenRoot(callback, rootPath)) return Finish(E_FAIL, ctx, error);
+            HRESULT result = stream.tar->Extract(nullptr, (UInt32)-1, 0, owner);
+            const bool early = callback->stoppedEarly && result == E_ABORT && !ctx.failure && !operation->stopped.load();
+            if (early) result = S_OK;
+            // A full pass also verifies the outer stream (its checksum follows the tar data).
+            else if (result == S_OK) result = stream.drain();
+            stream.stop();
+            if (result == S_OK && !early && !stream.pipe->succeeded()) result = E_FAIL;
+            return Finish(result, ctx, error, callback->itemResult);
+        }
+        Archive arc;
+        if (!Finish(Open(path, ctx, arc), ctx, error)) return NO;
+        if (ready && !ready()) { ctx.failure = 8; return Finish(E_ABORT, ctx, error); }
+        UInt32 count = 0;
+        if (!Finish(arc.handler->GetNumberOfItems(&count), ctx, error)) return NO;
         ExtractCallback *callback = new ExtractCallback;
         CMyComPtr<IArchiveExtractCallback> owner = callback;
-        callback->context = &ctx; callback->archive = stream.tar;
-        callback->limit = byteLimit; callback->rootPath = rootPath;
-        callback->planner = planner; callback->lastIndex = lastIndex;
+        callback->positions.assign(count, kUnselected);
+        NSMutableArray<NSString *> *destinations = [NSMutableArray array];
+        std::vector<UInt32> selected;
+        for (UInt32 i = 0; i < count; ++i) {
+            if (!Finish(ctx.check(), ctx, error)) return NO;
+            BOOL abort = NO;
+            NSString *destination = planner(MakeEntry(arc.handler, i), &abort);
+            if (abort) { ctx.failure = 7; return Finish(E_ABORT, ctx, error); }
+            if (destination.length == 0) continue;
+            callback->positions[i] = (UInt32)destinations.count;
+            [destinations addObject:destination];
+            selected.push_back(i);
+        }
+        callback->context = &ctx; callback->archive = arc.handler;
+        callback->destinations = destinations; callback->limit = byteLimit;
+        callback->rootPath = rootPath;
         if (!OpenRoot(callback, rootPath)) return Finish(E_FAIL, ctx, error);
-        HRESULT result = stream.tar->Extract(nullptr, (UInt32)-1, 0, owner);
-        const bool early = callback->stoppedEarly && result == E_ABORT && !ctx.failure && !operation->stopped.load();
-        if (early) result = S_OK;
-        // A full pass also verifies the outer stream (its checksum follows the tar data).
-        else if (result == S_OK) result = stream.drain();
-        stream.stop();
-        if (result == S_OK && !early && !stream.pipe->succeeded()) result = E_FAIL;
+        HRESULT result = selected.empty() ? S_OK : arc.handler->Extract(selected.data(), (UInt32)selected.size(), 0, owner);
         return Finish(result, ctx, error, callback->itemResult);
     } catch (...) { return Finish(E_FAIL, ctx, error); }
 }

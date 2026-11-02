@@ -178,7 +178,7 @@ final class FileBrowserState {
     @ObservationIgnored private let monitor = DirectoryMonitor()
     @ObservationIgnored private var expandedDirectoryMonitors: [BrowserItemID: DirectoryMonitor] = [:]
     @ObservationIgnored private var reloadGeneration: UInt64 = 0
-    @ObservationIgnored private var previewTask: Task<Void, Never>?
+    @ObservationIgnored private(set) var previewTask: Task<Void, Never>?
     @ObservationIgnored private var previewGeneration: UInt64 = 0
     @ObservationIgnored private var columnActivationTask: Task<Void, Never>?
     @ObservationIgnored private var columnActivationGeneration: UInt64 = 0
@@ -330,9 +330,24 @@ final class FileBrowserState {
     var archiveOperationInProgress = false {
         didSet {
             // Changes of shared sessions wait for this window's own operation to finish.
-            if !archiveOperationInProgress { scheduleArchiveSessionChanges() }
+            if !archiveOperationInProgress {
+                archiveOperationRevealTask?.cancel()
+                archiveOperationRevealTask = nil
+                archiveOperationIsVisible = true
+                scheduleArchiveSessionChanges()
+            }
         }
     }
+    /// Whether the archive operation's progress and Cancel are shown. Opening an archive
+    /// shows them only once it takes longer than `archiveOpeningRevealDelay`, so quick
+    /// openings do not flash an overlay.
+    private(set) var archiveOperationIsVisible = true
+    @ObservationIgnored var archiveOpeningRevealDelay: Duration = .milliseconds(400)
+    @ObservationIgnored private var archiveOperationRevealTask: Task<Void, Never>?
+    /// The volume each shared session's archive (outermost on disk) is stored on.
+    @ObservationIgnored private(set) var archiveVolumeKinds: [UUID: ArchiveVolumeKind] = [:]
+    /// Classifies an archive's volume (tests substitute it).
+    @ObservationIgnored var volumeClassifier: @Sendable (URL) -> ArchiveVolumeKind = { ArchiveVolumeKind.of($0) }
     /// Sessions whose archive cannot be written: inner archives of archives that cannot
     /// be updated (D-73).
     private(set) var readOnlyArchiveSessions: Set<UUID> = []
@@ -1013,6 +1028,9 @@ final class FileBrowserState {
             if let result = handoff.take() {
                 await archives.adoptSession(result.address.sessionID)
                 recordArchiveSession(result)
+                if let outermost = try? await archives.outermostArchiveURL(for: result.address) {
+                    recordArchiveVolume(result.address.sessionID, url: outermost)
+                }
                 await navigate(to: .archive(result.address), named: result.displayName, isArchive: true, resetPath: true)
             }
             return
@@ -1644,9 +1662,7 @@ final class FileBrowserState {
             pendingLargeOperation = .openInnerArchive(item)
             return
         }
-        archiveOperationDescription = AppLocalization.string("Loading…", locale: preferences.language.locale)
-        archiveProgress = nil
-        archiveOperationInProgress = true
+        beginArchiveOpening(named: item.name)
         defer {
             archiveOperationInProgress = false
             archiveProgress = nil
@@ -1678,10 +1694,42 @@ final class FileBrowserState {
             guard !Task.isCancelled else { return }
             passwordError = AppLocalization.string("Incorrect password. Try again.", locale: preferences.language.locale)
             passwordOperation = .openInnerArchive(item)
+        } catch ArchiveEngineError.cancelled {
+        } catch is CancellationError {
         } catch {
             guard !Task.isCancelled else { return }
             self.error = mapError(error)
         }
+    }
+
+    /// Starts an opening whose progress appears only if it takes a while (D-73).
+    private func beginArchiveOpening(named name: String) {
+        beginDelayedArchiveOperation(AppLocalization.string("Opening “\(name)”…", locale: preferences.language.locale))
+    }
+
+    /// An archive operation whose progress and Cancel appear only if it takes a while.
+    private func beginDelayedArchiveOperation(_ description: String) {
+        archiveOperationDescription = description
+        archiveProgress = nil
+        archiveOperationIsVisible = false
+        archiveOperationInProgress = true
+        let delay = archiveOpeningRevealDelay
+        archiveOperationRevealTask?.cancel()
+        archiveOperationRevealTask = Task { [weak self] in
+            try? await Task.sleep(for: delay)
+            guard !Task.isCancelled, let self, self.archiveOperationInProgress else { return }
+            self.archiveOperationIsVisible = true
+        }
+    }
+
+    /// The volume kind of the archive holding an item inside an archive.
+    func archiveVolumeKind(of item: BrowserItem) -> ArchiveVolumeKind {
+        guard case let .archive(address) = item.location else { return .internalDisk }
+        return archiveVolumeKinds[address.sessionID] ?? .internalDisk
+    }
+
+    private func recordArchiveVolume(_ sessionID: UUID, url: URL) {
+        archiveVolumeKinds[sessionID] = volumeClassifier(url)
     }
 
     private func recordArchiveSession(_ result: ArchiveOpenResult) {
@@ -1944,12 +1992,7 @@ final class FileBrowserState {
             if passwordOperation == nil { initialAutomationAccessLease = nil }
             withExtendedLifetime(openingAccess) {}
         }
-        archiveOperationDescription = AppLocalization.string(
-            "Loading…",
-            locale: preferences.language.locale
-        )
-        archiveProgress = nil
-        archiveOperationInProgress = true
+        beginArchiveOpening(named: item.name)
         defer {
             archiveOperationInProgress = false
             archiveProgress = nil
@@ -1965,6 +2008,7 @@ final class FileBrowserState {
                 } else {
                     result = try await archives.openArchive(at: url, password: password)
                 }
+                recordArchiveVolume(result.address.sessionID, url: url)
             case .archive:
                 return
             }
@@ -1996,6 +2040,9 @@ final class FileBrowserState {
                 locale: preferences.language.locale
             )
             passwordOperation = item.localURL.map(PasswordOperation.openFile) ?? .openInnerArchive(item)
+        } catch ArchiveEngineError.cancelled {
+            // Cancelled from the progress overlay: nothing opened, nothing to report.
+        } catch is CancellationError {
         } catch {
             guard !Task.isCancelled else { return }
             self.error = mapError(error)
@@ -4176,6 +4223,7 @@ final class FileBrowserState {
                         return
                     case let .fileSystem(url):
                         result = try await archives.openArchive(at: url, password: password)
+                        recordArchiveVolume(result.address.sessionID, url: url)
                     case .archive:
                         return
                     }
@@ -4270,7 +4318,8 @@ final class FileBrowserState {
     }
 
     func iconPreview(for item: BrowserItem, pixelSize: Int) async throws -> CGImage? {
-        try await IconPreviewService.shared.image(for: item, pixelSize: pixelSize, archives: archives)
+        try await IconPreviewService.shared.image(for: item, pixelSize: pixelSize, archives: archives,
+            limits: preferences.archivePreviewLimits, volume: archiveVolumeKind(of: item))
     }
 
     func updatePreview(manual: Bool = false) {
@@ -4287,12 +4336,16 @@ final class FileBrowserState {
         guard !previewableItems.isEmpty else { return }
 
         var itemsToMaterialize: [BrowserItem] = []
+        // D-73: a single selection is previewed under the preview limits; the stack of a
+        // multiple selection shows thumbnails under the thumbnail limits.
+        let limits = preferences.archivePreviewLimits
+        let showsThumbnails = previewableItems.count > 1
         for item in previewableItems {
             if let localURL = item.localURL {
                 previewURLs[item.id] = localURL
-            } else if !manual,
-                      let size = item.size,
-                      size > 10 * 1_024 * 1_024 {
+            } else if !manual, !(showsThumbnails
+                ? limits.allowsAutomaticThumbnail(of: item, on: archiveVolumeKind(of: item))
+                : limits.allowsAutomaticPreview(of: item, on: archiveVolumeKind(of: item))) {
                 previewItemsRequiringManualLoad.insert(item.id)
             } else {
                 itemsToMaterialize.append(item)
@@ -4313,11 +4366,8 @@ final class FileBrowserState {
             for item in itemsToMaterialize {
                 guard isPreviewRequestCurrent(itemID: item.id, generation: generation) else { continue }
                 do {
-                    let url = try await archives.materialize(
-                        item: item,
-                        purpose: .preview,
-                        automaticLimit: manual ? nil : 10 * 1_024 * 1_024
-                    )
+                    // The limits were applied above, with the solid-block measure.
+                    let url = try await archives.materialize(item: item, purpose: .preview, automaticLimit: nil)
                     guard isPreviewRequestCurrent(itemID: item.id, generation: generation) else { continue }
                     previewURLs[item.id] = url
                     synchronizePrimaryPreviewState()
@@ -4341,6 +4391,18 @@ final class FileBrowserState {
             let chosenItems = previewItems.filter { !$0.isContainer }
             let selectionSnapshot = selection
             guard !chosenItems.isEmpty else { return }
+            // An explicit Quick Look loads archive items whatever their size, with progress
+            // and Cancel when it takes a while (D-73).
+            let readsArchive = chosenItems.contains { $0.localURL == nil } && !archiveOperationInProgress
+            if readsArchive {
+                beginDelayedArchiveOperation(AppLocalization.string("Loading…", locale: preferences.language.locale))
+            }
+            defer {
+                if readsArchive {
+                    archiveOperationInProgress = false
+                    archiveProgress = nil
+                }
+            }
             do {
                 var urls: [URL] = []
                 for item in chosenItems {
@@ -4360,6 +4422,8 @@ final class FileBrowserState {
                 guard !urls.isEmpty, selection == selectionSnapshot else { return }
                 previewURL = urls.first
                 quickLookPanel.present(urls, slideshow: slideshow)
+            } catch ArchiveEngineError.cancelled {
+            } catch is CancellationError {
             } catch {
                 self.error = mapError(error)
             }

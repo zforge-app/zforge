@@ -327,7 +327,7 @@ struct ContentView: View {
                 .padding(22)
                 .glassEffect(.regular, in: .rect(cornerRadius: 18))
                 .accessibilityIdentifier("file-operation-progress")
-            } else if browser.archiveOperationInProgress {
+            } else if browser.archiveOperationInProgress && browser.archiveOperationIsVisible {
                 VStack(spacing: 12) {
                     if let fraction = browser.archiveProgress?.fraction {
                         ProgressView(value: fraction)

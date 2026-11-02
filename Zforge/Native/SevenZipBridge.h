@@ -30,6 +30,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly) uint64_t sourceBytesRead;
 /// A handler asked for the password during this operation (for listing: the names are encrypted).
 @property(nonatomic, readonly) BOOL passwordRequested;
+/// The operation was cancelled (the native work stops at its next check).
+@property(nonatomic, readonly) BOOL isCancelled;
+/// Called on the reading thread after each read of the archive, with the bytes read so far
+/// (instrumentation for tests; it may block to hold a read in flight).
+@property(nonatomic, copy, nullable) void (^readObserver)(uint64_t total);
 @end
 
 @interface ZFSevenZipSource : NSObject
@@ -56,12 +61,15 @@ NS_ASSUME_NONNULL_BEGIN
     rootPath:(NSString *)rootPath
     byteLimit:(uint64_t)byteLimit operation:(ZFSevenZipOperation *)operation
     error:(NSError **)error;
-/// One decompression pass over a compressed tar. The planner returns the destination of each
-/// entry (nil or empty skips it; setting `abort` stops with an error). Decompression stops
-/// after the entry `lastIndex` (UINT32_MAX reads to the end and verifies the outer stream).
-+ (BOOL)extractStreamAtPath:(NSString *)path password:(nullable NSString *)password
+/// Opens the archive once, asks `ready` (nil: skip) whether it is still the archive the caller
+/// listed — a NO fails before anything is written —, then calls the planner for each entry
+/// (nil or empty skips it; setting `abort` stops with an error) and extracts from that same
+/// opening. Compressed tar is one decompression pass that stops after the entry `lastIndex`
+/// (UINT32_MAX reads to the end and verifies the outer stream).
++ (BOOL)extractPlannedAtPath:(NSString *)path password:(nullable NSString *)password
     rootPath:(NSString *)rootPath byteLimit:(uint64_t)byteLimit lastIndex:(uint32_t)lastIndex
     planner:(NSString * _Nullable (^)(ZFSevenZipEntry *entry, BOOL *abort))planner
+    ready:(nullable BOOL (^)(void))ready
     operation:(ZFSevenZipOperation *)operation error:(NSError **)error;
 + (BOOL)writeAtPath:(NSString *)path format:(NSString *)format
     updatingPath:(nullable NSString *)updatingPath sources:(NSArray<ZFSevenZipSource *> *)sources

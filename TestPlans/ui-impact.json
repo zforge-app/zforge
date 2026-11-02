@@ -66,7 +66,8 @@
         "Zforge/Services/DirectoryMonitor.swift",
         "Zforge/Services/AccessGrantStore.swift",
         "Zforge/Services/PinnedFolderStore.swift",
-        "Zforge/Services/UITestLaunchIsolation.swift"
+        "Zforge/Services/UITestLaunchIsolation.swift",
+        "Zforge/Models/ArchivePreviewPolicy.swift"
       ],
       "tests": [
         "ZforgeUITests/BrowserSearchUITests/testCommandFFocusesToolbarSearchAndEscapeCollapsesIt",

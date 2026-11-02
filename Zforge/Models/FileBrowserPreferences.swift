@@ -27,6 +27,13 @@ final class FileBrowserPreferences {
         static let language = AppLanguagePreference.defaultsKey
         /// Removed with nested-archive navigation (D-73); deleted from stored preferences.
         static let removedArchiveNavigationKeys = ["archive.nestingLimit", "archive.rootSizeLimitBytes", "archive.rootSizeLimitGB"]
+        static let previewSizeLimit = "archive.preview.sizeLimitBytes"
+        static let thumbnailSizeLimit = "archive.preview.thumbnailLimitBytes"
+        static let previewSolidArchives = "archive.preview.solidArchives"
+        static let previewOnRemovableVolumes = "archive.preview.removableVolumes"
+        static let removableVolumePreviewLimit = "archive.preview.removableLimitBytes"
+        static let previewOnNetworkVolumes = "archive.preview.networkVolumes"
+        static let networkVolumePreviewLimit = "archive.preview.networkLimitBytes"
         /// Whole decimal GB (1–5) saved before the limit became a byte count.
         static let defaultCompressionFormat = "archive.defaultCompressionFormat"
         static let compressionProfiles = "archive.compressionProfiles"
@@ -70,6 +77,60 @@ final class FileBrowserPreferences {
     }
     var showHiddenFiles: Bool { didSet { defaults.set(showHiddenFiles, forKey: Key.showHidden) } }
     var showIconPreviews: Bool { didSet { defaults.set(showIconPreviews, forKey: Key.showIconPreviews) } }
+    /// Automatic previews of items inside archives up to this size (decimal bytes, D-73).
+    var previewSizeLimit: Int64 {
+        didSet {
+            let clamped = Self.clamp(previewSizeLimit, ArchivePreviewLimits.previewRange)
+            if clamped != previewSizeLimit { previewSizeLimit = clamped } else { defaults.set(previewSizeLimit, forKey: Key.previewSizeLimit) }
+        }
+    }
+    /// Automatic thumbnails of items inside archives up to this size.
+    var thumbnailSizeLimit: Int64 {
+        didSet {
+            let clamped = Self.clamp(thumbnailSizeLimit, ArchivePreviewLimits.thumbnailRange)
+            if clamped != thumbnailSizeLimit { thumbnailSizeLimit = clamped } else { defaults.set(thumbnailSizeLimit, forKey: Key.thumbnailSizeLimit) }
+        }
+    }
+    /// Automatic previews and thumbnails of items whose decoding starts at a solid block.
+    var previewSolidArchives: Bool { didSet { defaults.set(previewSolidArchives, forKey: Key.previewSolidArchives) } }
+    var previewOnRemovableVolumes: Bool {
+        didSet { defaults.set(previewOnRemovableVolumes, forKey: Key.previewOnRemovableVolumes) }
+    }
+    var removableVolumePreviewLimit: Int64 {
+        didSet {
+            let clamped = Self.clamp(removableVolumePreviewLimit, ArchivePreviewLimits.previewRange)
+            if clamped != removableVolumePreviewLimit { removableVolumePreviewLimit = clamped } else { defaults.set(removableVolumePreviewLimit, forKey: Key.removableVolumePreviewLimit) }
+        }
+    }
+    var previewOnNetworkVolumes: Bool {
+        didSet { defaults.set(previewOnNetworkVolumes, forKey: Key.previewOnNetworkVolumes) }
+    }
+    var networkVolumePreviewLimit: Int64 {
+        didSet {
+            let clamped = Self.clamp(networkVolumePreviewLimit, ArchivePreviewLimits.previewRange)
+            if clamped != networkVolumePreviewLimit { networkVolumePreviewLimit = clamped } else { defaults.set(networkVolumePreviewLimit, forKey: Key.networkVolumePreviewLimit) }
+        }
+    }
+
+    /// The archive preview settings as one value.
+    var archivePreviewLimits: ArchivePreviewLimits {
+        ArchivePreviewLimits(
+            previewLimit: previewSizeLimit, thumbnailLimit: thumbnailSizeLimit,
+            previewsSolidArchives: previewSolidArchives,
+            previewsOnRemovableVolumes: previewOnRemovableVolumes, removableLimit: removableVolumePreviewLimit,
+            previewsOnNetworkVolumes: previewOnNetworkVolumes, networkLimit: networkVolumePreviewLimit
+        )
+    }
+
+    private static func clamp(_ value: Int64, _ range: ClosedRange<Int64>) -> Int64 {
+        min(max(value, range.lowerBound), range.upperBound)
+    }
+
+    private static func storedLimit(_ defaults: UserDefaults, _ key: String, default fallback: Int64,
+                                    range: ClosedRange<Int64>) -> Int64 {
+        guard let stored = (defaults.object(forKey: key) as? NSNumber)?.int64Value else { return fallback }
+        return min(max(stored, range.lowerBound), range.upperBound)
+    }
     private var previewVisibleIcons: Bool {
         didSet { defaults.set(previewVisibleIcons, forKey: Key.previewVisibleIcons) }
     }
@@ -336,6 +397,19 @@ final class FileBrowserPreferences {
         language = AppLanguagePreference(rawValue: defaults.string(forKey: Key.language) ?? "") ?? .system
         // Nested-archive navigation and its depth/root-size limits were removed (D-73).
         Key.removedArchiveNavigationKeys.forEach(defaults.removeObject(forKey:))
+        let limits = ArchivePreviewLimits.defaults
+        previewSizeLimit = Self.storedLimit(defaults, Key.previewSizeLimit, default: limits.previewLimit,
+            range: ArchivePreviewLimits.previewRange)
+        thumbnailSizeLimit = Self.storedLimit(defaults, Key.thumbnailSizeLimit, default: limits.thumbnailLimit,
+            range: ArchivePreviewLimits.thumbnailRange)
+        previewSolidArchives = defaults.object(forKey: Key.previewSolidArchives) == nil
+            ? limits.previewsSolidArchives : defaults.bool(forKey: Key.previewSolidArchives)
+        previewOnRemovableVolumes = defaults.bool(forKey: Key.previewOnRemovableVolumes)
+        removableVolumePreviewLimit = Self.storedLimit(defaults, Key.removableVolumePreviewLimit,
+            default: limits.removableLimit, range: ArchivePreviewLimits.previewRange)
+        previewOnNetworkVolumes = defaults.bool(forKey: Key.previewOnNetworkVolumes)
+        networkVolumePreviewLimit = Self.storedLimit(defaults, Key.networkVolumePreviewLimit,
+            default: limits.networkLimit, range: ArchivePreviewLimits.previewRange)
         let legacyFormat = ArchiveCompressionFormat(
             rawValue: defaults.string(forKey: Key.defaultCompressionFormat) ?? ""
         ) ?? .zip

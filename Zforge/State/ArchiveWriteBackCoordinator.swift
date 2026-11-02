@@ -154,29 +154,37 @@ final class ArchiveWriteBackCoordinator {
 @MainActor
 final class ArchiveWriteBackPanelPresenter: ArchiveWriteBackPresenting {
     private var panel: NSPanel?
+    private var label: NSTextField?
+    private var indicator: NSProgressIndicator?
     private var cancelAction: (@MainActor () -> Void)?
 
     private var locale: Locale? { FileBrowserPreferences.shared.language.locale }
 
     func showProgress(inner: String, outer: String, cancel: @escaping @MainActor () -> Void) {
         cancelAction = cancel
-        let panel = self.panel ?? makePanel()
-        self.panel = panel
-        if let label = panel.contentView?.subviews.compactMap({ $0 as? NSTextField }).first {
-            label.stringValue = AppLocalization.string("Writing “\(inner)” back into “\(outer)”…", locale: locale)
+        if panel == nil {
+            let parts = Self.makePanel(locale: locale, target: self, action: #selector(cancelWriteBack))
+            (panel, label, indicator) = (parts.panel, parts.label, parts.indicator)
         }
-        panel.contentView?.subviews.compactMap { $0 as? NSProgressIndicator }.first?.startAnimation(nil)
-        panel.center()
-        panel.orderFront(nil)
+        label?.stringValue = Self.progressText(inner: inner, outer: outer, locale: locale)
+        indicator?.startAnimation(nil)
+        panel?.center()
+        panel?.orderFront(nil)
     }
 
     func hideProgress() {
-        panel?.contentView?.subviews.compactMap { $0 as? NSProgressIndicator }.first?.stopAnimation(nil)
+        indicator?.stopAnimation(nil)
         panel?.orderOut(nil)
         cancelAction = nil
     }
 
-    private func makePanel() -> NSPanel {
+    static func progressText(inner: String, outer: String, locale: Locale?) -> String {
+        AppLocalization.string("Writing “\(inner)” back into “\(outer)”…", locale: locale)
+    }
+
+    /// The utility panel: the sentence, an indeterminate bar and Cancel (Escape).
+    static func makePanel(locale: Locale?, target: AnyObject?, action: Selector?)
+        -> (panel: NSPanel, label: NSTextField, indicator: NSProgressIndicator) {
         let panel = NSPanel(contentRect: NSRect(x: 0, y: 0, width: 420, height: 112),
             styleMask: [.titled, .utilityWindow], backing: .buffered, defer: false)
         panel.title = AppLocalization.string("Saving Inner Archive", locale: locale)
@@ -187,8 +195,7 @@ final class ArchiveWriteBackPanelPresenter: ArchiveWriteBackPresenting {
         let indicator = NSProgressIndicator()
         indicator.isIndeterminate = true
         indicator.style = .bar
-        let cancel = NSButton(title: AppLocalization.string("Cancel", locale: locale), target: self,
-            action: #selector(cancelWriteBack))
+        let cancel = NSButton(title: AppLocalization.string("Cancel", locale: locale), target: target, action: action)
         cancel.keyEquivalent = "\u{1b}"
         let content = NSView()
         for view in [label, indicator, cancel] as [NSView] {
@@ -207,14 +214,14 @@ final class ArchiveWriteBackPanelPresenter: ArchiveWriteBackPresenting {
             cancel.bottomAnchor.constraint(equalTo: content.bottomAnchor, constant: -20),
         ])
         panel.contentView = content
-        return panel
+        return (panel, label, indicator)
     }
 
     @objc private func cancelWriteBack() {
         cancelAction?()
     }
 
-    func resolveConflict(inner: String, outer: String) async -> ArchiveWriteBackConflictChoice {
+    static func makeConflictAlert(inner: String, outer: String, locale: Locale?) -> NSAlert {
         let alert = NSAlert()
         alert.messageText = AppLocalization.string("“\(outer)” changed since “\(inner)” was opened from it.", locale: locale)
         alert.informativeText = AppLocalization.string(
@@ -223,14 +230,10 @@ final class ArchiveWriteBackPanelPresenter: ArchiveWriteBackPresenting {
         alert.addButton(withTitle: AppLocalization.string("Replace Anyway", locale: locale))
         alert.addButton(withTitle: AppLocalization.string("Save Inner Archive As…", locale: locale))
         alert.addButton(withTitle: AppLocalization.string("Discard Changes", locale: locale))
-        switch alert.runModal() {
-        case .alertFirstButtonReturn: return .replaceAnyway
-        case .alertSecondButtonReturn: return .saveInnerArchiveAs
-        default: return .discardChanges
-        }
+        return alert
     }
 
-    func resolveFailure(inner: String, outer: String, error: any Error) async -> ArchiveWriteBackFailureChoice {
+    static func makeFailureAlert(inner: String, outer: String, error: any Error, locale: Locale?) -> NSAlert {
         let alert = NSAlert()
         alert.alertStyle = .warning
         alert.messageText = AppLocalization.string("“\(inner)” couldn’t be written back into “\(outer)”.", locale: locale)
@@ -238,17 +241,10 @@ final class ArchiveWriteBackPanelPresenter: ArchiveWriteBackPresenting {
             + AppLocalization.string("The modified inner archive is kept.", locale: locale)
         alert.addButton(withTitle: AppLocalization.string("Try Again", locale: locale))
         alert.addButton(withTitle: AppLocalization.string("Save Inner Archive As…", locale: locale))
-        return alert.runModal() == .alertFirstButtonReturn ? .tryAgain : .saveInnerArchiveAs
+        return alert
     }
 
-    func saveDestination(inner: String) async -> URL? {
-        let panel = NSSavePanel()
-        panel.nameFieldStringValue = inner
-        panel.canCreateDirectories = true
-        return panel.runModal() == .OK ? panel.url : nil
-    }
-
-    func password(outer: String, retry: Bool) async -> String? {
+    static func makePasswordAlert(outer: String, retry: Bool, locale: Locale?) -> (alert: NSAlert, field: NSSecureTextField) {
         let alert = NSAlert()
         alert.messageText = AppLocalization.string("Archive Password", locale: locale)
         alert.informativeText = retry
@@ -259,6 +255,31 @@ final class ArchiveWriteBackPanelPresenter: ArchiveWriteBackPresenting {
         alert.addButton(withTitle: AppLocalization.string("OK", locale: locale))
         alert.addButton(withTitle: AppLocalization.string("Cancel", locale: locale))
         alert.window.initialFirstResponder = field
+        return (alert, field)
+    }
+
+    func resolveConflict(inner: String, outer: String) async -> ArchiveWriteBackConflictChoice {
+        switch Self.makeConflictAlert(inner: inner, outer: outer, locale: locale).runModal() {
+        case .alertFirstButtonReturn: return .replaceAnyway
+        case .alertSecondButtonReturn: return .saveInnerArchiveAs
+        default: return .discardChanges
+        }
+    }
+
+    func resolveFailure(inner: String, outer: String, error: any Error) async -> ArchiveWriteBackFailureChoice {
+        Self.makeFailureAlert(inner: inner, outer: outer, error: error, locale: locale).runModal() == .alertFirstButtonReturn
+            ? .tryAgain : .saveInnerArchiveAs
+    }
+
+    func saveDestination(inner: String) async -> URL? {
+        let panel = NSSavePanel()
+        panel.nameFieldStringValue = inner
+        panel.canCreateDirectories = true
+        return panel.runModal() == .OK ? panel.url : nil
+    }
+
+    func password(outer: String, retry: Bool) async -> String? {
+        let (alert, field) = Self.makePasswordAlert(outer: outer, retry: retry, locale: locale)
         guard alert.runModal() == .alertFirstButtonReturn, !field.stringValue.isEmpty else { return nil }
         return field.stringValue
     }

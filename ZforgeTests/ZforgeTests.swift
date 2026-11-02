@@ -1084,7 +1084,8 @@ struct ZforgeTests {
             throw error
         }
         #expect(state.archiveOperationInProgress)
-        #expect(state.archiveOperationDescription == "Loading…")
+        // D-73 stage 3: the opening progress names the archive being opened.
+        #expect(state.archiveOperationDescription == "Opening “First.zip”…")
         let secondActivation = state.activateColumnItem(secondArchive, in: rootLocation)
 
         await secondActivation.value

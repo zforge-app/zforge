@@ -6,9 +6,23 @@ import Darwin
 nonisolated final class ArchiveSourceReadMeter: @unchecked Sendable {
     private let lock = NSLock()
     private var total: UInt64 = 0
+    private var cancelled = 0
+    private var observer: (@Sendable (UInt64) -> Void)?
     var bytesRead: UInt64 { lock.withLock { total } }
-    func reset() { lock.withLock { total = 0 } }
-    fileprivate func add(_ bytes: UInt64) { lock.withLock { total += bytes } }
+    /// Operations that ended cancelled in the bridge.
+    var cancelledOperations: Int { lock.withLock { cancelled } }
+    /// Called on the native thread after each read, with that operation's bytes so far.
+    var onRead: (@Sendable (UInt64) -> Void)? {
+        get { lock.withLock { observer } }
+        set { lock.withLock { observer = newValue } }
+    }
+    func reset() { lock.withLock { total = 0; cancelled = 0 } }
+    fileprivate func finish(_ operation: ZFSevenZipOperation) {
+        lock.withLock {
+            total += operation.sourceBytesRead
+            if operation.isCancelled { cancelled += 1 }
+        }
+    }
 }
 
 /// Owns cancellation handles; the native calls run on workers and never hold the UI actor.
@@ -47,10 +61,11 @@ nonisolated final class NativeSevenZipBackend: @unchecked Sendable {
         resource: URL, _ body: @escaping @Sendable (ZFSevenZipOperation) throws -> T
     ) async throws -> T {
         let operation = Operation(resource: resource)
+        if let readMeter { operation.native.readObserver = { readMeter.onRead?($0) } }
         lock.withLock { operations[operation.id] = operation }
         defer {
             _ = lock.withLock { operations.removeValue(forKey: operation.id) }
-            readMeter?.add(operation.native.sourceBytesRead)
+            readMeter?.finish(operation.native)
         }
         return try await withTaskCancellationHandler {
             try Task.checkCancellation()
@@ -74,6 +89,7 @@ nonisolated final class NativeSevenZipBackend: @unchecked Sendable {
         case 3: return ArchiveEngineError.sizeLimitExceeded
         case 4: return ArchiveEngineError.cancelled
         case 6: return ArchiveEngineError.insufficientSpace
+        case 8: return ArchiveEngineError.archiveChangedSinceOpening
         default: return ArchiveEngineError.invalidArchive(AppLocalization.string("archive.empty_or_unsupported"))
         }
     }
@@ -236,35 +252,28 @@ nonisolated final class NativeSevenZipBackend: @unchecked Sendable {
     /// Extracts the selected paths (all when empty) below `destination`. `base` strips that
     /// archive path from the outputs, so a selected folder's contents land in `destination`.
     /// `lastIndex` bounds a sequential pass: decompression stops after that native index.
+    /// `verify` runs once the archive is open, before anything is written: false fails with
+    /// `archiveChangedSinceOpening`.
     func extract(at url: URL, password: String?, paths: [String], destination: URL,
                  outputFile: URL? = nil, byteLimit: UInt64 = .max, base: String = "",
-                 lastIndex: UInt32? = nil, cancellationScope: URL? = nil) async throws {
+                 lastIndex: UInt32? = nil, cancellationScope: URL? = nil,
+                 verify: (@Sendable () -> Bool)? = nil) async throws {
         try await perform(resource: cancellationScope ?? url) { operation in
             let root = destination.standardizedFileURL.resolvingSymlinksInPath()
             let plan = ExtractionPlan(root: root, paths: paths, outputFile: outputFile,
                 fallback: url.deletingPathExtension().lastPathComponent, base: base)
-            if ZFSevenZipBridge.isCompressedTarPath(url.path) {
-                var plannerError: Error?
-                do {
-                    try ZFSevenZipBridge.extractStream(atPath: url.path, password: password, rootPath: root.path,
-                        byteLimit: byteLimit, last: lastIndex ?? UInt32.max, planner: { record, abort in
-                            do { return try plan.destination(for: record) } catch {
-                                plannerError = error; abort.pointee = true; return nil
-                            }
-                        }, operation: operation)
-                } catch {
-                    throw plannerError ?? error
-                }
-            } else {
-                let records = try ZFSevenZipBridge.entries(atPath: url.path, password: password, operation: operation)
-                var indices: [NSNumber] = []
-                var destinations: [String] = []
-                for record in records {
-                    guard let output = try plan.destination(for: record) else { continue }
-                    indices.append(NSNumber(value: record.index)); destinations.append(output)
-                }
-                try ZFSevenZipBridge.extract(atPath: url.path, password: password, indices: indices,
-                    destinations: destinations, rootPath: root.path, byteLimit: byteLimit, operation: operation)
+            // One opening lists and extracts; `verify` confirms it is still the archive the
+            // caller listed before anything is written (D-73: never items of a replaced archive).
+            var plannerError: Error?
+            do {
+                try ZFSevenZipBridge.extractPlanned(atPath: url.path, password: password, rootPath: root.path,
+                    byteLimit: byteLimit, last: lastIndex ?? UInt32.max, planner: { record, abort in
+                        do { return try plan.destination(for: record) } catch {
+                            plannerError = error; abort.pointee = true; return nil
+                        }
+                    }, ready: verify.map { check in { check() } }, operation: operation)
+            } catch {
+                throw plannerError ?? error
             }
             var links: [(URL, String)] = []
             for (record, output) in plan.outputs where record.symbolicLink && outputFile == nil {
