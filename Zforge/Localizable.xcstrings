@@ -51227,6 +51227,136 @@
         }
       }
     },
+    "The archive changed since it was opened. Reopen it to continue." : {
+      "localizations" : {
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "খোলার পর আর্কাইভ বদলেছে। চালিয়ে যেতে আবার খুলুন।"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Archiv se od otevření změnil. Chcete-li pokračovat, znovu ho otevřete."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arkivet er blevet ændret, siden det blev åbnet. Åbn det igen for at fortsætte."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Archiv wurde seit dem Öffnen geändert. Öffne es erneut, um fortzufahren."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The archive changed since it was opened. Reopen it to continue."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El archivo comprimido ha cambiado desde que se abrió. Ábrelo de nuevo para continuar."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’archive a changé depuis son ouverture. Rouvrez-la pour continuer."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "खोलने के बाद आर्काइव बदल गया है। जारी रखने के लिए इसे फिर से खोलें।"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’archivio è cambiato dall’apertura. Riaprilo per continuare."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開いてからアーカイブが変更されました。続けるには、アーカイブを開き直してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "압축 파일이 열린 이후 변경되었습니다. 계속하려면 다시 여십시오."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Het archief is gewijzigd sinds het werd geopend. Open het opnieuw om door te gaan."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Archiwum zmieniło się od jego otwarcia. Otwórz je ponownie, aby kontynuować."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O archive foi alterado desde que foi aberto. Abra-o novamente para continuar."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Архив изменился после открытия. Откройте его заново, чтобы продолжить."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arkivet har ändrats sedan det öppnades. Öppna det igen för att fortsätta."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ไฟล์บีบอัดเปลี่ยนแปลงหลังจากเปิด เปิดอีกครั้งเพื่อดำเนินการต่อ"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arşiv açıldıktan sonra değişti. Devam etmek için yeniden açın."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Архів змінився після відкриття. Відкрийте його знову, щоб продовжити."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "压缩文件自打开以来已更改。请重新打开以继续。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "壓縮檔案自打開以來已更改。請重新打開以繼續。"
+          }
+        }
+      }
+    },
     "The archive itself cannot be the extraction destination." : {
       "localizations" : {
         "bn" : {

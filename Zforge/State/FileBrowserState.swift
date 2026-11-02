@@ -193,6 +193,9 @@ final class FileBrowserState {
     @ObservationIgnored private var pendingValidationIndex = 0
     @ObservationIgnored private let initialURL: URL?
     @ObservationIgnored private var initialAutomationAccessLease: AutomationAccessLease?
+    /// Archives are read in place for the whole session (D-73): an archive opened with an
+    /// automation grant keeps that grant until the window closes, not only while opening.
+    @ObservationIgnored private var archiveSessionAccessLease: AutomationAccessLease?
     @ObservationIgnored private let initialArchiveSearch: String?
     @ObservationIgnored private var initialFinderRequest: FinderMenuRequest?
     @ObservationIgnored private let archiveSearch: any ArchiveSearching
@@ -1744,6 +1747,7 @@ final class FileBrowserState {
                 }
                 return
             }
+            if case .fileSystem = item.location, let openingAccess { archiveSessionAccessLease = openingAccess }
             passwordOperation = nil
             passwordError = nil
             await navigate(
@@ -4250,6 +4254,7 @@ final class FileBrowserState {
 
     func close() {
         initialAutomationAccessLease = nil
+        archiveSessionAccessLease = nil
         archiveSearchLease = nil
         searchDebounceTask?.cancel()
         searchStreamTask?.cancel()

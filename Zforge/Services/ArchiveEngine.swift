@@ -16,6 +16,8 @@ nonisolated enum ArchiveEngineError: LocalizedError, Equatable {
     case multiVolumeUpdateUnsupported
     case archiveAsDestination
     case archiveChanged
+    /// A read found the archive or one of its volumes changed since the session opened it.
+    case archiveChangedSinceOpening
     case archiveIncludedInSources
 
     var errorDescription: String? {
@@ -36,6 +38,7 @@ nonisolated enum ArchiveEngineError: LocalizedError, Equatable {
         case .multiVolumeUpdateUnsupported: AppLocalization.string("Multi-volume archives cannot be updated.")
         case .archiveAsDestination: AppLocalization.string("The archive itself cannot be the extraction destination.")
         case .archiveChanged: AppLocalization.string("The archive changed since it was opened. Reopen it before removing items.")
+        case .archiveChangedSinceOpening: AppLocalization.string("The archive changed since it was opened. Reopen it to continue.")
         case .archiveIncludedInSources: AppLocalization.string("The archive cannot be added to itself.")
         }
     }
@@ -201,26 +204,66 @@ extension ArchiveServing {
     }
 }
 
+/// Identity and version of the files a session reads in place: the archive and its volumes.
+/// Compared before reads and writes instead of the archive's bytes (D-73).
+nonisolated struct ArchiveSourceFingerprint: Sendable, Equatable {
+    struct File: Sendable, Equatable {
+        let volumeIdentifier: UInt64
+        let fileIdentifier: UInt64
+        let size: Int64
+        let modifiedSeconds: Int
+        let modifiedNanoseconds: Int
+    }
+
+    let files: [File]
+
+    /// Throws when a file cannot be examined (removed, unmounted or inaccessible).
+    static func capture(_ urls: [URL]) throws -> Self {
+        Self(files: try urls.map { url in
+            var status = stat()
+            guard stat(url.path, &status) == 0 else { throw ArchiveEngineError.itemNotFound }
+            return File(volumeIdentifier: UInt64(UInt32(bitPattern: status.st_dev)),
+                fileIdentifier: UInt64(status.st_ino), size: Int64(status.st_size),
+                modifiedSeconds: Int(status.st_mtimespec.tv_sec), modifiedNanoseconds: Int(status.st_mtimespec.tv_nsec))
+        })
+    }
+
+    /// Whether the files still have this identity and version.
+    func matches(_ urls: [URL]) -> Bool { (try? Self.capture(urls)) == self }
+}
+
 actor NativeSevenZipArchiveEngine: ArchiveServing {
     private typealias Entry = ArchiveEntry
 
     private struct ArchiveRecord: Sendable {
         let id: UUID
+        /// Read in place: the authorized original for a root archive, the materialized file
+        /// for a nested one.
         let fileURL: URL
+        /// The archive and its related volumes, covered by `fingerprint`.
+        let sources: [URL]
+        let fingerprint: ArchiveSourceFingerprint
         let displayName: String
         let parentArchiveID: UUID?
         let entries: [String: Entry]
+        /// Parent path to child entry paths, built once (`ArchiveEntry.childIndex`).
+        let children: [String: [String]]
         let directoriesContainingFiles: Set<String>
         let isRawStream: Bool
+        /// Compressed tar read sequentially: reads stop after the last selected entry.
+        let isSequential: Bool
     }
 
     private struct Session: Sendable {
         let id: UUID
         let originalURL: URL
+        /// Holds only materialized items; created on the first materialization.
         let directoryURL: URL
         var password: String?
         var archives: [UUID: ArchiveRecord]
         var materialized: [String: URL]
+        /// Native reads of this session are registered under this URL so closing it cancels them.
+        var readScope: URL { directoryURL.appendingPathComponent("Reads", isDirectory: true) }
     }
 
     private let fileManager: FileManager
@@ -231,10 +274,11 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
 
     init(
         fileManager: FileManager = .default,
+        sourceReadMeter: ArchiveSourceReadMeter? = nil,
         materializationDidExtract: (@Sendable (BrowserItem) async -> Void)? = nil
     ) {
         self.fileManager = fileManager
-        self.nativeBackend = NativeSevenZipBackend()
+        self.nativeBackend = NativeSevenZipBackend(readMeter: sourceReadMeter)
         self.materializationDidExtract = materializationDidExtract
         sessionsRoot = ZforgeTemporaryStorage.archiveSessionsRoot(fileManager: fileManager)
     }
@@ -246,44 +290,34 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
     ) async throws -> ArchiveOpenResult {
         let sessionID = UUID()
         let sessionDirectory = sessionsRoot.appendingPathComponent(sessionID.uuidString, isDirectory: true)
-        try fileManager.createDirectory(at: sessionDirectory, withIntermediateDirectories: true)
-
-        do {
-            let allowsNestedArchives = policy.allowsNestedArchives(forOutermostSize: totalArchiveSize(at: url))
-            let stagedURL = try stageArchiveAndVolumes(at: url, in: sessionDirectory)
-            let browsableURL = try await archiveURLForBrowsing(
-                stagedURL,
-                in: sessionDirectory,
-                password: password
-            )
-            let archive = try await listArchive(
-                at: browsableURL,
-                displayName: url.lastPathComponent,
-                password: password
-            )
-            sessions[sessionID] = Session(
-                id: sessionID,
-                originalURL: url,
-                directoryURL: sessionDirectory,
-                password: password,
-                archives: [archive.id: archive],
-                materialized: [:]
-            )
-            return ArchiveOpenResult(
-                address: ArchiveAddress(
-                    sessionID: sessionID,
-                    archiveID: archive.id,
-                    internalPath: "",
-                    allowsNestedArchives: allowsNestedArchives,
-                    nestedArchiveDepth: 0,
-                    maximumNestedArchiveDepth: policy.maximumNestedArchiveDepth
-                ),
-                displayName: archive.displayName
-            )
-        } catch {
-            try? fileManager.removeItem(at: sessionDirectory)
-            throw error
-        }
+        let allowsNestedArchives = policy.allowsNestedArchives(forOutermostSize: totalArchiveSize(at: url))
+        // The authorized original and its volumes are listed in place; nothing is copied.
+        let archive = try await listArchive(
+            at: url,
+            sources: relatedVolumeURLs(for: url),
+            displayName: url.lastPathComponent,
+            password: password,
+            cancellationScope: sessionDirectory.appendingPathComponent("Reads", isDirectory: true)
+        )
+        sessions[sessionID] = Session(
+            id: sessionID,
+            originalURL: url,
+            directoryURL: sessionDirectory,
+            password: password,
+            archives: [archive.id: archive],
+            materialized: [:]
+        )
+        return ArchiveOpenResult(
+            address: ArchiveAddress(
+                sessionID: sessionID,
+                archiveID: archive.id,
+                internalPath: "",
+                allowsNestedArchives: allowsNestedArchives,
+                nestedArchiveDepth: 0,
+                maximumNestedArchiveDepth: policy.maximumNestedArchiveDepth
+            ),
+            displayName: archive.displayName
+        )
     }
 
     func items(at address: ArchiveAddress) throws -> [BrowserItem] {
@@ -293,11 +327,10 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
         }
 
         let parent = normalized(address.internalPath)
-        return archive.entries.values.compactMap { entry in
-            guard immediateChildName(path: entry.path, parent: parent) != nil else { return nil }
-            guard let childName = immediateChildName(path: entry.path, parent: parent) else { return nil }
+        return (archive.children[parent] ?? []).compactMap { path in
+            guard let entry = archive.entries[path] else { return nil }
+            let childName = path.lastIndex(of: "/").map { String(path[path.index(after: $0)...]) } ?? path
             let childPath = parent.isEmpty ? childName : "\(parent)/\(childName)"
-            guard entry.path == childPath || entry.path == childPath + "/" else { return nil }
             let childAddress = ArchiveAddress(
                 sessionID: address.sessionID,
                 archiveID: address.archiveID,
@@ -307,7 +340,7 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
                 maximumNestedArchiveDepth: address.maximumNestedArchiveDepth
             )
             let isArchive = !entry.isDirectory && ArchiveFormatRegistry.recognizes(childName)
-            return BrowserItem(
+            var item = BrowserItem(
                 id: BrowserItemID(rawValue: "archive:\(address.sessionID):\(address.archiveID):\(childPath)"),
                 name: childName,
                 location: .archive(childAddress),
@@ -329,6 +362,8 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
                 compressionMethod: entry.method,
                 archiveDirectoryContainsFiles: entry.isDirectory && archive.directoriesContainingFiles.contains(childPath)
             )
+            item.solidBlock = entry.solidBlock
+            return item
         }
     }
 
@@ -351,11 +386,14 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
         guard case let .archive(address) = item.location else { throw ArchiveEngineError.itemNotFound }
         guard address.canOpenNestedArchive else { throw ArchiveEngineError.nestedArchiveNotAllowed }
         let url = try await materialize(item: item, purpose: .nestedArchive, automaticLimit: nil)
+        guard let readScope = sessions[address.sessionID]?.readScope else { throw ArchiveEngineError.itemNotFound }
         let archive = try await listArchive(
             at: url,
+            sources: [url],
             displayName: item.name,
             password: password,
-            parentArchiveID: address.archiveID
+            parentArchiveID: address.archiveID,
+            cancellationScope: readScope
         )
         guard var session = sessions[address.sessionID] else { throw ArchiveEngineError.itemNotFound }
         session.archives[archive.id] = archive
@@ -394,6 +432,7 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
         if let existing = session.materialized[cacheKey], fileManager.fileExists(atPath: existing.path) {
             return existing
         }
+        try ensureUnchanged(archive)
 
         let expectedSize = item.size
         let hardLimit: Int64 = if let expectedSize {
@@ -401,18 +440,33 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
         } else {
             1_073_741_824
         }
-        try ensureAvailableSpace(for: expectedSize ?? hardLimit, at: session.directoryURL)
 
+        // The session directory holds only materialized items; it exists from the first one.
         let purposeDirectory = session.directoryURL
             .appendingPathComponent(purposeDirectoryName(purpose), isDirectory: true)
             .appendingPathComponent(UUID().uuidString, isDirectory: true)
         try fileManager.createDirectory(at: purposeDirectory, withIntermediateDirectories: true)
+        do {
+            try ensureAvailableSpace(for: expectedSize ?? hardLimit, at: purposeDirectory)
+        } catch {
+            try? fileManager.removeItem(at: purposeDirectory)
+            throw error
+        }
         let safeName = sanitizedFileName(item.name)
         let outputURL = purposeDirectory.appendingPathComponent(safeName)
+        let paths = archive.isRawStream ? [] : [address.internalPath]
 
-        try await nativeBackend.extract(at: archive.fileURL, password: session.password,
-            paths: archive.isRawStream ? [] : [address.internalPath], destination: purposeDirectory,
-            outputFile: outputURL, byteLimit: UInt64(hardLimit))
+        do {
+            try await nativeBackend.extract(at: archive.fileURL, password: session.password,
+                paths: paths, destination: purposeDirectory,
+                outputFile: outputURL, byteLimit: UInt64(hardLimit),
+                lastIndex: lastNativeIndex(in: archive, selecting: paths), cancellationScope: session.readScope)
+            // Output read while the original changed is discarded, never published.
+            try ensureUnchanged(archive)
+        } catch {
+            try? fileManager.removeItem(at: purposeDirectory)
+            throw error
+        }
 
         guard !Task.isCancelled, sessions[address.sessionID]?.archives[address.archiveID] != nil else {
             try? fileManager.removeItem(at: purposeDirectory)
@@ -533,15 +587,7 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
         guard ArchiveFormatRegistry.supportsUpdating(archive.lastPathComponent) else {
             throw ArchiveEngineError.updateUnsupported
         }
-        if archive.pathExtension.lowercased() == "zip" {
-            let firstVolumeName = archive.deletingPathExtension().lastPathComponent.lowercased() + ".z01"
-            let siblingNames = try fileManager.contentsOfDirectory(
-                atPath: archive.deletingLastPathComponent().path
-            )
-            guard !siblingNames.contains(where: { $0.lowercased() == firstVolumeName }) else {
-                throw ArchiveEngineError.multiVolumeUpdateUnsupported
-            }
-        }
+        try rejectMultiVolumeZip(archive)
         guard fileManager.fileExists(atPath: archive.path) else { throw ArchiveEngineError.itemNotFound }
         guard !sourceURLs.contains(where: {
             $0.standardizedFileURL.resolvingSymlinksInPath() == archive
@@ -554,45 +600,16 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
         guard pathComponents.allSatisfy({ !$0.isEmpty && $0 != "." && $0 != ".." && !$0.contains("\\") }) else {
             throw ArchiveEngineError.unsafePath
         }
-        let operationDirectory = sessionsRoot
-            .appendingPathComponent("Operations", isDirectory: true)
-            .appendingPathComponent(UUID().uuidString, isDirectory: true)
-        let inputDirectory = operationDirectory.appendingPathComponent("Input", isDirectory: true)
-        try fileManager.createDirectory(at: inputDirectory, withIntermediateDirectories: true)
-        defer { try? fileManager.removeItem(at: operationDirectory) }
-
-        let targetDirectory = pathComponents.reduce(inputDirectory) {
-            $0.appendingPathComponent($1, isDirectory: true)
-        }
-        try fileManager.createDirectory(at: targetDirectory, withIntermediateDirectories: true)
+        // Sources are read in place under unique names; nothing is copied.
+        let fingerprint = try ArchiveSourceFingerprint.capture([archive])
         progress(ArchiveProgress(phase: .staging, fraction: 0))
-        var stagedNames: [String] = []
-        for (index, sourceURL) in sourceURLs.enumerated() {
-            let name = uniqueStagedName(sourceURL.lastPathComponent, in: stagedNames)
-            try fileManager.copyItem(at: sourceURL, to: targetDirectory.appendingPathComponent(name))
-            stagedNames.append(name)
-            progress(ArchiveProgress(phase: .staging, fraction: Double(index + 1) / Double(sourceURLs.count)))
+        var names: [String] = []
+        for sourceURL in sourceURLs { names.append(uniqueStagedName(sourceURL.lastPathComponent, in: names)) }
+        let sources = zip(sourceURLs, names).map { source, name in
+            NativeSevenZipBackend.WriteSource(url: source, archivePath: (pathComponents + [name]).joined(separator: "/"))
         }
-
-        let workingArchive = operationDirectory.appendingPathComponent(archive.lastPathComponent)
-        try fileManager.copyItem(at: archive, to: workingArchive)
-        let sourceNames = stagedNames.map { (pathComponents + [$0]).joined(separator: "/") }
-        let temporary = operationDirectory.appendingPathComponent("Updated-" + archive.lastPathComponent)
-        let format: ArchiveCompressionFormat = archive.pathExtension.lowercased() == "zip" ? .zip : .sevenZip
-        try await nativeBackend.write(to: temporary, updating: workingArchive,
-            options: CompressionOptions(format: format), password: password,
-            names: sourceNames, directory: inputDirectory)
-        try fileManager.removeItem(at: workingArchive)
-        try fileManager.moveItem(at: temporary, to: workingArchive)
-
-        try await testArchive(at: workingArchive, password: password)
-        try Task.checkCancellation()
-
-        let replacement = archive.deletingLastPathComponent()
-            .appendingPathComponent(".zforge-update-\(UUID().uuidString)-\(archive.lastPathComponent)")
-        try fileManager.copyItem(at: workingArchive, to: replacement)
-        defer { try? fileManager.removeItem(at: replacement) }
-        _ = try fileManager.replaceItemAt(archive, withItemAt: replacement)
+        progress(ArchiveProgress(phase: .staging, fraction: 1))
+        try await rewriteArchive(archive, expecting: fingerprint, password: password, sources: sources, excluding: [])
         progress(ArchiveProgress(phase: .compressing, fraction: 1))
     }
 
@@ -604,47 +621,57 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
         try await publishItem(item, to: url, password: password, promised: true, progress: progress)
     }
 
+    /// Extracts the item straight onto the destination's volume. Ordinary destinations get a
+    /// hidden sibling that is moved into place only after extraction and validation succeed;
+    /// file promises write only the exact URL AppKit granted (never its parent or a sibling).
     private func publishItem(_ item: BrowserItem, to url: URL, password: String?, promised: Bool,
                              progress: @escaping ArchiveProgressHandler) async throws {
         guard case let .archive(address) = item.location,
               let session = sessions[address.sessionID],
               let archive = session.archives[address.archiveID],
-              archive.entries[address.internalPath] != nil else { throw ArchiveEngineError.itemNotFound }
+              let entry = archive.entries[address.internalPath] else { throw ArchiveEngineError.itemNotFound }
         let path = try safeArchivePath(address.internalPath)
-        let staging = session.directoryURL.appendingPathComponent("Export-\(UUID().uuidString)", isDirectory: true)
-        try fileManager.createDirectory(at: staging, withIntermediateDirectories: true)
-        defer { try? fileManager.removeItem(at: staging) }
         let active = url.startAccessingSecurityScopedResource()
         defer { if active { url.stopAccessingSecurityScopedResource() } }
+        // A link is never published as a file, and destinations are never overwritten.
+        if !item.isDirectory && entry.attributes?.contains("l") == true { throw ArchiveEngineError.unsafePath }
+        if promised && fileManager.fileExists(atPath: url.path) { throw CocoaError(.fileWriteFileExists) }
+        try ensureUnchanged(archive)
         progress(ArchiveProgress(phase: .extracting, fraction: 0))
-        try await nativeBackend.extract(at: archive.fileURL, password: password ?? session.password,
-            paths: [path], destination: staging)
-        try Task.checkCancellation()
-        let exportedRoot = staging.appendingPathComponent(path)
-        let candidates = [exportedRoot] + ((fileManager.enumerator(at: exportedRoot,
-            includingPropertiesForKeys: [.isSymbolicLinkKey])?.allObjects as? [URL]) ?? [])
-        for candidate in candidates {
-            if try candidate.resourceValues(forKeys: [.isSymbolicLinkKey]).isSymbolicLink == true {
-                let resolved = candidate.resolvingSymlinksInPath().standardizedFileURL
-                guard item.isDirectory, resolved.path.hasPrefix(exportedRoot.path + "/") else {
+        let output = promised ? url : url.deletingLastPathComponent()
+            .appendingPathComponent(".zforge-publish-\(UUID().uuidString)", isDirectory: item.isDirectory)
+        var published = false
+        defer { if !published { try? fileManager.removeItem(at: output) } }
+        let effectivePassword = password ?? session.password
+        let lastIndex = lastNativeIndex(in: archive, selecting: [path])
+        if item.isDirectory {
+            try fileManager.createDirectory(at: output, withIntermediateDirectories: false)
+            try await nativeBackend.extract(at: archive.fileURL, password: effectivePassword,
+                paths: [path], destination: output, base: path, lastIndex: lastIndex,
+                cancellationScope: session.readScope)
+            try Task.checkCancellation()
+            let root = output.standardizedFileURL.resolvingSymlinksInPath()
+            let candidates = (fileManager.enumerator(at: output, includingPropertiesForKeys: [.isSymbolicLinkKey])?
+                .allObjects as? [URL]) ?? []
+            for candidate in candidates where try candidate.resourceValues(forKeys: [.isSymbolicLinkKey]).isSymbolicLink == true {
+                guard candidate.resolvingSymlinksInPath().standardizedFileURL.path.hasPrefix(root.path + "/") else {
                     throw ArchiveEngineError.unsafePath
                 }
             }
-        }
-        // File promises export the selected item, not its ancestors in the archive.
-        // Never overwrite a destination or remove a source after a failed publication.
-        if promised {
-            // AppKit grants the promised URL, not its parent. A sibling staging
-            // file is outside that grant. Extraction/validation already finished
-            // in our session; copy only to the exact authorized URL.
-            try fileManager.copyItem(at: exportedRoot, to: url)
         } else {
-            let publication = url.deletingLastPathComponent().appendingPathComponent(".zforge-publish-\(UUID().uuidString)")
-            defer { try? fileManager.removeItem(at: publication) }
-            try fileManager.copyItem(at: exportedRoot, to: publication)
+            // For a promise the output is the granted URL itself; the bridge opens exactly it.
+            let destination = promised ? url : url.deletingLastPathComponent()
+            try await nativeBackend.extract(at: archive.fileURL, password: effectivePassword,
+                paths: [path], destination: destination, outputFile: output, lastIndex: lastIndex,
+                cancellationScope: session.readScope)
             try Task.checkCancellation()
-            try fileManager.moveItem(at: publication, to: url)
         }
+        try ensureUnchanged(archive)
+        if !promised {
+            try Task.checkCancellation()
+            try fileManager.moveItem(at: output, to: url)
+        }
+        published = true
         if let password { sessions[address.sessionID]?.password = password }
         progress(ArchiveProgress(phase: .extracting, fraction: 1))
     }
@@ -657,13 +684,8 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
         }
         let archive = session.originalURL.standardizedFileURL.resolvingSymlinksInPath()
         guard ArchiveFormatRegistry.supportsUpdating(archive.lastPathComponent) else { throw ArchiveEngineError.updateUnsupported }
-        if archive.pathExtension.lowercased() == "zip" {
-            let volumeName = archive.deletingPathExtension().lastPathComponent.lowercased() + ".z01"
-            guard !(try fileManager.contentsOfDirectory(atPath: archive.deletingLastPathComponent().path))
-                .contains(where: { $0.lowercased() == volumeName }) else { throw ArchiveEngineError.multiVolumeUpdateUnsupported }
-        }
-        guard let record = session.archives[address.archiveID],
-              fileManager.contentsEqual(atPath: archive.path, andPath: record.fileURL.path) else {
+        try rejectMultiVolumeZip(archive)
+        guard let record = session.archives[address.archiveID], record.fingerprint.matches(record.sources) else {
             throw ArchiveEngineError.archiveChanged
         }
         let paths = try items.map { item -> String in
@@ -675,28 +697,10 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
             guard !path.isEmpty else { throw ArchiveEngineError.unsafePath }
             return path
         }
-        let directory = sessionsRoot.appendingPathComponent("Operations/\(UUID().uuidString)", isDirectory: true)
-        try fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
-        defer { try? fileManager.removeItem(at: directory) }
-        let original = directory.appendingPathComponent(archive.lastPathComponent)
-        let updated = directory.appendingPathComponent("Updated-" + archive.lastPathComponent)
-        try fileManager.copyItem(at: archive, to: original)
         let effectivePassword = password ?? session.password
-        let format: ArchiveCompressionFormat = archive.pathExtension.lowercased() == "zip" ? .zip : .sevenZip
         progress(ArchiveProgress(phase: .compressing, fraction: 0))
-        try await nativeBackend.write(to: updated, updating: original,
-            options: CompressionOptions(format: format), password: effectivePassword,
-            names: [], directory: directory, excludingPaths: paths)
-        try await testArchive(at: updated, password: effectivePassword)
-        try Task.checkCancellation()
-        let replacement = archive.deletingLastPathComponent().appendingPathComponent(".zforge-remove-\(UUID().uuidString)")
-        try fileManager.copyItem(at: updated, to: replacement)
-        defer { try? fileManager.removeItem(at: replacement) }
-        try Task.checkCancellation()
-        guard fileManager.contentsEqual(atPath: archive.path, andPath: original.path) else {
-            throw ArchiveEngineError.archiveChanged
-        }
-        _ = try fileManager.replaceItemAt(archive, withItemAt: replacement)
+        try await rewriteArchive(archive, expecting: record.fingerprint, password: effectivePassword,
+            sources: [], excluding: paths)
         if let password { sessions[address.sessionID]?.password = password }
         progress(ArchiveProgress(phase: .compressing, fraction: 1))
         return effectivePassword
@@ -705,17 +709,25 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
     func reorganizeItems(_ items: [BrowserItem], to destination: ArchiveAddress, moving: Bool,
                          password: String?, resolveConflict: @escaping ArchiveConflictResolver,
                          progress: @escaping ArchiveProgressHandler) async throws -> ArchiveReorganizationResult {
+        do {
+            return try await reorganize(items, to: destination, moving: moving, password: password,
+                resolveConflict: resolveConflict, progress: progress)
+        } catch ArchiveEngineError.archiveChangedSinceOpening {
+            // Reading the moved items found the archive changed: report it as a write conflict.
+            throw ArchiveEngineError.archiveChanged
+        }
+    }
+
+    private func reorganize(_ items: [BrowserItem], to destination: ArchiveAddress, moving: Bool,
+                            password: String?, resolveConflict: @escaping ArchiveConflictResolver,
+                            progress: @escaping ArchiveProgressHandler) async throws -> ArchiveReorganizationResult {
         guard !items.isEmpty, destination.nestedArchiveDepth == 0,
               let session = sessions[destination.sessionID],
               let record = session.archives[destination.archiveID] else { throw ArchiveEngineError.itemNotFound }
         let archive = session.originalURL.standardizedFileURL.resolvingSymlinksInPath()
         guard ArchiveFormatRegistry.supportsUpdating(archive.lastPathComponent) else { throw ArchiveEngineError.updateUnsupported }
-        if archive.pathExtension.lowercased() == "zip" {
-            let volume = archive.deletingPathExtension().lastPathComponent.lowercased() + ".z01"
-            guard !(try fileManager.contentsOfDirectory(atPath: archive.deletingLastPathComponent().path))
-                .contains(where: { $0.lowercased() == volume }) else { throw ArchiveEngineError.multiVolumeUpdateUnsupported }
-        }
-        guard fileManager.contentsEqual(atPath: archive.path, andPath: record.fileURL.path) else { throw ArchiveEngineError.archiveChanged }
+        try rejectMultiVolumeZip(archive)
+        guard record.fingerprint.matches(record.sources) else { throw ArchiveEngineError.archiveChanged }
         let target = destination.internalPath.isEmpty ? "" : try safeArchivePath(destination.internalPath)
         if !target.isEmpty {
             guard try self.items(at: ArchiveAddress(sessionID: destination.sessionID,
@@ -740,13 +752,11 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
                 parent.isDirectory && parentPath != path && path.hasPrefix(parentPath + "/")
             }
         }
+        // Only the transferred items are staged; the archive itself is read in place.
         let operation = sessionsRoot.appendingPathComponent("Operations/\(UUID().uuidString)", isDirectory: true)
         let input = operation.appendingPathComponent("Input", isDirectory: true)
         try fileManager.createDirectory(at: input, withIntermediateDirectories: true)
         defer { try? fileManager.removeItem(at: operation) }
-        let original = operation.appendingPathComponent(archive.lastPathComponent)
-        let updated = operation.appendingPathComponent("Updated-" + archive.lastPathComponent)
-        try fileManager.copyItem(at: record.fileURL, to: original)
         var occupied = try self.items(at: destination).map(\.name)
         var stagedNames: Set<String> = []
         var paths: [String] = []
@@ -778,29 +788,42 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
         }
         guard !paths.isEmpty else { return ArchiveReorganizationResult(paths: [], password: effectivePassword) }
         try Task.checkCancellation()
-        let format: ArchiveCompressionFormat = archive.pathExtension.lowercased() == "zip" ? .zip : .sevenZip
-        try await nativeBackend.write(to: updated, updating: original, options: CompressionOptions(format: format),
-            password: effectivePassword, names: paths, directory: input, excludingPaths: exclusions)
-        try await testArchive(at: updated, password: effectivePassword)
-        try Task.checkCancellation()
-        let replacement = archive.deletingLastPathComponent().appendingPathComponent(".zforge-reorganize-\(UUID().uuidString)")
-        try fileManager.copyItem(at: updated, to: replacement)
-        defer { try? fileManager.removeItem(at: replacement) }
-        try Task.checkCancellation()
-        guard fileManager.contentsEqual(atPath: archive.path, andPath: record.fileURL.path) else { throw ArchiveEngineError.archiveChanged }
-        _ = try fileManager.replaceItemAt(archive, withItemAt: replacement)
+        try await rewriteArchive(archive, expecting: record.fingerprint, password: effectivePassword,
+            sources: paths.map { NativeSevenZipBackend.WriteSource(url: input.appendingPathComponent($0), archivePath: $0) },
+            excluding: exclusions)
         if let password { sessions[destination.sessionID]?.password = password }
         return ArchiveReorganizationResult(paths: paths, password: effectivePassword)
     }
 
+    /// One pass: the native writer reads the original in place and writes the updated archive
+    /// once into a hidden file beside it, which is validated and then atomically replaces the
+    /// original. Nothing is copied; a change of the original (fingerprint) aborts before the
+    /// write and again before the replacement.
+    private func rewriteArchive(_ archive: URL, expecting fingerprint: ArchiveSourceFingerprint, password: String?,
+                                sources: [NativeSevenZipBackend.WriteSource], excluding: [String]) async throws {
+        let format: ArchiveCompressionFormat = archive.pathExtension.lowercased() == "zip" ? .zip : .sevenZip
+        let updated = archive.deletingLastPathComponent()
+            .appendingPathComponent(".zforge-update-\(UUID().uuidString)-\(archive.lastPathComponent)")
+        defer { try? fileManager.removeItem(at: updated) }
+        guard fingerprint.matches([archive]) else { throw ArchiveEngineError.archiveChanged }
+        try await nativeBackend.write(to: updated, updating: archive, options: CompressionOptions(format: format),
+            password: password, sources: sources, excludingPaths: excluding)
+        try await nativeBackend.test(at: updated, password: password)
+        try Task.checkCancellation()
+        guard fingerprint.matches([archive]) else { throw ArchiveEngineError.archiveChanged }
+        _ = try fileManager.replaceItemAt(archive, withItemAt: updated)
+    }
+
+    private func rejectMultiVolumeZip(_ archive: URL) throws {
+        guard archive.pathExtension.lowercased() == "zip" else { return }
+        let volumeName = archive.deletingPathExtension().lastPathComponent.lowercased() + ".z01"
+        guard !(try fileManager.contentsOfDirectory(atPath: archive.deletingLastPathComponent().path))
+            .contains(where: { $0.lowercased() == volumeName }) else { throw ArchiveEngineError.multiVolumeUpdateUnsupported }
+    }
+
     func testArchive(at url: URL, password: String?) async throws {
-        let operationDirectory = sessionsRoot
-            .appendingPathComponent("Operations", isDirectory: true)
-            .appendingPathComponent(UUID().uuidString, isDirectory: true)
-        try fileManager.createDirectory(at: operationDirectory, withIntermediateDirectories: true)
-        defer { try? fileManager.removeItem(at: operationDirectory) }
-        let stagedURL = try stageArchiveAndVolumes(at: url, in: operationDirectory)
-        try await nativeBackend.test(at: stagedURL, password: password)
+        // Reads the archive and its volumes in place.
+        try await nativeBackend.test(at: url, password: password)
     }
 
     func extractArchive(
@@ -810,26 +833,17 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
         resolveConflict: @escaping ArchiveConflictResolver,
         progress: @escaping ArchiveProgressHandler
     ) async throws {
-        let operationDirectory = sessionsRoot
-            .appendingPathComponent("Operations", isDirectory: true)
-            .appendingPathComponent(UUID().uuidString, isDirectory: true)
-        try fileManager.createDirectory(at: operationDirectory, withIntermediateDirectories: true)
-        defer { try? fileManager.removeItem(at: operationDirectory) }
-
+        // Reads the archive and its volumes in place; the listing and the extraction must see
+        // the same files.
         progress(ArchiveProgress(phase: .staging, fraction: 0))
-        let stagedURL = try stageArchiveAndVolumes(at: url, in: operationDirectory)
-        let extractionArchive = try await archiveURLForBrowsing(
-            stagedURL,
-            in: operationDirectory,
-            password: password
-        )
-        progress(ArchiveProgress(phase: .staging, fraction: 1))
         try fileManager.createDirectory(at: destinationURL, withIntermediateDirectories: true)
         let archive = try await listArchive(
-            at: extractionArchive,
+            at: url,
+            sources: relatedVolumeURLs(for: url),
             displayName: url.lastPathComponent,
             password: password
         )
+        progress(ArchiveProgress(phase: .staging, fraction: 1))
         let replacements = try await conflictFilesToReplace(
             entries: archive.entries,
             selectedPaths: [],
@@ -840,8 +854,9 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
             try fileManager.removeItem(at: replacement)
         }
 
+        try ensureUnchanged(archive)
         progress(ArchiveProgress(phase: .extracting, fraction: 0))
-        try await nativeBackend.extract(at: extractionArchive, password: password,
+        try await nativeBackend.extract(at: url, password: password,
             paths: [], destination: destinationURL)
 
         progress(ArchiveProgress(phase: .extracting, fraction: 1))
@@ -869,6 +884,7 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
             }
             return try safeArchivePath(address.internalPath)
         }
+        try ensureUnchanged(archive)
         try fileManager.createDirectory(at: destinationURL, withIntermediateDirectories: true)
         let replacements = try await conflictFilesToReplace(
             entries: archive.entries,
@@ -881,8 +897,12 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
         }
         progress(ArchiveProgress(phase: .extracting, fraction: 0))
         let effectivePassword = password ?? session.password
+        let selection = archive.isRawStream ? [] : paths
+        try ensureUnchanged(archive)
         try await nativeBackend.extract(at: archive.fileURL, password: effectivePassword,
-            paths: archive.isRawStream ? [] : paths, destination: destinationURL)
+            paths: selection, destination: destinationURL,
+            lastIndex: lastNativeIndex(in: archive, selecting: selection), cancellationScope: session.readScope)
+        try ensureUnchanged(archive)
 
         if let password {
             self.sessions[firstAddress.sessionID]?.password = password
@@ -958,16 +978,21 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
 
     private func listArchive(
         at url: URL,
+        sources: [URL],
         displayName: String,
         password: String?,
-        parentArchiveID: UUID? = nil
+        parentArchiveID: UUID? = nil,
+        cancellationScope: URL? = nil
     ) async throws -> ArchiveRecord {
-        var entries = try await nativeBackend.list(at: url, password: password)
+        let fingerprint = try ArchiveSourceFingerprint.capture(sources)
+        var entries = try await nativeBackend.list(at: url, password: password, cancellationScope: cancellationScope)
+        // The listing describes these files only if they did not change while it was read.
+        guard fingerprint.matches(sources) else { throw ArchiveEngineError.archiveChangedSinceOpening }
 
         let isRawStream = entries.isEmpty && isStreamURL(url)
         if isRawStream {
             let path = rawStreamOutputName(for: displayName)
-            entries[path] = Entry(
+            var entry = Entry(
                 path: path,
                 isDirectory: false,
                 size: nil,
@@ -980,25 +1005,40 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
                 method: nil,
                 attributes: nil
             )
+            entry.solidBlock = ArchiveSolidBlock(packedSize: fingerprint.files.reduce(0) { $0 + $1.size })
+            entries[path] = entry
         }
         return ArchiveRecord(
             id: UUID(),
             fileURL: url,
+            sources: sources,
+            fingerprint: fingerprint,
             displayName: displayName,
             parentArchiveID: parentArchiveID,
             entries: entries,
+            children: Entry.childIndex(of: entries),
             directoriesContainingFiles: Entry.directoriesContainingFiles(in: entries),
-            isRawStream: isRawStream
+            isRawStream: isRawStream,
+            isSequential: ZFSevenZipBridge.isCompressedTarPath(url.path)
         )
     }
 
-    private func stageArchiveAndVolumes(at url: URL, in directory: URL) throws -> URL {
-        let related = relatedVolumeURLs(for: url)
-        for source in related {
-            let destination = directory.appendingPathComponent(source.lastPathComponent)
-            try fileManager.copyItem(at: source, to: destination)
+    private func ensureUnchanged(_ archive: ArchiveRecord) throws {
+        guard archive.fingerprint.matches(archive.sources) else { throw ArchiveEngineError.archiveChangedSinceOpening }
+    }
+
+    /// The last native index a sequential read needs for the selected paths (nil reads to the
+    /// end). Duplicate paths keep their last occurrence, so the bound never stops too early.
+    private func lastNativeIndex(in archive: ArchiveRecord, selecting paths: [String]) -> UInt32? {
+        guard archive.isSequential, !paths.isEmpty else { return nil }
+        let selection = ArchivePathSelection(paths)
+        var last: UInt32?
+        for entry in archive.entries.values where selection.contains(entry.path) {
+            // A synthesized parent has no index: its descendants carry the bound.
+            guard let index = entry.nativeIndex else { continue }
+            last = max(last ?? 0, index)
         }
-        return directory.appendingPathComponent(url.lastPathComponent)
+        return last
     }
 
     private func totalArchiveSize(at url: URL) -> Int64? {
@@ -1014,25 +1054,36 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
         return total
     }
 
+    /// The archive and the sibling volumes the native handlers read with it.
     private func relatedVolumeURLs(for url: URL) -> [URL] {
         let folder = url.deletingLastPathComponent()
         let name = url.lastPathComponent.lowercased()
         guard let siblings = try? fileManager.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil) else {
             return [url]
         }
+        func matching(_ pattern: String) -> [URL] {
+            let matches = siblings.filter {
+                $0.lastPathComponent.lowercased().range(of: pattern, options: .regularExpression) != nil
+            }
+            guard matches.contains(where: { $0.lastPathComponent.lowercased() == name }) else { return [url] }
+            return matches.sorted { $0.lastPathComponent < $1.lastPathComponent }
+        }
         if let range = name.range(of: #"\.(7z|zip)\.\d{3}$"#, options: .regularExpression) {
-            let prefix = String(name[..<range.lowerBound])
-            return siblings.filter { $0.lastPathComponent.lowercased().hasPrefix(prefix + ".") }
+            let prefix = NSRegularExpression.escapedPattern(for: String(name[..<range.lowerBound]))
+            let kind = name[range].dropFirst().prefix { $0 != "." }
+            return matching("^" + prefix + "\\." + kind + #"\.\d{3}$"#)
+        }
+        if let range = name.range(of: #"\.part\d+\.rar$"#, options: .regularExpression) {
+            let prefix = NSRegularExpression.escapedPattern(for: String(name[..<range.lowerBound]))
+            return matching("^" + prefix + #"\.part\d+\.rar$"#)
         }
         if name.hasSuffix(".rar") || name.range(of: #"\.r\d{2}$"#, options: .regularExpression) != nil {
             let prefix = name.replacingOccurrences(of: #"\.(rar|r\d{2})$"#, with: "", options: .regularExpression)
-            let matches = siblings.filter {
-                $0.lastPathComponent.lowercased().range(
-                    of: "^" + NSRegularExpression.escapedPattern(for: prefix) + #"\.(rar|r\d{2})$"#,
-                    options: .regularExpression
-                ) != nil
-            }
-            return matches.isEmpty ? [url] : matches
+            return matching("^" + NSRegularExpression.escapedPattern(for: prefix) + #"\.(rar|r\d{2})$"#)
+        }
+        if name.hasSuffix(".zip") {
+            let prefix = NSRegularExpression.escapedPattern(for: String(name.dropLast(4)))
+            return matching("^" + prefix + #"\.(zip|z\d{2})$"#)
         }
         return [url]
     }
@@ -1046,41 +1097,6 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
     ) async throws {
         try await nativeBackend.write(to: outputURL, options: options, password: password,
             names: sourceNames, directory: workingDirectory)
-    }
-
-    private func archiveURLForBrowsing(
-        _ url: URL,
-        in operationDirectory: URL,
-        password: String?
-    ) async throws -> URL {
-        guard isTarStreamURL(url) else { return url }
-
-        let payloadDirectory = operationDirectory.appendingPathComponent(
-            "StreamPayload",
-            isDirectory: true
-        )
-        try fileManager.createDirectory(at: payloadDirectory, withIntermediateDirectories: true)
-        try await nativeBackend.extract(at: url, password: password, paths: [], destination: payloadDirectory)
-
-        let payloads = try fileManager.contentsOfDirectory(
-            at: payloadDirectory,
-            includingPropertiesForKeys: [.isRegularFileKey],
-            options: [.skipsHiddenFiles]
-        ).filter {
-            (try? $0.resourceValues(forKeys: [.isRegularFileKey]).isRegularFile) == true
-                && $0.pathExtension.lowercased() == "tar"
-        }
-        guard let payload = payloads.first else {
-            throw ArchiveEngineError.invalidArchive(AppLocalization.string("archive.empty_or_unsupported"))
-        }
-        return payload
-    }
-
-    private func isTarStreamURL(_ url: URL) -> Bool {
-        let name = url.lastPathComponent.lowercased()
-        return [".tar.gz", ".tar.bz2", ".tar.xz", ".tgz", ".tbz", ".tbz2", ".txz"].contains {
-            name.hasSuffix($0)
-        }
     }
 
     private func isStreamURL(_ url: URL) -> Bool {
@@ -1142,18 +1158,6 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
             }
         }
         return replacements
-    }
-
-    private func immediateChildName(path: String, parent: String) -> String? {
-        if parent.isEmpty {
-            guard !path.isEmpty else { return nil }
-            return String(path.split(separator: "/", maxSplits: 1).first ?? "")
-        }
-        let prefix = parent + "/"
-        guard path.hasPrefix(prefix) else { return nil }
-        let remainder = String(path.dropFirst(prefix.count))
-        guard !remainder.isEmpty else { return nil }
-        return String(remainder.split(separator: "/", maxSplits: 1).first ?? "")
     }
 
     private func safeArchivePath(_ raw: String) throws -> String {

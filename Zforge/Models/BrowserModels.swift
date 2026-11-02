@@ -318,6 +318,8 @@ nonisolated struct BrowserItem: Identifiable, Hashable, Sendable {
     var extendedMetadata = BrowserExtendedMetadata()
     /// True when an archive directory has at least one file anywhere below it.
     var archiveDirectoryContainsFiles = false
+    /// Set for archive entries whose decoding starts at the beginning of a shared solid block.
+    var solidBlock: ArchiveSolidBlock? = nil
     /// Cached local resource identity. It is a context hint, never an access grant.
     var fileIdentity: Data? = nil
 
