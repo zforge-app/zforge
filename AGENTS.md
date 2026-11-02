@@ -35,6 +35,10 @@ Zforge values polished UX/UI, transition flows, performance, and code quality. *
 - Run the tests for the change and affected adjacent flows with the selection below; changes to state, handlers, or shared components also reach the tests that consume them through the full unit plan and the impact map. Check the cases actually executed and record results, failures, skipped cases, and limits in [`REGRESSION-COVERAGE.md`](REGRESSION-COVERAGE.md). A green build, zero executed tests, existing test source, or a runner that did not start does not constitute functional approval.
 - **Regressions in established features are unacceptable** when implementing a new feature, evolving an existing feature, or fixing a bug. A regression introduced or reintroduced by the change blocks completion: fix the cause and add automated protection without sacrificing the previous contract. Preexisting failures must also be identified and recorded, without hiding them or presenting them as approval.
 
+## Warning-free commits
+
+- A commit whose content builds with a warning is blocked (RNF-Q07). The hooks in `.githooks/` run `Scripts/check-warnings.py`, which builds the staged snapshot (`build-for-testing`, Debug, app and test targets) and lists every warning; fix the warning and stage the fix. Enable the hooks once per clone with `git config core.hooksPath .githooks`. Do not bypass the gate with `--no-verify` without the user's explicit approval. Run the script directly to check the index before committing; `--clean` discards its cached build.
+
 ## Test layers and selection
 
 XCUITest drives the real window server: it takes over the user's screen and is the slowest layer. Keep it for what only it can prove (requirement RNF-Q08).
