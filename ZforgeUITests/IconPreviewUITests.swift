@@ -113,7 +113,7 @@ final class IconPreviewUITests: XCTestCase {
 
     @MainActor
     private func openIconPreviewSettings(in app: XCUIApplication) -> XCUIElement {
-        app.typeKey(",", modifierFlags: .command)
+        app.openSettingsPane("viewOptions")
         let toggle = app.descendants(matching: .any)
             .matching(identifier: "settings-show-icon-previews").firstMatch
         XCTAssertTrue(toggle.waitForExistence(timeout: 5), app.debugDescription)

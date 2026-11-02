@@ -45,7 +45,8 @@
       "ZforgeUITests/ZforgeUITests/testKeyboardShortcutHelpOpensAndFilters": 15,
       "ZforgeUITests/ZforgeUITests/testFolderSelectionMenuAlternatesWithOptionInListMode": 13,
       "ZforgeUITests/BrowserSearchUITests/testCommandFFocusesToolbarSearchAndEscapeCollapsesIt": 12,
-      "ZforgeUITests/ZforgeUITests/testDoubleClickInnerArchiveOpensItInNewWindow": 30
+      "ZforgeUITests/ZforgeUITests/testDoubleClickInnerArchiveOpensItInNewWindow": 30,
+      "ZforgeUITests/SettingsUITests/testCompressionProfileOpensSavesAndDeletes": 25
     }
   },
   "rules": [
@@ -83,6 +84,9 @@
       "paths": [
         "Zforge/ZforgeApp.swift",
         "Zforge/Views/SidebarSettingsSection.swift",
+        "Zforge/Views/SettingsWindow.swift",
+        "Zforge/Models/SettingsPane.swift",
+        "Zforge/Views/CompressionProfileSettings.swift",
         "Zforge/AppDelegate.swift",
         "Zforge/Info.plist",
         "Zforge/Zforge.entitlements"
@@ -102,7 +106,8 @@
         "ZforgeUITests/ZforgeUITests/testNewFolderWithSelectionMenuAndShortcutInListMode",
         "ZforgeUITests/ZforgeUITests/testViewModeIsPerWindowAndLastClosedWindowRestoresIt",
         "ZforgeUITests/SettingsUITests/testListColumnsReorderByDragging",
-        "ZforgeUITests/SettingsUITests/testArchiveSizeLimitSliderHoldsRoundValuesWhileDragging"
+        "ZforgeUITests/SettingsUITests/testArchiveSizeLimitSliderHoldsRoundValuesWhileDragging",
+        "ZforgeUITests/SettingsUITests/testCompressionProfileOpensSavesAndDeletes"
       ]
     },
     {
@@ -244,7 +249,8 @@
         "Zforge/Models/CompressionOptions.swift"
       ],
       "tests": [
-        "ZforgeUITests/ZforgeUITests/testCustomCompressionPanelOpensFolderChooser"
+        "ZforgeUITests/ZforgeUITests/testCustomCompressionPanelOpensFolderChooser",
+        "ZforgeUITests/SettingsUITests/testCompressionProfileOpensSavesAndDeletes"
       ]
     },
     {

@@ -331,8 +331,8 @@ struct ArchivePreviewLimitTests {
         preferences.previewOnRemovableVolumes = true
         preferences.previewOnNetworkVolumes = true
         preferences.networkVolumePreviewLimit = 128_000_000
-        let settingsBody = String(reflecting: ZforgeSettingsView.Body.self)
-        #expect(settingsBody.contains("ArchivePreviewSettingsSection"))
+        let paneBody = String(reflecting: PreviewsSettingsPane.Body.self)
+        #expect(paneBody.contains("ArchivePreviewSettingsSection"))
         let section = Form { ArchivePreviewSettingsSection(preferences: preferences) }
             .formStyle(.grouped)
             .environment(\.locale, language.locale)

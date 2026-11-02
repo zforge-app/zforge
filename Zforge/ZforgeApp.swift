@@ -347,137 +347,6 @@ private struct KeyboardShortcutHelpCommands: Commands {
     }
 }
 
-struct ZforgeSettingsView: View {
-    @State private var preferences = FileBrowserPreferences.shared
-    @State private var compressionDraft = CompressionDraft(preferences: .shared)
-    @State private var draggedListColumn: BrowserListColumn?
-    @State private var listColumnDragStartIndex = 0
-    @State private var listColumnRowFrames: [BrowserListColumn: CGRect] = [:]
-
-    var body: some View {
-        Form {
-            Picker("Language", selection: $preferences.language) {
-                ForEach(AppLanguagePreference.allCases) { language in
-                    Text(AppLocalization.string(language.titleKey, locale: preferences.language.locale))
-                        .tag(language)
-                }
-            }
-            .accessibilityIdentifier("settings-language")
-            Picker("Default View", selection: $preferences.viewMode) {
-                ForEach(BrowserViewMode.allCases) { mode in
-                    Label(
-                        AppLocalization.string(mode.titleKey, locale: preferences.language.locale),
-                        systemImage: mode.systemImage
-                    ).tag(mode)
-                }
-            }
-            Toggle("Show hidden files", isOn: $preferences.showHiddenFiles)
-            Toggle("Show previews in icon view", isOn: $preferences.showIconPreviews)
-                .accessibilityIdentifier("settings-show-icon-previews")
-
-            AutomationSettingsSection()
-
-            FinderExtensionSettingsSection()
-
-            SidebarSettingsSection(preferences: preferences)
-
-            Section("List Columns") {
-                Text("Choose the columns shown by default. Drag them to change their order. A folder can override this layout from a column header.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                ForEach(preferences.globalListColumns) { column in
-                    listColumnRow(column)
-                }
-                ForEach(hiddenListColumns) { column in
-                    listColumnRow(column)
-                }
-            }
-
-            CompressionSettingsSection(preferences: preferences, draft: compressionDraft)
-
-            ArchivePreviewSettingsSection(preferences: preferences)
-
-            if ScaleSliderUIFixtureSection.isRequested {
-                ScaleSliderUIFixtureSection()
-            }
-        }
-        .formStyle(.grouped)
-        .padding()
-        .frame(width: 600, height: 760)
-        .environment(\.locale, preferences.language.locale)
-    }
-
-    private var hiddenListColumns: [BrowserListColumn] {
-        BrowserListColumn.selectable.filter { !preferences.globalListColumns.contains($0) }
-    }
-
-    /// One column choice. Visible columns after Name are dragged by the handle on their
-    /// leading edge; other rows keep its space so the titles stay aligned. The one-step
-    /// moves are offered as accessibility actions.
-    private func listColumnRow(_ column: BrowserListColumn) -> some View {
-        let index = preferences.globalListColumns.firstIndex(of: column)
-        let isMovable = (index ?? 0) > 0
-        return HStack(spacing: 8) {
-            Image(systemName: "line.3.horizontal")
-                .foregroundStyle(draggedListColumn == column ? .secondary : .tertiary)
-                .frame(width: 16)
-                .frame(maxHeight: .infinity)
-                .opacity(isMovable ? 1 : 0)
-                .contentShape(Rectangle())
-                .help(isMovable ? Text("Drag to reorder") : Text(verbatim: ""))
-                .pointerStyle(isMovable ? (draggedListColumn == column ? .grabActive : .grabIdle) : nil)
-                .gesture(DragGesture(minimumDistance: 2, coordinateSpace: .global)
-                    .onChanged { dragListColumn(column, translation: $0.translation.height) }
-                    .onEnded { _ in draggedListColumn = nil }, isEnabled: isMovable)
-                .accessibilityHidden(true)
-            Toggle(column.title(locale: preferences.language.locale), isOn: Binding(
-                get: { preferences.globalListColumns.contains(column) },
-                set: { isVisible in
-                    var columns = preferences.globalListColumns
-                    if isVisible && !columns.contains(column) { columns.append(column) }
-                    if !isVisible { columns.removeAll { $0 == column } }
-                    preferences.setGlobalListColumns(columns)
-                }
-            ))
-            .disabled(column == .name)
-        }
-        .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { frame in
-            listColumnRowFrames[column] = frame
-        }
-        .accessibilityElement(children: .contain)
-        .accessibilityIdentifier("settings-list-column-" + column.rawValue)
-        .accessibilityActions {
-            if let index, index > 1 {
-                Button("Move column left") { preferences.moveGlobalListColumn(column, by: -1) }
-            }
-            if let index, index > 0, index < preferences.globalListColumns.count - 1 {
-                Button("Move column right") { preferences.moveGlobalListColumn(column, by: 1) }
-            }
-        }
-    }
-
-    /// Live reordering: while the handle is dragged, the column takes the place of each
-    /// visible row the pointer passes over, so releasing only ends the gesture.
-    private func dragListColumn(_ column: BrowserListColumn, translation: CGFloat) {
-        let columns = preferences.globalListColumns
-        if draggedListColumn != column {
-            draggedListColumn = column
-            listColumnDragStartIndex = columns.firstIndex(of: column) ?? 0
-        }
-        // Only the distance between rows is read from their frames: it holds even
-        // when the Form has scrolled since they were measured.
-        let tops = columns.compactMap { listColumnRowFrames[$0]?.minY }.sorted()
-        guard let first = tops.first, let last = tops.last, tops.count > 1 else { return }
-        let index = ListColumnReorder.targetIndex(
-            from: listColumnDragStartIndex, translation: translation,
-            rowPitch: (last - first) / CGFloat(tops.count - 1), count: columns.count
-        )
-        withAnimation(.easeOut(duration: 0.15)) {
-            preferences.moveGlobalListColumn(column, onto: columns[index])
-        }
-    }
-}
-
 /// Where a dragged Settings column row lands: one place per row pitch travelled from
 /// where the drag started, never before Name (index 0) or past the last visible column.
 enum ListColumnReorder {
@@ -498,7 +367,7 @@ struct ArchivePreviewSettingsSection: View {
 
     var body: some View {
         let locale = preferences.language.locale
-        Section("Previews in Archives") {
+        Section {
             ArchiveSizeLimitRow(
                 title: "Preview size limit", value: $preferences.previewSizeLimit, scale: .preview,
                 identifier: "settings-preview-size-limit", locale: locale,
@@ -602,27 +471,6 @@ struct ScaleSliderUIFixtureSection: View {
                     describe: { AppLocalization.byteCount($0, locale: locale) }
                 )
             }
-        }
-    }
-}
-
-struct CompressionSettingsSection: View {
-    @Bindable var preferences: FileBrowserPreferences
-    let draft: CompressionDraft
-
-    var body: some View {
-        Section("Compression") {
-            Picker("Default compression profile", selection: $preferences.defaultCompressionProfileID) {
-                ForEach(preferences.compressionProfiles) { profile in
-                    Text(profile.name).tag(profile.id)
-                }
-            }
-            CompressionProfileEditor(draft: draft, preferences: preferences)
-                .onChange(of: preferences.defaultCompressionProfileID) { _, id in
-                    if let profile = preferences.compressionProfiles.first(where: { $0.id == id }) {
-                        draft.load(profile, preferences: preferences)
-                    }
-                }
         }
     }
 }

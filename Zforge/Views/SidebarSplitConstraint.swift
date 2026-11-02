@@ -36,6 +36,15 @@ final class SidebarSplitConstraintView: NSView {
         scheduleConstraintUpdate()
     }
 
+    /// SwiftUI can reset the split item's limits after they were applied: the Settings window
+    /// sets its sidebar back to a 140 pt minimum and 144 pt width (D-75). A column that ends up
+    /// outside the limits applies them again.
+    override func setFrameSize(_ newSize: NSSize) {
+        super.setFrameSize(newSize)
+        guard minimumWidth > 0, newSize.width < minimumWidth - 0.5 || newSize.width > maximumWidth + 0.5 else { return }
+        scheduleConstraintUpdate()
+    }
+
     func update(minimumWidth: CGFloat, maximumWidth: CGFloat) {
         self.minimumWidth = minimumWidth
         self.maximumWidth = max(minimumWidth, maximumWidth)
