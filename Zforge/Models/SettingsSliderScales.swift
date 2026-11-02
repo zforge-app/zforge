@@ -46,7 +46,9 @@ nonisolated struct LinearSettingsSliderScale: SettingsSliderScale {
     }
 }
 
-/// The root archive size limit track: 256 MB to 16 GB in decimal bytes.
+/// A logarithmic size track: 256 MB to 16 GB in decimal bytes. It served the root
+/// archive size limit of nested-archive navigation, removed in D-73, and is kept with its
+/// behavior for the preview limits of a later ZF-55 stage.
 ///
 /// Every doubling takes the same track length, with a tick mark at each one. Inside a
 /// doubling the value moves in steps of 1/32 of its start (8 MB from 256 MB, 16 MB from

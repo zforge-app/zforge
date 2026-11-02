@@ -44,7 +44,8 @@
       "ZforgeUITests/SettingsUITests/testArchiveSizeLimitSliderHoldsRoundValuesWhileDragging": 17,
       "ZforgeUITests/ZforgeUITests/testKeyboardShortcutHelpOpensAndFilters": 15,
       "ZforgeUITests/ZforgeUITests/testFolderSelectionMenuAlternatesWithOptionInListMode": 13,
-      "ZforgeUITests/BrowserSearchUITests/testCommandFFocusesToolbarSearchAndEscapeCollapsesIt": 12
+      "ZforgeUITests/BrowserSearchUITests/testCommandFFocusesToolbarSearchAndEscapeCollapsesIt": 12,
+      "ZforgeUITests/ZforgeUITests/testDoubleClickInnerArchiveOpensItInNewWindow": 30
     }
   },
   "rules": [
@@ -151,7 +152,8 @@
         "ZforgeUITests/ZforgeUITests/testArchiveCopyIntoAnotherZforgeWindow",
         "ZforgeUITests/ZforgeUITests/testFileOpenNavigatesSelectedFolderAndArchiveInColumnsMode",
         "ZforgeUITests/ZforgeUITests/testNewFolderWithSelectionMenuAndShortcutInListMode",
-        "ZforgeUITests/ZforgeUITests/testViewModeIsPerWindowAndLastClosedWindowRestoresIt"
+        "ZforgeUITests/ZforgeUITests/testViewModeIsPerWindowAndLastClosedWindowRestoresIt",
+        "ZforgeUITests/ZforgeUITests/testDoubleClickInnerArchiveOpensItInNewWindow"
       ]
     },
     {
@@ -269,7 +271,8 @@
         "Zforge/Native/SevenZipBridge.*",
         "Zforge/Native/Zforge-Bridging-Header.h",
         "Zforge/SevenZipHelper.entitlements",
-        "Vendor/*"
+        "Vendor/*",
+        "Zforge/Services/ArchiveSessionClient.swift"
       ],
       "tests": [
         "ZforgeUITests/FinderExtensionUITests/testFinderSubmenuOffersArchiveActionsAndExtractsInZforge",
@@ -278,7 +281,8 @@
         "ZforgeUITests/ZforgeUITests/testArchiveInternalCopyConfirmationKeepsHistoryAndAncestorColumns",
         "ZforgeUITests/ZforgeUITests/testArchivePromisesPublishIntoFinderBeforeRemovingOriginal",
         "ZforgeUITests/ZforgeUITests/testFileOpenNavigatesSelectedFolderAndArchiveInColumnsMode",
-        "ZforgeUITests/ZforgeUITests/testLocalDragsOptionCopyAndConfirmAdditionToArchive"
+        "ZforgeUITests/ZforgeUITests/testLocalDragsOptionCopyAndConfirmAdditionToArchive",
+        "ZforgeUITests/ZforgeUITests/testDoubleClickInnerArchiveOpensItInNewWindow"
       ]
     },
     {

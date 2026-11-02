@@ -86,6 +86,12 @@ nonisolated final class NativeSevenZipBackend: @unchecked Sendable {
     /// `cancellationScope` registers the read under a session folder, so closing that session
     /// cancels it even though the archive is read in place elsewhere.
     func list(at url: URL, password: String?, cancellationScope: URL? = nil) async throws -> [String: ArchiveEntry] {
+        try await listing(at: url, password: password, cancellationScope: cancellationScope).entries
+    }
+
+    /// The listing and whether reading it needed the password (encrypted names).
+    func listing(at url: URL, password: String?, cancellationScope: URL? = nil) async throws
+        -> (entries: [String: ArchiveEntry], needsPassword: Bool) {
         try await perform(resource: cancellationScope ?? url) { operation in
             let records = try ZFSevenZipBridge.entries(atPath: url.path, password: password, operation: operation)
             var entries: [String: ArchiveEntry] = [:]
@@ -105,7 +111,7 @@ nonisolated final class NativeSevenZipBackend: @unchecked Sendable {
                 }
                 entries[path] = entry
             }
-            return ArchiveEntry.withParents(entries)
+            return (ArchiveEntry.withParents(entries), operation.passwordRequested)
         }
     }
 

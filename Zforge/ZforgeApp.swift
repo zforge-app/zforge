@@ -77,13 +77,15 @@ private struct BrowserWindowRoot: View {
             tabSourceWindowNumber: request.tabSourceWindowNumber,
             automationAccess: request.automationAccess,
             archiveSearch: request.archiveSearch,
-            finderRequest: request.finderRequest
+            finderRequest: request.finderRequest,
+            archiveSession: request.archiveSession
         )
             .id(request.id)
             .onAppear {
                 // A file can arrive after SwiftUI computes the default scene value.
                 // In that case, use the first new window for the archive.
-                if !hasAppeared && request.initialURL == nil && request.archiveSearch == nil && request.finderRequest == nil,
+                if !hasAppeared && request.initialURL == nil && request.archiveSearch == nil && request.finderRequest == nil
+                    && request.archiveSession == nil,
                    let pending = appDelegate.takeNextArchiveRequest() {
                     appDelegate.releaseLaunchWindow(request.id)
                     request = pending
@@ -391,7 +393,9 @@ struct ZforgeSettingsView: View {
 
             CompressionSettingsSection(preferences: preferences, draft: compressionDraft)
 
-            ArchiveNavigationSettingsSection(preferences: preferences)
+            if ScaleSliderUIFixtureSection.isRequested {
+                ScaleSliderUIFixtureSection()
+            }
         }
         .formStyle(.grouped)
         .padding()
@@ -480,60 +484,31 @@ enum ListColumnReorder {
     }
 }
 
-/// The Settings section that chooses the default compression profile and edits profiles.
-/// The nesting depth uses a linear slider with a stop per value; the root size limit uses
-/// a logarithmic one whose fine steps and held round values are defined by
-/// `ArchiveSizeLimitSliderScale`.
-struct ArchiveNavigationSettingsSection: View {
-    @Bindable var preferences: FileBrowserPreferences
-
-    private static let depthScale = LinearSettingsSliderScale(
-        range: Int64(ArchiveBrowsingPolicy.nestingDepthRange.lowerBound)...Int64(ArchiveBrowsingPolicy.nestingDepthRange.upperBound)
-    )
+/// UI test fixture only (`--ui-scale-slider-fixture`): the logarithmic size slider that
+/// the preview limits of a later ZF-55 stage reuse, so that real mouse tracking of its
+/// holds stays covered after the nesting limits were removed (D-73). Never shown otherwise.
+struct ScaleSliderUIFixtureSection: View {
+    static var isRequested: Bool { ProcessInfo.processInfo.arguments.contains("--ui-scale-slider-fixture") }
     private static let sizeScale = ArchiveSizeLimitSliderScale()
+    @State private var value: Int64 = 1_000_000_000
 
     var body: some View {
-        let locale = preferences.language.locale
-        Section("Archive Navigation") {
+        let locale = Locale(identifier: "en_US")
+        Section {
             VStack(alignment: .leading, spacing: 5) {
-                LabeledContent("Maximum nesting depth") {
-                    Text(preferences.archiveNestingLimit.formatted())
-                        .monospacedDigit()
-                }
-                ScaleSlider(
-                    scale: Self.depthScale,
-                    value: Binding(
-                        get: { Int64(preferences.archiveNestingLimit) },
-                        set: { preferences.archiveNestingLimit = Int($0) }
-                    ),
-                    tickLabels: ArchiveBrowsingPolicy.nestingDepthRange.map { $0.formatted(.number.locale(locale)) },
-                    accessibilityLabel: AppLocalization.string("Maximum nesting depth", locale: locale),
-                    accessibilityIdentifier: "settings-archive-nesting-depth",
-                    describe: { $0.formatted(.number.locale(locale)) }
-                )
-                Text("Limits how many compressed files can be opened inside one another. The root archive is not counted.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-
-            VStack(alignment: .leading, spacing: 5) {
-                LabeledContent("Root archive size limit") {
-                    Text(AppLocalization.byteCount(preferences.archiveRootSizeLimit, locale: locale))
-                        .monospacedDigit()
+                LabeledContent {
+                    Text(verbatim: AppLocalization.byteCount(value, locale: locale)).monospacedDigit()
+                } label: {
+                    Text(verbatim: "Size slider fixture")
                 }
                 ScaleSlider(
                     scale: Self.sizeScale,
-                    value: $preferences.archiveRootSizeLimit,
+                    value: $value,
                     tickLabels: ArchiveSizeLimitSliderScale.doublings.map { AppLocalization.byteCount($0, locale: locale) },
-                    accessibilityLabel: AppLocalization.string("Root archive size limit", locale: locale),
-                    accessibilityIdentifier: "settings-archive-root-size-limit",
+                    accessibilityLabel: "Size slider fixture",
+                    accessibilityIdentifier: "ui-fixture-size-slider",
                     describe: { AppLocalization.byteCount($0, locale: locale) }
                 )
-                Text("Sub-archives are only navigable when the combined size of the root archive and its volumes is below this limit.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
             }
         }
     }

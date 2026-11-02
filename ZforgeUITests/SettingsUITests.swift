@@ -63,19 +63,22 @@ final class SettingsUITests: XCTestCase {
     /// The scale's steps, holds and the drag distances at this width are covered offscreen by
     /// `SettingsSliderTests`, which call the slider's action directly. Only real mouse tracking
     /// proves that the knob, while AppKit drags it, holds on a round value and then continues
-    /// with the next step, including in a slow drag of many small movements.
+    /// with the next step, including in a slow drag of many small movements. D-73 removed the
+    /// root archive size limit that hosted this slider; the Settings fixture
+    /// (`--ui-scale-slider-fixture`) shows the same slider and scale until the preview limits.
     @MainActor
     func testArchiveSizeLimitSliderHoldsRoundValuesWhileDragging() throws {
         let app = XCUIApplication()
         app.launchEnvironment["ZFORGE_UI_PREFERENCES_SUITE"] = "ZforgeTestSuite.ZforgeSettingsUI-\(UUID().uuidString)"
-        app.launchArguments = ["--ui-fixtures", "-appLanguagePreference", "english", "-ApplePersistenceIgnoreState", "YES"]
+        app.launchArguments = ["--ui-fixtures", "--ui-scale-slider-fixture", "-appLanguagePreference", "english",
+                               "-ApplePersistenceIgnoreState", "YES"]
         app.launch()
         app.activate()
         defer { app.terminate() }
 
         app.typeKey(",", modifierFlags: .command)
         let settingsWindow = app.windows["com_apple_SwiftUI_Settings_window"]
-        let slider = app.sliders["settings-archive-root-size-limit"]
+        let slider = app.sliders["ui-fixture-size-slider"]
         XCTAssertTrue(slider.waitForExistence(timeout: 5), app.debugDescription)
         for _ in 0..<20 where !settingsWindow.frame.insetBy(dx: 0, dy: 40).contains(slider.frame) {
             settingsWindow.scrollViews.firstMatch.scroll(byDeltaX: 0, deltaY: -120)
@@ -108,7 +111,7 @@ final class SettingsUITests: XCTestCase {
         XCTAssertTrue(settingsWindow.staticTexts["1.06 GB"].exists, "The row shows the dragged value")
 
         let capture = XCTAttachment(screenshot: settingsWindow.screenshot())
-        capture.name = "Root archive size limit after drag"
+        capture.name = "Size slider fixture after drag"
         capture.lifetime = .keepAlways
         add(capture)
 

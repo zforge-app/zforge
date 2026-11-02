@@ -11,16 +11,20 @@ nonisolated struct BrowserWindowRequest: Codable, Hashable {
     let archiveSearch: String?
     /// An action chosen in Finder. It runs once; restoration never repeats it.
     let finderRequest: FinderMenuRequest?
+    /// An archive opened from inside another archive, shown in this window. Its session
+    /// lives in memory only: restoration does not reopen it.
+    let archiveSession: ArchiveSessionHandoff?
 
     init(id: UUID = UUID(), initialURL: URL? = nil, tabSourceWindowNumber: Int? = nil,
          automationAccess: BrowserOpeningAccess? = nil, archiveSearch: String? = nil,
-         finderRequest: FinderMenuRequest? = nil) {
+         finderRequest: FinderMenuRequest? = nil, archiveSession: ArchiveSessionHandoff? = nil) {
         self.id = id
         self.initialURL = initialURL
         self.tabSourceWindowNumber = tabSourceWindowNumber
         self.automationAccess = automationAccess
         self.archiveSearch = archiveSearch
         self.finderRequest = finderRequest
+        self.archiveSession = archiveSession
     }
 
     private enum CodingKeys: String, CodingKey { case id, initialURL, tabSourceWindowNumber, archiveSearch }
@@ -32,6 +36,7 @@ nonisolated struct BrowserWindowRequest: Codable, Hashable {
         archiveSearch = try values.decodeIfPresent(String.self, forKey: .archiveSearch)
         automationAccess = nil
         finderRequest = nil
+        archiveSession = nil
     }
     static func == (lhs: Self, rhs: Self) -> Bool {
         lhs.id == rhs.id && lhs.initialURL == rhs.initialURL && lhs.tabSourceWindowNumber == rhs.tabSourceWindowNumber

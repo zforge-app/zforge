@@ -508,7 +508,7 @@ extension View {
                 dragSession: dragSession
             ))
         } else if item.isDirectory, case let .archive(address) = item.location,
-                  address.nestedArchiveDepth == 0 {
+                  state.isArchiveSessionWritable(address.sessionID) {
             modifier(BrowserArchiveDropTargetModifier(
                 state: state, archiveURL: nil, address: address,
                 dragSession: dragSession
@@ -525,21 +525,21 @@ extension View {
         dragSession: BrowserFileDragSession,
         isTargeted: Binding<Bool>
     ) -> some View {
-        if location.fileSystemURL != nil || location.archiveDropAddress != nil {
+        if location.fileSystemURL != nil || state.archiveDropAddress(for: location) != nil {
             onDrop(
                 of: [UTType.fileURL.identifier, ArchiveDragPolicy.type],
                 delegate: BrowserFileDropDelegate(
                     state: state,
                     destinationURL: location.fileSystemURL,
                     dragSession: dragSession,
-                    archiveAddress: location.archiveDropAddress,
+                    archiveAddress: state.archiveDropAddress(for: location),
                     onTargetedChange: { targeted in
                         isTargeted.wrappedValue = targeted
                     }
                 )
             )
             .overlay {
-                ArchiveDropDestination(directory: location.fileSystemURL, address: location.archiveDropAddress,
+                ArchiveDropDestination(directory: location.fileSystemURL, address: state.archiveDropAddress(for: location),
                     onTargetedChange: { isTargeted.wrappedValue = $0 }).accessibilityHidden(true)
             }
             .dropPreviewsFormation(state.viewMode.fileDragPreviewsFormation)

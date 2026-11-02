@@ -25,10 +25,9 @@ final class FileBrowserPreferences {
         static let previewVisibleColumns = "browser.previewVisible.columns"
         static let previewVisibleGallery = "browser.previewVisible.gallery"
         static let language = AppLanguagePreference.defaultsKey
-        static let archiveNestingLimit = "archive.nestingLimit"
-        static let archiveRootSizeLimit = "archive.rootSizeLimitBytes"
+        /// Removed with nested-archive navigation (D-73); deleted from stored preferences.
+        static let removedArchiveNavigationKeys = ["archive.nestingLimit", "archive.rootSizeLimitBytes", "archive.rootSizeLimitGB"]
         /// Whole decimal GB (1–5) saved before the limit became a byte count.
-        static let legacyArchiveRootSizeLimitGB = "archive.rootSizeLimitGB"
         static let defaultCompressionFormat = "archive.defaultCompressionFormat"
         static let compressionProfiles = "archive.compressionProfiles"
         static let defaultCompressionProfileID = "archive.defaultCompressionProfileID"
@@ -84,29 +83,6 @@ final class FileBrowserPreferences {
         didSet { defaults.set(previewVisibleGallery, forKey: Key.previewVisibleGallery) }
     }
     var language: AppLanguagePreference { didSet { defaults.set(language.rawValue, forKey: Key.language) } }
-    var archiveNestingLimit: Int {
-        didSet {
-            let range = ArchiveBrowsingPolicy.nestingDepthRange
-            let clamped = min(max(archiveNestingLimit, range.lowerBound), range.upperBound)
-            if archiveNestingLimit != clamped {
-                archiveNestingLimit = clamped
-            } else {
-                defaults.set(archiveNestingLimit, forKey: Key.archiveNestingLimit)
-            }
-        }
-    }
-    /// Decimal bytes, as in Finder: 1 GB = 1,000,000,000 bytes.
-    var archiveRootSizeLimit: Int64 {
-        didSet {
-            let range = ArchiveBrowsingPolicy.rootSizeLimitRange
-            let clamped = min(max(archiveRootSizeLimit, range.lowerBound), range.upperBound)
-            if archiveRootSizeLimit != clamped {
-                archiveRootSizeLimit = clamped
-            } else {
-                defaults.set(archiveRootSizeLimit, forKey: Key.archiveRootSizeLimit)
-            }
-        }
-    }
     var compressionProfiles: [CompressionProfile] {
         didSet {
             if let data = try? JSONEncoder().encode(compressionProfiles) {
@@ -178,13 +154,6 @@ final class FileBrowserPreferences {
     func setSessionPassword(_ password: String, for id: UUID) {
         if password.isEmpty { sessionPasswords.removeValue(forKey: id) }
         else { sessionPasswords[id] = password }
-    }
-
-    var archiveBrowsingPolicy: ArchiveBrowsingPolicy {
-        ArchiveBrowsingPolicy(
-            maximumNestedArchiveDepth: archiveNestingLimit,
-            rootSizeLimit: archiveRootSizeLimit
-        )
     }
 
     func zoomIn() { setZoomStep(Int((scale * 10).rounded()) + 1) }
@@ -365,22 +334,8 @@ final class FileBrowserPreferences {
             key: Key.previewVisibleGallery
         )
         language = AppLanguagePreference(rawValue: defaults.string(forKey: Key.language) ?? "") ?? .system
-        let storedNestingLimit = defaults.object(forKey: Key.archiveNestingLimit) == nil
-            ? ArchiveBrowsingPolicy.standard.maximumNestedArchiveDepth
-            : defaults.integer(forKey: Key.archiveNestingLimit)
-        let storedRootSizeLimit: Int64 = if let bytes = defaults.object(forKey: Key.archiveRootSizeLimit) as? NSNumber {
-            bytes.int64Value
-        } else if let gigabytes = defaults.object(forKey: Key.legacyArchiveRootSizeLimitGB) as? NSNumber {
-            gigabytes.int64Value * 1_000_000_000
-        } else {
-            ArchiveBrowsingPolicy.standard.rootSizeLimit
-        }
-        let policy = ArchiveBrowsingPolicy(
-            maximumNestedArchiveDepth: storedNestingLimit,
-            rootSizeLimit: storedRootSizeLimit
-        )
-        archiveNestingLimit = policy.maximumNestedArchiveDepth
-        archiveRootSizeLimit = policy.rootSizeLimit
+        // Nested-archive navigation and its depth/root-size limits were removed (D-73).
+        Key.removedArchiveNavigationKeys.forEach(defaults.removeObject(forKey:))
         let legacyFormat = ArchiveCompressionFormat(
             rawValue: defaults.string(forKey: Key.defaultCompressionFormat) ?? ""
         ) ?? .zip

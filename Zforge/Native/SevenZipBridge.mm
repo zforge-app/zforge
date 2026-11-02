@@ -36,8 +36,9 @@ extern "C" HRESULT CreateObject(const GUID *, const GUID *, void **);
 @implementation ZFSevenZipSource
 - (instancetype)init { if ((self = [super init])) { _path = @""; _archivePath = @""; _modified = [NSDate date]; } return self; }
 @end
-@implementation ZFSevenZipOperation { @public std::atomic<bool> stopped; std::atomic<uint64_t> bytesRead; }
-- (instancetype)init { if ((self = [super init])) { stopped.store(false); bytesRead.store(0); } return self; }
+@implementation ZFSevenZipOperation { @public std::atomic<bool> stopped; std::atomic<uint64_t> bytesRead; std::atomic<bool> askedPassword; }
+- (instancetype)init { if ((self = [super init])) { stopped.store(false); bytesRead.store(0); askedPassword.store(false); } return self; }
+- (BOOL)passwordRequested { return askedPassword.load(); }
 - (void)cancel { stopped.store(true); }
 - (uint64_t)sourceBytesRead { return bytesRead.load(); }
 @end
@@ -87,6 +88,7 @@ struct Context {
     HRESULT secret(BSTR *result) {
         *result = nullptr;
         passwordRequested = true;
+        operation->askedPassword.store(true);
         if (!password) { failure = 1; return E_ABORT; }
         *result = Password(password);
         return *result ? S_OK : E_OUTOFMEMORY;
@@ -809,6 +811,9 @@ bool Finish(HRESULT result, Context &context, NSError **error, int itemResult = 
         UInt32 position = 0;
         for (NSNumber *number in indices) {
             UInt32 index = number.unsignedIntValue;
+            // The archive is read in place: if it was replaced since it was listed, an index
+            // can be past its items, and the handlers do not check (out-of-bounds read).
+            if (index >= count) return Finish(E_INVALIDARG, ctx, error);
             selected.push_back(index);
             if (index < count && callback->positions[index] == kUnselected) callback->positions[index] = position;
             ++position;

@@ -390,9 +390,8 @@ private actor ControlledAutomationEngine: ArchiveServing {
         try Task.checkCancellation()
     }
     func cancelAllOperations() async { await released.signal() }
-    func openArchive(at url: URL, password: String?, policy: ArchiveBrowsingPolicy) async throws -> ArchiveOpenResult { throw AutomationError.notFound }
+    func openArchive(at url: URL, password: String?) async throws -> ArchiveOpenResult { throw AutomationError.notFound }
     func items(at address: ArchiveAddress) async throws -> [BrowserItem] { [] }
-    func openNestedArchive(item: BrowserItem, password: String?) async throws -> ArchiveOpenResult { throw AutomationError.notFound }
     func materialize(item: BrowserItem, purpose: ArchiveMaterializationPurpose, automaticLimit: Int64?) async throws -> URL { throw AutomationError.notFound }
     func createArchive(from sourceURLs: [URL], outputURL: URL, options: CompressionOptions, password: String?, progress: @escaping ArchiveProgressHandler) async throws {}
     func extractArchive(at url: URL, to destinationURL: URL, password: String?, resolveConflict: @escaping ArchiveConflictResolver, progress: @escaping ArchiveProgressHandler) async throws {}

@@ -167,6 +167,25 @@ struct ArchiveInPlaceReadingTests {
         #expect(leftovers.isEmpty)
     }
 
+    /// Regression (found by a crashed Unit run, 2026-11-02): the archive is read in place, so it
+    /// can be replaced between the listing and the extraction of one read; an index from the old
+    /// listing then lies past the new archive's items and the ZIP handler read out of bounds.
+    @Test("Extraction refuses an item index past the archive's items instead of crashing")
+    func extractionRejectsStaleIndex() async throws {
+        let fixture = try Workspace()
+        defer { fixture.cleanUp() }
+        let archive = try await fixture.storedArchive(format: .zip, largeFileBytes: 1 << 10, smallFiles: 1)
+        let destination = fixture.root.appendingPathComponent("Output", isDirectory: true)
+        try FileManager.default.createDirectory(at: destination, withIntermediateDirectories: true)
+        let operation = ZFSevenZipOperation()
+        #expect(throws: (any Error).self) {
+            try ZFSevenZipBridge.extract(atPath: archive.path, password: nil, indices: [NSNumber(value: 1_000)],
+                destinations: [destination.appendingPathComponent("Stale.bin").path],
+                rootPath: destination.path, byteLimit: .max, operation: operation)
+        }
+        #expect(try FileManager.default.contentsOfDirectory(atPath: destination.path).isEmpty)
+    }
+
     // MARK: Fingerprint
 
     @Test("The fingerprint detects size, date and file replacement, and is stable otherwise")

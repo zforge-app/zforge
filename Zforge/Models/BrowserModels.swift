@@ -152,9 +152,10 @@ nonisolated enum BrowserLocation: Hashable, Sendable {
         return url
     }
 
-    var archiveDropAddress: ArchiveAddress? {
-        guard case let .archive(address) = self,
-              address.nestedArchiveDepth == 0 else { return nil }
+    /// The archive folder a drop would add to; writability is decided by the window,
+    /// which knows whether the archive's session is read-only.
+    var archiveAddress: ArchiveAddress? {
+        guard case let .archive(address) = self else { return nil }
         return address
     }
 }
@@ -243,40 +244,16 @@ nonisolated struct ArchiveAddress: Hashable, Sendable {
     let sessionID: UUID
     let archiveID: UUID
     let internalPath: String
-    let allowsNestedArchives: Bool
-    let nestedArchiveDepth: Int
-    let maximumNestedArchiveDepth: Int
 
-    init(
-        sessionID: UUID,
-        archiveID: UUID,
-        internalPath: String,
-        allowsNestedArchives: Bool = true,
-        nestedArchiveDepth: Int = 0,
-        maximumNestedArchiveDepth: Int = 5
-    ) {
+    init(sessionID: UUID, archiveID: UUID, internalPath: String) {
         self.sessionID = sessionID
         self.archiveID = archiveID
         self.internalPath = internalPath
-        self.allowsNestedArchives = allowsNestedArchives
-        self.nestedArchiveDepth = nestedArchiveDepth
-        self.maximumNestedArchiveDepth = maximumNestedArchiveDepth
-    }
-
-    var canOpenNestedArchive: Bool {
-        allowsNestedArchives && nestedArchiveDepth < maximumNestedArchiveDepth
     }
 
     func appending(_ component: String) -> ArchiveAddress {
         let path = internalPath.isEmpty ? component : "\(internalPath)/\(component)"
-        return ArchiveAddress(
-            sessionID: sessionID,
-            archiveID: archiveID,
-            internalPath: path,
-            allowsNestedArchives: allowsNestedArchives,
-            nestedArchiveDepth: nestedArchiveDepth,
-            maximumNestedArchiveDepth: maximumNestedArchiveDepth
-        )
+        return ArchiveAddress(sessionID: sessionID, archiveID: archiveID, internalPath: path)
     }
 }
 
@@ -388,28 +365,6 @@ nonisolated enum BrowserError: LocalizedError, Equatable {
     }
 }
 
-nonisolated struct ArchiveBrowsingPolicy: Equatable, Sendable {
-    static let standard = ArchiveBrowsingPolicy(maximumNestedArchiveDepth: 5, rootSizeLimit: 1_000_000_000)
-
-    /// Sub-archives that can be opened inside the root archive.
-    static let nestingDepthRange: ClosedRange<Int> = 1...10
-    /// Root archive size limit in decimal bytes (1 GB = 1,000,000,000 bytes, as in Finder).
-    static let rootSizeLimitRange: ClosedRange<Int64> = 256_000_000...16_000_000_000
-
-    let maximumNestedArchiveDepth: Int
-    let rootSizeLimit: Int64
-
-    init(maximumNestedArchiveDepth: Int, rootSizeLimit: Int64) {
-        self.maximumNestedArchiveDepth = min(max(maximumNestedArchiveDepth, Self.nestingDepthRange.lowerBound), Self.nestingDepthRange.upperBound)
-        self.rootSizeLimit = min(max(rootSizeLimit, Self.rootSizeLimitRange.lowerBound), Self.rootSizeLimitRange.upperBound)
-    }
-
-    func allowsNestedArchives(forOutermostSize size: Int64?) -> Bool {
-        guard let size else { return false }
-        return size < rootSizeLimit
-    }
-}
-
 nonisolated extension BrowserItem {
     var usesStaticIconPreview: Bool {
         isContainer || isArchive || isNetworkEntry
@@ -421,16 +376,17 @@ nonisolated extension BrowserItem {
         return ArchiveFormatRegistry.supportsFastTreeListing(name)
     }
 
+    /// Only archives on disk are browsed in place. An archive inside an archive is an
+    /// ordinary file: opening it materializes it into its own window (D-73).
     var canNavigateAsArchive: Bool {
-        guard isArchive else { return false }
-        switch location {
-        case .recents, .computer, .network, .networkServer:
-            return false
-        case .fileSystem:
-            return true
-        case let .archive(address):
-            return address.canOpenNestedArchive
-        }
+        guard isArchive, case .fileSystem = location else { return false }
+        return true
+    }
+
+    /// An archive stored inside an archive, opened as a root archive in a new window.
+    var opensAsInnerArchive: Bool {
+        guard isArchive, !isDirectory, case .archive = location else { return false }
+        return true
     }
 
     var isNavigableContainer: Bool {

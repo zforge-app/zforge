@@ -3,9 +3,10 @@ import SwiftUI
 import Testing
 @testable import Zforge
 
-/// The Archive Navigation sliders in Settings. The scales are checked as values; the
-/// slider view is laid out offscreen and driven through its own action, key and
-/// accessibility handlers. Real drag delivery is covered by `SettingsUITests`.
+/// The Settings slider scales and view. The scales are checked as values; the slider view is
+/// laid out offscreen and driven through its own action, key and accessibility handlers.
+/// Real drag delivery is covered by `SettingsUITests` on the slider fixture (D-73 removed the
+/// Archive Navigation section that used to host it; the preview limits will reuse the scale).
 @Suite("Settings sliders")
 @MainActor
 struct SettingsSliderTests {
@@ -16,7 +17,7 @@ struct SettingsSliderTests {
     @Test("Root size limit steps by 1/32 of each doubling, in decimal bytes")
     func sizeLimitSteps() {
         let mb = Self.megabyte, gb = Self.gigabyte
-        #expect(scale.range == ArchiveBrowsingPolicy.rootSizeLimitRange)
+        #expect(scale.range == 256 * mb...16 * gb)
         #expect(scale.value(after: 256 * mb) == 264 * mb)
         #expect(scale.value(before: 256 * mb) == 256 * mb)
         #expect(scale.value(after: 384 * mb) == 392 * mb)
@@ -96,7 +97,7 @@ struct SettingsSliderTests {
         #expect(scale.position(for: 392 * Self.megabyte) - center > hold)
     }
 
-    @Test("Nesting depth stops on each whole value")
+    @Test("A linear scale stops on each whole value")
     func nestingDepthScale() {
         let depth = LinearSettingsSliderScale(range: 1...10)
         #expect(depth.tickCount == 10)
@@ -252,51 +253,27 @@ struct SettingsSliderTests {
         #expect(view.slider.accessibilityValue() as? String == "376 MB")
     }
 
-    @Test("Settings shows both limits as sliders bound to the preferences", arguments: [
-        ("light", NSAppearance.Name.aqua, AppLanguagePreference.english),
-        ("dark", NSAppearance.Name.darkAqua, AppLanguagePreference.english),
-        ("dark-pt-BR", NSAppearance.Name.darkAqua, AppLanguagePreference.portugueseBrazil),
-    ])
-    func settingsSection(name: String, appearance: NSAppearance.Name, language: AppLanguagePreference) async throws {
-        let suite = "ZforgeTestSuite.SettingsSliderTests-\(UUID().uuidString)"
-        let defaults = try #require(UserDefaults(suiteName: suite))
-        defer { defaults.removeTestSuite(named: suite) }
-        let preferences = FileBrowserPreferences(defaults: defaults)
-        preferences.language = language
-        preferences.archiveRootSizeLimit = 1_531_250_000
-
+    // D-73 removed nested-archive navigation with its depth and root size limits, so the
+    // Archive Navigation section and its two sliders are gone from Settings.
+    @Test("Settings no longer shows the archive navigation limits; the size slider fixture binds its value")
+    func settingsWithoutNavigationLimits() async throws {
         let settingsBody = String(reflecting: ZforgeSettingsView.Body.self)
-        #expect(settingsBody.contains("ArchiveNavigationSettingsSection"), "\(settingsBody)")
+        #expect(!settingsBody.contains("ArchiveNavigationSettingsSection"), "\(settingsBody)")
+        #expect(!ScaleSliderUIFixtureSection.isRequested)
 
-        let section = Form { ArchiveNavigationSettingsSection(preferences: preferences) }
-            .formStyle(.grouped)
-            .environment(\.locale, language.locale)
-        let size = CGSize(width: 568, height: 300)
+        let section = Form { ScaleSliderUIFixtureSection() }.formStyle(.grouped)
+        let size = CGSize(width: 568, height: 160)
         let host = NSHostingView(rootView: section.frame(width: size.width, height: size.height))
         let window = NSWindow(contentRect: NSRect(origin: .zero, size: size), styleMask: [.titled], backing: .buffered, defer: false)
         window.isReleasedWhenClosed = false
         defer { window.close() }
         window.contentView = host
         host.layoutSubtreeIfNeeded()
-
-        let sliders = host.descendants(of: ScaleSliderView.self)
-        #expect(sliders.count == 2)
-        let depth = try #require(sliders.first { $0.slider.accessibilityIdentifier() == "settings-archive-nesting-depth" })
-        let rootSize = try #require(sliders.first { $0.slider.accessibilityIdentifier() == "settings-archive-root-size-limit" })
-        #expect(depth.value == 5)
-        #expect(depth.labels.count == 10)
-        #expect(rootSize.value == 1_531_250_000)
-        #expect(rootSize.slider.frame.width > 400, "The size slider spans the row so its steps stay wide enough to drag")
-        ZforgeSnapshot.assert(host, appearance: appearance, named: "archive-navigation-\(name)")
-
-        // Moving the slider writes the preference, and the preference moves the slider.
-        rootSize.step(forward: true, toRoundValue: false)
-        #expect(preferences.archiveRootSizeLimit == 1_562_500_000)
-        depth.step(forward: true, toRoundValue: false)
-        #expect(preferences.archiveNestingLimit == 6)
-        preferences.archiveRootSizeLimit = 768_000_000
-        try await waitUntil { rootSize.value == 768_000_000 }
-        #expect(abs(rootSize.slider.doubleValue - ArchiveSizeLimitSliderScale().position(for: 768_000_000)) < 1e-9)
+        let slider = try #require(host.descendants(of: ScaleSliderView.self).first)
+        #expect(slider.slider.accessibilityIdentifier() == "ui-fixture-size-slider")
+        #expect(slider.value == Self.gigabyte)
+        slider.step(forward: true, toRoundValue: false)
+        #expect(slider.value == 1_031_250_000)
     }
 
     private func waitUntil(_ condition: () -> Bool) async throws {

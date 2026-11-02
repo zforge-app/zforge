@@ -440,6 +440,35 @@ final class ZforgeUITests: XCTestCase {
         XCTAssertTrue(browser.waitForExistence(timeout: 8), app.debugDescription)
     }
 
+    /// D-73: double-clicking an archive stored inside an archive opens it as a root archive in
+    /// a new window titled `outer › inner`. The engine, session sharing and title are covered
+    /// offscreen (`InnerArchiveWindowTests`); only a real run proves that the double click
+    /// reaches the row and that SwiftUI creates and shows the second window.
+    @MainActor
+    func testDoubleClickInnerArchiveOpensItInNewWindow() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-archive-drag-fixtures", "--ui-inner-archive-fixtures", "--ui-window-width", "1100",
+                               "--ui-view-mode", "list", "-appLanguagePreference", "english"]
+        launchWithBrowserWindow(app)
+        defer { app.terminate() }
+        let archive = app.descendants(matching: .any).matching(identifier: "browser-item-Sample.zip").firstMatch
+            .staticTexts["Sample.zip"].firstMatch
+        XCTAssertTrue(archive.waitForExistence(timeout: 8))
+        archive.doubleClick()
+        XCTAssertTrue(app.windows["Sample.zip"].firstMatch.waitForExistence(timeout: 8))
+        let inner = app.descendants(matching: .any).matching(identifier: "browser-item-Inner.zip").firstMatch
+            .staticTexts["Inner.zip"].firstMatch
+        XCTAssertTrue(inner.waitForExistence(timeout: 8))
+        let browsers = app.windows.matching(NSPredicate(format: "identifier BEGINSWITH %@", "browser-"))
+        XCTAssertEqual(browsers.count, 1)
+        inner.doubleClick()
+        let innerWindow = app.windows["Sample.zip › Inner.zip"].firstMatch
+        XCTAssertTrue(innerWindow.waitForExistence(timeout: 8), app.debugDescription)
+        XCTAssertEqual(browsers.count, 2, "The inner archive opens in a new window")
+        XCTAssertTrue(innerWindow.staticTexts["InnerPayload.txt"].waitForExistence(timeout: 8))
+        XCTAssertTrue(app.windows["Sample.zip"].firstMatch.exists, "The outer window stays open")
+    }
+
     /// Real Option-drag inside an archive in Columns, with Escape and Return in the
     /// native confirmation. Per-mode reveal, duplicate counts, history and the move
     /// variants are characterized offscreen by `ArchiveDragDropTests`.

@@ -28,6 +28,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)cancel;
 /// Bytes read from the archive and its volumes by this operation (instrumentation).
 @property(nonatomic, readonly) uint64_t sourceBytesRead;
+/// A handler asked for the password during this operation (for listing: the names are encrypted).
+@property(nonatomic, readonly) BOOL passwordRequested;
 @end
 
 @interface ZFSevenZipSource : NSObject
