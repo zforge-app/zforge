@@ -606,3 +606,11 @@ Pending: in-app check of the row and the computer level in the four modes (light
 - [x] Test suites named `ZforgeTestSuite.…`, emptied at the end of each test and swept once per run, so at most one run's files remain (2026-11-01, D-68); snapshot recording through attachments (`Scripts/export-snapshots.py`).
 - [ ] The user decides what to restore (list in REGRESSION-COVERAGE); nothing was changed by the agent.
 
+### ZF-56 — UI tests offscreen by default (2026-11-01, RNF-Q08)
+
+**Implemented; equivalence recorded for the 16 simulable UI tests; results in REGRESSION-COVERAGE “UI tests offscreen by default”.** The user asked to run the existing XCUITests without taking over the screen, without a VM or a second macOS user; the sibling tool `zforge-xcuitest-sim` does it.
+- [x] `Scripts/affected-tests.py --run` runs the selected UI tests offscreen in parallel lanes (`--lanes`, default 3; longest first from `offscreen.durations`) and the `offscreen.realOnly` tests real afterwards; `--ui-mode auto|offscreen|real`; without the tool every UI test runs real. Script tests: `python3 -m unittest discover -s Scripts/tests`.
+- [x] `TestPlans/ui-impact.json` `offscreen` section: 10 real-only tests with reasons (Finder, drag and drop through the window server, out-of-process sandboxed open panels) and durations for the 16 others; `--check` requires every UI test in exactly one of them.
+- [x] Equivalence on one build (`7fe52d8` plus uncommitted tag-row changes): 16/16 outcomes match between real and offscreen; activity trees identical for 8 tests (including ⌘F search and the size-limit slider) and differing only in launch steps for 7.
+- [x] No repeat on a quiet machine (2026-11-02, user decision: run time does not matter, only that UI runs stop taking over the screen).
+- [ ] Investigate the real-mode `Not hittable` File ▸ Open item (zero-size frame) in `testFileOpenNavigatesSelectedFolderAndArchiveInColumnsMode`, recovered only by XCTest's own action retry.

@@ -14,6 +14,39 @@
     ".gitignore",
     "*.DS_Store"
   ],
+  "offscreen": {
+    "description": "UI tests run offscreen and in parallel lanes through the sibling zforge-xcuitest-sim tool (RNF-Q08), except the realOnly ones, which leave the app process and take over the screen. durations are approximate simulated seconds used only to balance the lanes.",
+    "realOnly": {
+      "ZforgeUITests/FinderExtensionUITests/testFinderSubmenuOffersArchiveActionsAndExtractsInZforge": "Finder and the Finder Sync extension run outside the app",
+      "ZforgeUITests/ZforgeUITests/testArchivePromisesPublishIntoFinderBeforeRemovingOriginal": "drags into Finder",
+      "ZforgeUITests/ZforgeUITests/testArchiveDragCopiesIntoSidebarFolder": "drag and drop session through the window server",
+      "ZforgeUITests/ZforgeUITests/testArchiveCopyIntoAnotherZforgeWindow": "drag and drop session through the window server",
+      "ZforgeUITests/ZforgeUITests/testLocalDragsOptionCopyAndConfirmAdditionToArchive": "drag and drop session through the window server",
+      "ZforgeUITests/ZforgeUITests/testArchiveInternalCopyConfirmationKeepsHistoryAndAncestorColumns": "drag and drop session through the window server",
+      "ZforgeUITests/ZforgeUITests/testListHeaderDividerResizesAndHeaderBodyReorders": "the header reorder is a drag and drop session through the window server",
+      "ZforgeUITests/ZforgeUITests/testCustomCompressionPanelOpensFolderChooser": "the sandboxed open panel runs out of process",
+      "ZforgeUITests/AutomationUITests/testSettingsProvidesLocalizedAgentSetupAndNativeCancellation": "the sandboxed open panel runs out of process",
+      "ZforgeUITests/AutomationUITests/testMCPContextualPermissionCancellationAndDisconnect": "the sandboxed open panel runs out of process"
+    },
+    "durations": {
+      "ZforgeUITests/ZforgeUITests/testBlankAreaUsesMoreMenuInEveryView": 81,
+      "ZforgeUITests/ZforgeUITests/testNewFolderWithSelectionMenuAndShortcutInListMode": 57,
+      "ZforgeUITests/LocalizationUITests/testLanguageSelectionUpdatesOpenMenuAndPersists": 41,
+      "ZforgeUITests/IconPreviewUITests/testSettingsToggleUpdatesTheOpenGridAndKeepsSelection": 40,
+      "ZforgeUITests/ZforgeUITests/testFileOpenNavigatesSelectedFolderAndArchiveInColumnsMode": 37,
+      "ZforgeUITests/ZforgeUITests/testFileOpenPrecedesOpenWithAndTracksSelectionInListMode": 37,
+      "ZforgeUITests/ZforgeUITests/testViewModeIsPerWindowAndLastClosedWindowRestoresIt": 34,
+      "ZforgeUITests/SettingsUITests/testListColumnsReorderByDragging": 28,
+      "ZforgeUITests/ZforgeUITests/testTagEditorIsSharedByToolbarAndContextMenu": 20,
+      "ZforgeUITests/ZforgeUITests/testColumnPreviewRefitsAfterUserScrollsLeft": 19,
+      "ZforgeUITests/ZforgeUITests/testCompactToolbarMenusOpenFromTheirToolbarButtons": 19,
+      "ZforgeUITests/ZforgeUITests/testListKeyboardZoomAndArrowNavigationAfterChangingView": 17,
+      "ZforgeUITests/SettingsUITests/testArchiveSizeLimitSliderHoldsRoundValuesWhileDragging": 17,
+      "ZforgeUITests/ZforgeUITests/testKeyboardShortcutHelpOpensAndFilters": 15,
+      "ZforgeUITests/ZforgeUITests/testFolderSelectionMenuAlternatesWithOptionInListMode": 13,
+      "ZforgeUITests/BrowserSearchUITests/testCommandFFocusesToolbarSearchAndEscapeCollapsesIt": 12
+    }
+  },
   "rules": [
     {
       "name": "Shared state and models: semantics are proven by the Unit plan; UI-Smoke checks the interaction wiring in every layer; the toolbar search state lives in FileBrowserState",
