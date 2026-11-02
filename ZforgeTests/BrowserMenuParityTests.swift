@@ -102,7 +102,7 @@ struct BrowserMenuParityTests {
         #expect(!fixture.itemMenu(for: file).items.contains { $0.title == "Remove from Archive…" })
     }
 
-    @Test("A file's context menu offers Open with, Edit Tags and seven circles marking its tag, selected or not",
+    @Test("A file's context menu offers Open with, Edit Tags and a circle for each of the seven fixture tags, marking its own, selected or not",
           arguments: [true, false])
     func itemMenuOffersTags(selected: Bool) async throws {
         for mode in BrowserViewMode.allCases {
@@ -120,7 +120,7 @@ struct BrowserMenuParityTests {
         }
     }
 
-    @Test("The More menu and the blank-area menu tag the selection with the same seven circles")
+    @Test("The More menu and the blank-area menu tag the selection with the same circles for the seven fixture tags")
     func moreMenuOffersTags() async throws {
         for mode in BrowserViewMode.allCases {
             let fixture = try await BrowserMenuFixture(mode: mode)

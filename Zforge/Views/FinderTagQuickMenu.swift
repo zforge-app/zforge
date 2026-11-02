@@ -24,7 +24,7 @@ enum FinderTagQuickMenu {
         editor.identifier = NSUserInterfaceItemIdentifier("edit-tags")
         if #available(macOS 27.0, *) { editor.preferredImageVisibility = .visible }
         // While a circle is hovered the editor item names its tag, as Finder does.
-        let view = FinderTagQuickRowView(frame: NSRect(x: 0, y: 0, width: 246, height: 36)) { [weak editor] tag in
+        let view = FinderTagQuickRowView(frame: NSRect(x: 0, y: 0, width: 246, height: FinderTagQuickRowView.height)) { [weak editor] tag in
             editor?.title = tag?.name ?? editorTitle
         }
         view.autoresizingMask = [.width]
@@ -41,7 +41,7 @@ enum FinderTagQuickMenu {
                     if let failure { state.error = .unavailable(failure) }
                 }
             }
-            button.frame = NSRect(x: 18 + CGFloat(index) * 30, y: 7, width: 22, height: 22)
+            button.frame = FinderTagQuickRowView.buttonFrame(at: index)
             button.isEnabled = enabled
             view.addSubview(button)
         }
@@ -70,6 +70,20 @@ final class FinderTagQuickRowView: NSView {
     required init?(coder: NSCoder) { nil }
 
     var buttons: [FinderTagQuickButton] { subviews.compactMap { $0 as? FinderTagQuickButton } }
+
+    static let height: CGFloat = 28
+    /// Hit area of each circle; larger than the drawn circle so the small dots stay easy to click.
+    static let buttonSide: CGFloat = 18
+    /// Distance between the centers of neighboring circles.
+    static let pitch: CGFloat = 22
+    /// Left edge of the first drawn circle, aligned with the menu item text.
+    static let leadingInset: CGFloat = 19
+
+    static func buttonFrame(at index: Int) -> NSRect {
+        let circleInset = (buttonSide - FinderTagQuickButton.circleDiameter) / 2
+        return NSRect(x: leadingInset - circleInset + CGFloat(index) * pitch, y: (height - buttonSide) / 2,
+                      width: buttonSide, height: buttonSide)
+    }
 
     override func updateTrackingAreas() {
         if let hoverTracking { removeTrackingArea(hoverTracking) }
@@ -102,6 +116,9 @@ final class FinderTagQuickRowView: NSView {
 
 @MainActor
 final class FinderTagQuickButton: NSButton {
+    /// Drawn circle diameter, the same as the sidebar tag dots.
+    static let circleDiameter = SidebarTagDot.size
+
     let finderTag: FinderTag
     let applied: Bool
     let mixed: Bool
@@ -140,15 +157,20 @@ final class FinderTagQuickButton: NSButton {
     override func draw(_ dirtyRect: NSRect) {
         let colors: [NSColor] = [.clear, .systemGray, .systemGreen, .systemPurple, .systemBlue, .systemYellow, .systemRed, .systemOrange]
         let index = min(7, max(0, finderTag.colorIndex))
-        let circle = NSBezierPath(ovalIn: bounds.insetBy(dx: 1, dy: 1))
-        colors[index].withAlphaComponent(isEnabled ? 1 : 0.35).setFill()
-        circle.fill()
+        let diameter = Self.circleDiameter
+        let circleRect = NSRect(x: bounds.midX - diameter / 2, y: bounds.midY - diameter / 2, width: diameter, height: diameter)
+        let circle = NSBezierPath(ovalIn: circleRect.insetBy(dx: 0.5, dy: 0.5))
+        // An uncolored tag is only an outline, as in the sidebar; `.clear` with full alpha would fill it black.
+        if index != 0 {
+            colors[index].withAlphaComponent(isEnabled ? 1 : 0.35).setFill()
+            circle.fill()
+        }
         (index == 0 ? NSColor.secondaryLabelColor : colors[index].blended(withFraction: 0.2, of: .black) ?? colors[index]).setStroke()
         circle.lineWidth = 1
         circle.stroke()
         if let symbolName, isEnabled,
            let image = NSImage(systemSymbolName: symbolName, accessibilityDescription: nil)?.withSymbolConfiguration(
-            NSImage.SymbolConfiguration(pointSize: 10, weight: .bold)) {
+            NSImage.SymbolConfiguration(pointSize: 7, weight: .heavy)) {
             let ink: NSColor = [0, 5, 7].contains(index) ? .labelColor : .white
             let symbol = image.copy() as! NSImage
             symbol.isTemplate = false
@@ -156,7 +178,11 @@ final class FinderTagQuickButton: NSButton {
             ink.setFill()
             NSRect(origin: .zero, size: symbol.size).fill(using: .sourceAtop)
             symbol.unlockFocus()
-            symbol.draw(in: bounds.insetBy(dx: 5, dy: 5))
+            // Fit the glyph inside the circle without distorting its aspect ratio.
+            let scale = (diameter - 5) / max(symbol.size.width, symbol.size.height)
+            let size = NSSize(width: symbol.size.width * scale, height: symbol.size.height * scale)
+            symbol.draw(in: NSRect(x: circleRect.midX - size.width / 2, y: circleRect.midY - size.height / 2,
+                                   width: size.width, height: size.height))
         }
     }
 

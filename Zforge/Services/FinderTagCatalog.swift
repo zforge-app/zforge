@@ -120,7 +120,9 @@ nonisolated enum FinderTagPresentation {
         leadingNames(tags).compactMap { colors[$0] }.first { (1...7).contains($0) }
     }
 
-    static func quickTags(_ tags: [FinderTag]) -> [FinderTag] { Array(tags.prefix(7)) }
+    /// Most circles the quick tag row of the context and overflow menus shows.
+    static let quickTagLimit = 10
+    static func quickTags(_ tags: [FinderTag]) -> [FinderTag] { Array(tags.prefix(quickTagLimit)) }
 }
 
 @MainActor

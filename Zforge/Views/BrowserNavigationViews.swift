@@ -314,11 +314,14 @@ struct SidebarActionRow: View {
 /// A sidebar tag dot: the tag color while the window is active; in an inactive window it turns
 /// the same gray as every other sidebar icon (user request, 2026-10-30).
 struct SidebarTagDot: View {
+    /// Diameter of a sidebar tag dot; the context menu's quick tag circles share it.
+    static let size: CGFloat = 12
+
     @Environment(\.appearsActive) private var appearsActive
     let colorIndex: Int
 
     var body: some View {
-        FinderTagDot(colorIndex: colorIndex, size: 12,
+        FinderTagDot(colorIndex: colorIndex, size: Self.size,
                      monochrome: appearsActive ? nil : SidebarIconTint.Appearance.inactive.color)
     }
 }

@@ -699,7 +699,7 @@ final class ZforgeUITests: XCTestCase {
         let edit = app.menuItems["edit-tags"]
         XCTAssertTrue(edit.waitForExistence(timeout: 3))
         XCTAssertEqual(edit.title, "Edit Tags")
-        // The seven circles and the applied Red mark are checked offscreen
+        // The circles (up to ten, 12 pt) and the applied Red mark are checked offscreen
         // (BrowserMenuParityTests); this test keeps the real hover and sheet.
         let applied = app.buttons["quick-tag-Red"]
         XCTAssertTrue(applied.exists)

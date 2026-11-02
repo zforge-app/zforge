@@ -527,7 +527,7 @@ struct TagCatalogTests {
         #expect(FolderTagIconColor.index(tags: ["A", "Z", "None"], colors: ["Z": 6, "A": 1, "None": 0]) == 6)
         #expect(FinderTagPresentation.leadingNames(["Yellow", "Purple", "Gray"]) == ["Gray", "Purple", "Yellow"])
         #expect(FolderTagIconColor.index(tags: ["Yellow", "Purple", "Gray"], colors: ["Yellow": 5, "Purple": 3, "Gray": 1]) == 1)
-        #expect(FinderTagPresentation.quickTags((0..<10).map { FinderTag(name: String($0), colorIndex: 0) }).map(\.name) == (0..<7).map(String.init))
+        #expect(FinderTagPresentation.quickTags((0..<14).map { FinderTag(name: String($0), colorIndex: 0) }).map(\.name) == (0..<10).map(String.init))
         #expect(FolderTagIconColor.index(tags: ["None"], colors: ["None": 0]) == nil)
         #expect(FolderTagIconColor.index(tags: [], colors: [:]) == nil)
     }
@@ -547,7 +547,7 @@ struct TagCatalogTests {
         state.select(file)
         let contextMenu = BrowserNativeContextMenu.make(state: state, item: file)
         #expect(contextMenu.items.contains { $0.identifier?.rawValue == "quick-tags-Welcome.txt" })
-        // The Mac's own Finder tags would decide which seven circles appear, so
+        // The Mac's own Finder tags would decide which circles appear, so
         // the circle states are checked against a fixed catalog.
         let menu = NSMenu()
         FinderTagQuickMenu.append(to: menu, state: state, items: [file],
@@ -562,6 +562,68 @@ struct TagCatalogTests {
         let blue = try #require(buttons.first { $0.finderTag.name == "Blue" })
         #expect(!blue.applied)
         #expect(blue.accessibilityValue() as? String == "0")
+    }
+
+    @Test("Quick tag row shows up to ten circles at the sidebar dot size, all inside the row")
+    @MainActor
+    func quickTagRowGeometry() async throws {
+        let suite = "ZforgeTestSuite.TagMenuGeometry-\(UUID())"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removeTestSuite(named: suite) }
+        let state = FileBrowserState(preferences: FileBrowserPreferences(defaults: defaults),
+            fileSystem: UIFixtureFileSystemService(), recentItems: UIFixtureRecentItemsService(),
+            grants: UIFixtureAccessGrantStore(), archives: UIFixtureArchiveEngine())
+        defer { state.close() }
+        await state.start()
+        let file = try #require(state.items.first { $0.name == "Welcome.txt" })
+        let catalog = (0..<12).map { FinderTag(name: String(format: "Color %02d", $0), colorIndex: $0 % 8) }
+        let menu = NSMenu()
+        FinderTagQuickMenu.append(to: menu, state: state, items: [file], catalogTags: catalog)
+        let row = try #require(menu.items.first { $0.identifier?.rawValue == "quick-tags-Welcome.txt" }?.view as? FinderTagQuickRowView)
+        let buttons = row.buttons
+        // The fixture file's own Red tag sorts after the catalog's "Color nn" names, so only catalog tags appear.
+        #expect(buttons.map(\.finderTag.name) == (0..<10).map { String(format: "Color %02d", $0) })
+        #expect(FinderTagQuickButton.circleDiameter == SidebarTagDot.size)
+        #expect(SidebarTagDot.size == 12)
+        for button in buttons {
+            #expect(row.bounds.contains(button.frame))
+            #expect(button.frame.width >= FinderTagQuickButton.circleDiameter)
+            #expect(button.frame.midY == row.bounds.midY)
+        }
+        for (left, right) in zip(buttons, buttons.dropFirst()) {
+            #expect(left.frame.maxX <= right.frame.minX)
+            #expect(left.frame.midY == right.frame.midY)
+        }
+    }
+
+    @Test("Quick tag row circles in light and dark", arguments: ZforgeSnapshot.appearances)
+    @MainActor
+    func quickTagRowSnapshot(name: String, appearance: NSAppearance.Name) async throws {
+        let suite = "ZforgeTestSuite.TagMenuSnapshot-\(UUID())"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removeTestSuite(named: suite) }
+        let state = FileBrowserState(preferences: FileBrowserPreferences(defaults: defaults),
+            fileSystem: UIFixtureFileSystemService(), recentItems: UIFixtureRecentItemsService(),
+            grants: UIFixtureAccessGrantStore(), archives: UIFixtureArchiveEngine())
+        defer { state.close() }
+        state.preferences.language = .english
+        await state.start()
+        let file = try #require(state.items.first { $0.name == "Welcome.txt" })
+        // Ten tags covering every Finder color, the uncolored outline and the fixture's applied Red.
+        let names = ["Blue", "Gray", "Green", "None", "Orange", "Purple", "Red", "Teal", "Violet", "Yellow"]
+        let colors = [4, 1, 2, 0, 7, 3, 6, 4, 3, 5]
+        let menu = NSMenu()
+        FinderTagQuickMenu.append(to: menu, state: state, items: [file],
+                                  catalogTags: zip(names, colors).map { FinderTag(name: $0, colorIndex: $1) })
+        let row = try #require(menu.items.first { $0.identifier?.rawValue == "quick-tags-Welcome.txt" }?.view as? FinderTagQuickRowView)
+        #expect(row.buttons.count == 10)
+        // Hover the first circle so the snapshot also shows the + glyph next to the applied check.
+        row.updateHover(at: NSPoint(x: row.buttons[0].frame.midX, y: row.buttons[0].frame.midY))
+        let host = NSView(frame: row.frame)
+        host.wantsLayer = true
+        host.layer?.backgroundColor = (appearance == .darkAqua ? NSColor(white: 0.17, alpha: 1) : NSColor(white: 0.96, alpha: 1)).cgColor
+        host.addSubview(row)
+        ZforgeSnapshot.assert(host, appearance: appearance, named: "quick-tags-\(name)")
     }
 
     @Test("Quick tag row keeps a single hovered circle and names it in the editor item")
