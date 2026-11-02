@@ -12,6 +12,7 @@
     "Zforge.xcodeproj/xcuserdata/*",
     "Zforge.xcodeproj/xcshareddata/*",
     ".gitignore",
+    ".githooks/*",
     "*.DS_Store"
   ],
   "offscreen": {

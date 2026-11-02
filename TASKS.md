@@ -616,6 +616,14 @@ Pending: in-app check of the row and the computer level in the four modes (light
 - [x] Preview/thumbnail limits, the solid-archives checkbox and removable/remote settings with the generalized logarithmic slider; localization of every new string. *Stage 3, 2026-11-02; evidence: REGRESSION-COVERAGE “Preview limits and opening progress — ZF-55 stage 3”.*
 - [ ] Synchronize CURRENT-STATE, PRODUCT-REQUIREMENTS, REGRESSION-COVERAGE and D-73; run `Scripts/affected-tests.py --run`. *Done for stages 1 to 3 (2026-11-02).* Pending outside the implementation: checks on real removable and network volumes and a visual review of the real windows (see D-73).
 
+### ZF-57 — Block commits with build warnings (2026-11-02, RNF-Q07)
+
+**Implemented; results in REGRESSION-COVERAGE “Warning commit gate — ZF-57”.** The user saw two warnings in Xcode (`ComputerIdentity.swift` `String(cString:)`, `IconPreviewView.swift` closure in `@Entry`) and asked for commits with warnings to be blocked. Both were already fixed in `274ebf4`; a clean build of `c1c5d47` reports 0 warnings, so Xcode was showing diagnostics from an older build.
+- [x] `Scripts/check-warnings.py` builds the git index (not the working tree) in an incremental private copy (`<git dir>/zforge-warning-gate`) and blocks on any warning or error; third-party package warnings are listed only; documentation-only commits skip the build (`--hook`).
+- [x] `.githooks/pre-commit` and `.githooks/pre-merge-commit`; `core.hooksPath` set in the clone's shared config.
+- [x] A cached build never hides a warning: files named by a warning are marked changed; a warning without a location discards the build products.
+- [x] Script tests: `python3 -m unittest discover -s Scripts/tests`.
+
 ### ZF-56 — UI tests offscreen by default (2026-11-01, RNF-Q08)
 
 **Implemented; equivalence recorded for the 16 simulable UI tests; results in REGRESSION-COVERAGE “UI tests offscreen by default”.** The user asked to run the existing XCUITests without taking over the screen, without a VM or a second macOS user; the sibling tool `zforge-xcuitest-sim` does it.
