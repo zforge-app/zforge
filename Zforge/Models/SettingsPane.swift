@@ -63,9 +63,7 @@ enum SettingsPane: String, CaseIterable, Identifiable, Sendable {
         }
     }
 
-    private static func color(_ rgb: UInt32) -> Color {
-        Color(.sRGB, red: Double(rgb >> 16 & 0xFF) / 255, green: Double(rgb >> 8 & 0xFF) / 255, blue: Double(rgb & 0xFF) / 255)
-    }
+    private static func color(_ rgb: UInt32) -> Color { Color(sRGBHex: rgb) }
 
     func title(locale: Locale) -> String { AppLocalization.string(titleKey, locale: locale) }
 }

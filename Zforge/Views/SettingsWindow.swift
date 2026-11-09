@@ -125,27 +125,13 @@ struct SettingsPaneView: View {
     }
 }
 
-/// A pane's SF Symbol in its coloured rounded square, as System Settings draws its panes: a
-/// vertical gradient, a faint light rim and a slight shadow under the symbol and the tile.
+/// A pane's SF Symbol in its coloured rounded square, as System Settings draws its panes.
 struct SettingsIconTile: View {
     let pane: SettingsPane
     let size: CGFloat
 
     var body: some View {
-        let shape = RoundedRectangle(cornerRadius: size * 0.24, style: .continuous)
-        let colors = pane.tileColors
-        ZStack {
-            shape.fill(LinearGradient(colors: [colors.top, colors.bottom], startPoint: .top, endPoint: .bottom))
-            shape.strokeBorder(.white.opacity(0.18), lineWidth: max(0.5, size / 40))
-                .blendMode(.plusLighter)
-            Image(systemName: pane.systemImage)
-                .font(.system(size: size * 0.56, weight: .semibold))
-                .foregroundStyle(.white)
-                .shadow(color: .black.opacity(0.18), radius: size / 40, y: size / 60)
-        }
-        .frame(width: size, height: size)
-        .shadow(color: .black.opacity(0.12), radius: size / 80, y: size / 80)
-        .accessibilityHidden(true)
+        SymbolTile(symbol: pane.systemImage, colors: pane.tileColors, size: size)
     }
 }
 

@@ -50,7 +50,7 @@ struct ZforgeApp: App {
         Window("Keyboard Shortcuts", id: "keyboard-shortcuts") {
             KeyboardShortcutsView()
         }
-        .defaultSize(width: 720, height: 680)
+        .defaultSize(width: KeyboardShortcutsLayout.defaultWidth, height: KeyboardShortcutsLayout.defaultHeight)
         .windowResizability(.contentMinSize)
         .environment(\.locale, preferences.language.locale)
         .commands { KeyboardShortcutHelpCommands() }

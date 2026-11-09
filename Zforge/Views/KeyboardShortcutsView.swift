@@ -1,145 +1,265 @@
 import SwiftUI
 
+/// The Keyboard Shortcuts window: a sidebar of categories (with search) and the shortcuts of the
+/// chosen category on the right, as System Settings lays out its panes.
 struct KeyboardShortcutsView: View {
     @State private var preferences = FileBrowserPreferences.shared
     @State private var searchText = ""
+    @State private var category: KeyboardShortcutCategory = .all
 
-    init(preferences: FileBrowserPreferences = .shared, searchText: String = "") {
+    init(
+        preferences: FileBrowserPreferences = .shared,
+        searchText: String = "",
+        category: KeyboardShortcutCategory = .all
+    ) {
         _preferences = State(initialValue: preferences)
         _searchText = State(initialValue: searchText)
+        _category = State(initialValue: category)
     }
 
-    private var filteredSections: [KeyboardShortcutSection] {
-        KeyboardShortcutCatalog.sections(matching: searchText, locale: preferences.language.locale)
+    private var locale: Locale { preferences.language.locale }
+
+    var body: some View {
+        NavigationSplitView(columnVisibility: .constant(.all)) {
+            KeyboardShortcutsSidebar(selection: $category)
+                .navigationSplitViewColumnWidth(
+                    min: KeyboardShortcutsLayout.sidebarWidth,
+                    ideal: KeyboardShortcutsLayout.sidebarWidth,
+                    max: KeyboardShortcutsLayout.sidebarWidth
+                )
+                // SwiftUI alone can leave a sidebar narrower than its column width (D-75).
+                .background {
+                    SidebarSplitConstraint(
+                        minimumWidth: KeyboardShortcutsLayout.sidebarWidth,
+                        maximumWidth: KeyboardShortcutsLayout.sidebarWidth
+                    )
+                }
+                .toolbar(removing: .sidebarToggle)
+        } detail: {
+            KeyboardShortcutsDetail(category: category, searchText: searchText, locale: locale)
+                .navigationTitle(Text(verbatim: category.title(locale: locale)))
+        }
+        .searchable(text: $searchText, placement: .sidebar, prompt: "Search")
+        .frame(minWidth: KeyboardShortcutsLayout.minimumWidth, minHeight: KeyboardShortcutsLayout.minimumHeight)
+        .environment(\.locale, locale)
+    }
+}
+
+/// The window's geometry. The sidebar keeps a fixed width; the detail column takes the rest.
+enum KeyboardShortcutsLayout {
+    static let sidebarWidth: CGFloat = 206
+    static let minimumWidth: CGFloat = 600
+    static let minimumHeight: CGFloat = 420
+    static let defaultWidth: CGFloat = 780
+    static let defaultHeight: CGFloat = 560
+    /// Leading and trailing margin of the detail content.
+    static let contentMargin: CGFloat = 20
+    /// Inner padding of a row, and the inset of its separator.
+    static let rowPadding: CGFloat = 10
+    static let rowMinHeight: CGFloat = 32
+}
+
+// MARK: - Sidebar
+
+struct KeyboardShortcutsSidebar: View {
+    @Binding var selection: KeyboardShortcutCategory
+
+    var body: some View {
+        List(selection: $selection) {
+            KeyboardShortcutCategoryRow(category: .all)
+                .tag(KeyboardShortcutCategory.all)
+            Divider()
+                .listRowSeparator(.hidden)
+                .selectionDisabled()
+            ForEach(KeyboardShortcutCatalog.sections) { section in
+                KeyboardShortcutCategoryRow(category: .section(section.id))
+                    .tag(KeyboardShortcutCategory.section(section.id))
+            }
+        }
+        .accessibilityIdentifier("shortcut-categories")
+    }
+}
+
+/// A category row: its tile, its title and, trailing in tertiary text, the number of shortcuts
+/// in the catalog (not affected by search).
+struct KeyboardShortcutCategoryRow: View {
+    let category: KeyboardShortcutCategory
+
+    var body: some View {
+        HStack(spacing: 8) {
+            SymbolTile(symbol: category.systemImage, colors: category.tileColors, size: 20)
+            Text(LocalizedStringKey(category.titleKey))
+                .lineLimit(2)
+            Spacer(minLength: 4)
+            Text(category.itemCount, format: .number)
+                .font(.system(size: 11))
+                .monospacedDigit()
+                .foregroundStyle(.tertiary)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("shortcut-category-\(category.id)")
+    }
+}
+
+// MARK: - Detail
+
+struct KeyboardShortcutsDetail: View {
+    let category: KeyboardShortcutCategory
+    let searchText: String
+    let locale: Locale
+
+    private var sections: [KeyboardShortcutSection] {
+        KeyboardShortcutCatalog.sections(in: category, matching: searchText, locale: locale)
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            header
-
-            Divider()
-
-            if filteredSections.isEmpty {
+        let sections = sections
+        Group {
+            if sections.isEmpty {
                 ContentUnavailableView.search(text: searchText)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 ScrollView {
-                    LazyVStack(spacing: 18) {
-                        ForEach(filteredSections) { section in
-                            KeyboardShortcutSectionView(section: section)
+                    LazyVStack(alignment: .leading, spacing: 16) {
+                        ForEach(sections) { section in
+                            KeyboardShortcutGroup(section: section, showsHeader: category == .all)
                         }
                     }
-                    .padding(24)
+                    .padding(.horizontal, KeyboardShortcutsLayout.contentMargin)
+                    .padding(.top, 20)
+                    .padding(.bottom, 20)
                 }
             }
         }
-        .frame(minWidth: 620, minHeight: 520)
-        .searchable(text: $searchText, placement: .toolbar, prompt: "Search Shortcuts")
-        .environment(\.locale, preferences.language.locale)
-    }
-
-    private var header: some View {
-        HStack(spacing: 14) {
-            Image(systemName: "keyboard")
-                .font(.system(size: 28, weight: .medium))
-                .symbolRenderingMode(.hierarchical)
-                .foregroundStyle(.tint)
-                .frame(width: 42, height: 42)
-                .background(.quaternary, in: RoundedRectangle(cornerRadius: 10))
-
-            VStack(alignment: .leading, spacing: 3) {
-                Text("Keyboard Shortcuts")
-                    .font(.title2.weight(.semibold))
-                Text("Commands and gestures available in Zforge")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-
-            Spacer()
-        }
-        .padding(24)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 
-private struct KeyboardShortcutSectionView: View {
+/// One section: an optional small header and an inset grouped container of rows.
+struct KeyboardShortcutGroup: View {
+    @Environment(\.displayScale) private var displayScale
     let section: KeyboardShortcutSection
+    let showsHeader: Bool
 
     var body: some View {
-        GroupBox {
-            Grid(alignment: .leading, horizontalSpacing: 24, verticalSpacing: 10) {
-                ForEach(section.items) { item in
-                    GridRow {
-                        Text(LocalizedStringKey(item.action))
-                            .frame(maxWidth: .infinity, alignment: .leading)
-
-                        KeyboardShortcutInputView(input: item.input)
-                            .gridColumnAlignment(.trailing)
+        VStack(alignment: .leading, spacing: 6) {
+            if showsHeader {
+                Text(LocalizedStringKey(section.title))
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(.secondary)
+                    .padding(.leading, KeyboardShortcutsLayout.rowPadding)
+                    .accessibilityAddTraits(.isHeader)
+            }
+            VStack(spacing: 0) {
+                ForEach(Array(section.items.enumerated()), id: \.element.id) { index, item in
+                    if index > 0 {
+                        Rectangle()
+                            .fill(.separator)
+                            .frame(height: 1 / displayScale)
+                            .padding(.horizontal, KeyboardShortcutsLayout.rowPadding)
                     }
-
-                    if item.id != section.items.last?.id {
-                        Divider()
-                            .gridCellColumns(2)
-                    }
+                    KeyboardShortcutRow(item: item)
                 }
             }
-            .padding(.top, 4)
-        } label: {
-            Label(LocalizedStringKey(section.title), systemImage: section.systemImage)
-                .font(.headline)
+            .background(.primary.opacity(0.045), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .strokeBorder(.primary.opacity(0.06), lineWidth: 0.5)
+            }
         }
     }
 }
 
-private struct KeyboardShortcutInputView: View {
-    let input: String
-
-    private var alternatives: [String] {
-        input.split(separator: "|").map(String.init)
-    }
+struct KeyboardShortcutRow: View {
+    let item: KeyboardShortcutItem
 
     var body: some View {
-        HStack(spacing: 6) {
-            ForEach(Array(alternatives.enumerated()), id: \.offset) { _, alternative in
-                KeyboardShortcutKeycap(input: alternative)
-            }
+        HStack(spacing: 12) {
+            Text(LocalizedStringKey(item.action))
+                .lineLimit(1)
+                .truncationMode(.tail)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .help(Text(LocalizedStringKey(item.action)))
+            ShortcutKeysView(input: item.input)
         }
-        .fixedSize()
-    }
-}
-
-private struct KeyboardShortcutKeycap: View {
-    let input: String
-
-    private var compactKeys: [String]? {
-        guard !input.contains(where: { $0.isWhitespace }),
-              input.contains(where: { "⌃⌥⇧⌘".contains($0) }) else { return nil }
-        return input.map(String.init)
-    }
-
-    var body: some View {
-        Group {
-            if let compactKeys {
-                HStack(spacing: 1) {
-                    ForEach(Array(compactKeys.enumerated()), id: \.offset) { _, key in
-                        Text(verbatim: key)
-                    }
-                }
-            } else {
-                Text(LocalizedStringKey(input))
-            }
-        }
-        .font(.system(.body, design: .monospaced).weight(.medium))
-        .foregroundStyle(.primary)
-        .padding(.horizontal, 8)
+        .padding(.horizontal, KeyboardShortcutsLayout.rowPadding)
         .padding(.vertical, 4)
-        .background(.quaternary, in: RoundedRectangle(cornerRadius: 6))
-        .overlay {
-            RoundedRectangle(cornerRadius: 6)
-                .stroke(.separator, lineWidth: 0.5)
+        .frame(minHeight: KeyboardShortcutsLayout.rowMinHeight)
+    }
+}
+
+// MARK: - Categories
+
+/// What the sidebar selects: every section, or one.
+enum KeyboardShortcutCategory: Hashable, Identifiable {
+    case all
+    case section(String)
+
+    var id: String {
+        switch self {
+        case .all: "all"
+        case .section(let id): id
         }
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(Text(verbatim: input))
-        .accessibilityIdentifier("shortcut-\(input)")
+    }
+
+    /// The String Catalog key of the category's name.
+    var titleKey: String {
+        switch self {
+        case .all: "All Shortcuts"
+        case .section(let id): KeyboardShortcutCatalog.sections.first { $0.id == id }?.title ?? id
+        }
+    }
+
+    func title(locale: Locale) -> String {
+        AppLocalization.string(String.LocalizationValue(titleKey), locale: locale)
+    }
+
+    var systemImage: String {
+        switch self {
+        case .all: "keyboard"
+        case .section(let id): KeyboardShortcutCatalog.sections.first { $0.id == id }?.systemImage ?? "keyboard"
+        }
+    }
+
+    /// The number of shortcuts the catalog lists under the category.
+    var itemCount: Int {
+        KeyboardShortcutCatalog.sections(in: self, matching: "", locale: .current).reduce(0) { $0 + $1.items.count }
+    }
+
+    /// Top and bottom colours of the tile: one fixed hue per category, lighter at the top.
+    var tileColors: (top: Color, bottom: Color) {
+        let base: (red: Double, green: Double, blue: Double) = switch id {
+        case "files": (0x1E, 0x7C, 0xF2)
+        case "go": (0x8E, 0x5B, 0xD9)
+        case "navigation": (0x2F, 0xA8, 0x6B)
+        case "view": (0xE8, 0x90, 0x2A)
+        case "preview": (0x3A, 0xA7, 0xC9)
+        case "help": (0x7C, 0x7C, 0x82)
+        case "mouse": (0xD6, 0x45, 0x5D)
+        default: (0x5B, 0x5B, 0x60)
+        }
+        func mixed(_ amount: Double, with target: Double) -> Color {
+            Color(.sRGB,
+                  red: (base.red + (target - base.red) * amount) / 255,
+                  green: (base.green + (target - base.green) * amount) / 255,
+                  blue: (base.blue + (target - base.blue) * amount) / 255)
+        }
+        return (mixed(0.22, with: 255), mixed(0.1, with: 0))
+    }
+}
+
+extension KeyboardShortcutCatalog {
+    /// The sections of a category whose shortcuts match the query: every section for All
+    /// Shortcuts, otherwise only the chosen one. Search never changes the category.
+    static func sections(
+        in category: KeyboardShortcutCategory,
+        matching searchText: String,
+        locale: Locale
+    ) -> [KeyboardShortcutSection] {
+        let matching = sections(matching: searchText, locale: locale)
+        switch category {
+        case .all: return matching
+        case .section(let id): return matching.filter { $0.id == id }
+        }
     }
 }
 

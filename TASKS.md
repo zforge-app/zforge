@@ -616,6 +616,17 @@ Pending: in-app check of the row and the computer level in the four modes (light
 - [x] Preview/thumbnail limits, the solid-archives checkbox and removable/remote settings with the generalized logarithmic slider; localization of every new string. *Stage 3, 2026-11-02; evidence: REGRESSION-COVERAGE “Preview limits and opening progress — ZF-55 stage 3”.*
 - [ ] Synchronize CURRENT-STATE, PRODUCT-REQUIREMENTS, REGRESSION-COVERAGE and D-73; run `Scripts/affected-tests.py --run`. *Done for stages 1 to 3 (2026-11-02).* Pending outside the implementation: checks on real removable and network volumes and a visual review of the real windows (see D-73).
 
+### ZF-59 — Keyboard Shortcuts window redesign: sidebar, grouped rows and key caps (2026-11-09)
+
+**Implemented; unit tests and snapshots pass; the real window (sidebar material, title bar, search placement) has not been looked at yet. Results in REGRESSION-COVERAGE “Keyboard Shortcuts window redesign — ZF-59”.** User request: the window's spacing, margins and iconography were unsatisfying; approved mockup “option A · Sidebar” (search and category sidebar, All Shortcuts, grouped containers, individual key caps).
+- [x] `NavigationSplitView` of 780 × 560 pt (minimum 600 × 420), 206 pt sidebar with search, All Shortcuts, a separator and one row per section with a coloured tile (shared `SymbolTile`, also used by Settings) and a catalog-total count; detail titled by the selected category, 20 pt margins, section headers only in All Shortcuts, 32 pt rows with inset hairlines (`KeyboardShortcutsView.swift`, `SymbolTile.swift`).
+- [x] Key caps parsed from the existing shortcut strings (`ShortcutNotation`): one cap per glyph, wider word-key caps, “or” between alternatives, pointer gestures as secondary text, localized spoken form for VoiceOver (`ShortcutKeyCaps.swift`).
+- [x] 12 new strings in all 21 languages (the four gesture words are taken from the existing `⌘ + drag`-style translations).
+- [x] Catalog data and the search contract unchanged; `KeyboardShortcutCatalog.sections(in:matching:locale:)` adds the category filter.
+- [ ] Look at the real window in the user's build: sidebar material and selection, search field in the sidebar, window title per category, light/dark, reduced motion, increased contrast, VoiceOver reading of rows and key caps, Dynamic Type/text size. The offscreen snapshots cannot draw `NavigationSplitView`'s sidebar (see REGRESSION-COVERAGE).
+- [ ] Native-speaker review of the 12 new translations (modifier names follow Apple's keyboard terms where known; several languages keep the English key names).
+- [ ] Investigate the intermittent unit-host crash seen while running the full `Unit` plan in this work (see REGRESSION-COVERAGE and D-76).
+
 ### ZF-58 — Settings in two columns, as System Settings (2026-11-02)
 
 **Implemented; unit, offscreen and real UI tests pass; results in REGRESSION-COVERAGE “Settings in two columns — ZF-58”.** User request: the Settings menu had become too long; split it into two columns like System Settings. Mockups approved in the conversation (View Options instead of List Columns, with Default View; the Finder extension in General; Compression profiles as a list that opens each profile).
