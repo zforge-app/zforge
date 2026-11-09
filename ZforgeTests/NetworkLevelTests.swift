@@ -347,63 +347,26 @@ struct NetworkLevelTests {
         #expect(state.showingServerConnection, "Go ▸ Remote uses the same entry point")
     }
 
-    // MARK: Sidebar
+    // MARK: Entry points without a sidebar item (user request, 2026-11-09)
 
-    /// Hosts the production sidebar Network row in a Locations section, as `BrowserSidebar` does.
-    private static func withHostedSidebarRow<T>(_ state: FileBrowserState, _ body: (NSView) throws -> T) rethrows -> T {
-        let size = CGSize(width: 220, height: 90)
-        let host = NSHostingView(rootView: List {
-            Section("Locations") {
-                SidebarNetworkRow(browser: state, restoreContentFocus: {})
-            }
-            .environment(\.sidebarIconTint, .neutral)
-        }
-        .listStyle(.sidebar)
-        .environment(\.appearsActive, true)
-        .environment(\.locale, english)
-        .frame(width: size.width, height: size.height))
-        let window = NSWindow(contentRect: NSRect(origin: .zero, size: size), styleMask: [.titled],
-                              backing: .buffered, defer: false)
-        window.isReleasedWhenClosed = false
-        defer { window.close() }
-        window.contentView = host
-        host.layoutSubtreeIfNeeded()
-        return try body(host)
-    }
-
-    @Test("The sidebar Network row opens Computer › Network like Go ▸ Network and is highlighted only there")
-    func sidebarNetworkRowNavigates() async throws {
+    @Test("Go ▸ Network from a folder opens Computer › Network; Back and Forward keep working and Up returns to the computer")
+    func goNetworkHistory() async throws {
         let fixture = try fixture()
         defer { fixture.tearDown() }
         let state = fixture.state
         await state.navigateToSidebar(fixture.volume, name: "Macintosh HD")
-        #expect(!SidebarNetworkRow.isCurrent(in: state))
-
-        var focusRestored = 0
-        // The row's own action (the real click is a UI-test concern, see REGRESSION-COVERAGE).
-        SidebarNetworkRow(browser: state, restoreContentFocus: { focusRestored += 1 }).open()
-        await settle({ state.location == .network }, "The row opens the Network level")
-        #expect(state.pathComponents.map(\.location) == [.computer, .network], "The same path as Go ▸ Network")
-        #expect(state.breadcrumbComponents.map(\.name) == [ComputerIdentity.name(locale: Self.english), "Network"])
-        #expect(SidebarNetworkRow.isCurrent(in: state))
-        #expect(focusRestored == 1, "The row returns focus to the content, like the other rows")
+        await state.navigateToNetwork()
+        #expect(state.location == .network)
+        #expect(state.pathComponents.map(\.location) == [.computer, .network])
         await settle({ fixture.browser.runs == 1 }, "Discovery starts with the level")
+
+        await state.goBack()
+        #expect(state.location != .network, "Back leaves the Network level")
+        await state.goForward()
+        #expect(state.location == .network, "Forward returns to it")
 
         await state.goUp()
         #expect(state.location == .computer)
-        #expect(!SidebarNetworkRow.isCurrent(in: state), "The computer level highlights the computer row instead")
-    }
-
-    @Test("The highlighted sidebar Network row matches the Locations rows in light and dark",
-          arguments: ZforgeSnapshot.appearances.map(\.name))
-    func sidebarNetworkRowSnapshot(appearanceName: String) throws {
-        let appearance = try #require(ZforgeSnapshot.appearances.first { $0.name == appearanceName })
-        let fixture = try fixture()
-        defer { fixture.tearDown() }
-        fixture.state.location = .network
-        Self.withHostedSidebarRow(fixture.state) { host in
-            ZforgeSnapshot.assert(host, appearance: appearance.appearance, named: "sidebar-row-\(appearance.name)")
-        }
     }
 
     // MARK: Appearance

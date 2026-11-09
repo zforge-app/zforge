@@ -580,7 +580,7 @@ Pending: in-app check of the row and the computer level in the four modes (light
 **Follow-up — Add Remote in Network and Network in Locations (2026-10-30, user request). Implemented; offscreen tests added; results in REGRESSION-COVERAGE.** The user removed the “No Servers Found” notice and spinner, moved the sidebar's Shared ▸ Remote row into the Network level as **Add Remote**, and asked for Network in sidebar Locations while keeping it at the computer level.
 - [x] `NetworkLevelBar` (top of the Network level in every mode, independent of the server list) with **Add Remote…** → `FileBrowserState.showServerConnection()`, shared with Go ▸ Remote (`⌘K`) and the single sheet in `ContentView`. Empty state and spinner removed; “Local Network Access Is Off” kept (`NetworkLocalAccessDeniedView`).
 - [x] Sidebar: Remote row removed; Shared header hidden without mounted shares; `SidebarActionRow` kept for Recents.
-- [x] Sidebar Locations ▸ Network (`SidebarNetworkRow`, shared `SidebarVirtualLocationRow` with the computer row) after the volumes; `SidebarLocationCategory.network` with its Settings ▸ Sidebar toggle; menu `SidebarItemMenuActions.networkMenu()` (Remove from Sidebar only).
+- [x] Sidebar Locations ▸ Network (`SidebarNetworkRow`, shared `SidebarVirtualLocationRow` with the computer row) after the volumes; `SidebarLocationCategory.network` with its Settings ▸ Sidebar toggle; menu `SidebarItemMenuActions.networkMenu()` (Remove from Sidebar only). **Superseded by ZF-63 (2026-11-09): removed from the sidebar.**
 - [ ] In-app check of the bar in the four modes (light/dark, a long language, narrow width), the sheet from Add Remote, the sidebar row's highlight/inactive gray, and the mapped UI tests.
 
 ### ZF-53 — Toolbar search with Finder parity (2026-10-30, OR-24)
@@ -654,3 +654,10 @@ Pending: in-app check of the row and the computer level in the four modes (light
 - [ ] Investigate the real-mode `Not hittable` File ▸ Open item (zero-size frame) in `testFileOpenNavigatesSelectedFolderAndArchiveInColumnsMode`, recovered only by XCTest's own action retry.
 - [x] The user's own app switches no longer close a simulated app's open menus (2026-11-02): AppKit's `_applicationDidSwitch` (LaunchServices frontmost notification) dismissed them, so `testBlankAreaUsesMoreMenuInEveryView` failed offscreen whenever the user switched apps with a menu open. The tool's agent skips that one dismissal (`zforge-xcuitest-sim/Notes/menus-app-switch-2026-11-02.md`).
 - [ ] Explain the intermittent launch without a browser window (`launchWithBrowserWindow`, `ZforgeUITests.swift:448`: no window after launch and none after File ▸ New Zforge Window within 8 s), seen offscreen with and without Automation Mode after ZF-55 (also in the ZF-55 merge run).
+
+### ZF-63 — Remove Network from the sidebar (2026-11-09, user request)
+
+**Implemented; offscreen tests added; results in REGRESSION-COVERAGE.** Network stays in the computer level and Go ▸ Network (`⇧⌘K`).
+- [x] `SidebarNetworkRow`, `SidebarItemMenuActions.networkMenu()`, `SidebarLocationCategory.network` and the Settings ▸ Sidebar Network toggle removed; a stored `network` hidden-category value is ignored.
+- [x] Tests: `SidebarLocationMenuTests` (no category, legacy value ignored, Go ▸ Network still opens `Computer › Network`), `NetworkLevelTests.goNetworkHistory`; sidebar-row tests and snapshots removed with the row.
+- [ ] In-app check: sidebar without Network in light/dark, Settings ▸ Sidebar, Go ▸ Network, Network from the computer level in the four modes.

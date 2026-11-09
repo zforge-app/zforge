@@ -9,7 +9,6 @@ nonisolated enum SidebarLocationCategory: String, CaseIterable, Sendable {
     case home
     case hardDisks
     case externalDisks
-    case network
     case connectedServers
 }
 
@@ -108,12 +107,6 @@ extension SidebarItemMenuActions {
     /// inspect and cannot open in a tab yet, so its menu only removes it from the sidebar.
     func computerMenu() -> SidebarItemMenu {
         virtualLocationMenu(hiding: .computer)
-    }
-
-    /// The Network item opens the virtual Network level; like the computer item it has no folder
-    /// to reveal or inspect, so its menu only removes it from the sidebar.
-    func networkMenu() -> SidebarItemMenu {
-        virtualLocationMenu(hiding: .network)
     }
 
     private func virtualLocationMenu(hiding category: SidebarLocationCategory) -> SidebarItemMenu {

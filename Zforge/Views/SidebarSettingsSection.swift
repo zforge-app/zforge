@@ -29,7 +29,6 @@ struct SidebarSettingsSection: View {
         case .home: Text(verbatim: UserDirectoryService.homeURL.lastPathComponent)
         case .hardDisks: Text("Hard disks")
         case .externalDisks: Text("External disks")
-        case .network: Text("Network")
         case .connectedServers: Text("Connected servers")
         }
     }
