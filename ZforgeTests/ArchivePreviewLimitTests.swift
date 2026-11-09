@@ -333,8 +333,9 @@ struct ArchivePreviewLimitTests {
         preferences.networkVolumePreviewLimit = 128_000_000
         let paneBody = String(reflecting: PreviewsSettingsPane.Body.self)
         #expect(paneBody.contains("ArchivePreviewSettingsSection"))
-        let section = Form { ArchivePreviewSettingsSection(preferences: preferences) }
-            .formStyle(.grouped)
+        // ZF-62: the panes are columns of groups, no longer grouped forms.
+        let section = SettingsPaneColumn { ArchivePreviewSettingsSection(preferences: preferences) }
+            .background(Color(nsColor: .windowBackgroundColor))
             .environment(\.locale, language.locale)
         let size = CGSize(width: 568, height: 530)
         let host = NSHostingView(rootView: section.frame(width: size.width, height: size.height))

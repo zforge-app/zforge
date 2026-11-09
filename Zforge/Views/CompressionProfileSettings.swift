@@ -13,29 +13,38 @@ struct CompressionSettingsSection: View {
     let openProfile: (UUID) -> Void
 
     var body: some View {
-        Section {
-            Picker("Default compression profile", selection: $preferences.defaultCompressionProfileID) {
+        SettingsGroup {
+            SettingsPickerRow(title: Text("Default compression profile"), identifier: "settings-default-compression-profile",
+                              selection: $preferences.defaultCompressionProfileID) {
                 ForEach(preferences.compressionProfiles) { profile in
                     Text(verbatim: profile.name).tag(profile.id)
                 }
             }
-            .accessibilityIdentifier("settings-default-compression-profile")
         }
-        Section {
+        SettingsGroup(header: Text("Profiles")) {
             ForEach(preferences.compressionProfiles) { profile in
                 NavigationLink(value: CompressionProfileRoute(id: profile.id)) {
-                    CompressionProfileRow(profile: profile, isDefault: profile.id == preferences.defaultCompressionProfileID)
+                    HStack {
+                        CompressionProfileRow(profile: profile, isDefault: profile.id == preferences.defaultCompressionProfileID)
+                        Spacer(minLength: 8)
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(.tertiary)
+                    }
+                    .contentShape(Rectangle())
                 }
+                .buttonStyle(.plain)
                 .accessibilityIdentifier("settings-compression-profile-\(profile.name)")
             }
-        } header: {
-            Text("Profiles")
         } footer: {
             HStack {
                 Spacer()
                 Button("Add Profile") { openProfile(preferences.addCompressionProfile()) }
                     .accessibilityIdentifier("settings-add-compression-profile")
             }
+            .font(.body)
+            .foregroundStyle(.primary)
+            .padding(.trailing, -2)
         }
     }
 }
@@ -157,7 +166,7 @@ struct CompressionProfileDetailView: View {
                 }
             }
             .formStyle(.grouped)
-            .navigationTitle(Text(verbatim: profile.name))
+            .settingsToolbar(title: Text(verbatim: profile.name))
             .confirmationDialog(
                 Text("Delete “\(profile.name)”?"), isPresented: $confirmingDelete
             ) {
