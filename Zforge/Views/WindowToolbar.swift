@@ -2,15 +2,15 @@ import SwiftUI
 
 /// The window toolbar of the browser window, shared by the Settings and Keyboard Shortcuts
 /// windows (ZF-62, ZF-59): a 52 pt unified toolbar with the traffic lights centred in it and the
-/// window title inline at 15 pt semibold in the label colour, no bar background over scrolling
-/// content.
+/// window title inline at 15 pt semibold in the label colour. The bar keeps the system scroll
+/// edge effect: content scrolled under the title fades behind the bar instead of showing through
+/// the title (hiding the bar background let rows overlap the title, user report 2026-11-09).
 extension View {
     /// Titles the window with `title` in the browser window's toolbar look. Apply it to the
     /// window's detail content, and add `unifiedWindowToolbarStyle()` once to the window's root.
     func windowToolbar(title: Text) -> some View {
         navigationTitle(title)
             .toolbarTitleDisplayMode(.inline)
-            .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
             .toolbar(.visible, for: .windowToolbar)
             .toolbar { WindowToolbarAnchor() }
     }
