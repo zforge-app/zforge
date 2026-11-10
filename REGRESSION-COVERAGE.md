@@ -1856,3 +1856,14 @@ Environment: macOS 27.2 (26B123), Xcode 27.2 (27B52), arm64; session unlocked; r
 - Screen recording frames at 12 s and 14 s: the drag image of `Local.txt` stays over the `Sample.zip` row after the button was released; the drop is never performed.
 - **Totals:** 3 executed, 0 passed, 3 failed. Classified as an environment change (D-92), not a regression of the changes since 2026-11-02. **Not run:** the other `realOnly` tests (several also drag; they may share the cause).
 
+### Correction — branch `fix/real-drag-27-2`, 2026-11-10
+
+Same environment; real mode with `xcodebuild test-without-building -only-testing:` on builds from `build-for-testing -testPlan UI-Full` (user approved; screen taken over). Result bundles, logs and the event-tap logs: `/private/tmp/claude-501/-Users-felipe--t3-worktrees-Zforge-t3-2d4a4e9a-64a9246235b4c436/4060367b-b7d0-4fee-ad0c-d11fac4bad8d/scratchpad` (`r1`–`r4`, `o-*`, `tap1.log`, `tap2.log`, `probe1.log`, `probe2.log`).
+
+- **Run 1, unchanged test + temporary probes (not committed):** **failed** at `:603`, as before. The tap shows the 12 drag events and the release posted within 1.6 ms; the probe shows the release delivered to the app before `willBegin` (88 ms after the pickup), then `dropUpdated` on `Sample.zip` for over 3 s with no `performDrop` or `endedAt` (D-92).
+- **Run 2, `dragAndDrop(onto:)` + probes:** **passed** (24.5 s). Release 1.05 s after the move; `performDrop` on `Sample.zip`, session ended `.copy`; the Option-drag ended in `performDrop` on `Dropped`.
+- **Runs 3 and 4, final build (probes removed, none logged):** **passed** both, consecutively (24.5 s, 24.5 s).
+- **Other real-only drag tests, one run each on the final build:** `testArchiveDragCopiesIntoSidebarFolder` **passed** (20.5 s); `testArchiveCopyIntoAnotherZforgeWindow` **passed** (22.2 s); `testArchiveInternalCopyConfirmationKeepsHistoryAndAncestorColumns` **passed** (31.5 s); `testArchivePromisesPublishIntoFinderBeforeRemovingOriginal` **failed** at `:676` (no exposed point of the test's Finder window: Finder in Column view with the fixture folder's column at x = 2104, outside the window at 377–1297; the title drag did not move Finder) — in its arrangement, before the changed drop, so it neither confirms nor refutes the correction for that test (TASKS ZF-72).
+- **Totals:** 8 real executions — 6 passed, 2 failed (run 1, the reproduction; the Finder arrangement).
+- `Scripts/affected-tests.py --check`: 28 UI tests, 22 rules, 0 problems. **Not run:** the `Unit` plan and the offscreen UI tests (only UI test code changed: a new helper file and the drag lines of the tests above); the other real-only tests the script selects for `ZforgeUITests.swift` (not in this task's approval).
+
