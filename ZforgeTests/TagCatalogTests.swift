@@ -383,8 +383,11 @@ struct TagCatalogTests {
         let catalog = FinderTagCatalog(discoveryRoots: [FileManager.default.temporaryDirectory])
         catalog.refresh(searchScopes: [root])
         defer { catalog.stop() }
-        try await waitUntil({ catalog.itemURLs(tagged: name).count == 1 }, stage: "Initial discovery",
-            diagnostics: { "paths=\(catalog.itemURLs(tagged: name)), idle=\(catalog.isIdle), revision=\(catalog.revision)" })
+        // Discovery of the fixture is finite queued work: wait for it to drain instead of
+        // polling against a clock that also runs while other suites hold the main actor (D-88).
+        await catalog.waitForIdle()
+        #expect(catalog.itemURLs(tagged: name).count == 1,
+            "Initial discovery: paths=\(catalog.itemURLs(tagged: name)), idle=\(catalog.isIdle), revision=\(catalog.revision)")
         try writeTags([name + "\n6"], to: second)
         try await waitUntil({ catalog.itemURLs(tagged: name).count == 2 }, stage: "Live addition",
             diagnostics: { "paths=\(catalog.itemURLs(tagged: name)), idle=\(catalog.isIdle), revision=\(catalog.revision)" })
@@ -1673,19 +1676,24 @@ struct TagCatalogTests {
         #expect(result == 0)
     }
 
+    /// Polls `condition` until it holds, for file events that arrive from outside the test.
+    /// The hang guard is 80 polls of at least 100 ms, not 8 s of wall-clock time: a poll resumes
+    /// late only when the main actor was busy elsewhere (in the full unit plan, other suites
+    /// hold the main actor for many seconds, D-88), and the catalog, its FSEvents callbacks and
+    /// its publishing run on that same main actor, so they could not progress during the stall
+    /// either. Without contention the guard is the same 8 s as before.
     @MainActor
     private func waitUntil(_ condition: () -> Bool, stage: String, diagnostics: () -> String) async throws {
-        let start = Date()
-        let deadline = start.addingTimeInterval(8)
+        let start = ContinuousClock.now
         var polls = 0
-        var longestSuspension: TimeInterval = 0
-        while !condition(), Date() < deadline {
-            let before = Date()
+        var longestSuspension = Duration.zero
+        while !condition(), polls < 80 {
+            let before = ContinuousClock.now
             try await Task.sleep(for: .milliseconds(100))
-            longestSuspension = max(longestSuspension, Date().timeIntervalSince(before))
+            longestSuspension = max(longestSuspension, before.duration(to: .now))
             polls += 1
         }
-        #expect(condition(), Comment(rawValue: "\(stage): elapsed=\(Date().timeIntervalSince(start)), polls=\(polls), longest suspension=\(longestSuspension), \(diagnostics())"))
+        #expect(condition(), Comment(rawValue: "\(stage): elapsed=\(start.duration(to: .now)), polls=\(polls), longest suspension=\(longestSuspension), \(diagnostics())"))
     }
 }
 
