@@ -166,7 +166,7 @@ struct CompressionProfileDetailView: View {
                 }
             }
             .formStyle(.grouped)
-            .settingsToolbar(title: Text(verbatim: profile.name))
+            .windowToolbar(title: Text(verbatim: profile.name))
             .confirmationDialog(
                 Text("Delete “\(profile.name)”?"), isPresented: $confirmingDelete
             ) {

@@ -78,33 +78,12 @@ struct ZforgeSettingsView: View {
             .navigationSplitViewColumnWidth(SettingsLayout.detailWidth)
         }
         .frame(width: SettingsLayout.sidebarWidth + SettingsLayout.detailWidth, height: SettingsLayout.height)
-        .background { SettingsToolbarStyle() }
+        .unifiedWindowToolbarStyle()
         .environment(\.locale, preferences.language.locale)
     }
 
     private var selection: Binding<SettingsPane?> {
         Binding(get: { navigation.pane }, set: { if let pane = $0 { navigation.choose(pane) } })
-    }
-}
-
-/// The Settings scene gives its window AppKit's preference toolbar, which centres the toolbar
-/// items under the title: a profile page's back button sat alone on a second row (D-75). As in
-/// System Settings, the unified style puts the back button and the title in one row at the
-/// detail column's leading edge.
-private struct SettingsToolbarStyle: NSViewRepresentable {
-    func makeNSView(context: Context) -> SettingsToolbarStyleView { SettingsToolbarStyleView() }
-    func updateNSView(_ view: SettingsToolbarStyleView, context: Context) { view.applyStyle() }
-}
-
-final class SettingsToolbarStyleView: NSView {
-    override func viewDidMoveToWindow() {
-        super.viewDidMoveToWindow()
-        applyStyle()
-    }
-
-    func applyStyle() {
-        guard let window, window.toolbarStyle != .unified else { return }
-        window.toolbarStyle = .unified
     }
 }
 
@@ -166,33 +145,7 @@ struct SettingsPaneForm<Content: View>: View {
 
     var body: some View {
         SettingsPaneColumn { content }
-            .settingsToolbar(title: Text(verbatim: pane.title(locale: locale)))
-    }
-}
-
-/// An empty toolbar item. SwiftUI gives a window the 52 pt unified toolbar, with the title in the
-/// toolbar's own title style, only while the window has a toolbar item; a Settings pane has none
-/// of its own, so without this the window kept the 32 pt title bar and its small grey title.
-private struct SettingsToolbarAnchor: ToolbarContent {
-    var body: some ToolbarContent {
-        ToolbarItem(id: "settings-toolbar-anchor", placement: .primaryAction) {
-            Color.clear
-                .frame(width: 1, height: 1)
-                .accessibilityHidden(true)
-        }
-        .sharedBackgroundVisibility(.hidden)
-    }
-}
-
-extension View {
-    /// The window toolbar the browser window has: an inline title in the toolbar row with no
-    /// bar background over the scrolling content (ZF-62).
-    func settingsToolbar(title: Text) -> some View {
-        navigationTitle(title)
-            .toolbarTitleDisplayMode(.inline)
-            .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
-            .toolbar(.visible, for: .windowToolbar)
-            .toolbar { SettingsToolbarAnchor() }
+            .windowToolbar(title: Text(verbatim: pane.title(locale: locale)))
     }
 }
 

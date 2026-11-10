@@ -1,12 +1,5 @@
 import SwiftUI
 
-extension Color {
-    /// A fixed sRGB colour from `0xRRGGBB`, the same in light and dark appearance.
-    init(sRGBHex rgb: UInt32) {
-        self.init(.sRGB, red: Double(rgb >> 16 & 0xFF) / 255, green: Double(rgb >> 8 & 0xFF) / 255, blue: Double(rgb & 0xFF) / 255)
-    }
-}
-
 /// An SF Symbol in a coloured rounded square, as System Settings draws its panes and sidebars:
 /// a vertical gradient, a faint light rim and a slight shadow under the symbol and the tile.
 /// Shared by the Settings sidebar and the Keyboard Shortcuts sidebar.

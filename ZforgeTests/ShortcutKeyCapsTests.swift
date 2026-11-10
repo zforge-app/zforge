@@ -141,7 +141,7 @@ private struct KeyboardShortcutsSnapshotWindow: View {
     private func row(_ row: KeyboardShortcutCategory) -> some View {
         KeyboardShortcutCategoryRow(category: row)
             .padding(.horizontal, 8)
-            .frame(minHeight: 28)
+            .frame(minHeight: SettingsLayout.sidebarRowHeight)
             .background(row == category ? Color.accentColor.opacity(0.9) : .clear, in: RoundedRectangle(cornerRadius: 6))
     }
 
@@ -154,7 +154,7 @@ private struct KeyboardShortcutsSnapshotWindow: View {
             VStack(spacing: 0) {
                 Text(verbatim: category.title(locale: preferences.language.locale))
                     .font(.system(size: 15, weight: .semibold))
-                    .padding(.horizontal, KeyboardShortcutsLayout.contentMargin)
+                    .padding(.horizontal, SettingsMetrics.margin)
                     .frame(maxWidth: .infinity, minHeight: 52, alignment: .leading)
                 Divider()
                 KeyboardShortcutsDetail(category: category, searchText: searchText, locale: preferences.language.locale)

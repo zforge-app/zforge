@@ -37,26 +37,24 @@ struct KeyboardShortcutsView: View {
                 .toolbar(removing: .sidebarToggle)
         } detail: {
             KeyboardShortcutsDetail(category: category, searchText: searchText, locale: locale)
-                .navigationTitle(Text(verbatim: category.title(locale: locale)))
+                .windowToolbar(title: Text(verbatim: category.title(locale: locale)))
         }
         .searchable(text: $searchText, placement: .sidebar, prompt: "Search")
         .frame(minWidth: KeyboardShortcutsLayout.minimumWidth, minHeight: KeyboardShortcutsLayout.minimumHeight)
+        .unifiedWindowToolbarStyle()
         .environment(\.locale, locale)
     }
 }
 
 /// The window's geometry. The sidebar keeps a fixed width; the detail column takes the rest.
+/// Sidebar rows (`SettingsLayout`) and the detail's margins, group, header and row metrics
+/// (`SettingsMetrics`) are the Settings window's, so the two windows cannot drift apart.
 enum KeyboardShortcutsLayout {
     static let sidebarWidth: CGFloat = 206
     static let minimumWidth: CGFloat = 600
     static let minimumHeight: CGFloat = 420
     static let defaultWidth: CGFloat = 780
     static let defaultHeight: CGFloat = 560
-    /// Leading and trailing margin of the detail content.
-    static let contentMargin: CGFloat = 20
-    /// Inner padding of a row, and the inset of its separator.
-    static let rowPadding: CGFloat = 10
-    static let rowMinHeight: CGFloat = 32
 }
 
 // MARK: - Sidebar
@@ -76,6 +74,7 @@ struct KeyboardShortcutsSidebar: View {
                     .tag(KeyboardShortcutCategory.section(section.id))
             }
         }
+        .environment(\.sidebarRowSize, .small)
         .accessibilityIdentifier("shortcut-categories")
     }
 }
@@ -89,6 +88,7 @@ struct KeyboardShortcutCategoryRow: View {
         HStack(spacing: 8) {
             SymbolTile(symbol: category.systemImage, colors: category.tileColors, size: 20)
             Text(LocalizedStringKey(category.titleKey))
+                .font(.system(size: 13))
                 .lineLimit(2)
             Spacer(minLength: 4)
             Text(category.itemCount, format: .number)
@@ -96,6 +96,9 @@ struct KeyboardShortcutCategoryRow: View {
                 .monospacedDigit()
                 .foregroundStyle(.tertiary)
         }
+        // The 20 pt tile sets the content height; the sidebar list adds 4 pt above and below
+        // (28 pt rows), as in the Settings sidebar.
+        .frame(maxWidth: .infinity, minHeight: SettingsLayout.sidebarContentHeight, alignment: .leading)
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier("shortcut-category-\(category.id)")
     }
@@ -118,15 +121,10 @@ struct KeyboardShortcutsDetail: View {
             if sections.isEmpty {
                 ContentUnavailableView.search(text: searchText)
             } else {
-                ScrollView {
-                    LazyVStack(alignment: .leading, spacing: 16) {
-                        ForEach(sections) { section in
-                            KeyboardShortcutGroup(section: section, showsHeader: category == .all)
-                        }
+                SettingsPaneColumn {
+                    ForEach(sections) { section in
+                        KeyboardShortcutGroup(section: section, showsHeader: category == .all)
                     }
-                    .padding(.horizontal, KeyboardShortcutsLayout.contentMargin)
-                    .padding(.top, 20)
-                    .padding(.bottom, 20)
                 }
             }
         }
@@ -134,56 +132,24 @@ struct KeyboardShortcutsDetail: View {
     }
 }
 
-/// One section: an optional small header and an inset grouped container of rows.
+/// One section as a Settings group: a header above it in All Shortcuts only, a row per shortcut.
 struct KeyboardShortcutGroup: View {
-    @Environment(\.displayScale) private var displayScale
     let section: KeyboardShortcutSection
     let showsHeader: Bool
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            if showsHeader {
-                Text(LocalizedStringKey(section.title))
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundStyle(.secondary)
-                    .padding(.leading, KeyboardShortcutsLayout.rowPadding)
-                    .accessibilityAddTraits(.isHeader)
-            }
-            VStack(spacing: 0) {
-                ForEach(Array(section.items.enumerated()), id: \.element.id) { index, item in
-                    if index > 0 {
-                        Rectangle()
-                            .fill(.separator)
-                            .frame(height: 1 / displayScale)
-                            .padding(.horizontal, KeyboardShortcutsLayout.rowPadding)
-                    }
-                    KeyboardShortcutRow(item: item)
+        SettingsGroup(header: showsHeader ? Text(LocalizedStringKey(section.title)) : nil) {
+            ForEach(section.items) { item in
+                SettingsRow(
+                    title: Text(LocalizedStringKey(item.action))
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+                        .help(Text(LocalizedStringKey(item.action)))
+                ) {
+                    ShortcutKeysView(input: item.input)
                 }
             }
-            .background(.primary.opacity(0.045), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
-            .overlay {
-                RoundedRectangle(cornerRadius: 8, style: .continuous)
-                    .strokeBorder(.primary.opacity(0.06), lineWidth: 0.5)
-            }
         }
-    }
-}
-
-struct KeyboardShortcutRow: View {
-    let item: KeyboardShortcutItem
-
-    var body: some View {
-        HStack(spacing: 12) {
-            Text(LocalizedStringKey(item.action))
-                .lineLimit(1)
-                .truncationMode(.tail)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .help(Text(LocalizedStringKey(item.action)))
-            ShortcutKeysView(input: item.input)
-        }
-        .padding(.horizontal, KeyboardShortcutsLayout.rowPadding)
-        .padding(.vertical, 4)
-        .frame(minHeight: KeyboardShortcutsLayout.rowMinHeight)
     }
 }
 
@@ -225,25 +191,23 @@ enum KeyboardShortcutCategory: Hashable, Identifiable {
         KeyboardShortcutCatalog.sections(in: self, matching: "", locale: .current).reduce(0) { $0 + $1.items.count }
     }
 
-    /// Top and bottom colours of the tile: one fixed hue per category, lighter at the top.
+    /// The tile's system colour, as the Settings tiles use (ZF-62): one per category.
+    var tileColor: Color {
+        switch id {
+        case "files": .blue
+        case "go": .purple
+        case "navigation": .green
+        case "view": .orange
+        case "preview": .teal
+        case "help": .gray
+        case "mouse": .red
+        default: Color(nsColor: .systemGray).mix(with: .black, by: 0.35)
+        }
+    }
+
+    /// Top and bottom colours of the tile: the system colour, lightened a little at the top.
     var tileColors: (top: Color, bottom: Color) {
-        let base: (red: Double, green: Double, blue: Double) = switch id {
-        case "files": (0x1E, 0x7C, 0xF2)
-        case "go": (0x8E, 0x5B, 0xD9)
-        case "navigation": (0x2F, 0xA8, 0x6B)
-        case "view": (0xE8, 0x90, 0x2A)
-        case "preview": (0x3A, 0xA7, 0xC9)
-        case "help": (0x7C, 0x7C, 0x82)
-        case "mouse": (0xD6, 0x45, 0x5D)
-        default: (0x5B, 0x5B, 0x60)
-        }
-        func mixed(_ amount: Double, with target: Double) -> Color {
-            Color(.sRGB,
-                  red: (base.red + (target - base.red) * amount) / 255,
-                  green: (base.green + (target - base.green) * amount) / 255,
-                  blue: (base.blue + (target - base.blue) * amount) / 255)
-        }
-        return (mixed(0.22, with: 255), mixed(0.1, with: 0))
+        (tileColor.mix(with: .white, by: 0.18), tileColor)
     }
 }
 
