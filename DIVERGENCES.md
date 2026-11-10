@@ -644,7 +644,7 @@ Correction (test only; scenario and the 28 pt assertion unchanged): the fixture'
 - Reproduced twice on `main` (`018a26e`) and once on `519a085`, the build that passed on 2026-11-02, so no Zforge change since then caused it; the change is in the environment (macOS or Xcode 27.2).
 - The screen recording shows the drag image of `Local.txt` still over the `Sample.zip` row more than 4 s after XCTest released the button, and the accessibility tree reports the application and its window as `Disabled` (a drag session still in progress). The drop is never performed.
 
-Not decided: whether real user drags onto an archive row also hang under macOS 27.2 (a Zforge incompatibility that users would see) or only XCTest's synthesized drag fails to end the session (a test harness limit). Deciding needs a manual drag of a file onto an archive row in List view in the user's build, or a probe of the drag session's end callbacks in a real run. No code changed.
+Classified 2026-11-10: the user dragged a local file onto a `.zip` row in List view in a Debug build of `main` (`0307942`) on the same macOS 27.2; the “Modify Archive?” confirmation appeared at once and Add to Archive added the file to the archive. Real drags work, so the hang is limited to XCTest's synthesized drag (a test harness limit), not a Zforge defect users see. Open: adapt the test's gesture so the drop completes under 27.2 without reducing what the test proves (ZF-72). No code changed.
 
 ### D-81 — The unit test host crashed mid-run after macOS 27.2: test windows were released twice (corrected 2026-11-09, ZF-64)
 

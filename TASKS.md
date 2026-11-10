@@ -652,7 +652,8 @@ Pending: in-app check of the row and the computer level in the four modes (light
 ### ZF-72 — Real Option-drag UI test hangs in its drop on macOS 27.2 (open, 2026-11-10, D-92)
 
 - [x] Run `testLocalDragsOptionCopyAndConfirmAdditionToArchive` in the real mode (user approved, 2026-11-10): fails at `:603` on `main` (2 runs) and on `519a085` (1 run), which passed on 2026-11-02 under 27.1.
-- [ ] Decide whether a real user drag onto an archive row hangs too (manual drag in the user's build, List view) or only XCTest's synthesized drag does; then fix Zforge or adapt the test's gesture without reducing what it proves.
+- [x] Decide whether a real user drag onto an archive row hangs too: no — the user's manual drag in List view on 27.2 showed the confirmation and added the file (2026-11-10). Only XCTest's synthesized drag hangs.
+- [ ] Adapt the test's gesture so the drop completes under macOS 27.2, keeping the Option-copy, the archive confirmation and every assertion; check whether the other real-only drag tests share the cause.
 
 ### ZF-70 — A reload collapsed inline expansions completed while it waited (2026-11-10, D-90)
 
