@@ -648,6 +648,22 @@ Pending: in-app check of the row and the computer level in the four modes (light
 - [x] Reproduction and guard: `TestWindowLifetimeTests` (deterministic, no crash): the default releases on close; a test window does not, and is freed once.
 - [x] RNF-Q08 states the rule for windows that unit tests create.
 
+### ZF-66 — Offscreen UI tests on Xcode 27.2 / macOS 27.2 (2026-11-09, D-76, D-84)
+
+**Corrected in the offscreen tool; results in REGRESSION-COVERAGE “Offscreen UI tests on Xcode 27.2 — ZF-66”.** Every offscreen UI test failed with “Running Background” after the macOS/Xcode 27.2 update.
+- [x] Reproduce with one test (`testKeyboardShortcutHelpOpensAndFilters`) and find the cause: the tool's launch hooks were never installed because Xcode 27.2 removed `XCUILaunchServicesMonitor` (D-84).
+- [x] Follow the three further 27.2 changes the fix exposed (runner `CGS_REQUIRE_INIT` abort, alert sheets behind an `_NSGlassEffectWindow` ordering proxy, pending tracking areas of menu item views).
+- [x] Tool fix on `zforge-xcuitest-sim` branch `fix/xcode-27.2-launch-hooks` (`9a3af86`, not pushed); the tool's own tests pass (29).
+- [x] Offscreen set (18 tests): 18/18 on `519a085`, 16/18 on `main`; screen guard clean.
+- [ ] Merge the tool branch into the tool's `main` (the shared build in `~/Library/Caches/dev.xcuitestsim/build` is already built from the branch).
+- [ ] Re-run the tool's sample app and its negative controls (`Scripts/run-sample-regressions.sh`) on 27.2.
+- [ ] Repeat the real-versus-simulated equivalence (ZF-56) on Xcode 27.2; it needs real runs, which take over the screen.
+
+### ZF-67 — Settings UI tests failing offscreen after the ZF-62 pane rewrite (open, 2026-11-09, D-85)
+
+- [ ] Run `testSettingsToggleUpdatesTheOpenGridAndKeepsSelection` and `testListColumnsReorderByDragging` in the real mode (they take over the screen; announce first) to decide whether ZF-62 regressed them or the tool does not simulate the new `ScrollView` pane.
+- [ ] Then fix Zforge (regression) or the tool (hit test of SwiftUI switches, `DragGesture` delivery in a SwiftUI `ScrollView`), with the failing case first.
+
 ### ZF-65 — Follow-ups found by ZF-64 (open, 2026-11-09)
 
 - [ ] `AutomationPermissionUIFixture`: set `isReleasedWhenClosed = false` on its closable window (same pattern as D-81, reachable only in the UI fixture), then run its two real-only `AutomationUITests` (they take over the screen).
