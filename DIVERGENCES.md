@@ -598,7 +598,9 @@ Correction (test code only; no app behavior changed): `ZforgeTests/Support/TestW
 
 Same pattern left in app code: `AutomationPermissionUIFixture` (`--ui-fixtures --ui-contextual-permission` only) keeps a closable `NSWindow` at the default and calls `makeKeyAndOrderFront` on it after its asynchronous work; closing that window before the work ends would message a freed window. It is not changed in this round because its two impact-mapped UI tests (`AutomationUITests`) are real-only and were not run (tracked in TASKS ZF-65). The offscreen UI failure at `app.activate()` (“Running Background”) is not explained by this cause: UI test launches do not run these unit tests.
 
-### D-82 — Five dark-appearance Settings snapshots no longer match under macOS 27.2 (preexisting, open, 2026-11-09)
+### D-82 — Five dark-appearance Settings snapshots no longer match under macOS 27.2 (preexisting; superseded by ZF-62, 2026-11-09)
+
+Resolution on `integrate/ui-polish`: ZF-62 (Settings polish, an approved visual change) re-recorded every Settings, profile-page and Previews-in-Archives snapshot under macOS 27.2 after viewing them, including these five dark cases; they pass in the full `Unit` run of the integration (REGRESSION-COVERAGE “Integration of ZF-59, ZF-62, ZF-63 and ZF-64”). The original record follows.
 
 The same five snapshot cases fail on unmodified `main` (`6be2991`, rebuilt in this worktree) and with the D-81 fix, in every run, alone or in the full plan: `CompressionProfileSettingsTests` “Snapshot: a profile's page” (`7z-password-dark`), `ArchivePreviewLimitTests` “Settings: Previews in Archives” (`dark`, `dark-de`) and `SettingsWindowTests` “Snapshot: each pane” (`previews/dark`, `viewOptions/dark-de`). The difference images show only the slider knobs and switch knobs of the dark appearance; text, layout and the light appearance match. The references were recorded on macOS 27.0.1 and passed on 2026-11-02, so the dark control rendering of macOS 27.2 is the likely cause. Not re-recorded: a new reference needs the visual review and approval that AGENTS.md requires, and the change is outside ZF-64 (TASKS ZF-65).
 

@@ -650,7 +650,7 @@ Pending: in-app check of the row and the computer level in the four modes (light
 ### ZF-65 — Follow-ups found by ZF-64 (open, 2026-11-09)
 
 - [ ] `AutomationPermissionUIFixture`: set `isReleasedWhenClosed = false` on its closable window (same pattern as D-81, reachable only in the UI fixture), then run its two real-only `AutomationUITests` (they take over the screen).
-- [ ] D-82: review the five dark-appearance Settings snapshots that no longer match under macOS 27.2 (slider and switch knobs) and, if the user approves, re-record them.
+- [x] (Superseded by ZF-62, which re-recorded them as part of the approved Settings redesign.) D-82: review the five dark-appearance Settings snapshots that no longer match under macOS 27.2 (slider and switch knobs) and, if the user approves, re-record them.
 
 ### ZF-58 — Settings in two columns, as System Settings (2026-11-02)
 
