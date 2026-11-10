@@ -673,6 +673,48 @@ struct ArchiveMutationTests {
         }
     }
 
+    @Test("An external drag moves when Option was held at the drop, even if it is released before Finder asks for the file",
+          arguments: [true, false])
+    @MainActor
+    func externalMoveFollowsTheDrop(optionAtDrop: Bool) async throws {
+        try await withReorganizationFixture { engine, root, archive, _, _, _ in
+            let suite = "ZforgeTestSuite.PromiseDropOperation-\(UUID().uuidString)"
+            let defaults = try #require(UserDefaults(suiteName: suite))
+            defer { defaults.removeTestSuite(named: suite) }
+            let preferences = FileBrowserPreferences(defaults: defaults); preferences.viewMode = .list
+            let state = FileBrowserState(preferences: preferences, fileSystem: FileSystemService(), grants: UIFixtureAccessGrantStore(), archives: engine)
+            var confirmations: [Bool] = []
+            state.archiveTransferConfirmation = { request in confirmations.append(request.moving); return false }
+            defer { state.close() }
+            await state.navigateToSidebar(root, name: root.lastPathComponent)
+            await state.openArchive(try #require(state.items.first(where: { $0.name == "Sample.zip" })))
+            await state.open(try #require(state.items.first(where: { $0.name == "Inside" })))
+            let file = try #require(state.items.first)
+            // Option is no longer held when Finder requests the promised file after the drop.
+            let transfer = ArchiveDragTransfer(state: state, items: [file], optionPressed: { false })
+            let before = try Data(contentsOf: archive)
+            // The last source mask AppKit asked for while the pointer was over Finder.
+            #expect(transfer.externalOperationMask(option: optionAtDrop) == (optionAtDrop ? .move : .copy))
+            let output = root.appendingPathComponent("Dropped " + file.name)
+            let error = await withCheckedContinuation { continuation in
+                transfer.receive(index: 0, url: output) { continuation.resume(returning: $0 as? ArchiveEngineError) }
+            }
+            if optionAtDrop {
+                // A move asks to modify the original archive; declining publishes nothing.
+                #expect(confirmations == [true])
+                #expect(error == .cancelled)
+                #expect(!FileManager.default.fileExists(atPath: output.path))
+            } else {
+                #expect(confirmations.isEmpty)
+                #expect(error == nil)
+                #expect(FileManager.default.fileExists(atPath: output.path))
+            }
+            transfer.ended(optionAtDrop ? .move : .copy); await transfer.waitForCompletion()
+            #expect(try Data(contentsOf: archive) == before)
+            #expect(ArchiveDragTransfer.active[transfer.token] == nil)
+        }
+    }
+
     @Test("A concurrent change while resolving a conflict is never overwritten")
     func concurrentReorganization() async throws {
         try await withReorganizationFixture(conflict: true) { engine, _, archive, _, source, destination in

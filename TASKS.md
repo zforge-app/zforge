@@ -657,7 +657,7 @@ Requested: adopt the recommended way to keep 7-Zip current (vendored sources, an
 - [x] Engine 26.02 → 26.06 (`d3296e3`): 214 upstream files changed, no file added or removed, license files unchanged; fixes vulnerabilities in 26.03–26.06 (CVE-2026-58052 among them). 26.06 removed `CMultiStream`: the bridge reads numbered volumes through its own `VolumeStream`.
 - [x] `Vendor/7zz` stays in the past history; only untracked (user decision, 2026-11-10).
 - [x] Validation: Unit plan 703/703; 5/5 offscreen and 5/6 real UI tests (REGRESSION-COVERAGE “7-Zip engine update to 26.06”).
-- [ ] `testArchivePromisesPublishIntoFinderBeforeRemovingOriginal` fails intermittently at `:691`: move decided from the modifier state at the promise request (D-94, next commit).
+- [x] `testArchivePromisesPublishIntoFinderBeforeRemovingOriginal` failed intermittently at `:691`: the move was decided from the modifier state at the promise request. Corrected (D-94): the operation chosen at the drop decides; unit case `externalMoveFollowsTheDrop` failed before the fix.
 - [x] No 26.02 versus 26.06 benchmark comparison (user decision, 2026-11-10).
 - [ ] Bundle the source license notices (D-93).
 - [ ] Scheduled upstream check (`--status`) once the repository is on GitHub.
