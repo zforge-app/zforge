@@ -652,7 +652,8 @@ Pending: in-app check of the row and the computer level in the four modes (light
 ### ZF-76 — Repository hygiene before publication: `.gitignore` (2026-11-10)
 
 - [x] `.gitignore` (macOS, Xcode per-user state, build products and results, SwiftPM, Python caches); the three tracked `xcuserdata` files are no longer tracked (the files stay in each checkout).
-- [ ] Secret scan of the full history before the first push.
+- [x] Secret scan of the full history (2026-11-10): gitleaks 8.30.1 (release asset, checksum verified) over every ref, 398 commits, 84 MB: 3 findings, all false positives (SHA-256 file hashes keyed by `AutomationAccess.swift` in three benchmark result files). No key, certificate, provisioning profile, `.env` or token file in any commit.
+- [ ] Before publishing, decide on personal data that is not secret: the personal author email in 180 commits (rewriting it to a GitHub no-reply address changes every commit identifier), the home path `/Users/felipe` in 6 files (benchmark results and REGRESSION-COVERAGE), and the Apple team ID in the project (public in every signed build).
 
 ### ZF-75 — License notices and the Acknowledgments window (2026-11-10, D-93)
 
