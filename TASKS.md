@@ -649,6 +649,15 @@ Pending: in-app check of the row and the computer level in the four modes (light
 - [x] “Write-back alerts” snapshots (D-89): IconServices placeholder captured; the test waits until the application icon renders. Reference unchanged.
 - [x] Requirements: AGENT-INTEGRATION-PLAN measurement gate; RNF-Q08 rule on clocks in tests.
 
+### ZF-73 — Intermittent offscreen failure of the compact toolbar menus UI test (open, 2026-11-10)
+
+`ZforgeUITests.testCompactToolbarMenusOpenFromTheirToolbarButtons` fails intermittently offscreen at `ZforgeUITests.swift:952`: right after the overflow button's click, its value still reads “Collapsed”. Every occurrence ran in the same lane right after `testBlankAreaUsesMoreMenuInEveryView`, the pair whose earlier shared-preferences cause was corrected by ZF-54 (D-63).
+
+- Occurrences: `zf66-full-1` (2026-11-09, ZF-66); the ZF-67 run of 2026-11-10; `affected-20261110-111216` (2026-11-10, ZF-72 merge validation, branch `c257fac`). None of these changes touched the test or the browser toolbar.
+- Passes: alone and as that pair on the same build (ZF-67 re-run); 18/18 offscreen set of 2026-11-10 (`affected-20261110-100133`). No real-mode failure recorded.
+- [ ] Reproduce deterministically (for example, run the pair repeatedly in one lane and capture the app's toolbar state and the event timeline at the click), and decide whether the click reaches the button before it is ready (app or test synchronization) or the offscreen tool delivers it differently (tool limit). Do not retry or lengthen timeouts to hide it.
+- [ ] Fix the cause with a failing case first, then record the result here and in REGRESSION-COVERAGE.
+
 ### ZF-72 — Real Option-drag UI test hangs in its drop on macOS 27.2 (corrected in the test 2026-11-10, D-92)
 
 - [x] Run `testLocalDragsOptionCopyAndConfirmAdditionToArchive` in the real mode (user approved, 2026-11-10): fails at `:603` on `main` (2 runs) and on `519a085` (1 run), which passed on 2026-11-02 under 27.1.
@@ -703,7 +712,7 @@ Pending: in-app check of the row and the computer level in the four modes (light
 - [ ] Merge the tool branch into the tool's `main` (the shared build in `~/Library/Caches/dev.xcuitestsim/build` is already built from the branch).
 - [ ] Re-run the tool's sample app and its negative controls (`Scripts/run-sample-regressions.sh`) on 27.2.
 - [ ] Repeat the real-versus-simulated equivalence (ZF-56) on Xcode 27.2; it needs real runs, which take over the screen.
-- [ ] Investigate the intermittent offscreen failure of `testCompactToolbarMenusOpenFromTheirToolbarButtons` at `ZforgeUITests.swift:952` (the overflow button still reads “Collapsed” right after its click), seen after `testBlankAreaUsesMoreMenuInEveryView` in `zf66-full-1` and again in the ZF-67 run of 2026-11-10; the same build passed it alone and as that pair (REGRESSION-COVERAGE “List Columns drag regression — ZF-67”).
+- [ ] Intermittent offscreen failure of `testCompactToolbarMenusOpenFromTheirToolbarButtons`: moved to ZF-73.
 
 ### ZF-67 — Settings UI tests failing offscreen after the ZF-62 pane rewrite (corrected 2026-11-10, D-85; real review of the downward drag open)
 
