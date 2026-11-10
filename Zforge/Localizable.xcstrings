@@ -1858,19 +1858,19 @@
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Poděkování"
+            "value" : "Uznání"
           }
         },
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Anerkendelser"
+            "value" : "Tak til"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Danksagungen"
+            "value" : "Anmerkungen"
           }
         },
         "en" : {
@@ -1882,7 +1882,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Agradecimientos"
+            "value" : "Reconocimientos"
           }
         },
         "fr" : {
@@ -1894,13 +1894,13 @@
         "hi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "आभार"
+            "value" : "अभिस्वीकृतियाँ"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Riconoscimenti"
+            "value" : "Note legali"
           }
         },
         "ja" : {
@@ -1912,13 +1912,13 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "감사의 글"
+            "value" : "승인서"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dankbetuigingen"
+            "value" : "Colofon"
           }
         },
         "pl" : {
@@ -1930,19 +1930,19 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Agradecimentos"
+            "value" : "Reconhecimentos"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Благодарности"
+            "value" : "Подтверждения"
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tack"
+            "value" : "Tillkännagivanden"
           }
         },
         "th" : {
@@ -1966,13 +1966,13 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "致谢"
+            "value" : "版权声明"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "致謝"
+            "value" : "版權宣告"
           }
         }
       }
@@ -1995,7 +1995,7 @@
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zforge indeholder 7-Zip, statisk linket. Zforges bro til 7-Zip er licenseret under GNU LGPL 2.1 eller nyere. Kildekoden til hver version af Zforge, inklusive de 7-Zip-kilder, den bygger, og vejledning i at bygge den igen med en ændret 7-Zip, er offentliggjort i Zforge-arkivet."
+            "value" : "Zforge indeholder 7-Zip, statisk linket. Zforges bro til 7-Zip er licenseret under GNU LGPL 2.1 eller nyere. Kildekoden til hver version af Zforge, inklusive de 7-Zip-kilder, den bygger, og vejledning i at bygge den igen med en ændret 7-Zip, er offentliggjort i Zforges kodelager."
           }
         },
         "de" : {
@@ -2013,7 +2013,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zforge contiene 7-Zip, enlazado de forma estática. El puente de Zforge con 7-Zip está bajo la licencia GNU LGPL 2.1 o posterior. El código fuente de cada versión de Zforge, incluidos los fuentes de 7-Zip que compila y las instrucciones para volver a compilarlo con un 7-Zip modificado, está publicado en el repositorio de Zforge."
+            "value" : "Zforge contiene 7-Zip, enlazado de forma estática. El puente de Zforge con 7-Zip está bajo la licencia GNU LGPL 2.1 o posterior. El código fuente de cada versión de Zforge, incluido el código fuente de 7-Zip que compila y las instrucciones para volver a compilarlo con un 7-Zip modificado, está publicado en el repositorio de Zforge."
           }
         },
         "fr" : {
@@ -2055,7 +2055,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zforge zawiera statycznie dołączony 7-Zip. Łącznik Zforge z 7-Zip jest objęty licencją GNU LGPL 2.1 lub nowszą. Kod źródłowy każdej wersji Zforge, wraz ze źródłami 7-Zip, z których jest budowany, i instrukcją ponownego zbudowania z własną wersją 7-Zip, jest opublikowany w repozytorium Zforge."
+            "value" : "Zforge zawiera statycznie dołączony 7-Zip. Warstwa łącząca Zforge z 7-Zip jest objęta licencją GNU LGPL 2.1 lub nowszą. Kod źródłowy każdej wersji Zforge, wraz ze źródłami 7-Zip, z których jest budowany, i instrukcją ponownego zbudowania z własną wersją 7-Zip, jest opublikowany w repozytorium Zforge."
           }
         },
         "pt-BR" : {
@@ -2073,7 +2073,7 @@
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zforge innehåller 7-Zip, statiskt länkat. Zforges brygga till 7-Zip är licensierad under GNU LGPL 2.1 eller senare. Källkoden för varje version av Zforge, inklusive de 7-Zip-källor den bygger och instruktioner för att bygga om den med ett ändrat 7-Zip, publiceras i Zforge-förrådet."
+            "value" : "Zforge innehåller 7-Zip, statiskt länkat. Zforges brygga till 7-Zip är licensierad under GNU LGPL 2.1 eller senare. Källkoden för varje version av Zforge, inklusive de 7-Zip-källor den bygger och instruktioner för att bygga om den med ett ändrat 7-Zip, publiceras i Zforges kodförråd."
           }
         },
         "th" : {
@@ -2119,19 +2119,19 @@
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Poděkování…"
+            "value" : "Uznání…"
           }
         },
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Anerkendelser…"
+            "value" : "Tak til…"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Danksagungen…"
+            "value" : "Anmerkungen…"
           }
         },
         "en" : {
@@ -2143,7 +2143,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Agradecimientos…"
+            "value" : "Reconocimientos…"
           }
         },
         "fr" : {
@@ -2155,13 +2155,13 @@
         "hi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "आभार…"
+            "value" : "अभिस्वीकृतियाँ…"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Riconoscimenti…"
+            "value" : "Note legali…"
           }
         },
         "ja" : {
@@ -2173,13 +2173,13 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "감사의 글…"
+            "value" : "승인서…"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dankbetuigingen…"
+            "value" : "Colofon…"
           }
         },
         "pl" : {
@@ -2191,19 +2191,19 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Agradecimentos…"
+            "value" : "Reconhecimentos…"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Благодарности…"
+            "value" : "Подтверждения…"
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tack…"
+            "value" : "Tillkännagivanden…"
           }
         },
         "th" : {
@@ -2227,13 +2227,13 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "致谢…"
+            "value" : "版权声明…"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "致謝…"
+            "value" : "版權宣告…"
           }
         }
       }
