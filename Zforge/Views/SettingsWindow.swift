@@ -192,10 +192,9 @@ struct ViewOptionsSettingsPane: View {
                 SettingsToggleRow(Text("Show previews in icon view"), identifier: "settings-show-icon-previews", isOn: $preferences.showIconPreviews)
             }
             SettingsGroup(header: Text("List Columns")) {
-                ForEach(preferences.globalListColumns) { column in
-                    listColumnRow(column)
-                }
-                ForEach(hiddenListColumns) { column in
+                // One collection keyed by column: a row shown, hidden or dragged moves, never
+                // rebuilds, so the switch it was toggled by and the drag in progress go on (D-85).
+                ForEach(preferences.globalListColumns + hiddenListColumns) { column in
                     listColumnRow(column)
                 }
             } footer: {

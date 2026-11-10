@@ -77,6 +77,10 @@ extension SettingsGroup where Footer == EmptyView {
 }
 
 /// The rows of a group on its rounded background, a hairline between neighbours.
+///
+/// Each row keeps its own identity, never its position: a row inserted, removed or moved
+/// moves the others instead of rebuilding them, so they keep their state, their focus and a
+/// gesture in progress, such as the List Columns drag that moves its own row (D-85).
 struct SettingsRows<Content: View>: View {
     @ViewBuilder let content: Content
 
@@ -84,7 +88,7 @@ struct SettingsRows<Content: View>: View {
         let shape = RoundedRectangle(cornerRadius: SettingsMetrics.groupCornerRadius, style: .continuous)
         VStack(spacing: 0) {
             Group(subviews: content) { rows in
-                ForEach(Array(rows.enumerated()), id: \.offset) { index, row in
+                ForEach(Array(rows.enumerated()), id: \.element.id) { index, row in
                     if index > 0 {
                         Rectangle()
                             .fill(.primary.opacity(0.08))

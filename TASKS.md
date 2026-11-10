@@ -693,12 +693,14 @@ Pending: in-app check of the row and the computer level in the four modes (light
 - [ ] Merge the tool branch into the tool's `main` (the shared build in `~/Library/Caches/dev.xcuitestsim/build` is already built from the branch).
 - [ ] Re-run the tool's sample app and its negative controls (`Scripts/run-sample-regressions.sh`) on 27.2.
 - [ ] Repeat the real-versus-simulated equivalence (ZF-56) on Xcode 27.2; it needs real runs, which take over the screen.
+- [ ] Investigate the intermittent offscreen failure of `testCompactToolbarMenusOpenFromTheirToolbarButtons` at `ZforgeUITests.swift:952` (the overflow button still reads “Collapsed” right after its click), seen after `testBlankAreaUsesMoreMenuInEveryView` in `zf66-full-1` and again in the ZF-67 run of 2026-11-10; the same build passed it alone and as that pair (REGRESSION-COVERAGE “List Columns drag regression — ZF-67”).
 
-### ZF-67 — Settings UI tests failing offscreen after the ZF-62 pane rewrite (open, 2026-11-09, D-85)
+### ZF-67 — Settings UI tests failing offscreen after the ZF-62 pane rewrite (corrected 2026-11-10, D-85; real review of the downward drag open)
 
 - [x] Run `testSettingsToggleUpdatesTheOpenGridAndKeepsSelection` and `testListColumnsReorderByDragging` in the real mode (2026-11-10, `3693d00`): the toggle test passes (tool limit); the reorder test fails real too, Kind moves one place instead of two (Zforge regression of ZF-62).
-- [ ] Fix the List Columns drag reorder in Zforge, with the failing case first (awaiting the user's go-ahead).
-- [ ] Fix the tool's hit test of SwiftUI switches so the toggle test passes offscreen (awaiting the user's go-ahead).
+- [x] Fix the List Columns drag reorder in Zforge, with the failing case first (2026-11-10, branch `fix/settings-list-column-drag`, merged into `main`): `SettingsRows` keyed its rows by position, so the first live move rebuilt the dragged row and ended its gesture (D-85). Rows are now keyed by their own identity, and the List Columns group lists visible and hidden columns in one `ForEach`. New offscreen tests `ListColumnDragTests` and `SettingsRowsIdentityTests` (failed before, pass after); the real-mode `testListColumnsReorderByDragging` passes. Results: REGRESSION-COVERAGE “List Columns drag regression — ZF-67”.
+- [ ] Real review of the downward drag and of the drag's fluidity in the user's build: the real-mode UI test covers the upward drag only, and the downward direction is covered offscreen (row identity) and by `ListColumnOrderTests` (translation), not by a real gesture.
+- [x] Fix the tool's hit test of SwiftUI switches so the toggle test passes offscreen (2026-11-10, `zforge-xcuitest-sim` `3f699f7`, merged into the tool's `main`): without Automation Mode the agent hit-tested outside any accessibility request, so SwiftUI's hosting view answered with its AppKit `PlatformSwitch` instead of the Toggle's `CheckBox` node; the agent now marks the runner as the requesting client during the hit test, as the accessibility server does (tool note `Notes/swiftui-switch-hit-test-2026-11-10.md`).
 
 ### ZF-65 — Follow-ups found by ZF-64 (open, 2026-11-09)
 
