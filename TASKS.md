@@ -640,6 +640,24 @@ Pending: in-app check of the row and the computer level in the four modes (light
 - [ ] A profile page (`CompressionProfileDetailView`) still uses a grouped `Form`: its fields are shared with the compression dialog; bring it to the same group layout.
 - [ ] VoiceOver pass over the new switch rows (title is the switch's label) and the Compression profile rows (NavigationLink with plain style).
 
+### ZF-68 — Deterministic `Unit` plan: four load-dependent failures (2026-11-09, D-86–D-89)
+
+**Corrected in the tests; results in REGRESSION-COVERAGE “Deterministic Unit plan — ZF-68”.** The four tests pass in every full run with the fix; two other full-plan-only failures (ZF-69) still prevent two consecutive clean runs. Requested: make the full `Unit` plan deterministic by fixing the causes of its four recurring failures, without retries, longer timeouts, looser tolerances or skipped tests.
+- [x] `ArchiveDiscoveryPerformanceTests` (D-86): no product regression (path unchanged since the October baseline; association does not wait for the main thread); wall-clock and CPU time measure load. The gates now measure retired instructions on a private executor (`WorkMeter`), same workload and limits.
+- [x] “Rapid column archive selection…” (D-87, D-28): fixture watchdogs counted main-actor stalls; event-driven waits. “failed” was the fixture's timeout, not a product outcome.
+- [x] “File events update tags…” (D-88): initial discovery waits for `waitForIdle()`; live stages count their hang guard in polls.
+- [x] “Write-back alerts” snapshots (D-89): IconServices placeholder captured; the test waits until the application icon renders. Reference unchanged.
+- [x] Requirements: AGENT-INTEGRATION-PLAN measurement gate; RNF-Q08 rule on clocks in tests.
+
+### ZF-69 — Follow-ups found by ZF-68 (open, 2026-11-09)
+
+- [ ] `BrowserWindowLayoutTests` (`.serialized`, D-71) holds the main actor for seconds per case under load and starved other suites for 10–16 s; look for a way to lay out less per case or yield, without losing a width or assertion.
+- [ ] The test host logs `mdb_txn_commit error: MDB_MAP_FULL` about 50 times per full run on the main thread (an LMDB store inside a system framework of the sandboxed host, possibly IconServices' cache); identify the store and whether it slows icon rendering (D-89).
+- [ ] `ArchiveDragDropTests` “Option-drag out of an archive…” fails in about half the full `Unit` runs (`:134`, `Survivor.txt` not listed right after a confirmed move-out of an inline-expanded archive), never alone. Suspected: the awaited post-move refresh (`refreshUpdatedArchive` → `reload()`) interleaves with the directory monitor's own `reload()` (generation guard), so the inline expansion may be rebuilt by neither; if confirmed, a user can see the archive's rows disappear after a move. Not yet proven.
+- [ ] `KeyboardShortcutsWindowTests` “Sidebar rows… 28 pt rows” fails in some full runs (`:105`, rows still at the two-line height of the narrow pre-constraint sidebar), never alone: its wait checks the sidebar width but not that SwiftUI re-measured the rows at that width.
+- [ ] At load ≈ 200 the D-71 one-minute limits in `IconPreviewServiceTests` are exceeded again and testmanagerd ends the unresponsive host once per run; same main-actor saturation as the item above on `BrowserWindowLayoutTests`.
+- [ ] With load noise gone (D-86), the user may decide to hold the name-query mean to the 100 ms feature target instead of the 150 ms allowance of 2026-10-28.
+
 ### ZF-64 — Unit test host crash after macOS 27.2 (2026-11-09, D-81)
 
 **Corrected; results in REGRESSION-COVERAGE “Unit test host crash — ZF-64”.** Every full `Unit` run crashed the test host once (`objc_release` of a freed `NSWindow` in a main-actor job's autorelease pool) and reported the tests still running as failed.

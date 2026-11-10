@@ -15,47 +15,43 @@ struct ArchiveDiscoveryPerformanceTests {
             try Data().write(to: root.appendingPathComponent("Fixture-\(index)." + (index < 100 ? "zip" : "txt")))
         }
         let query = AutomationArchiveEntities(access: PerformanceArchiveAccess(root: root))
-        // The feature target for name discovery is 100 ms. The shared unit-plan run is
-        // noisy, so the test accepts a mean of up to 150 ms over three runs (user
-        // decision, 2026-10-28); each run must still find every archive.
-        var runs: [Duration] = []
+        // The limits apply to the work each operation does: the instructions its jobs retire,
+        // at the reference rate of 10 per nanosecond (`WorkMeter`). Wall-clock and CPU time in
+        // the shared unit plan measure waiting for the processor and grow with load, so they
+        // are printed for the record only (ZF-68, D-86). The feature target for name discovery
+        // is 100 ms; the test accepts a mean of up to 150 ms over three runs (user decision,
+        // 2026-10-28), and each run must still find every archive.
+        let meter = WorkMeter()
+        var runs: [WorkMeter.Measurement] = []
         for _ in 0..<3 {
-            let start = ContinuousClock.now
-            let result = try await query.matching("zip")
-            runs.append(start.duration(to: .now))
+            let (result, run) = try await meter.measure { try await query.matching("zip") }
+            runs.append(run)
             #expect(result.count == 100)
         }
-        let elapsed = runs.reduce(.zero, +) / runs.count
-        print("Archive discovery benchmark: children=10000; archives=100; runs=\(runs); mean=\(elapsed); target=100 ms")
-        #expect(elapsed <= .milliseconds(150))
-        var before = rusage()
-        getrusage(RUSAGE_SELF, &before)
-        let snapshotStart = ContinuousClock.now
-        let snapshot = try await query.snapshot()
-        let snapshotTime = snapshotStart.duration(to: .now)
-        var after = rusage()
-        getrusage(RUSAGE_SELF, &after)
-        let userSeconds = Double(after.ru_utime.tv_sec - before.ru_utime.tv_sec) + Double(after.ru_utime.tv_usec - before.ru_utime.tv_usec) / 1_000_000
-        let systemSeconds = Double(after.ru_stime.tv_sec - before.ru_stime.tv_sec) + Double(after.ru_stime.tv_usec - before.ru_stime.tv_usec) / 1_000_000
+        let mean = runs.map(\.work).reduce(.zero, +) / runs.count
+        print("Archive discovery benchmark: children=10000; archives=100; work=\(runs.map(\.work)); mean=\(mean); instructions=\(runs.map(\.instructions)); cpu=\(runs.map(\.cpu)); wall=\(runs.map(\.wall)); target=100 ms")
+        #expect(mean <= .milliseconds(150))
+        let (snapshot, snapshotRun) = try await meter.measure { try await query.snapshot() }
         #expect(snapshot.count == 100)
-        #expect(snapshotTime < .milliseconds(250))
-        print("Archive snapshot benchmark: children=10000; archives=100; elapsed=\(snapshotTime); userCPU=\(userSeconds); systemCPU=\(systemSeconds); processPeakRSS=\(after.ru_maxrss)")
+        #expect(snapshotRun.work < .milliseconds(250))
+        print("Archive snapshot benchmark: children=10000; archives=100; work=\(snapshotRun.work); instructions=\(snapshotRun.instructions); cpu=\(snapshotRun.cpu); wall=\(snapshotRun.wall); jobs=\(snapshotRun.jobs)")
         if #available(macOS 27.0, *) {
-            var fileBefore = rusage()
-            getrusage(RUSAGE_SELF, &fileBefore)
-            let fileStart = ContinuousClock.now
-            let associations = try await ArchiveContextPreparation.shared.identifiers(for: snapshot)
-            let fileTime = fileStart.duration(to: .now)
-            var fileAfter = rusage()
-            getrusage(RUSAGE_SELF, &fileAfter)
+            let (associations, fileRun) = try await meter.measure {
+                try await ArchiveContextPreparation.shared.identifiers(for: snapshot)
+            }
             #expect(associations.count == 100)
-            #expect(fileTime < .milliseconds(250))
-            let user = Double(fileAfter.ru_utime.tv_sec - fileBefore.ru_utime.tv_sec) + Double(fileAfter.ru_utime.tv_usec - fileBefore.ru_utime.tv_usec) / 1_000_000
-            let system = Double(fileAfter.ru_stime.tv_sec - fileBefore.ru_stime.tv_sec) + Double(fileAfter.ru_stime.tv_usec - fileBefore.ru_stime.tv_usec) / 1_000_000
+            #expect(fileRun.work < .milliseconds(250))
             let wireBytes = associations.values.reduce(0) { $0 + $1.identifier.utf8.count }
-            print("Archive file association benchmark: archives=100; elapsed=\(fileTime); userCPU=\(user); systemCPU=\(system); processPeakRSS=\(fileAfter.ru_maxrss); wireBytes=\(wireBytes)")
+            print("Archive file association benchmark: archives=100; work=\(fileRun.work); instructions=\(fileRun.instructions); cpu=\(fileRun.cpu); wall=\(fileRun.wall); jobs=\(fileRun.jobs); wireBytes=\(wireBytes); processPeakRSS=\(peakResidentBytes())")
         }
     }
+}
+
+/// Whole test host, not this workload alone; recorded for the memory trend only.
+private func peakResidentBytes() -> Int {
+    var usage = rusage()
+    getrusage(RUSAGE_SELF, &usage)
+    return usage.ru_maxrss
 }
 
 private actor PerformanceArchiveAccess: AutomationAuthorizing {

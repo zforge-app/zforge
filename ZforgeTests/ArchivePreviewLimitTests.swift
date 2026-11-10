@@ -376,7 +376,7 @@ struct ArchivePreviewLimitTests {
 
     @Test("Write-back alerts", arguments: ["conflict", "failure", "password"])
     @MainActor
-    func writeBackAlertSnapshots(kind: String) throws {
+    func writeBackAlertSnapshots(kind: String) async throws {
         let locale = Locale(identifier: "en")
         let alert: NSAlert
         switch kind {
@@ -391,6 +391,10 @@ struct ArchivePreviewLimitTests {
             alert = ArchiveWriteBackPanelPresenter.makePasswordAlert(outer: "Outer.7z", retry: false, locale: locale).alert
             #expect(alert.buttons.map(\.title) == ["OK", "Cancel"])
         }
+        // The alert shows the application icon; capture it only once IconServices has
+        // rendered it, not its placeholder (D-89).
+        #expect(alert.icon?.name() == NSImage.applicationIconName)
+        try await ZforgeSnapshot.waitUntilApplicationIconRenders(alert.icon)
         alert.layout()
         let content = try #require(alert.window.contentView)
         ZforgeSnapshot.assert(content, appearance: .aqua, named: "write-back-\(kind)")

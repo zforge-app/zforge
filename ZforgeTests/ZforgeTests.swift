@@ -1075,18 +1075,32 @@ struct ZforgeTests {
         state.archiveOperationDescription = "Compressing selected items…"
 
         let firstActivation = state.activateColumnItem(firstArchive, in: rootLocation)
-        // End the setup immediately if the start signal never arrives.
+        // Wait for an event, not a clock: the activation runs on the main actor, which other
+        // suites can hold for many seconds in the full unit plan (D-87). Either the first load
+        // starts, or its activation ends without starting it.
+        let firstStarted: Bool
         do {
-            try await engine.waitUntilStarted("First.zip")
+            firstStarted = try await engine.waitUntilStarted("First.zip", orEndOf: firstActivation)
         } catch {
             state.close()
             await engine.shutdown()
             throw error
         }
+        try #require(firstStarted, "The first activation ended without opening First.zip")
         #expect(state.archiveOperationInProgress)
         // D-73 stage 3: the opening progress names the archive being opened.
         #expect(state.archiveOperationDescription == "Opening “First.zip”…")
         let secondActivation = state.activateColumnItem(secondArchive, in: rootLocation)
+        // Selecting Second cancels First at once; the engine records the outcome off the main
+        // actor, so this hang guard does not count time the main actor is held elsewhere.
+        do {
+            try await engine.waitUntilFinished("First.zip")
+        } catch {
+            await engine.shutdown()
+            await secondActivation.value
+            await firstActivation.value
+            throw error
+        }
 
         await secondActivation.value
         await firstActivation.value
@@ -1868,9 +1882,9 @@ private actor ColumnArchiveRaceEngine: ArchiveServing {
     private var events: [String] = []
     private var namesByArchiveID: [UUID: String] = [:]
     private struct Waiter {
-        let event: String
-        let continuation: CheckedContinuation<Void, any Error>
-        let timeout: Task<Void, Never>
+        let events: Set<String>
+        let continuation: CheckedContinuation<String, any Error>
+        let timeout: Task<Void, Never>?
     }
     enum WaitError: Error, Equatable {
         case timedOut(String)
@@ -1883,10 +1897,10 @@ private actor ColumnArchiveRaceEngine: ArchiveServing {
         let name = url.lastPathComponent
         record("started:\(name)")
         do {
-            // Keep the first load pending until the next selection cancels it.
-            // A timeout detects broken cancellation instead of completing it by chance.
+            // Keep the first load pending until the next selection cancels it, or the engine
+            // shuts down. No clock: a stalled main actor must not complete or fail it (D-87).
             if name == "First.zip" {
-                try await wait(for: "release:\(name)")
+                try await wait(forAnyOf: ["release:\(name)"], timeout: nil)
             }
             try Task.checkCancellation()
         } catch {
@@ -1932,23 +1946,42 @@ private actor ColumnArchiveRaceEngine: ArchiveServing {
     }
 
     func waitUntilStarted(_ name: String, timeout: Duration = .seconds(10)) async throws {
-        try await wait(for: "started:\(name)", timeout: timeout)
+        _ = try await wait(forAnyOf: ["started:\(name)"], timeout: timeout)
     }
 
-    private func wait(for event: String, timeout: Duration = .seconds(10)) async throws {
+    /// Waits, without a clock, until the load of `name` starts or `activation` ends; returns
+    /// whether the load started.
+    func waitUntilStarted(_ name: String, orEndOf activation: Task<Void, Never>) async throws -> Bool {
+        let ended = "activationEnded:\(name)"
+        Task { await activation.value; self.record(ended) }
+        return try await wait(forAnyOf: ["started:\(name)", ended], timeout: nil) == "started:\(name)"
+    }
+
+    /// Waits until the load of `name` is cancelled or fails. The hang guard runs from this
+    /// call on the engine and the cooperative pool, not on the main actor.
+    func waitUntilFinished(_ name: String, timeout: Duration = .seconds(10)) async throws {
+        _ = try await wait(forAnyOf: ["cancelled:\(name)", "failed:\(name)"], timeout: timeout)
+    }
+
+    /// Returns the first of `events` recorded; a nil timeout waits for the event, cancellation
+    /// or shutdown only.
+    @discardableResult
+    private func wait(forAnyOf events: Set<String>, timeout: Duration?) async throws -> String {
         let id = UUID()
-        try await withTaskCancellationHandler {
+        return try await withTaskCancellationHandler {
             try Task.checkCancellation()
             guard !isShutDown else { throw WaitError.shutDown }
             // Remember signals delivered before a waiter registers.
-            if events.contains(event) { return }
-            try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, any Error>) in
-                let watchdog = Task {
-                    do { try await Task.sleep(for: timeout) }
-                    catch { return }
-                    finish(id, result: .failure(WaitError.timedOut(event)))
+            if let delivered = self.events.first(where: events.contains) { return delivered }
+            return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<String, any Error>) in
+                let watchdog = timeout.map { timeout in
+                    Task {
+                        do { try await Task.sleep(for: timeout) }
+                        catch { return }
+                        finish(id, result: .failure(WaitError.timedOut(events.sorted().joined(separator: "|"))))
+                    }
                 }
-                waiters[id] = Waiter(event: event, continuation: continuation, timeout: watchdog)
+                waiters[id] = Waiter(events: events, continuation: continuation, timeout: watchdog)
             }
         } onCancel: {
             Task { await self.finish(id, result: .failure(CancellationError())) }
@@ -1957,13 +1990,13 @@ private actor ColumnArchiveRaceEngine: ArchiveServing {
 
     private func record(_ event: String) {
         events.append(event)
-        let matching = waiters.filter { $0.value.event == event }.map(\.key)
-        for id in matching { finish(id, result: .success(())) }
+        let matching = waiters.filter { $0.value.events.contains(event) }.map(\.key)
+        for id in matching { finish(id, result: .success(event)) }
     }
 
-    private func finish(_ id: UUID, result: Result<Void, any Error>) {
+    private func finish(_ id: UUID, result: Result<String, any Error>) {
         guard let waiter = waiters.removeValue(forKey: id) else { return }
-        waiter.timeout.cancel()
+        waiter.timeout?.cancel()
         waiter.continuation.resume(with: result)
     }
 

@@ -97,6 +97,53 @@ enum ZforgeSnapshot {
         Issue.record(Comment(rawValue: failure), sourceLocation: location)
     }
 
+    /// Waits until `icon` (by default the application icon, which `NSAlert` shows) draws as
+    /// Zforge's own icon rather than IconServices' placeholder.
+    ///
+    /// IconServices renders the application icon on demand. When the render misses its
+    /// deadline on a loaded machine, the icon draws a dashed placeholder; in the full unit plan
+    /// this made the write-back alert snapshots fail intermittently (D-89). The check draws the
+    /// icon at 64 pt and compares it with the bundle's icon file: the rendered icon differs
+    /// from it by about 7 / 255 per channel on average (glass rendering), the placeholder by
+    /// about 106. Each draw asks IconServices again. The hang guard counts attempts.
+    static func waitUntilApplicationIconRenders(
+        _ icon: NSImage? = nil,
+        sourceLocation: SourceLocation = #_sourceLocation
+    ) async throws {
+        let icon = try #require(icon ?? NSImage(named: NSImage.applicationIconName), sourceLocation: sourceLocation)
+        let name = try #require(Bundle.main.object(forInfoDictionaryKey: "CFBundleIconFile") as? String, sourceLocation: sourceLocation)
+        let fileURL = try #require(Bundle.main.url(forResource: (name as NSString).deletingPathExtension, withExtension: "icns"),
+                                   sourceLocation: sourceLocation)
+        let expected = rendering(of: try #require(NSImage(contentsOf: fileURL), sourceLocation: sourceLocation))
+        var difference = Double.infinity
+        for attempt in 0..<100 {
+            difference = meanDifference(rendering(of: icon), expected)
+            if difference < 40 { return }
+            if attempt < 99 { try await Task.sleep(for: .milliseconds(100)) }
+        }
+        Issue.record(Comment(rawValue: "The application icon still draws IconServices' placeholder after 100 attempts (mean difference \(difference) from the bundle's icon)."),
+                     sourceLocation: sourceLocation)
+    }
+
+    private static func rendering(of image: NSImage) -> NSBitmapImageRep {
+        let bitmap = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: 128, pixelsHigh: 128, bitsPerSample: 8,
+            samplesPerPixel: 4, hasAlpha: true, isPlanar: false, colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0)!
+        bitmap.size = NSSize(width: 64, height: 64)
+        NSGraphicsContext.saveGraphicsState()
+        NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: bitmap)
+        image.draw(in: NSRect(x: 0, y: 0, width: 64, height: 64))
+        NSGraphicsContext.restoreGraphicsState()
+        return bitmap
+    }
+
+    private static func meanDifference(_ first: NSBitmapImageRep, _ second: NSBitmapImageRep) -> Double {
+        guard let a = first.bitmapData, let b = second.bitmapData else { return .infinity }
+        let count = first.bytesPerRow * first.pixelsHigh
+        var total = 0
+        for index in 0..<count { total += abs(Int(a[index]) - Int(b[index])) }
+        return Double(total) / Double(count)
+    }
+
     /// The image swift-snapshot-testing records for a view: its cached display.
     private static func pngData(of view: NSView) -> Data? {
         guard let bitmap = view.bitmapImageRepForCachingDisplay(in: view.bounds) else { return nil }
