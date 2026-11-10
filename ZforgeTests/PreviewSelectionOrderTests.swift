@@ -67,11 +67,8 @@ struct PreviewSelectionOrderTests {
         )
         .frame(width: BrowserLayoutMetrics.previewWidth, height: 640)
         let host = NSHostingView(rootView: preview)
-        let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: BrowserLayoutMetrics.previewWidth, height: 640),
-            styleMask: [.titled],
-            backing: .buffered,
-            defer: false
+        let window = TestWindow.make(
+            contentRect: NSRect(x: 0, y: 0, width: BrowserLayoutMetrics.previewWidth, height: 640)
         )
         window.contentView = host
         window.contentView?.layoutSubtreeIfNeeded()

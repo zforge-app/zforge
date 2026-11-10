@@ -616,6 +616,19 @@ Pending: in-app check of the row and the computer level in the four modes (light
 - [x] Preview/thumbnail limits, the solid-archives checkbox and removable/remote settings with the generalized logarithmic slider; localization of every new string. *Stage 3, 2026-11-02; evidence: REGRESSION-COVERAGE “Preview limits and opening progress — ZF-55 stage 3”.*
 - [ ] Synchronize CURRENT-STATE, PRODUCT-REQUIREMENTS, REGRESSION-COVERAGE and D-73; run `Scripts/affected-tests.py --run`. *Done for stages 1 to 3 (2026-11-02).* Pending outside the implementation: checks on real removable and network volumes and a visual review of the real windows (see D-73).
 
+### ZF-64 — Unit test host crash after macOS 27.2 (2026-11-09, D-81)
+
+**Corrected; results in REGRESSION-COVERAGE “Unit test host crash — ZF-64”.** Every full `Unit` run crashed the test host once (`objc_release` of a freed `NSWindow` in a main-actor job's autorelease pool) and reported the tests still running as failed.
+- [x] Symbolicate the 18 crash reports; reproduce with zombies and malloc scribbling in a copy of the `.xctestrun`; narrow it to `PreviewSelectionOrderTests` + `HTMLPreviewTests`.
+- [x] Cause: test windows left at `isReleasedWhenClosed = true` and closed, so they were released twice. `TestWindow.make` (test support) creates windows owned only by their Swift references; the four affected tests use it.
+- [x] Reproduction and guard: `TestWindowLifetimeTests` (deterministic, no crash): the default releases on close; a test window does not, and is freed once.
+- [x] RNF-Q08 states the rule for windows that unit tests create.
+
+### ZF-65 — Follow-ups found by ZF-64 (open, 2026-11-09)
+
+- [ ] `AutomationPermissionUIFixture`: set `isReleasedWhenClosed = false` on its closable window (same pattern as D-81, reachable only in the UI fixture), then run its two real-only `AutomationUITests` (they take over the screen).
+- [ ] D-82: review the five dark-appearance Settings snapshots that no longer match under macOS 27.2 (slider and switch knobs) and, if the user approves, re-record them.
+
 ### ZF-58 — Settings in two columns, as System Settings (2026-11-02)
 
 **Implemented; unit, offscreen and real UI tests pass; results in REGRESSION-COVERAGE “Settings in two columns — ZF-58”.** User request: the Settings menu had become too long; split it into two columns like System Settings. Mockups approved in the conversation (View Options instead of List Columns, with Default View; the Finder extension in General; Compression profiles as a list that opens each profile).
