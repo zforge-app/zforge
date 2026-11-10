@@ -637,6 +637,15 @@ Cause: the offscreen sidebar starts at 144 pt with two-line rows until `SidebarS
 
 Correction (test only; scenario and the 28 pt assertion unchanged): the fixture's wait lays out the whole window between polls (`window.layoutIfNeeded()`, which updates constraints first, as the display cycle does), and the sidebar test waits until the rows exist, the table is 206 pt wide and neither the table nor any ancestor needs a constraint update or layout (`isLaidOut`). With the same `Task.yield()` injection the suite passed 50/50.
 
+### D-92 — The real Option-drag UI test's drop never ends on macOS 27.2 (open, found 2026-11-10, ZF-72)
+
+`ZforgeUITests.testLocalDragsOptionCopyAndConfirmAdditionToArchive` (real-only) passed on 2026-11-02 at `519a085` (macOS/Xcode 27.1, REGRESSION-COVERAGE “Settings in two columns — ZF-58”). On 2026-11-10 (macOS 27.2 26B123, Xcode 27.2 27B52) it fails at `ZforgeUITests.swift:603`: after `local.click(forDuration: 0.3, thenDragTo: Sample.zip)` the “Add to Archive” confirmation never appears.
+
+- Reproduced twice on `main` (`018a26e`) and once on `519a085`, the build that passed on 2026-11-02, so no Zforge change since then caused it; the change is in the environment (macOS or Xcode 27.2).
+- The screen recording shows the drag image of `Local.txt` still over the `Sample.zip` row more than 4 s after XCTest released the button, and the accessibility tree reports the application and its window as `Disabled` (a drag session still in progress). The drop is never performed.
+
+Not decided: whether real user drags onto an archive row also hang under macOS 27.2 (a Zforge incompatibility that users would see) or only XCTest's synthesized drag fails to end the session (a test harness limit). Deciding needs a manual drag of a file onto an archive row in List view in the user's build, or a probe of the drag session's end callbacks in a real run. No code changed.
+
 ### D-81 — The unit test host crashed mid-run after macOS 27.2: test windows were released twice (corrected 2026-11-09, ZF-64)
 
 From 2026-11-09 every full `Unit` run of `main` (`6be2991`, clean on 2026-11-02 with 669 tests) crashed the test host once, about 30 s after launch: xcodebuild printed “Restarting after unexpected exit, crash, or test timeout” and reported the tests still running as failed (about 300 in one run, mostly `TagCatalogTests` and localization, with a different count each run). Between the two dates the Mac went from macOS 27.0.1 (26A434) to 27.2 (26B123) and Xcode was updated to 27.2 (27B52); the test code involved had not changed since 2026-07 to 2026-10.

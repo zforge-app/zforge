@@ -649,6 +649,11 @@ Pending: in-app check of the row and the computer level in the four modes (light
 - [x] “Write-back alerts” snapshots (D-89): IconServices placeholder captured; the test waits until the application icon renders. Reference unchanged.
 - [x] Requirements: AGENT-INTEGRATION-PLAN measurement gate; RNF-Q08 rule on clocks in tests.
 
+### ZF-72 — Real Option-drag UI test hangs in its drop on macOS 27.2 (open, 2026-11-10, D-92)
+
+- [x] Run `testLocalDragsOptionCopyAndConfirmAdditionToArchive` in the real mode (user approved, 2026-11-10): fails at `:603` on `main` (2 runs) and on `519a085` (1 run), which passed on 2026-11-02 under 27.1.
+- [ ] Decide whether a real user drag onto an archive row hangs too (manual drag in the user's build, List view) or only XCTest's synthesized drag does; then fix Zforge or adapt the test's gesture without reducing what it proves.
+
 ### ZF-70 — A reload collapsed inline expansions completed while it waited (2026-11-10, D-90)
 
 **Corrected in the app; results in REGRESSION-COVERAGE “Reload and sidebar determinism — ZF-70, ZF-71”.** Found through the full-plan failure of “Option-drag out of an archive…” (ZF-69). After moving items out of an inline-expanded archive, the directory monitor's reload could collapse the archive the post-move refresh had just reopened; any archive or folder expanded inline while a reload waited for a folder listing could collapse the same way.
@@ -656,7 +661,7 @@ Pending: in-app check of the row and the computer level in the four modes (light
 - [x] Fix: `refreshExpandedFileSystemHierarchy` computes reachability over the tree as it is after its last listing wait; unreachable expansions are still forgotten (characterized).
 - [x] CURRENT-STATE “Hierarchy of List”.
 - [x] Offscreen UI tests mapped to `FileBrowserState.swift` (5): passed 5/5 on 2026-11-10, after two consecutive full `Unit` runs with 699/699 passed (session unlocked).
-- [ ] Real-mode `testLocalDragsOptionCopyAndConfirmAdditionToArchive` (mapped to the same file): not run, awaiting the user's decision (takes over the screen).
+- [x] Real-mode `testLocalDragsOptionCopyAndConfirmAdditionToArchive` (mapped to the same file): run 2026-11-10, fails the same way on `519a085`, before this change, so not caused by it (D-92, ZF-72).
 - [ ] Seen in the code, not reproduced: `reload()` restores the selection it captured when it started (non-search locations), so a selection made while it waits for a listing may be replaced. Confirm with a gated reproduction and decide.
 
 ### ZF-71 — Shortcuts sidebar row test waited for width, not for re-measured rows (2026-11-10, D-91)

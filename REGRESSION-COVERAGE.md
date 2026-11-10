@@ -1846,3 +1846,13 @@ Environment: macOS 27.2 (26B123), Xcode 27.2, Mac17,3; load average 5–13; the 
 - **UI tests:** `Scripts/affected-tests.py` maps `FileBrowserState.swift` to 6 UI tests: 5 offscreen and 1 real-mode (`testLocalDragsOptionCopyAndConfirmAdditionToArchive`). None were run: offscreen runs need an unlocked session, and real-mode runs were excluded for this task. `--check`: 28 UI tests, 22 rules, 0 problems.
 - **Build:** `build-for-testing` 0 warnings.
 - **Validation before the merge into `main` (2026-11-10, session unlocked, load 2–5, branch at `4434876`):** two consecutive full `Unit` runs, **699/699 passed each** (`fix-unit-1`, `fix-unit-2` in the main session's scratchpad), including the seven D-49 contracts, “Option-drag out of an archive…”, “Sidebar rows… 28 pt rows” and the three new tests. The 5 offscreen UI tests mapped to `FileBrowserState.swift` **passed 5/5** (`affected-20261110-081647*`; screen guard: 0 front changes, 0 mouse moves, 0 visible windows, 0 synthetic and 0 hardware events). **Not run:** the real-mode `testLocalDragsOptionCopyAndConfirmAdditionToArchive` (awaiting the user's decision).
+
+## Real-mode Option-drag UI test — ZF-72, 2026-11-10 (D-92)
+
+Environment: macOS 27.2 (26B123), Xcode 27.2 (27B52), arm64; session unlocked; real mode (`xcodebuild test -testPlan UI-Full -only-testing:ZforgeUITests/ZforgeUITests/testLocalDragsOptionCopyAndConfirmAdditionToArchive`), announced to the user. Result bundles, logs and frames from the screen recording are in the main session's scratchpad (`optdrag-real*`, `optdrag-519*`, `optdrag-frames`).
+
+- `main` (`018a26e`), two runs: **failed** both, 15.4 s and 15.1 s, at `ZforgeUITests.swift:603` (“Add to Archive” button never appears; application and window `Disabled`).
+- `519a085` (passed this test on 2026-11-02 under 27.1), one run in a temporary worktree: **failed** the same way (15.6 s).
+- Screen recording frames at 12 s and 14 s: the drag image of `Local.txt` stays over the `Sample.zip` row after the button was released; the drop is never performed.
+- **Totals:** 3 executed, 0 passed, 3 failed. Classified as an environment change (D-92), not a regression of the changes since 2026-11-02. **Not run:** the other `realOnly` tests (several also drag; they may share the cause).
+
