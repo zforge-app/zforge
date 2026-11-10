@@ -649,6 +649,11 @@ Pending: in-app check of the row and the computer level in the four modes (light
 - [x] “Write-back alerts” snapshots (D-89): IconServices placeholder captured; the test waits until the application icon renders. Reference unchanged.
 - [x] Requirements: AGENT-INTEGRATION-PLAN measurement gate; RNF-Q08 rule on clocks in tests.
 
+### ZF-76 — Repository hygiene before publication: `.gitignore` (2026-11-10)
+
+- [x] `.gitignore` (macOS, Xcode per-user state, build products and results, SwiftPM, Python caches); the three tracked `xcuserdata` files are no longer tracked (the files stay in each checkout).
+- [ ] Secret scan of the full history before the first push.
+
 ### ZF-75 — License notices and the Acknowledgments window (2026-11-10, D-93)
 
 Requested: resolve the license gaps found by ZF-74 before publication. The user left the window's placement and the copyright holder to the recommendation: a menu item below About Zforge (the standard About panel cannot hold a button) and the author's name.
@@ -656,7 +661,8 @@ Requested: resolve the license gaps found by ZF-74 before publication. The user 
 - [x] `Scripts/update-notices.py` (+ `--check`) writes the notices of Zforge, 7-Zip and the four linked packages and `Acknowledgments.json`; refuses checkouts not at the pinned revision and unclassified pins. `Scripts/update-7zip.py` refreshes and `--verify` checks the 7-Zip notices. `Vendor/7-Zip-License.txt` (console package license) removed.
 - [x] Acknowledgments window and Zforge ▸ Acknowledgments…; strings in the 21 languages (own drafts).
 - [x] Tests: script tests, `AcknowledgmentsTests` (bundle contents, 7-Zip texts and versions against the vendored release and `Package.resolved`, toolbar title, 7-Zip page snapshot light/dark), UI test `testAcknowledgmentsOpenFromTheAppMenu`.
-- [ ] Real-window review of the window (VoiceOver, languages, widths) and native review of the translated note.
+- [x] Translation review (2026-11-10): the title and menu item follow Apple's macOS translations of “Acknowledgments” (LOCALIZATION.md); the note was corrected in es, pl, da and sv.
+- [ ] Real-window review of the window (VoiceOver, languages, widths); native-speaker review of the note.
 
 ### ZF-74 — 7-Zip engine update process and update to 26.06 (2026-11-10)
 
