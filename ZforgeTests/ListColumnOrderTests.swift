@@ -71,6 +71,8 @@ struct ListColumnOrderTests {
         #expect(place(-200) == 1, "Name keeps the first place.")
         #expect(place(40) == 3, "The last visible column is the end.")
         #expect(ListColumnReorder.targetIndex(from: 1, translation: 40, rowPitch: 38, count: 4) == 2)
+        #expect(ListColumnReorder.targetIndex(from: 1, translation: 80, rowPitch: 38, count: 4) == 3,
+                "Dragging down two rows lands two places later.")
         #expect(ListColumnReorder.targetIndex(from: 2, translation: 90, rowPitch: 0, count: 4) == 2,
                 "Without measured rows the column stays put.")
     }
