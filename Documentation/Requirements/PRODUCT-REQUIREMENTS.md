@@ -157,7 +157,7 @@ Zforge is planned as an open source project. The use of 7-Zip must not hide or r
   - `zforge-app/zforge-xcuitest-sim`: the offscreen XCUITest tool used by `Scripts/affected-tests.py`.
 - The design system (AkariDS) is not one of the organization's repositories; its own repository is named `akari-ds`. Pending decision: how the website consumes it. The recommendation is a versioned package instead of the current relative path to a sibling checkout.
 - Link repositories through pinned versions (tags or releases), not Git submodules.
-- Pre-publication hygiene: `.gitignore`, untracking of `xcuserdata` and a full-history secret scan with no real finding (ZF-76); third-party notices and `LICENSE` (ZF-75). The home path in the documentation was replaced by `~`. Pending: the user's decision on the author email in commit metadata (TASKS ZF-76).
+- Pre-publication hygiene: `.gitignore`, untracking of `xcuserdata` and a full-history secret scan with no real finding (ZF-76); third-party notices and `LICENSE` (ZF-75). The home path in the documentation was replaced by `~`. Pending, for the user to analyze before the first push: the author email in the commit metadata of the app, website and XCUITest tool repositories (TASKS ZF-76).
 - `Vendor/7zz` is no longer tracked (ZF-74). The user decided on 2026-11-10 that it stays in the past history; no history rewrite.
 - State: names decided; the organization and repositories are not created and nothing is published.
 

@@ -654,7 +654,7 @@ Pending: in-app check of the row and the computer level in the four modes (light
 - [x] `.gitignore` (macOS, Xcode per-user state, build products and results, SwiftPM, Python caches); the three tracked `xcuserdata` files are no longer tracked (the files stay in each checkout).
 - [x] Secret scan of the full history (2026-11-10): gitleaks 8.30.1 (release asset, checksum verified) over every ref, 398 commits, 84 MB: 3 findings, all false positives (SHA-256 file hashes keyed by `AutomationAccess.swift` in three benchmark result files). No key, certificate, provisioning profile, `.env` or token file in any commit.
 - [x] Home path: the absolute home folder path replaced by `~` in the six documentation files that recorded it (user request, 2026-11-10); past commits keep it.
-- [ ] Before publishing, decide on the personal author email in 180 commits (rewriting it to a GitHub no-reply address changes every commit identifier). The Apple team ID in the project is public in every signed build.
+- [ ] **Pending the user's analysis (2026-11-10):** the personal author email is in the commit metadata of 180 Zforge commits, 14 `zforge-website` commits and 24 `zforge-xcuitest-sim` commits (`akarids` and `glasslab` have none yet). The user has no other address yet and will decide later; replacing it (for example with a GitHub no-reply address) rewrites each repository's history and changes every commit identifier, so decide before the first push. The Apple team ID in the project needs no action (public in every signed build).
 
 ### ZF-75 — License notices and the Acknowledgments window (2026-11-10, D-93)
 
