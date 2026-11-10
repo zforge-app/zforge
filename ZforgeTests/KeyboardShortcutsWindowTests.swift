@@ -34,9 +34,21 @@ final class ShortcutsWindowFixture {
         defaults.removeTestSuite(named: suite)
     }
 
+    /// True when neither `view` nor any of its ancestors waits for a constraint update or a
+    /// layout pass, so its frame and its contents are measured at its current size.
+    func isLaidOut(_ view: NSView) -> Bool {
+        sequence(first: view, next: \.superview).allSatisfy { !$0.needsLayout && !$0.needsUpdateConstraints }
+    }
+
+    /// Polls `condition`, updating constraints and laying out the whole window between polls, as
+    /// its display cycle does. A layout pass of the content view alone is not enough: the pass
+    /// that widens the sidebar leaves the sidebar's hosting view needing a constraint update, and
+    /// its rows keep their old heights until that update runs (D-91). Without this, the update
+    /// waited for the display cycle, which can come after the next poll while other suites keep
+    /// the main actor busy.
     func waitUntil(_ description: String, _ condition: () -> Bool) async throws {
         for _ in 0..<400 where !condition() {
-            host.layoutSubtreeIfNeeded()
+            window.layoutIfNeeded()
             try await Task.sleep(for: .milliseconds(5))
         }
         #expect(condition(), "Timed out waiting until \(description)")
@@ -94,9 +106,11 @@ struct KeyboardShortcutsWindowTests {
         defer { fixture.close() }
         let table = try #require(fixture.host.settingsDescendants(of: NSTableView.self).first)
         let categories = 1 + KeyboardShortcutCatalog.sections.count
-        // The offscreen sidebar is narrower (D-75) until its width constraint applies; measure after.
-        try await fixture.waitUntil("the rows appear in a 206 pt sidebar") {
+        // The offscreen sidebar is narrower (D-75) until its width constraint applies; measure after
+        // the rows have been laid out at that width: no constraint update or layout pass pending (D-91).
+        try await fixture.waitUntil("the rows are laid out in a 206 pt sidebar") {
             table.numberOfRows >= categories && abs(table.frame.width - KeyboardShortcutsLayout.sidebarWidth) <= 1
+                && fixture.isLaidOut(table)
         }
         let heights = (0..<table.numberOfRows).map { table.rect(ofRow: $0).height }
         // One divider row between All Shortcuts and the sections; every other row is a category.

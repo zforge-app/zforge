@@ -649,12 +649,28 @@ Pending: in-app check of the row and the computer level in the four modes (light
 - [x] “Write-back alerts” snapshots (D-89): IconServices placeholder captured; the test waits until the application icon renders. Reference unchanged.
 - [x] Requirements: AGENT-INTEGRATION-PLAN measurement gate; RNF-Q08 rule on clocks in tests.
 
+### ZF-70 — A reload collapsed inline expansions completed while it waited (2026-11-10, D-90)
+
+**Corrected in the app; results in REGRESSION-COVERAGE “Reload and sidebar determinism — ZF-70, ZF-71”.** Found through the full-plan failure of “Option-drag out of an archive…” (ZF-69). After moving items out of an inline-expanded archive, the directory monitor's reload could collapse the archive the post-move refresh had just reopened; any archive or folder expanded inline while a reload waited for a folder listing could collapse the same way.
+- [x] Reproduce: probe with slowed listings 9/20 failures at `:134`, each with the monitor's reload pruning `Sample.zip`; deterministic gated-file-system reproduction (`ReloadExpansionRaceTests`, two cases failing before the fix).
+- [x] Fix: `refreshExpandedFileSystemHierarchy` computes reachability over the tree as it is after its last listing wait; unreachable expansions are still forgotten (characterized).
+- [x] CURRENT-STATE “Hierarchy of List”.
+- [ ] Offscreen UI tests mapped to `FileBrowserState.swift` (5): not run yet, the session was locked. The mapped real-mode test `testLocalDragsOptionCopyAndConfirmAdditionToArchive` was not run (no real-mode UI runs in this task).
+- [ ] Seen in the code, not reproduced: `reload()` restores the selection it captured when it started (non-search locations), so a selection made while it waits for a listing may be replaced. Confirm with a gated reproduction and decide.
+
+### ZF-71 — Shortcuts sidebar row test waited for width, not for re-measured rows (2026-11-10, D-91)
+
+**Corrected in the test; results in REGRESSION-COVERAGE “Reload and sidebar determinism — ZF-70, ZF-71”.**
+- [x] Reproduce: with the poll's sleep replaced by `Task.yield()` (no display cycle between polls), the unchanged wait read `[40, 24, 40, 28, 40, 28, 28, 28, 40]` in 4/10 runs.
+- [x] Cause: the widening pass leaves the sidebar's hosting view needing a constraint update; the fixture's content-view layout did not run it.
+- [x] Fix: the wait lays out the whole window and requires no pending constraint update or layout along the table's ancestors. The 28 pt assertion is unchanged. 50/50 with the same injection.
+
 ### ZF-69 — Follow-ups found by ZF-68 (open, 2026-11-09)
 
 - [ ] `BrowserWindowLayoutTests` (`.serialized`, D-71) holds the main actor for seconds per case under load and starved other suites for 10–16 s; look for a way to lay out less per case or yield, without losing a width or assertion.
 - [ ] The test host logs `mdb_txn_commit error: MDB_MAP_FULL` about 50 times per full run on the main thread (an LMDB store inside a system framework of the sandboxed host, possibly IconServices' cache); identify the store and whether it slows icon rendering (D-89).
-- [ ] `ArchiveDragDropTests` “Option-drag out of an archive…” fails in about half the full `Unit` runs (`:134`, `Survivor.txt` not listed right after a confirmed move-out of an inline-expanded archive), never alone. Suspected: the awaited post-move refresh (`refreshUpdatedArchive` → `reload()`) interleaves with the directory monitor's own `reload()` (generation guard), so the inline expansion may be rebuilt by neither; if confirmed, a user can see the archive's rows disappear after a move. Not yet proven.
-- [ ] `KeyboardShortcutsWindowTests` “Sidebar rows… 28 pt rows” fails in some full runs (`:105`, rows still at the two-line height of the narrow pre-constraint sidebar), never alone: its wait checks the sidebar width but not that SwiftUI re-measured the rows at that width.
+- [x] `ArchiveDragDropTests` “Option-drag out of an archive…” fails in about half the full `Unit` runs: **product bug**, corrected under ZF-70 (D-90). A reload pruned inline expansions that the post-move refresh completed while the reload waited for a folder listing.
+- [x] `KeyboardShortcutsWindowTests` “Sidebar rows… 28 pt rows” fails in some full runs: test synchronization, corrected under ZF-71 (D-91). The rows wait for a constraint update that the content-view layout pass does not run.
 - [ ] At load ≈ 200 the D-71 one-minute limits in `IconPreviewServiceTests` are exceeded again and testmanagerd ends the unresponsive host once per run; same main-actor saturation as the item above on `BrowserWindowLayoutTests`.
 - [ ] With load noise gone (D-86), the user may decide to hold the name-query mean to the 100 ms feature target instead of the 150 ms allowance of 2026-10-28.
 
