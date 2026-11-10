@@ -42,7 +42,8 @@ final class FileBrowserState {
     }
 
     enum PasswordOperation {
-        case openFile(URL)
+        /// `asWindowRoot`: the archive is the window's own location, as `openArchive(_:asWindowRoot:)`.
+        case openFile(URL, asWindowRoot: Bool)
         case openInnerArchive(BrowserItem)
         case expandInline(BrowserItem)
         case extractArchive(BrowserItem)
@@ -1031,7 +1032,8 @@ final class FileBrowserState {
                 if let outermost = try? await archives.outermostArchiveURL(for: result.address) {
                     recordArchiveVolume(result.address.sessionID, url: outermost)
                 }
-                await navigate(to: .archive(result.address), named: result.displayName, isArchive: true, resetPath: true)
+                await navigate(to: .archive(result.address), named: result.displayName, isArchive: true,
+                    resetPath: true, recordsHistory: false)
             }
             return
         }
@@ -1047,10 +1049,12 @@ final class FileBrowserState {
         if let initialURL {
             do {
                 let item = try await fileSystem.item(at: initialURL)
+                // The window was opened for this folder or archive: it is the root of the
+                // window's hierarchy (path bar, Columns), with no history behind it.
                 if item.isArchive {
-                    await openArchive(item)
+                    await openArchive(item, asWindowRoot: true)
                 } else if item.isContainer {
-                    await navigate(to: .fileSystem(initialURL), named: item.name, resetPath: true)
+                    await navigate(to: .fileSystem(initialURL), named: item.name, resetPath: true, recordsHistory: false)
                 }
                 return
             } catch {
@@ -1977,11 +1981,15 @@ final class FileBrowserState {
         }
     }
 
+    /// Opens an archive file in this window. `asWindowRoot` is for the archive the window
+    /// was opened for: it replaces the window's initial location as the root of its
+    /// hierarchy instead of being entered from it, and leaves no history behind it.
     func openArchive(
         _ item: BrowserItem,
         password: String? = nil,
         recordsHistory: Bool = true,
-        clearsSelection: Bool = true
+        clearsSelection: Bool = true,
+        asWindowRoot: Bool = false
     ) async {
         if item.opensAsInnerArchive {
             await openInnerArchiveWindow(item, password: password)
@@ -2026,20 +2034,21 @@ final class FileBrowserState {
                 to: .archive(result.address),
                 named: result.displayName,
                 isArchive: true,
-                recordsHistory: recordsHistory,
+                resetPath: asWindowRoot,
+                recordsHistory: recordsHistory && !asWindowRoot,
                 clearsSelection: clearsSelection,
                 searchResultURL: item.localURL
             )
         } catch ArchiveEngineError.passwordRequired {
             guard !Task.isCancelled else { return }
-            passwordOperation = item.localURL.map(PasswordOperation.openFile) ?? .openInnerArchive(item)
+            passwordOperation = item.localURL.map { .openFile($0, asWindowRoot: asWindowRoot) } ?? .openInnerArchive(item)
         } catch ArchiveEngineError.invalidPassword {
             guard !Task.isCancelled else { return }
             passwordError = AppLocalization.string(
                 "Incorrect password. Try again.",
                 locale: preferences.language.locale
             )
-            passwordOperation = item.localURL.map(PasswordOperation.openFile) ?? .openInnerArchive(item)
+            passwordOperation = item.localURL.map { .openFile($0, asWindowRoot: asWindowRoot) } ?? .openInnerArchive(item)
         } catch ArchiveEngineError.cancelled {
             // Cancelled from the progress overlay: nothing opened, nothing to report.
         } catch is CancellationError {
@@ -2054,11 +2063,11 @@ final class FileBrowserState {
         let openingAccess = initialAutomationAccessLease
         defer { withExtendedLifetime(openingAccess) {} }
         switch operation {
-        case let .openFile(url):
+        case let .openFile(url, asWindowRoot):
             do {
                 let item = try await fileSystem.item(at: url)
                 guard !isClosed, !Task.isCancelled, passwordOperation != nil else { return }
-                await openArchive(item, password: password)
+                await openArchive(item, password: password, asWindowRoot: asWindowRoot)
             } catch {
                 self.error = mapError(error)
             }

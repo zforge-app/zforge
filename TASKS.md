@@ -649,6 +649,17 @@ Pending: in-app check of the row and the computer level in the four modes (light
 - [x] “Write-back alerts” snapshots (D-89): IconServices placeholder captured; the test waits until the application icon renders. Reference unchanged.
 - [x] Requirements: AGENT-INTEGRATION-PLAN measurement gate; RNF-Q08 rule on clocks in tests.
 
+### ZF-77 — An archive opened from Finder: one window, archive as the window root (2026-11-10, D-95)
+
+User report (installed build 26): opening a ZIP from Finder with Zforge closed showed the archive window exactly over a second, Recents window; in Columns the archive's contents were in the second column, after an empty Recents column. Reproduced with the current code (cold launches of a Debug build), so not only the installed build.
+- [x] One window: the launch window's offer is no longer ended by SwiftUI's transient `onDisappear` during launch (`ZforgeApp.swift`).
+- [x] Window root: the folder, archive (also after its password) or inner archive a window is opened for is its only path component and first column, with no history behind it (`FileBrowserState.openArchive(_:asWindowRoot:)`).
+- [x] Tests: `InitialWindowLocationTests` (offscreen), Back assertion in `InnerArchiveWindowTests`, real-only UI test `testArchiveThatLaunchesZforgeOpensInOneWindowAsColumnsRoot` (LaunchServices launch); all fail on the previous code and pass with the fix.
+- [x] Requirements: CURRENT-STATE (Common Window, File sent by Finder, One window per request); D-95; REGRESSION-COVERAGE.
+- [x] Release build of the fix (uncommitted working tree on `fix/zip-finder-window-root`, still build 26) installed in `/Applications` on 2026-11-10 at the user's request, replacing the 2026-10-13 build; opened with a ZIP through LaunchServices it showed one window, the archive in the first column, Back disabled.
+- [ ] The user checks a Finder double click with the installed build.
+- [ ] Observed, not changed: the launch window shows Recents for a fraction of a second before the file that launched Zforge replaces it (the file arrives about 0.3 s after SwiftUI shows the window, in a Debug build).
+
 ### ZF-76 — Repository hygiene before publication: `.gitignore` (2026-11-10)
 
 - [x] `.gitignore` (macOS, Xcode per-user state, build products and results, SwiftPM, Python caches); the three tracked `xcuserdata` files are no longer tracked (the files stay in each checkout).

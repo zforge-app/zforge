@@ -337,6 +337,7 @@ struct InnerArchiveWindowTests {
         guard case let .archive(address) = innerWindow.location else { Issue.record("No inner archive shown"); return }
         #expect(innerWindow.title == "Outer.zip › Inner.zip")
         #expect(innerWindow.pathComponents.map(\.name) == ["Outer.zip › Inner.zip"])
+        #expect(!innerWindow.canGoBack, "The inner archive is the window's root, with no history behind it (D-95)")
         #expect(innerWindow.items.map(\.name) == ["Inner.txt"])
         #expect(innerWindow.heldArchiveSessionIDs == [address.sessionID])
         #expect(!outerWindow.heldArchiveSessionIDs.contains(address.sessionID), "The reference moved to the new window")

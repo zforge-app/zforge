@@ -113,7 +113,12 @@ private struct BrowserWindowRoot: View {
                 }
                 openPendingArchives()
             }
-            .onDisappear { appDelegate.releaseLaunchWindow(request.id) }
+            // No release on `onDisappear`: SwiftUI also removes and re-adds the launch
+            // window's content while launching, before the file that launched Zforge
+            // arrives, and ending the offer there opened that file in a second window
+            // over the first. A closed window can never take the offer: only its own
+            // root presents a request for it, and a click or key press to close it
+            // already ends the offer.
     }
 
     private func openPendingArchives() {
