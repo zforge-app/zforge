@@ -62,7 +62,7 @@
       "failures": [
         {
           "test": "FileArchiveIntentTests/contextualConsent()",
-          "text": "Expectation failed: folder == fixture.root\nfolder → file:///Users/felipe/Library/Containers/io.libor.Zforge/Data/tmp/FileArchive-CEDF1C51-04F4-4CDE-A344-BCC49324356C/\nfixture.root → file:///Users/felipe/Library/Containers/io.libor.Zforge/Data/tmp/FileArchive-CEDF1C51-04F4-4CDE-A344-BCC49324356C"
+          "text": "Expectation failed: folder == fixture.root\nfolder → file://~/Library/Containers/io.libor.Zforge/Data/tmp/FileArchive-CEDF1C51-04F4-4CDE-A344-BCC49324356C/\nfixture.root → file://~/Library/Containers/io.libor.Zforge/Data/tmp/FileArchive-CEDF1C51-04F4-4CDE-A344-BCC49324356C"
         }
       ],
       "runtimeWarnings": []
@@ -81,7 +81,7 @@
       "failures": [
         {
           "test": "FileArchiveIntentTests/contextualConsent()",
-          "text": "Expectation failed: folder == fixture.root\nfolder → file:///Users/felipe/Library/Containers/io.libor.Zforge/Data/tmp/FileArchive-7D87D7FF-A96F-4ADA-9C29-EEC7D1CFAD39/\nfixture.root → file:///Users/felipe/Library/Containers/io.libor.Zforge/Data/tmp/FileArchive-7D87D7FF-A96F-4ADA-9C29-EEC7D1CFAD39"
+          "text": "Expectation failed: folder == fixture.root\nfolder → file://~/Library/Containers/io.libor.Zforge/Data/tmp/FileArchive-7D87D7FF-A96F-4ADA-9C29-EEC7D1CFAD39/\nfixture.root → file://~/Library/Containers/io.libor.Zforge/Data/tmp/FileArchive-7D87D7FF-A96F-4ADA-9C29-EEC7D1CFAD39"
         },
         {
           "test": "TagCatalogTests/unreadableSubtreePreventsCheckpoint()",
@@ -92,7 +92,7 @@
         {
           "issueType": "Runtime Warning",
           "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions",
-          "sourceURL": "file:///Users/felipe/Documents/dev/Zforge/ZforgeTests/FileOperationServiceTests.swift"
+          "sourceURL": "file://~/Documents/dev/Zforge/ZforgeTests/FileOperationServiceTests.swift"
         }
       ]
     },
@@ -150,7 +150,7 @@
         {
           "issueType": "Runtime Warning",
           "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions",
-          "sourceURL": "file:///Users/felipe/Documents/dev/Zforge/ZforgeTests/FileOperationServiceTests.swift"
+          "sourceURL": "file://~/Documents/dev/Zforge/ZforgeTests/FileOperationServiceTests.swift"
         }
       ]
     },
@@ -170,7 +170,7 @@
         {
           "issueType": "Runtime Warning",
           "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions",
-          "sourceURL": "file:///Users/felipe/Documents/dev/Zforge/ZforgeTests/FileOperationServiceTests.swift"
+          "sourceURL": "file://~/Documents/dev/Zforge/ZforgeTests/FileOperationServiceTests.swift"
         }
       ]
     }
@@ -209,7 +209,7 @@
         {
           "issueType": "Runtime Warning",
           "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions",
-          "sourceURL": "file:///Users/felipe/Documents/dev/Zforge/ZforgeTests/FileOperationServiceTests.swift"
+          "sourceURL": "file://~/Documents/dev/Zforge/ZforgeTests/FileOperationServiceTests.swift"
         }
       ],
       "skippedTests": 0,
@@ -557,7 +557,7 @@
       {
         "issueType": "Runtime Warning",
         "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions",
-        "sourceURL": "file:///Users/felipe/Documents/dev/Zforge/ZforgeTests/FileOperationServiceTests.swift"
+        "sourceURL": "file://~/Documents/dev/Zforge/ZforgeTests/FileOperationServiceTests.swift"
       }
     ]
   },
@@ -705,7 +705,7 @@
   "siriLocationComparison": {
     "ownership": {
       "source": "/tmp/ZforgeAutomationSmoke-20261007/Orion Demo.zip",
-      "target": "/Users/felipe/Documents/Vega Demo.zip",
+      "target": "~/Documents/Vega Demo.zip",
       "sha256": "2d61fb60522979437018014b296ef2d75f5ed0ba8917a6146f92c7d9620e2082",
       "bytes": 179,
       "createdExclusively": true,
@@ -729,7 +729,7 @@
       "result": "Refused/file not found",
       "trace": "Only the preceding native-harness name/identifier queries and two performs are retained; no subsequent authored Siri event in the captured interval.",
       "fullPathFollowup": {
-        "request": "The file is at /Users/felipe/Documents/Vega Demo.zip. Open it in Zforge.",
+        "request": "The file is at ~/Documents/Vega Demo.zip. Open it in Zforge.",
         "response": "I still can’t find the file Vega Demo.zip in your Documents folder. Please double-check the name and location, and make sure it’s saved locally on your device.",
         "result": "Typed refusal/file not found"
       }

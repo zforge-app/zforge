@@ -138,7 +138,7 @@
       {
         "issueType": "Runtime Warning",
         "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions",
-        "sourceURL": "file:///Users/felipe/Documents/dev/Zforge/ZforgeTests/FileOperationServiceTests.swift"
+        "sourceURL": "file://~/Documents/dev/Zforge/ZforgeTests/FileOperationServiceTests.swift"
       }
     ],
     "skippedTests": 0,
@@ -214,7 +214,7 @@
       {
         "issueType": "Runtime Warning",
         "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions",
-        "sourceURL": "file:///Users/felipe/Documents/dev/Zforge/ZforgeTests/FileOperationServiceTests.swift"
+        "sourceURL": "file://~/Documents/dev/Zforge/ZforgeTests/FileOperationServiceTests.swift"
       }
     ],
     "skippedTests": 0,
@@ -227,7 +227,7 @@
     ],
     "testFailures": [
       {
-        "failureText": "Caught error: Error Domain=NSCocoaErrorDomain Code=256 \"Could not open() the item\" UserInfo={NSURL=file:///Users/felipe/Library/Containers/io.libor.Zforge/Data/tmp/GrantConsolidation-092BAF80-0D38-4926-B71A-A59BFFC12FE2/Parent/External/, NSDebugDescription=Could not open() the item}",
+        "failureText": "Caught error: Error Domain=NSCocoaErrorDomain Code=256 \"Could not open() the item\" UserInfo={NSURL=file://~/Library/Containers/io.libor.Zforge/Data/tmp/GrantConsolidation-092BAF80-0D38-4926-B71A-A59BFFC12FE2/Parent/External/, NSDebugDescription=Could not open() the item}",
         "targetName": "ZforgeTests",
         "testIdentifier": 30,
         "testIdentifierString": "AutomationGrantConsolidationTests/outsideSymlink()",
@@ -277,7 +277,7 @@
       {
         "issueType": "Runtime Warning",
         "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions",
-        "sourceURL": "file:///Users/felipe/Documents/dev/Zforge/ZforgeTests/FileOperationServiceTests.swift"
+        "sourceURL": "file://~/Documents/dev/Zforge/ZforgeTests/FileOperationServiceTests.swift"
       }
     ],
     "skippedTests": 0,

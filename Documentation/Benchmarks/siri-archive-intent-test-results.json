@@ -80,7 +80,7 @@
         {
           "issueType": "Runtime Warning",
           "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions",
-          "sourceURL": "file:///Users/felipe/Documents/dev/Zforge/ZforgeTests/FileOperationServiceTests.swift"
+          "sourceURL": "file://~/Documents/dev/Zforge/ZforgeTests/FileOperationServiceTests.swift"
         }
       ],
       "skippedTests": 0,
@@ -192,7 +192,7 @@
         {
           "issueType": "Runtime Warning",
           "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions",
-          "sourceURL": "file:///Users/felipe/Documents/dev/Zforge/ZforgeTests/FileOperationServiceTests.swift"
+          "sourceURL": "file://~/Documents/dev/Zforge/ZforgeTests/FileOperationServiceTests.swift"
         }
       ],
       "skippedTests": 0,
@@ -257,7 +257,7 @@
         {
           "issueType": "Runtime Warning",
           "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions",
-          "sourceURL": "file:///Users/felipe/Documents/dev/Zforge/ZforgeTests/FileOperationServiceTests.swift"
+          "sourceURL": "file://~/Documents/dev/Zforge/ZforgeTests/FileOperationServiceTests.swift"
         }
       ],
       "skippedTests": 0,
@@ -321,7 +321,7 @@
         {
           "issueType": "Runtime Warning",
           "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions",
-          "sourceURL": "file:///Users/felipe/Documents/dev/Zforge/ZforgeTests/FileOperationServiceTests.swift"
+          "sourceURL": "file://~/Documents/dev/Zforge/ZforgeTests/FileOperationServiceTests.swift"
         }
       ],
       "skippedTests": 0,
@@ -528,7 +528,7 @@
         {
           "issueType": "Runtime Warning",
           "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions",
-          "sourceURL": "file:///Users/felipe/Documents/dev/Zforge/ZforgeTests/FileOperationServiceTests.swift"
+          "sourceURL": "file://~/Documents/dev/Zforge/ZforgeTests/FileOperationServiceTests.swift"
         }
       ],
       "skippedTests": 0,
@@ -578,7 +578,7 @@
         {
           "issueType": "Runtime Warning",
           "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions",
-          "sourceURL": "file:///Users/felipe/Documents/dev/Zforge/ZforgeTests/FileOperationServiceTests.swift"
+          "sourceURL": "file://~/Documents/dev/Zforge/ZforgeTests/FileOperationServiceTests.swift"
         }
       ],
       "skippedTests": 0,
@@ -649,7 +649,7 @@
         {
           "issueType": "Runtime Warning",
           "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions",
-          "sourceURL": "file:///Users/felipe/Documents/dev/Zforge/ZforgeTests/FileOperationServiceTests.swift"
+          "sourceURL": "file://~/Documents/dev/Zforge/ZforgeTests/FileOperationServiceTests.swift"
         }
       ],
       "skippedTests": 0,
@@ -766,7 +766,7 @@
         {
           "issueType": "Runtime Warning",
           "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions",
-          "sourceURL": "file:///Users/felipe/Documents/dev/Zforge/ZforgeTests/FileOperationServiceTests.swift"
+          "sourceURL": "file://~/Documents/dev/Zforge/ZforgeTests/FileOperationServiceTests.swift"
         }
       ],
       "skippedTests": 0,

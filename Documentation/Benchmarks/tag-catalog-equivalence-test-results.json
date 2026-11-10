@@ -38,7 +38,7 @@
     ],
     "testFailures": [
       {
-        "failureText": "Expectation failed: catalog.itemURLs(tagged: \"Unicode Boundary\") == [file]\ncatalog.itemURLs(tagged: \"Unicode Boundary\") \u2192 []\n[file] \u2192 [file:///Users/felipe/Library/Containers/io.libor.Zforge/Data/tmp/TagCatalogue-6D03D953-F3B3-47F2-8650-5F7551D42D90/A/%CC%81file.txt]",
+        "failureText": "Expectation failed: catalog.itemURLs(tagged: \"Unicode Boundary\") == [file]\ncatalog.itemURLs(tagged: \"Unicode Boundary\") \u2192 []\n[file] \u2192 [file://~/Library/Containers/io.libor.Zforge/Data/tmp/TagCatalogue-6D03D953-F3B3-47F2-8650-5F7551D42D90/A/%CC%81file.txt]",
         "targetName": "ZforgeTests",
         "testIdentifier": 2,
         "testIdentifierString": "TagCatalogTests/discoveryRetainsLeadingCombiningFilename()",
@@ -113,7 +113,7 @@
     ],
     "testFailures": [
       {
-        "failureText": "Expectation failed: mapping.relative.hasSuffix(\"/A\")\nmapping.relative \u2192 \"/Users/felipe/Library/Containers/io.libor.Zforge/Data/tmp/TagCatalogue-9C151EC3-49FE-480C-A187-9B9C7EF8447E/Alias\"",
+        "failureText": "Expectation failed: mapping.relative.hasSuffix(\"/A\")\nmapping.relative \u2192 \"~/Library/Containers/io.libor.Zforge/Data/tmp/TagCatalogue-9C151EC3-49FE-480C-A187-9B9C7EF8447E/Alias\"",
         "targetName": "ZforgeTests",
         "testIdentifier": 1,
         "testIdentifierString": "TagCatalogTests/journalMonitorsPhysicalAliasTarget()",
@@ -220,7 +220,7 @@
       {
         "issueType": "Runtime Warning",
         "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions",
-        "sourceURL": "file:///Users/felipe/Documents/dev/Zforge/ZforgeTests/FileOperationServiceTests.swift"
+        "sourceURL": "file://~/Documents/dev/Zforge/ZforgeTests/FileOperationServiceTests.swift"
       }
     ],
     "skippedTests": 0,
