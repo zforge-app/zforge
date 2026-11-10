@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// The panes of the Settings window, listed in its sidebar as in System Settings (ZF-58).
-/// The sidebar groups them; the last pane shown is remembered between openings.
+/// The sidebar lists them in one flat list; the last pane shown is remembered between openings.
 enum SettingsPane: String, CaseIterable, Identifiable, Sendable {
     case general
     case viewOptions
@@ -11,9 +11,6 @@ enum SettingsPane: String, CaseIterable, Identifiable, Sendable {
     case automation
 
     var id: Self { self }
-
-    /// Sidebar groups, separated by a gap: browsing, archives, system integration.
-    static let groups: [[SettingsPane]] = [[.general, .viewOptions, .sidebar], [.compression, .previews], [.automation]]
 
     var titleKey: String.LocalizationValue {
         switch self {
@@ -49,21 +46,24 @@ enum SettingsPane: String, CaseIterable, Identifiable, Sendable {
         }
     }
 
-    /// The top and bottom colours of the pane's tile. Fixed sRGB values, the same in light and
-    /// dark appearance as System Settings' tiles: the system colours lighten in dark mode and
-    /// their automatic gradient washed the tiles out.
-    var tileColors: (top: Color, bottom: Color) {
+    /// The pane's tile colour: a macOS system colour, so it adapts to light and dark appearance
+    /// (ZF-62). General gray, View Options blue, Sidebar teal, Compression orange, Previews in
+    /// Archives green, Automation indigo.
+    var tileColor: Color {
         switch self {
-        case .general: (Self.color(0xA4A4AA), Self.color(0x6E6E75))
-        case .viewOptions: (Self.color(0x4AA3FF), Self.color(0x0A66E8))
-        case .sidebar: (Self.color(0x8A86FF), Self.color(0x4C45DB))
-        case .compression: (Self.color(0xFFA845), Self.color(0xF0700F))
-        case .previews: (Self.color(0xC77BF5), Self.color(0x8E35D3))
-        case .automation: (Self.color(0xFF6B9A), Self.color(0xE0245E))
+        case .general: .gray
+        case .viewOptions: .blue
+        case .sidebar: .teal
+        case .compression: .orange
+        case .previews: .green
+        case .automation: .indigo
         }
     }
 
-    private static func color(_ rgb: UInt32) -> Color { Color(sRGBHex: rgb) }
+    /// The top and bottom colours of the tile: the system colour, lightened a little at the top.
+    var tileColors: (top: Color, bottom: Color) {
+        (tileColor.mix(with: .white, by: 0.18), tileColor)
+    }
 
     func title(locale: Locale) -> String { AppLocalization.string(titleKey, locale: locale) }
 }

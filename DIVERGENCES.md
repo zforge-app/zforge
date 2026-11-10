@@ -575,6 +575,17 @@ Found while validating ZF-59. Each item was reproduced on a clean checkout of `m
 - **Offscreen UI tests fail to activate the app.** All 14 offscreen UI tests selected for ZF-59 failed at `ZforgeUITests.swift:438` (`launchWithBrowserWindow`): “Failed to activate application … (current state: Running Background)”. The single test `testKeyboardShortcutHelpOpensAndFilters` fails the same way on a clean `main` checkout, so the offscreen tool or this OS state is the cause. No UI test could be executed.
 - **Dark snapshots (tracked as D-82).** `SettingsWindowTests` “Snapshot: each pane” (previews dark, viewOptions dark-de), `ArchivePreviewLimitTests` “Settings: Previews in Archives” (dark, dark-de) and `CompressionProfileSettingsTests` “Snapshot: a profile's page” (7z-password-dark) fail identically on `main` (5 issues) and with ZF-59.
 
+### D-80 — Settings polish: three characterized expectations changed by a user-requested redesign (2026-11-09, ZF-62)
+
+Previous contract: ZF-58 Settings had a three-group sidebar, a fixed gradient tile palette identical in both appearances, a 32 pt compact title bar with the small grey window title, and grouped-`Form` panes. The user (2026-11-09) found the window full of spacing inconsistencies, the group gaps meaningless, the title bar compact beside the browser's toolbar, and the icon colours unwanted, and approved a mockup with system colours (CURRENT-STATE “Settings window in two columns … and its polish (ZF-62)”). Three characterized unit expectations encoded the removed behavior and were changed with the requirement, not to make the code pass:
+
+- `SettingsWindowTests` “The sidebar lists every pane once, in three groups” (asserted `SettingsPane.groups`) became “The sidebar is one flat list of every pane once”: the order is the same, the groups are gone.
+- “Each pane's tile has its own colour, … the same in light and dark appearance” became “… a distinct macOS system colour, lighter only at the top”: the fixed-sRGB, appearance-independent rule is the one the user asked to drop.
+- “The detail column keeps the Settings form width” compared the slider track in the pane with the same section in a 568 pt grouped `Form`; the panes are no longer grouped forms, so the reference became the measured value (484 pt) with the same ±1 pt tolerance, and the slider is inset 10 pt more on each side to keep it. “A pane shows no header repeating its sidebar row” now checks `SettingsPaneColumn` instead of `Form`.
+- All existing pane snapshots were re-recorded for the approved visual change after being viewed.
+
+Not changed: pane order, remembered pane, the D-75 sidebar width constraint and unified toolbar, every accessibility identifier used by UI tests (`settings-list-column-<column>` still on the row; the column switches are `settings-list-column-toggle-<column>`).
+
 ### D-81 — The unit test host crashed mid-run after macOS 27.2: test windows were released twice (corrected 2026-11-09, ZF-64)
 
 From 2026-11-09 every full `Unit` run of `main` (`6be2991`, clean on 2026-11-02 with 669 tests) crashed the test host once, about 30 s after launch: xcodebuild printed “Restarting after unexpected exit, crash, or test timeout” and reported the tests still running as failed (about 300 in one run, mostly `TagCatalogTests` and localization, with a different count each run). Between the two dates the Mac went from macOS 27.0.1 (26A434) to 27.2 (26B123) and Xcode was updated to 27.2 (27B52); the test code involved had not changed since 2026-07 to 2026-10.

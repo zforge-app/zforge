@@ -9,10 +9,11 @@ import Testing
 @Suite("Settings window (ZF-58)")
 @MainActor
 struct SettingsWindowTests {
-    @Test("The sidebar lists every pane once, in three groups, each with its symbol")
-    func sidebarGroups() {
-        #expect(SettingsPane.groups == [[.general, .viewOptions, .sidebar], [.compression, .previews], [.automation]])
-        #expect(SettingsPane.groups.flatMap { $0 } == SettingsPane.allCases)
+    /// ZF-62 removed the three sidebar groups (browsing, archives, system integration): they
+    /// separated panes by a gap that carried no meaning for the user. The order is unchanged.
+    @Test("The sidebar is one flat list of every pane once, each with its symbol")
+    func sidebarIsFlat() {
+        #expect(SettingsPane.allCases == [.general, .viewOptions, .sidebar, .compression, .previews, .automation])
         for pane in SettingsPane.allCases {
             #expect(NSImage(systemSymbolName: pane.systemImage, accessibilityDescription: nil) != nil, "\(pane)")
         }
@@ -22,8 +23,52 @@ struct SettingsWindowTests {
         ])
     }
 
-    @Test("Each pane's tile has its own colour, lighter at the top, and the same in light and dark appearance")
+    /// ZF-62 replaced the fixed gradient palette, the same in both appearances, with the macOS
+    /// system colours, which adapt to light and dark appearance.
+    /// ZF-62: uniform 28 pt rows with a 13 pt title; a title that does not fit one line wraps to a
+    /// second one, never truncates, in every language.
+    @Test("Every pane title fits the sidebar row in at most two lines, in every language")
+    func sidebarTitlesDoNotTruncate() {
+        let textWidth = SettingsLayout.sidebarTitleWidth
+        for language in AppLanguagePreference.allCases where language != .system {
+            for pane in SettingsPane.allCases {
+                let title = pane.title(locale: language.locale)
+                func height(lineLimit: Int?) -> CGFloat {
+                    let text = Text(verbatim: title).font(.system(size: 13)).lineLimit(lineLimit).frame(width: textWidth).fixedSize(horizontal: false, vertical: true)
+                    return NSHostingView(rootView: text).fittingSize.height
+                }
+                let natural = height(lineLimit: nil)
+                #expect(height(lineLimit: 2) >= natural - 0.5, "\(language) “\(title)” needs more than two lines in \(textWidth) pt")
+            }
+        }
+    }
+
+    @Test("The sidebar shows the six panes as uniform 28 pt rows without group gaps")
+    func sidebarRows() async throws {
+        let fixture = try SettingsWindowFixture(pane: .viewOptions)
+        defer { fixture.close() }
+        let table = try #require(fixture.host.settingsDescendants(of: NSTableView.self).first)
+        try await fixture.waitUntil("the rows appear") { table.numberOfRows >= SettingsPane.allCases.count }
+        #expect(table.numberOfRows == SettingsPane.allCases.count, "One row per pane: no group headers or gaps")
+        // English titles all fit one line: their rows are one height, 28 pt.
+        let rowHeights = (0..<table.numberOfRows).map { table.rect(ofRow: $0).height }
+        for (pane, height) in zip(SettingsPane.allCases, rowHeights) where pane != .previews {
+            #expect(abs(height - SettingsLayout.sidebarRowHeight) <= 1, "\(pane) row is \(height) pt")
+        }
+        for row in 1..<table.numberOfRows {
+            let gap = table.rect(ofRow: row).minY - table.rect(ofRow: row - 1).maxY
+            #expect(abs(gap) <= 4, "Gap before row \(row): \(gap)")
+        }
+    }
+
+    @Test("Each pane's tile is a distinct macOS system colour, lighter only at the top")
     func tileColors() throws {
+        #expect(SettingsPane.general.tileColor == .gray)
+        #expect(SettingsPane.viewOptions.tileColor == .blue)
+        #expect(SettingsPane.sidebar.tileColor == .teal)
+        #expect(SettingsPane.compression.tileColor == .orange)
+        #expect(SettingsPane.previews.tileColor == .green)
+        #expect(SettingsPane.automation.tileColor == .indigo)
         func components(_ color: Color, _ appearance: NSAppearance.Name) throws -> [CGFloat] {
             var result: [CGFloat] = []
             try #require(NSAppearance(named: appearance)).performAsCurrentDrawingAppearance {
@@ -32,16 +77,17 @@ struct SettingsWindowTests {
             }
             return result
         }
-        var bottoms: [[CGFloat]] = []
+        var bottoms: [[Int]] = []
         for pane in SettingsPane.allCases {
             let (top, bottom) = pane.tileColors
             let light = try components(bottom, .aqua)
             #expect(light.count == 3)
-            #expect(try components(bottom, .darkAqua) == light, "\(pane) keeps its tile colour in dark appearance")
             #expect(try components(top, .aqua).reduce(0, +) > light.reduce(0, +), "\(pane) is lighter at the top")
-            bottoms.append(light)
+            let topDelta = zip(try components(top, .aqua), light).map { $0 - $1 }.max() ?? 1
+            #expect(topDelta < 0.4, "\(pane) is only slightly lighter at the top")
+            bottoms.append(light.map { Int($0 * 255) })
         }
-        #expect(Set(bottoms.map { $0.map { Int($0 * 255) } }).count == SettingsPane.allCases.count, "Every pane has its own colour")
+        #expect(Set(bottoms).count == SettingsPane.allCases.count, "Every pane has its own colour")
     }
 
     /// The pane snapshots show the form starting with the pane's own first section.
@@ -49,7 +95,7 @@ struct SettingsWindowTests {
     func paneHasNoHeader() {
         let form = String(reflecting: SettingsPaneForm<Text>.Body.self)
         #expect(!form.contains("SettingsIconTile") && !form.contains("VStack"), "\(form)")
-        #expect(form.contains("SwiftUI.Form<SwiftUI.Text>"), "The form holds only the pane's content: \(form)")
+        #expect(form.contains("SettingsPaneColumn<SwiftUI.Text>"), "The column holds only the pane's content: \(form)")
     }
 
     @Test("Every pane title and description is translated in every language")
@@ -146,6 +192,43 @@ struct SettingsWindowTests {
         try await fixture.waitUntil("the toolbar is unified") { fixture.window.toolbarStyle == .unified }
     }
 
+    /// ZF-62: the pane title sat in a 32 pt title bar in the small grey window-title style, unlike the
+    /// browser window's 52 pt toolbar with its 15 pt semibold title (measured in the offscreen browser
+    /// window: toolbar 52 pt, `.SFNS-Semibold` 15 pt, `labelColor`).
+    @Test("The title bar is the browser window's 52 pt toolbar with the pane title in its title style")
+    func titleBarMatchesTheBrowserToolbar() async throws {
+        let fixture = try SettingsWindowFixture(pane: .viewOptions)
+        defer { fixture.close() }
+        let window = fixture.window
+        func titlebar() -> NSView? { window.contentView?.superview?.settingsDescendants(named: "NSTitlebarContainerView").first }
+        func title() -> NSTextField? {
+            window.contentView?.superview?.settingsDescendants(of: NSTextField.self).first { $0.stringValue == "View Options" }
+        }
+        func sidebarWidth() -> CGFloat? {
+            window.contentView?.superview?.settingsDescendants(named: "NSTitlebarBackgroundView").map(\.frame).filter { $0.minX == 0 }.map(\.width).first
+        }
+        try await fixture.waitUntil("the toolbar title appears beside a 220 pt sidebar") {
+            title() != nil && window.toolbar != nil && sidebarWidth() == SettingsLayout.sidebarWidth
+        }
+        let bar = try #require(titlebar())
+        #expect(abs(bar.frame.height - 52) < 0.5, "Title bar height \(bar.frame.height)")
+        let label = try #require(title())
+        let font = try #require(label.font)
+        #expect(font.pointSize == 15, "Title size \(font.pointSize)")
+        #expect(font.fontName.contains("Semibold"), "Title font \(font.fontName)")
+        #expect(label.textColor == .labelColor)
+        // Leading-aligned with the detail content's 20 pt margin.
+        let titleX = label.convert(label.bounds, to: nil).minX
+        let expectedX = SettingsLayout.sidebarWidth + SettingsMetrics.margin
+        #expect(abs(titleX - expectedX) <= 3, "Title starts at \(titleX), content at \(expectedX)")
+        // The traffic lights are centred in the bar.
+        for kind in [NSWindow.ButtonType.closeButton, .miniaturizeButton, .zoomButton] {
+            guard let button = window.standardWindowButton(kind) else { continue }
+            let centre = button.convert(button.bounds, to: bar).midY
+            #expect(abs(centre - bar.bounds.midY) <= 1, "\(kind) centre \(centre) in a bar of \(bar.bounds.height)")
+        }
+    }
+
     @Test("The detail column keeps the Settings form width, so the size sliders keep their layout")
     func detailWidthMatchesTheForm() async throws {
         let fixture = try SettingsWindowFixture(pane: .previews)
@@ -155,18 +238,10 @@ struct SettingsWindowTests {
         }
         let inWindow = try #require(fixture.host.settingsDescendants(of: ScaleSliderView.self).first)
 
-        // The same section in the 568 pt form the single-column Settings window had.
-        let form = Form { ArchivePreviewSettingsSection(preferences: fixture.preferences) }.formStyle(.grouped)
-        let size = CGSize(width: 568, height: 400)
-        let reference = NSHostingView(rootView: form.frame(width: size.width, height: size.height))
-        let window = NSWindow(contentRect: NSRect(origin: .zero, size: size), styleMask: [.titled], backing: .buffered, defer: false)
-        window.isReleasedWhenClosed = false
-        defer { window.close() }
-        window.contentView = reference
-        reference.layoutSubtreeIfNeeded()
-        let standalone = try #require(reference.settingsDescendants(of: ScaleSliderView.self).first)
-        #expect(abs(inWindow.slider.frame.width - standalone.slider.frame.width) <= 1,
-                "Slider width \(inWindow.slider.frame.width) in the pane, \(standalone.slider.frame.width) in the form")
+        // The 568 pt grouped form the single-column Settings window had gave the slider a 484 pt track;
+        // the new pane (20 pt margins, 12 pt row padding, a 10 pt slider inset) keeps that measure
+        // (ZF-62 replaced the grouped form this test used as its reference with that measured value).
+        #expect(abs(inWindow.slider.frame.width - 484) <= 1, "Slider width \(inWindow.slider.frame.width) in the pane, 484 in the former form")
     }
 
     // General, Sidebar and Automation show this Mac's state (the Finder extension, the computer
@@ -179,16 +254,39 @@ struct SettingsWindowTests {
         (.previews, "dark", .darkAqua, .english),
         (.viewOptions, "dark-de", .darkAqua, .german),
         (.compression, "light-pt-BR", .aqua, .portugueseBrazil),
+        (.viewOptions, "light-es", .aqua, .spanish),
     ])
     func paneSnapshot(pane: SettingsPane, name: String, appearance: NSAppearance.Name, language: AppLanguagePreference) throws {
-        // The pane as the detail column shows it. The sidebar's glass material is drawn by the
-        // window server, so its look is reviewed in a real run (REGRESSION-COVERAGE, ZF-58).
+        try snapshotPane(named: "\(pane.rawValue)-\(name)", appearance: appearance, language: language, testName: #function) { preferences in
+            SettingsPaneView(pane: pane, preferences: preferences, openProfile: { _ in })
+        }
+    }
+
+    /// The Sidebar pane lists this Mac's name and home folder, so the snapshot fixes both.
+    @Test("Snapshot: the Sidebar pane", arguments: [
+        ("light", NSAppearance.Name.aqua, AppLanguagePreference.english),
+        ("dark", .darkAqua, .english),
+        ("light-es", .aqua, .spanish),
+    ])
+    func sidebarPaneSnapshot(name: String, appearance: NSAppearance.Name, language: AppLanguagePreference) throws {
+        try snapshotPane(named: "sidebar-\(name)", appearance: appearance, language: language, testName: #function) { preferences in
+            SidebarSettingsPane(preferences: preferences, computerName: "Studio Mac", homeName: "felipe")
+        }
+    }
+
+    /// The pane as the detail column shows it. The sidebar's glass material is drawn by the
+    /// window server, so its look is reviewed in a real run (REGRESSION-COVERAGE, ZF-58).
+    private func snapshotPane<Pane: View>(
+        named name: String, appearance: NSAppearance.Name, language: AppLanguagePreference,
+        testName: String, pane: (FileBrowserPreferences) -> Pane
+    ) throws {
         let suite = "ZforgeTestSuite.SettingsPaneSnapshot-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))
         defer { defaults.removeTestSuite(named: suite) }
         let preferences = FileBrowserPreferences(defaults: defaults)
         preferences.language = language
-        let view = NavigationStack { SettingsPaneView(pane: pane, preferences: preferences, openProfile: { _ in }) }
+        let view = NavigationStack { pane(preferences) }
+            .background { Color(nsColor: .windowBackgroundColor).ignoresSafeArea() }
             .environment(\.locale, language.locale)
         let size = CGSize(width: SettingsLayout.detailWidth, height: SettingsLayout.height)
         let host = NSHostingView(rootView: view.frame(width: size.width, height: size.height))
@@ -197,7 +295,36 @@ struct SettingsWindowTests {
         defer { window.close() }
         window.contentView = host
         host.layoutSubtreeIfNeeded()
-        ZforgeSnapshot.assert(host, appearance: appearance, named: "\(pane.rawValue)-\(name)")
+        ZforgeSnapshot.assert(host, appearance: appearance, named: name, testName: testName)
+    }
+}
+
+/// The sidebar's tiles and titles as the rows draw them. The real sidebar's glass and selection are
+/// drawn by the window server (an offscreen window shows them wrongly), so the rows are hosted in a
+/// plain 204 pt column with the chosen row drawn as an accent capsule.
+extension SettingsWindowTests {
+    @Test("Snapshot: the sidebar rows", arguments: [
+        ("light", NSAppearance.Name.aqua, AppLanguagePreference.english),
+        ("dark", .darkAqua, .english),
+        ("light-es", .aqua, .spanish),
+        ("dark-de", .darkAqua, .german),
+    ])
+    func sidebarRowsSnapshot(name: String, appearance: NSAppearance.Name, language: AppLanguagePreference) {
+        let rows = VStack(spacing: 0) {
+            ForEach(SettingsPane.allCases) { pane in
+                SettingsSidebarRow(pane: pane)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 4)
+                    .foregroundStyle(pane == .viewOptions ? Color.white : Color.primary)
+                    .background(pane == .viewOptions ? Color.accentColor : .clear, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(10)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .environment(\.locale, language.locale)
+        .background(Color(nsColor: .windowBackgroundColor))
+        ZforgeSnapshot.assert(rows, size: CGSize(width: 224, height: 240), appearance: appearance, named: name)
     }
 }
 
@@ -217,19 +344,21 @@ final class SettingsWindowFixture {
         preferences = FileBrowserPreferences(defaults: defaults)
         preferences.language = language
         preferences.settingsPane = pane
-        let host = NSHostingView(rootView: ZforgeSettingsView(preferences: preferences))
+        // As the browser window is hosted: SwiftUI installs the window toolbar only this way.
         window = NSWindow(contentRect: NSRect(origin: .zero, size: Self.size),
                           styleMask: [.titled, .closable, .fullSizeContentView], backing: .buffered, defer: false)
         window.isReleasedWhenClosed = false
         window.toolbarStyle = toolbarStyle
-        window.contentView = host
-        host.frame = NSRect(origin: .zero, size: Self.size)
+        window.contentViewController = NSHostingController(rootView: ZforgeSettingsView(preferences: preferences))
+        window.setContentSize(Self.size)
+        let host = try #require(window.contentView)
         host.layoutSubtreeIfNeeded()
         self.host = host
     }
 
     func close() {
         window.close()
+        window.contentViewController = nil
         defaults.removeTestSuite(named: suite)
     }
 
@@ -244,6 +373,12 @@ final class SettingsWindowFixture {
 }
 
 extension NSView {
+    func settingsDescendants(named className: String) -> [NSView] {
+        subviews.flatMap { child -> [NSView] in
+            (String(describing: type(of: child)) == className ? [child] : []) + child.settingsDescendants(named: className)
+        }
+    }
+
     func settingsDescendants<T: NSView>(of type: T.Type) -> [T] {
         subviews.flatMap { child -> [T] in ((child as? T).map { [$0] } ?? []) + child.settingsDescendants(of: type) }
     }

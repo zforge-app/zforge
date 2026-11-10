@@ -627,6 +627,18 @@ Pending: in-app check of the row and the computer level in the four modes (light
 - [ ] Native-speaker review of the 12 new translations (modifier names follow Apple's keyboard terms where known; several languages keep the English key names).
 - [x] Investigate the intermittent unit-host crash (corrected by ZF-64, D-81) seen while running the full `Unit` plan in this work (see REGRESSION-COVERAGE and D-76).
 
+### ZF-62 — Settings window polish: title bar, flat sidebar, spacing, system colours (2026-11-09, D-80)
+
+**Implemented; unit tests and offscreen snapshots pass; real window not reviewed (see below).** User request: spacing inconsistencies, meaningless sidebar groups, a compact title bar with a small grey title beside the browser's toolbar, and unwanted icon colours; mockup approved with system colours (`settings-mock.html`, “cores do sistema”, both themes). Ids chosen high (ZF-62, D-80) because another agent redesigns Keyboard Shortcuts in parallel and may take the next ids.
+- [x] Title bar: 52 pt unified toolbar and the pane title in the toolbar title style (15 pt semibold, label colour) leading-aligned with the content margin, traffic lights centred; measured against the browser window offscreen. `SettingsToolbarAnchor` gives the window a toolbar item because SwiftUI makes the toolbar only then.
+- [x] Sidebar: flat list (removed `SettingsPane.groups`), uniform 28 pt rows, 13 pt titles, 20 pt tiles, 8 pt gap; titles checked to fit two lines in every language.
+- [x] Detail: `SettingsLayoutComponents.swift` (margins 20, groups 20 apart, header 13 semibold, footers 11 secondary below the group, 36 pt rows, 12 pt padding, small switches); List Columns, Sidebar, Finder and Automation explanations moved to footers; drag-handle alignment kept.
+- [x] Tiles: macOS system colours with a subtle top lightening (`SettingsPane.tileColor`).
+- [x] Tests and docs: D-80 (changed expectations), REGRESSION-COVERAGE “Settings polish — ZF-62”, CURRENT-STATE, UI-UX-GUIDE.
+- [ ] Look at the real window (title bar toolbar anchor, 220 pt sidebar rows, profile page back button beside the title, light and dark) in the user's build; the offscreen run could not show the glass sidebar or run the Settings UI tests (see REGRESSION-COVERAGE).
+- [ ] A profile page (`CompressionProfileDetailView`) still uses a grouped `Form`: its fields are shared with the compression dialog; bring it to the same group layout.
+- [ ] VoiceOver pass over the new switch rows (title is the switch's label) and the Compression profile rows (NavigationLink with plain style).
+
 ### ZF-64 — Unit test host crash after macOS 27.2 (2026-11-09, D-81)
 
 **Corrected; results in REGRESSION-COVERAGE “Unit test host crash — ZF-64”.** Every full `Unit` run crashed the test host once (`objc_release` of a freed `NSWindow` in a main-actor job's autorelease pool) and reported the tests still running as failed.
