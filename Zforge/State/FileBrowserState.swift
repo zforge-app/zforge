@@ -4707,12 +4707,10 @@ final class FileBrowserState {
 
     private func refreshExpandedFileSystemHierarchy(expectedReloadGeneration: UInt64) async {
         guard expectedReloadGeneration == reloadGeneration else { return }
-        var reachableExpandedItems: Set<BrowserItemID> = []
 
         func refresh(_ candidates: [BrowserItem]) async {
             for item in candidates where expandedItems.contains(item.id) {
                 guard expectedReloadGeneration == reloadGeneration else { return }
-                reachableExpandedItems.insert(item.id)
                 var children = expandedChildren[item.id] ?? []
 
                 if item.isDirectory,
@@ -4744,6 +4742,16 @@ final class FileBrowserState {
         await refresh(items)
         guard expectedReloadGeneration == reloadGeneration else { return }
 
+        // Reachability is taken from the tree as it is now, after the last
+        // suspension: an expansion that other work completed while a listing
+        // above was awaited (the refresh after an archive update, the user's
+        // disclosure) is reachable and stays (D-90).
+        var reachableExpandedItems: Set<BrowserItemID> = []
+        var pending = items
+        while let item = pending.popLast() {
+            guard expandedItems.contains(item.id), reachableExpandedItems.insert(item.id).inserted else { continue }
+            pending.append(contentsOf: expandedChildren[item.id] ?? [])
+        }
         let unreachableItems = expandedItems.subtracting(reachableExpandedItems)
         guard !unreachableItems.isEmpty else { return }
         expandedItems.subtract(unreachableItems)
