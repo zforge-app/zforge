@@ -679,8 +679,9 @@ Pending: in-app check of the row and the computer level in the four modes (light
 
 ### ZF-67 — Settings UI tests failing offscreen after the ZF-62 pane rewrite (open, 2026-11-09, D-85)
 
-- [ ] Run `testSettingsToggleUpdatesTheOpenGridAndKeepsSelection` and `testListColumnsReorderByDragging` in the real mode (they take over the screen; announce first) to decide whether ZF-62 regressed them or the tool does not simulate the new `ScrollView` pane.
-- [ ] Then fix Zforge (regression) or the tool (hit test of SwiftUI switches, `DragGesture` delivery in a SwiftUI `ScrollView`), with the failing case first.
+- [x] Run `testSettingsToggleUpdatesTheOpenGridAndKeepsSelection` and `testListColumnsReorderByDragging` in the real mode (2026-11-10, `3693d00`): the toggle test passes (tool limit); the reorder test fails real too, Kind moves one place instead of two (Zforge regression of ZF-62).
+- [ ] Fix the List Columns drag reorder in Zforge, with the failing case first (awaiting the user's go-ahead).
+- [ ] Fix the tool's hit test of SwiftUI switches so the toggle test passes offscreen (awaiting the user's go-ahead).
 
 ### ZF-65 — Follow-ups found by ZF-64 (open, 2026-11-09)
 

@@ -788,11 +788,18 @@ Ruled out: Zforge's quiet-launch activation policy (`UnitTestHostPresentation`) 
 
 Correction (tool only, branch `fix/xcode-27.2-launch-hooks`, commit `9a3af86`): launch hooks installed on their own; the runner opens its CoreGraphics session at load; clicks inside an ordering proxy go to the proxied panel; pending tracking areas are updated before the simulated cursor is evaluated. No Zforge code or test changed. Results: REGRESSION-COVERAGE “Offscreen UI tests on Xcode 27.2 — ZF-66”. The real-versus-simulated equivalence recorded for ZF-56 was measured on Xcode 27.1 and has not been repeated on 27.2.
 
-### D-85 — Two Settings UI tests fail offscreen on `main` after the ZF-62 pane rewrite (open, found 2026-11-09)
+### D-85 — Two Settings UI tests fail offscreen on `main` after the ZF-62 pane rewrite (open; classified by a real run 2026-11-10)
 
 With D-84 corrected, the offscreen set passes 18/18 on `519a085` (the last build that was green offscreen) and 16/18 on `main` (`70e4382`). Both failures are in the Settings window, whose panes ZF-62 changed from a grouped `Form` to a SwiftUI `ScrollView` (`SettingsPaneColumn`); no UI test had run on that change (D-76).
 
 - `IconPreviewUITests.testSettingsToggleUpdatesTheOpenGridAndKeepsSelection`: clicking `settings-show-icon-previews` fails “Not hittable” (3 attempts; XCTest's scroll-to-visible does not help). The toggle is now a small `.switch` with hidden label in `SettingsToggleRow`. Trace: at the switch's centre the agent's hit test answers with SwiftUI's `PlatformSwitch` view element (type Switch, 46×22), while the queried element is SwiftUI's `CheckBox` node carrying the identifier (44×20); the Switch is neither that element nor its descendant.
 - `SettingsUITests.testListColumnsReorderByDragging`: the coordinate drag on the Kind row's handle is delivered, but the order stays `[modificationDate, size, kind]`. The handle's `DragGesture` code is the same as at `519a085`; only its container changed.
 
-Not decided: whether these are Zforge regressions of ZF-62 or limits of the tool's simulation (its hit test approximates the accessibility server with `-[NSWindow accessibilityHitTest:]` plus a descent; SwiftUI gesture delivery in a `ScrollView` was never validated offscreen). Deciding needs a real-mode run of the two tests, which takes over the screen and was not run (TASKS ZF-67).
+Before the real run it was not decided whether these were Zforge regressions of ZF-62 or limits of the tool's simulation (its hit test approximates the accessibility server with `-[NSWindow accessibilityHitTest:]` plus a descent; SwiftUI gesture delivery in a `ScrollView` was never validated offscreen).
+
+Real-mode run on `main` (`3693d00`), 2026-11-10 (REGRESSION-COVERAGE “Real-mode run of the D-85 Settings UI tests”):
+
+- `testSettingsToggleUpdatesTheOpenGridAndKeepsSelection` **passed** (41 s). The switch is hittable for the real accessibility server, so the offscreen failure is a limit of the tool's hit test (SwiftUI `PlatformSwitch` versus the `CheckBox` node that carries the identifier), not a Zforge regression. Fix belongs to the tool.
+- `testListColumnsReorderByDragging` **failed** (23 s): the real drag from Kind's handle to the Date Modified row moved Kind only one place (`[modificationDate, kind, size]` instead of `[kind, modificationDate, size]`), and the browser's List header then showed Date Modified before Kind. The gesture is delivered and reorders, but by too few rows, so this is a **Zforge regression of ZF-62** (the test passed on `519a085`). Cause not yet investigated; candidates are the row pitch read from `listColumnRowFrames` in the new `SettingsPaneColumn` layout and frames measured while the move animates.
+
+Status: the reorder regression is open in Zforge; the switch hit test is open in the tool. No code changed in this classification.

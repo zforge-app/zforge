@@ -1808,3 +1808,12 @@ Environment: macOS 27.2 (26B123), Xcode 27.2, Mac17,3 (10 cores). Another agent 
 - **Remaining failures, not among the four and not caused by this change (test code only, none of these suites touched):** `ArchiveDragDropTests` “Option-drag out of an archive asks before moving…” (`:134`, `Survivor.txt` rows 0 right after a confirmed move; `fixB`, `fixC`; 20/20 alone with 16 CPU-bound processes; recorded before on 2026-11-02 as open) and `KeyboardShortcutsWindowTests` “Sidebar rows are the Settings sidebar's uniform 28 pt rows” (`:105`, heights `[40, 24, 40, 28, 40, 28, 28, 28, 40]`: some rows still at the two-line height of the narrow pre-constraint sidebar; `full1`, `full2`, `fixD`; 5/5 alone with the session locked). Both appear only in the full plan; tracked in TASKS ZF-69. At load ≈ 200 with the session locked (`full1`, `full2`) there were also D-71 one-minute time limits in `IconPreviewServiceTests` and one host restart per run (testmanagerd took a spindump of the unresponsive host and ended it; no crash report), plus the seven D-49 checkpoint contracts (locked session, documented precondition).
 - **Not achieved:** two consecutive full `Unit` runs with 0 failures — one clean run (`fixA`) of four with the session unlocked, because of the two failures above.
 - **Build:** `build-for-testing` 0 warnings outside packages; `Scripts/affected-tests.py`: 10 changed files, `Unit` plan, 0 UI tests; `--check` 28 UI tests, 22 rules, 0 problems. No UI test was run.
+
+## Real-mode run of the D-85 Settings UI tests — ZF-67, 2026-11-10 (D-85)
+
+Environment: macOS 27.2 (26B123), Xcode 27.2 (27B52), arm64; `main` at `3693d00`; session unlocked; real mode (`xcodebuild test -testPlan UI-Full` with `-only-testing` for the two tests; the run took over the screen and was announced to the user). Result bundle and log in this session's scratchpad (`settings-real.xcresult`, `settings-real.log`).
+
+- `IconPreviewUITests.testSettingsToggleUpdatesTheOpenGridAndKeepsSelection`: **passed** (41.1 s). The offscreen “Not hittable” failure is a tool limit, not a Zforge regression.
+- `SettingsUITests.testListColumnsReorderByDragging`: **failed** (23.1 s), two issues: `SettingsUITests.swift:43` order after the drag `[modificationDate, kind, size]` (expected `[kind, modificationDate, size]`); `:60` List header order minX `[934, 754, 1084]` for Kind, Date Modified, Size. Zforge regression of ZF-62 (D-85), open.
+- **Totals:** 1 passed, 1 failed, 0 skipped. **Not run:** the `Unit` plan and other UI tests (no code changed); the 10 `realOnly` tests.
+
