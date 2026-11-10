@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Same ZIP Store core workload for official CLI, static bridge and dynamic bridge."""
-import argparse, hashlib, json, os, platform, statistics, subprocess, time
+import argparse, hashlib, json, os, platform, statistics, subprocess, sys, time
 from pathlib import Path
 
 parser = argparse.ArgumentParser()
@@ -13,7 +13,9 @@ root = args.output_dir.resolve()
 root.mkdir(parents=True, exist_ok=False)
 static = args.static_library.resolve()
 dynamic = args.dynamic_library.resolve()
-cli = repo / 'Vendor/7zz'
+# Official reference CLI, downloaded and verified on demand (not tracked in Git).
+cli = Path(subprocess.run([sys.executable, str(repo / 'Scripts/fetch-7zz.py')], check=True,
+                          capture_output=True, text=True).stdout.strip())
 bridge = repo / 'Zforge/Native/SevenZipBridge.mm'
 sha = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()
 base = ['xcrun', 'clang++', '-arch', 'arm64', '-mmacosx-version-min=26.0',

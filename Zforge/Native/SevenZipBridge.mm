@@ -20,7 +20,6 @@
 #include "../../Vendor/7zip/CPP/7zip/Common/FileStreams.h"
 #include "../../Vendor/7zip/CPP/7zip/Common/StreamObjects.h"
 #include "../../Vendor/7zip/CPP/7zip/Archive/IArchive.h"
-#include "../../Vendor/7zip/CPP/7zip/Archive/Common/MultiStream.h"
 #include "../../Vendor/7zip/CPP/7zip/IPassword.h"
 #undef BOOL
 #import "SevenZipBridge.h"
@@ -131,6 +130,54 @@ HRESULT OpenSource(NSString *path, Context &ctx, CMyComPtr<IInStream> &result, U
     if (length) *length = size;
     return S_OK;
 }
+/// Presents numbered volumes (`name.7z.001`, `name.7z.002`, ...) as one seekable stream.
+/// 7-Zip 26.06 removed the equivalent `CMultiStream`; this keeps the bridge independent of it.
+class VolumeStream final : public IInStream, public IStreamGetSize, public CMyUnknownImp {
+    Z7_COM_UNKNOWN_IMP_3(IInStream, ISequentialInStream, IStreamGetSize)
+    Z7_IFACE_COM7_IMP(ISequentialInStream)
+    Z7_IFACE_COM7_IMP(IInStream)
+    Z7_IFACE_COM7_IMP(IStreamGetSize)
+    struct Volume {
+        CMyComPtr<IInStream> stream;
+        UInt64 start = 0, size = 0;
+    };
+    std::vector<Volume> volumes;
+    UInt64 position = 0, length = 0;
+public:
+    void append(CMyComPtr<IInStream> stream, UInt64 size) {
+        volumes.push_back({stream, length, size});
+        length += size;
+    }
+    bool isEmpty() const { return volumes.empty(); }
+};
+Z7_COM7F_IMF(VolumeStream::Read(void *data, UInt32 size, UInt32 *processed)) {
+    if (processed) *processed = 0;
+    if (size == 0 || position >= length) return S_OK;
+    // The volume that holds `position`: the last one starting at or before it.
+    auto volume = std::upper_bound(volumes.begin(), volumes.end(), position,
+        [](UInt64 offset, const Volume &item) { return offset < item.start; }) - 1;
+    const UInt64 local = position - volume->start;
+    RINOK(volume->stream->Seek((Int64)local, STREAM_SEEK_SET, nullptr))
+    const UInt32 chunk = (UInt32)std::min<UInt64>(size, volume->size - local);
+    UInt32 done = 0;
+    const HRESULT result = volume->stream->Read(data, chunk, &done);
+    position += done;
+    if (processed) *processed = done;
+    return result;
+}
+Z7_COM7F_IMF(VolumeStream::Seek(Int64 offset, UInt32 origin, UInt64 *newPosition)) {
+    switch (origin) {
+        case STREAM_SEEK_SET: break;
+        case STREAM_SEEK_CUR: offset += (Int64)position; break;
+        case STREAM_SEEK_END: offset += (Int64)length; break;
+        default: return STG_E_INVALIDFUNCTION;
+    }
+    if (offset < 0) return HRESULT_WIN32_ERROR_NEGATIVE_SEEK;
+    position = (UInt64)offset;
+    if (newPosition) *newPosition = position;
+    return S_OK;
+}
+Z7_COM7F_IMF(VolumeStream::GetSize(UInt64 *size)) { *size = length; return S_OK; }
 class OpenCallback final : public IArchiveOpenCallback, public ICryptoGetTextPassword,
     public IArchiveOpenVolumeCallback, public CMyUnknownImp {
     Z7_IFACES_IMP_UNK_3(IArchiveOpenCallback, ICryptoGetTextPassword, IArchiveOpenVolumeCallback)
@@ -184,16 +231,17 @@ HRESULT Input(NSString *path, Context &ctx, CMyComPtr<IInStream> &result) {
         [volumes addObject:name];
     }
     [volumes sortUsingSelector:@selector(compare:)];
-    CMultiStream *multi = new CMultiStream; result = multi;
+    VolumeStream *multi = new VolumeStream; result = multi;
     unsigned index = 1;
     for (NSString *name in volumes) {
         if (name.pathExtension.intValue != index++) return E_FAIL;
-        CMultiStream::CSubStreamInfo sub;
+        CMyComPtr<IInStream> stream;
+        UInt64 size = 0;
         NSString *volume = [path.stringByDeletingLastPathComponent stringByAppendingPathComponent:name];
-        if (OpenSource(volume, ctx, sub.Stream, &sub.Size) != S_OK) return E_FAIL;
-        multi->Streams.Add(sub);
+        if (OpenSource(volume, ctx, stream, &size) != S_OK) return E_FAIL;
+        multi->append(stream, size);
     }
-    return multi->Streams.IsEmpty() ? E_FAIL : multi->Init();
+    return multi->isEmpty() ? E_FAIL : S_OK;
 }
 HRESULT Open(NSString *path, Context &ctx, Archive &arc) {
     UInt32 count = 0; RINOK(GetNumberOfFormats(&count))

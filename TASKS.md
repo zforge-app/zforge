@@ -649,6 +649,19 @@ Pending: in-app check of the row and the computer level in the four modes (light
 - [x] “Write-back alerts” snapshots (D-89): IconServices placeholder captured; the test waits until the application icon renders. Reference unchanged.
 - [x] Requirements: AGENT-INTEGRATION-PLAN measurement gate; RNF-Q08 rule on clocks in tests.
 
+### ZF-74 — 7-Zip engine update process and update to 26.06 (2026-11-10)
+
+Requested: adopt the recommended way to keep 7-Zip current (vendored sources, an import script, updates committed on their own, `7zz` out of Git and its history), write the script and update the engine. Policy in PRODUCT-REQUIREMENTS, *Engine updates*.
+- [x] `Scripts/update-7zip.py`: imports a release tag byte for byte (upstream export attributes overridden: 26.03 added `*.dsp text eol=crlf`), stamps the files with the import time so cached engine objects rebuild, applies listed patches, regenerates `inputs.xcfilelist`, records provenance and the reference `7zz` asset, reports files, license changes and upstream history; `--verify`, `--status`, `--latest`. Script tests in `Scripts/tests/test_update_7zip.py`.
+- [x] `Scripts/fetch-7zz.py`: downloads the matching macOS `7zz`, verifies checksum and reported version, caches it; benchmark scripts use it. `Vendor/7zz` removed from the tree and the project.
+- [x] Engine 26.02 → 26.06 (`d3296e3`): 214 upstream files changed, no file added or removed, license files unchanged; fixes vulnerabilities in 26.03–26.06 (CVE-2026-58052 among them). 26.06 removed `CMultiStream`: the bridge reads numbered volumes through its own `VolumeStream`.
+- [x] `Vendor/7zz` stays in the past history; only untracked (user decision, 2026-11-10).
+- [x] Validation: Unit plan 703/703; 5/5 offscreen and 5/6 real UI tests (REGRESSION-COVERAGE “7-Zip engine update to 26.06”).
+- [ ] `testArchivePromisesPublishIntoFinderBeforeRemovingOriginal` fails intermittently at `:691`: move decided from the modifier state at the promise request (D-94, next commit).
+- [x] No 26.02 versus 26.06 benchmark comparison (user decision, 2026-11-10).
+- [ ] Bundle the source license notices (D-93).
+- [ ] Scheduled upstream check (`--status`) once the repository is on GitHub.
+
 ### ZF-73 — Intermittent offscreen failure of the compact toolbar menus UI test (open, 2026-11-10)
 
 `ZforgeUITests.testCompactToolbarMenusOpenFromTheirToolbarButtons` fails intermittently offscreen at `ZforgeUITests.swift:952`: right after the overflow button's click, its value still reads “Collapsed”. Every occurrence ran in the same lane right after `testBlankAreaUsesMoreMenuInEveryView`, the pair whose earlier shared-preferences cause was corrected by ZF-54 (D-63).

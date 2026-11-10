@@ -9,7 +9,9 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[3]
-CLI = REPO / 'Vendor/7zz'
+# Official reference CLI, downloaded and verified on demand (not tracked in Git).
+CLI = Path(subprocess.run([sys.executable, str(REPO / 'Scripts/fetch-7zz.py')], check=True,
+                          capture_output=True, text=True).stdout.strip())
 ENGINE_SOURCES = ['Services/ArchiveEngine.swift', 'Services/ArchiveEntry.swift',
                   'Services/NativeSevenZipBackend.swift', 'Models/CompressionOptions.swift',
                   'Models/BrowserModels.swift', 'Services/AppLocalization.swift',

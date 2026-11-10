@@ -1,6 +1,6 @@
 {
-  "version": "26.02",
-  "revision": "f9d78aff31a5f2521ae7ddbdc97c4a8855808959",
+  "version": "26.06",
+  "revision": "d3296e39e1f1f92c7b41c0c3848e65640428d42d",
   "repository": "https://github.com/ip7z/7zip",
   "snapshot_paths": [
     "C",
@@ -8,7 +8,7 @@
     "DOC",
     "Asm"
   ],
-  "git_archive_sha256": "a05a15feed8f191b7fd8d93fa9e85777d681068dc35266e1ed73d339fae0acc1",
+  "git_archive_sha256": "8b7e4c52ef2e28262f2be31e9a4150a28b9e1b50b42e15ca3d086db6d0068653",
   "patches": [],
   "build": {
     "architecture": "arm64",
@@ -18,5 +18,9 @@
     "assembly": "ARM64 LzmaDecOpt",
     "multithreaded": true,
     "cxx_standard": "c++17"
+  },
+  "reference_cli": {
+    "url": "https://github.com/ip7z/7zip/releases/download/26.06/7z2606-mac.tar.xz",
+    "sha256": "b6f17920b4240940461dac8ef4009891881ac44d2a5ead625ede2ec8472185dd"
   }
 }

@@ -13,6 +13,7 @@
     "Zforge.xcodeproj/xcshareddata/*",
     ".gitignore",
     ".githooks/*",
+    "BuildSupport/SevenZip/Benchmarks/*",
     "*.DS_Store"
   ],
   "offscreen": {

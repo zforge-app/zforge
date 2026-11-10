@@ -637,6 +637,12 @@ Cause: the offscreen sidebar starts at 144 pt with two-line rows until `SidebarS
 
 Correction (test only; scenario and the 28 pt assertion unchanged): the fixture's wait lays out the whole window between polls (`window.layoutIfNeeded()`, which updates constraints first, as the display cycle does), and the sidebar test waits until the rows exist, the table is 206 pt wide and neither the table nor any ancestor needs a constraint update or layout (`isLaidOut`). With the same `Task.yield()` injection the suite passed 50/50.
 
+### D-93 — The app bundles the 7-Zip binary package's license, not the license of the sources it builds (open, 2026-11-10, found by ZF-74)
+
+PRODUCT-REQUIREMENTS (*Licensing and commercial distribution*) requires the complete `License.txt` of the distributed engine version and the text of the applicable GNU LGPL, and CURRENT-STATE says the full license, LGPL and unRAR notices accompany the bundle. The only notice the app target copies is `Vendor/7-Zip-License.txt`, added with the CLI backend (`6733b42`): it is the license of the official macOS console package (“The licenses for 7zz and 7zzs files are…”), not `Vendor/7zip/DOC/License.txt`, the license of the sources Zforge compiles. The bundle has no full LGPL text (`DOC/copying.txt`) and no `DOC/unRarLicense.txt`, and the file is not refreshed by an engine update.
+
+- Not a behavior regression; it is a distribution notice gap, to be closed with the third-party notices required before publication (PRODUCT-REQUIREMENTS, *Source hosting*). Expected fix: bundle `DOC/License.txt`, `DOC/copying.txt` and `DOC/unRarLicense.txt` from the vendored snapshot (so `Scripts/update-7zip.py` keeps them current) and show them in the app's third-party licenses section.
+
 ### D-92 — The real Option-drag UI test's drop never ends on macOS 27.2 (corrected in the test 2026-11-10, ZF-72)
 
 `ZforgeUITests.testLocalDragsOptionCopyAndConfirmAdditionToArchive` (real-only) passed on 2026-11-02 at `519a085` (macOS/Xcode 27.1, REGRESSION-COVERAGE “Settings in two columns — ZF-58”). On 2026-11-10 (macOS 27.2 26B123, Xcode 27.2 27B52) it fails at `ZforgeUITests.swift:603`: after `local.click(forDuration: 0.3, thenDragTo: Sample.zip)` the “Add to Archive” confirmation never appears.

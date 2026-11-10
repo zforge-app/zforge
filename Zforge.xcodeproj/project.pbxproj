@@ -55,7 +55,6 @@
 		55A3998430042A170038B088 /* Zforge.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Zforge.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		55A3999130042A180038B088 /* ZforgeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ZforgeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		55A3999B30042A180038B088 /* ZforgeUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ZforgeUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		A10000000000000000000003 /* 7zz */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = 7zz; sourceTree = "<group>"; };
 		A10000000000000000000004 /* 7-Zip-License.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "7-Zip-License.txt"; sourceTree = "<group>"; };
 		B10000000000000000000001 /* ZforgeFinderExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ZforgeFinderExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -172,7 +171,6 @@
 		A10000000000000000000007 /* Vendor */ = {
 			isa = PBXGroup;
 			children = (
-				A10000000000000000000003 /* 7zz */,
 				A10000000000000000000004 /* 7-Zip-License.txt */,
 			);
 			path = Vendor;

@@ -138,6 +138,28 @@ Zforge is planned as an open source project. The use of 7-Zip must not hide or r
 - License the original Zforge code under the MIT license. components, sources and modifications derived from 7-Zip remain under LGPL or their other applicable licenses and must be identified separately; the Zforge MIT license does not replace or relicense those components.
 - Communicate transparently that the purchase on the Mac App Store supports development and offers installation and upgrade convenience, while the free official version remains complete.
 
+### Engine updates — decided 2026-11-10 (implemented with ZF-74)
+
+- Keep the official 7-Zip sources vendored in `Vendor/7zip`, not as a Git submodule or a download during the build. Each Zforge revision then carries the exact engine source it builds, which the LGPL corresponding-source obligation needs, and builds offline.
+- Change the snapshot only through `Scripts/update-7zip.py <tag>`. It imports an upstream release tag byte for byte (upstream export attributes do not apply), applies the patches listed in `Vendor/7zip-provenance.json` from `Vendor/7zip-patches/`, regenerates `BuildSupport/SevenZip/inputs.xcfilelist`, records version, revision, archive checksum and the matching reference `7zz` asset, and reports added and removed files, license file changes and the upstream history since the previous version. `--verify` checks the snapshot against its provenance; `--status` compares it with the newest upstream release.
+- Keep the patch list empty when possible; a needed engine change goes to `Vendor/7zip-patches/` with its reason and is offered upstream.
+- Commit an engine update on its own: the snapshot, the provenance, and only the bridge or build changes the new release requires. Behavior changes go in separate commits.
+- Validate each update with a clean build without warnings, the full `Unit` plan, and the UI tests the impact map selects for `Vendor/*`; review the upstream history for the formats Zforge exposes.
+- Cadence: a release that fixes a vulnerability is imported promptly and followed by a Zforge release; other releases are imported per upstream release or before each Zforge release. Once the repository is on GitHub, a scheduled workflow runs `--status` and opens an issue or pull request for a newer release (pending).
+- The official `7zz` console binary is a development reference only (benchmarks, fixture generation and comparison). It is not tracked in Git: `Scripts/fetch-7zz.py` downloads the macOS asset of the vendored release recorded under `reference_cli`, verifies its checksum and reported version, and caches it under `~/Library/Caches/dev.zforge/7zz`.
+
+### Source hosting — decided 2026-11-10 (not yet published)
+
+- Host the public source on GitHub under the organization `zforge-app` (the name was unclaimed on 2026-11-10), one repository per project rather than a monorepo:
+  - `zforge-app/zforge`: the macOS app (this repository).
+  - `zforge-app/zforge-website`: the official website.
+  - `zforge-app/zforge-xcuitest-sim`: the offscreen XCUITest tool used by `Scripts/affected-tests.py`.
+- The design system (AkariDS) is not one of the organization's repositories; its own repository is named `akari-ds`. Pending decision: how the website consumes it. The recommendation is a versioned package instead of the current relative path to a sibling checkout.
+- Link repositories through pinned versions (tags or releases), not Git submodules.
+- Before the first push, the app repository needs a `.gitignore`, removal of the tracked `xcuserdata` files, a secret scan of the full history, and the third-party notices required in *Licensing and commercial distribution*.
+- `Vendor/7zz` is no longer tracked (ZF-74). The user decided on 2026-11-10 that it stays in the past history; no history rewrite.
+- State: names decided; the organization and repositories are not created and nothing is published.
+
 ## Functional mark: browser read-only
 
 The first functional milestone of Zforge is a file manager native read-only. Until a later phase explicitly authorizes writing operations, the application must allow navigation, selection, inspection, sharing, Quick Look and opening, but do not copy, move, delete, rename, duplicate, create folders or edit compressed files.
