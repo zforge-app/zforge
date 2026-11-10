@@ -16,29 +16,7 @@ struct SidebarComputerRow: View {
     }
 }
 
-/// Finder's Network item: the last Locations row, after the volumes. It opens the Network level
-/// (the same path as Go ▸ Network) and accepts no drops.
-struct SidebarNetworkRow: View {
-    @Bindable var browser: FileBrowserState
-    let restoreContentFocus: () -> Void
-
-    /// Highlighted only while the Network level itself is shown, not inside a mounted share.
-    static func isCurrent(in browser: FileBrowserState) -> Bool { browser.location == .network }
-
-    var body: some View {
-        SidebarVirtualLocationRow(title: Text("Network"), systemImage: "network",
-                                  isCurrent: Self.isCurrent(in: browser), identifier: "sidebar-network",
-                                  action: open)
-    }
-
-    /// The row's action: the same navigation as Go ▸ Network.
-    func open() {
-        restoreContentFocus()
-        Task { await browser.navigateToNetwork() }
-    }
-}
-
-/// A Locations row for a virtual level (computer, Network): drawn like the destination rows,
+/// A Locations row for a virtual level (the computer): drawn like the destination rows,
 /// highlighted while its level is current, and never a drop target.
 struct SidebarVirtualLocationRow: View {
     let title: Text
