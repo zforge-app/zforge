@@ -129,5 +129,6 @@ Each milestone must result in a reviewable change of consistent responsibility. 
 - Tipped bridge, workers, cancellation, properties, results per item, volume streams, writing/update and implemented permissions/links. UI preserves `ArchiveServing` and its policies.
 - Reference CLI: 98 approved tests. Tests passed against the backend native; Final count and artifacts are `REGRESSION-COVERAGE.md`.
 - Runner/parser/CLI translator removed; helper is not copied to the app. `Vendor/7zz` remains only as a development reference to generate/compare fixtures, without use by the product.
+- Update 2026-11-10 (ZF-74): the reference `7zz` is no longer tracked; `Scripts/fetch-7zz.py` downloads the release that matches the vendored sources. Engine updates follow `Scripts/update-7zip.py` (PRODUCT-REQUIREMENTS, *Engine updates*); the snapshot is 26.06.
 - Recompilation and relinking of modified copy of proven engine; instructions in `BuildSupport/SevenZip/README.md`.
 - Tests of UI failed to activate the application (Running Background). Runtime macOS 26.0, external access/bookmarks, expanded reading matrix and distribution channels remain in OR-10. Do not publish or mark notation/store completed on the basis of this local build.

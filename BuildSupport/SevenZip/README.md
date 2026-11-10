@@ -1,6 +1,6 @@
 # Zforge's static 7-Zip
 
-The 26.02 snapshot in `Vendor/7zip` comes from the revision recorded in `Vendor/7zip-provenance.json`. The upstream sources are unpatched. This directory's makefile adapts the official `Format7zF` bundle into a static library, without a console entrypoint or external codecs. It retains multithreading, ARM64 optimization of the LZMA decoder, and codec hardware intrinsics.
+The snapshot in `Vendor/7zip` (26.06) comes from the revision recorded in `Vendor/7zip-provenance.json`. The upstream sources are unpatched. `Scripts/update-7zip.py <tag>` imports a release and records its provenance; `Scripts/update-7zip.py --verify` checks the snapshot against it. The official `7zz` binary, used only as a development reference, is fetched with `Scripts/fetch-7zz.py`. This directory's makefile adapts the official `Format7zF` bundle into a static library, without a console entrypoint or external codecs. It retains multithreading, ARM64 optimization of the LZMA decoder, and codec hardware intrinsics.
 
 The app supports only **arm64** and **macOS 26.0 or later**. The `Build SevenZipCore` phase uses explicit inputs in `inputs.xcfilelist`, keeps the Xcode script sandbox enabled, and stores objects only in DerivedData. The linker uses `-force_load` on the library solely to preserve format/codec registrations. The library is not copied into the bundle.
 

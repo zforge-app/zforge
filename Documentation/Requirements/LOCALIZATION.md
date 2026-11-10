@@ -66,3 +66,8 @@ DeepL comparison covered four critical messages in each of the 18 supported new 
 Focused localization coverage passes 11 cases / 87 executions, including the compiled catalog audit. The native Settings/menu scenario is blocked before execution by macOS authentication for Enable UI Automation. The full unit suite's seven tag-persistence failures also reproduce in a temporary control with localization changes excluded; their underlying cause remains open.
 
 The final executed counts, UI observations, screenshots and outstanding themes/accessibility/linguistic checks belong in [REGRESSION-COVERAGE](../../REGRESSION-COVERAGE.md). Source presence, a successful build and machine comparison alone do not establish interface polish.
+
+## Acknowledgments strings — ZF-75, 2026-11-10
+
+The window title and menu item use Apple's own translation of “Acknowledgments” in each language, read from the `Acknowledgments` key of the macOS 27.2 Books and Shortcuts `Localizable.loctable` (identical in both): cs Uznání, da Tak til, de Anmerkungen, es Reconocimientos, fr Remerciements, hi अभिस्वीकृतियाँ, it Note legali, ja 謝辞, ko 승인서, nl Colofon, pl Podziękowania, pt-BR Reconhecimentos, ru Подтверждения, sv Tillkännagivanden, th กิตติกรรมประกาศ, tr Teşekkürler, uk Подяки, zh-Hans 版权声明, zh-Hant 版權宣告. Bengali has no system translation; it keeps the own draft স্বীকৃতি. “License”, “Website” and the 7-Zip note are own translations, reviewed on 2026-11-10 for meaning and terminology: “repository” is never translated with the word the catalog uses for a compressed archive (Danish and Swedish use kodelager and kodförråd), and the bridge and source terms match the English note. No native-speaker review.
+

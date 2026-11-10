@@ -637,6 +637,22 @@ Cause: the offscreen sidebar starts at 144 pt with two-line rows until `SidebarS
 
 Correction (test only; scenario and the 28 pt assertion unchanged): the fixture's wait lays out the whole window between polls (`window.layoutIfNeeded()`, which updates constraints first, as the display cycle does), and the sidebar test waits until the rows exist, the table is 206 pt wide and neither the table nor any ancestor needs a constraint update or layout (`isLaidOut`). With the same `Task.yield()` injection the suite passed 50/50.
 
+### D-94 — An Option-drag from an archive into Finder can copy instead of move (corrected 2026-11-10, found by ZF-74)
+
+`ArchiveDragTransfer.receive` decides whether an external drag moves (and asks to modify the original archive) from `NSEvent.modifierFlags` at the moment Finder requests the promised file, unless the session has already ended. Finder requests it after the drop, so releasing Option between the drop and that request turns a move into a copy with no confirmation; the session then ends with the move operation and the original is kept. Observed with probe logging in real runs of `testArchivePromisesPublishIntoFinderBeforeRemovingOriginal` (fails at `:691`, 4 of 6 runs on the ZF-74 branch; 3 of 3 passes on `main`). Expected: the operation chosen at the drop (the last source operation mask) decides.
+
+Corrected: `ArchiveDragTransfer.externalOperationMask(option:)` computes the mask offered outside the app and records whether it was a move; `receive` uses the ended operation, then that recorded drop operation, and reads the modifier only when neither is known. `ArchiveMutationTests.externalMoveFollowsTheDrop` (Option at the drop, released before the request) failed before the fix — copied with no confirmation — and passes after it; the copy case is unchanged.
+
+### D-93 — The app's license notices were incomplete and not shown (corrected 2026-11-10, ZF-75; found by ZF-74)
+
+PRODUCT-REQUIREMENTS (*Licensing and commercial distribution*) requires the complete `License.txt` of the distributed engine, the applicable GNU LGPL text, the 7-Zip attribution and a third-party licenses section in the product. Found on 2026-11-10:
+
+- The bundle carried `Vendor/7-Zip-License.txt`, the license of the official console package (“The licenses for 7zz and 7zzs files are…”, added with the CLI backend in `6733b42`), instead of `DOC/License.txt`, the license of the sources Zforge compiles. The full LGPL (`7-Zip-LGPL.txt`, equal to `DOC/copying.txt`) and the unRAR license (`7-Zip-unRAR.txt`) were already bundled from `Zforge/Resources/ThirdPartyLicenses/` (`d584002`), but nothing kept them in step with engine updates.
+- The Swift packages linked into the app (MCP Swift SDK, Swift System, Swift Logging API, EventSource; Apache 2.0 or MIT) shipped without their notices, and the repository had no `LICENSE` for Zforge's MIT license.
+- The app showed none of these texts.
+
+Corrected (ZF-75): `LICENSE` (MIT); `Scripts/update-notices.py` writes every shipped notice and `Acknowledgments.json` into `Zforge/Resources/ThirdPartyLicenses/` (7-Zip's from `Vendor/7zip/DOC`, packages' from the checkouts at the pinned revisions; every pinned package must be classified as shipped or not) and `--check` reports stale notices; `Scripts/update-7zip.py` refreshes and verifies the 7-Zip notices; Zforge ▸ Acknowledgments… opens a window that shows each component's version, license, website and full texts. `Vendor/7-Zip-License.txt` was removed.
+
 ### D-92 — The real Option-drag UI test's drop never ends on macOS 27.2 (corrected in the test 2026-11-10, ZF-72)
 
 `ZforgeUITests.testLocalDragsOptionCopyAndConfirmAdditionToArchive` (real-only) passed on 2026-11-02 at `519a085` (macOS/Xcode 27.1, REGRESSION-COVERAGE “Settings in two columns — ZF-58”). On 2026-11-10 (macOS 27.2 26B123, Xcode 27.2 27B52) it fails at `ZforgeUITests.swift:603`: after `local.click(forDuration: 0.3, thenDragTo: Sample.zip)` the “Add to Archive” confirmation never appears.

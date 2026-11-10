@@ -49,6 +49,9 @@ final class ArchiveDragTransfer {
     private var endedOperation: NSDragOperation?
     private var started = false
     private var externalMoving: Bool?
+    /// Whether the last source mask offered outside the application was a move: the operation
+    /// the drop chose. Finder requests promised files after the drop, when Option may be released.
+    private var dropMoving: Bool?
     private var externalConfirmed = false
     private var promiseTask: Task<Void, Never>?
     private var completionTask: Task<Void, Never>?
@@ -56,6 +59,14 @@ final class ArchiveDragTransfer {
     init(state: FileBrowserState, items: [BrowserItem], optionPressed: @escaping () -> Bool = { NSEvent.modifierFlags.contains(.option) }) {
         self.state = state; self.items = items; self.optionPressed = optionPressed
         Self.active[token] = self
+    }
+    /// The source operations offered outside the application while the drag moves. Option
+    /// (move) is offered only when the original archive can be changed.
+    func externalOperationMask(option: Bool) -> NSDragOperation {
+        if option, !state.canRemoveArchiveItems(items) { dropMoving = nil; return [] }
+        let operation = ArchiveDragPolicy.operation(option: option)
+        dropMoving = operation.contains(.move)
+        return operation
     }
     func receive(index: Int, url: URL, completion: @escaping (Error?) -> Void) {
         guard !started, items.indices.contains(index), endedOperation?.isEmpty != true else {
@@ -71,7 +82,7 @@ final class ArchiveDragTransfer {
                 let (index, url, completion) = requests.removeFirst()
                 do {
                     if externalMoving == nil {
-                        externalMoving = endedOperation.map { $0.contains(.move) } ?? optionPressed()
+                        externalMoving = endedOperation.map { $0.contains(.move) } ?? dropMoving ?? optionPressed()
                     }
                     if externalMoving == true, !externalConfirmed {
                         guard state.canRemoveArchiveItems(items) else { throw ArchiveEngineError.updateUnsupported }
@@ -308,8 +319,8 @@ final class ArchiveDragSourceView: NSView, NSDraggingSource {
         if localDrag { return [.copy, .move, .link] }
         if context == .withinApplication { return [.copy, .move] }
         let moving = NSEvent.modifierFlags.contains(.option)
-        if moving, let transfer, !transfer.state.canRemoveArchiveItems(transfer.items) { return [] }
-        return ArchiveDragPolicy.operation(option: moving)
+        guard let transfer else { return ArchiveDragPolicy.operation(option: moving) }
+        return transfer.externalOperationMask(option: moving)
     }
     func draggingSession(_ session: NSDraggingSession, endedAt screenPoint: NSPoint, operation: NSDragOperation) {
         transfer?.ended(operation)

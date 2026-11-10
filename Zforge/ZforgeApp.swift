@@ -33,6 +33,7 @@ struct ZforgeApp: App {
         .commands {
             BrowserCommands()
             KeyboardShortcutHelpCommands()
+            AcknowledgmentsCommands()
             if ProcessInfo.processInfo.arguments.contains("--ui-fixtures"),
                ProcessInfo.processInfo.arguments.contains("--ui-contextual-permission") {
                 CommandMenu("Automation test") {
@@ -49,6 +50,14 @@ struct ZforgeApp: App {
 
         Window("Keyboard Shortcuts", id: "keyboard-shortcuts") {
             KeyboardShortcutsView()
+        }
+        .defaultSize(width: KeyboardShortcutsLayout.defaultWidth, height: KeyboardShortcutsLayout.defaultHeight)
+        .windowResizability(.contentMinSize)
+        .environment(\.locale, preferences.language.locale)
+        .commands { KeyboardShortcutHelpCommands() }
+
+        Window("Acknowledgments", id: "acknowledgments") {
+            AcknowledgmentsView()
         }
         .defaultSize(width: KeyboardShortcutsLayout.defaultWidth, height: KeyboardShortcutsLayout.defaultHeight)
         .windowResizability(.contentMinSize)
@@ -331,6 +340,21 @@ private struct BrowserCommands: Commands {
                 .keyboardShortcut(.space, modifiers: [])
         }
 
+    }
+}
+
+/// Zforge ▸ Acknowledgments…, right below About Zforge. Scenes' commands share the menu bar
+/// and an `after:` group is added once per scene that declares it, so only the browser scene
+/// declares this one (the Help group replaces, so every scene can declare it).
+private struct AcknowledgmentsCommands: Commands {
+    @Environment(\.openWindow) private var openWindow
+
+    var body: some Commands {
+        CommandGroup(after: .appInfo) {
+            Button("Acknowledgments…") {
+                openWindow(id: "acknowledgments")
+            }
+        }
     }
 }
 
