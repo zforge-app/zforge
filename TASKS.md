@@ -649,11 +649,15 @@ Pending: in-app check of the row and the computer level in the four modes (light
 - [x] “Write-back alerts” snapshots (D-89): IconServices placeholder captured; the test waits until the application icon renders. Reference unchanged.
 - [x] Requirements: AGENT-INTEGRATION-PLAN measurement gate; RNF-Q08 rule on clocks in tests.
 
-### ZF-72 — Real Option-drag UI test hangs in its drop on macOS 27.2 (open, 2026-11-10, D-92)
+### ZF-72 — Real Option-drag UI test hangs in its drop on macOS 27.2 (corrected in the test 2026-11-10, D-92)
 
 - [x] Run `testLocalDragsOptionCopyAndConfirmAdditionToArchive` in the real mode (user approved, 2026-11-10): fails at `:603` on `main` (2 runs) and on `519a085` (1 run), which passed on 2026-11-02 under 27.1.
 - [x] Decide whether a real user drag onto an archive row hangs too: no — the user's manual drag in List view on 27.2 showed the confirmation and added the file (2026-11-10). Only XCTest's synthesized drag hangs.
-- [ ] Adapt the test's gesture so the drop completes under macOS 27.2, keeping the Option-copy, the archive confirmation and every assertion; check whether the other real-only drag tests share the cause.
+- [x] Find why the synthesized drag does not end: XCTest 27.2 posts the move and the release within 1.6 ms, and the release reaches the app before AppKit's dragging session starts (88 ms after the pickup); the session never gets a release (probe logging and an event tap in a real run, D-92).
+- [x] Adapt the gesture: `dragAndDrop(onto:)` (`ZforgeUITests/DragGestures.swift`) presses, moves, pauses 1.0 s over the target and releases; used by every UI test drag that starts a Zforge dragging session. Assertions and timeouts unchanged. The test passed 2/2 in the real mode on the final build.
+- [x] Other real-only drag tests, run once each: `testArchiveDragCopiesIntoSidebarFolder`, `testArchiveCopyIntoAnotherZforgeWindow` and `testArchiveInternalCopyConfirmationKeepsHistoryAndAncestorColumns` passed.
+- [ ] `testArchivePromisesPublishIntoFinderBeforeRemovingOriginal` failed at `:676`, before its first drop: Finder opened the fixture folder in Column view with the folder's column outside the window (x = 2104 in a window at 377–1297), and the title drag did not move Finder. Make the arrangement independent of the user's Finder view and title bar layout (for example, pick the scroll view inside the window frame or set the Finder window's view), then run it once in the real mode.
+- [ ] Not reproduced, worth a manual check: a person who releases within about 0.1 s of the pickup (a flick) could leave the same session waiting for a release under 27.2.
 
 ### ZF-70 — A reload collapsed inline expansions completed while it waited (2026-11-10, D-90)
 

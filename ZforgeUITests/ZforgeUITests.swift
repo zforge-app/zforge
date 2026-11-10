@@ -498,7 +498,7 @@ final class ZforgeUITests: XCTestCase {
         XCTAssertTrue(payload.waitForExistence(timeout: 8)); XCTAssertTrue(leaf.exists)
         let copies = app.descendants(matching: .any).matching(identifier: "browser-item-DeepPayload.txt")
         // Escape cancels the confirmation: the archive and the view stay unchanged.
-        XCUIElement.perform(withKeyModifiers: [.option]) { payload.click(forDuration: 0.3, thenDragTo: leaf) }
+        XCUIElement.perform(withKeyModifiers: [.option]) { payload.dragAndDrop(onto: leaf) }
         XCTAssertTrue(app.staticTexts["Modify the Original Archive?"].firstMatch.waitForExistence(timeout: 5))
         app.typeKey(.escape, modifierFlags: [])
         let dismissed = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == false"),
@@ -508,7 +508,7 @@ final class ZforgeUITests: XCTestCase {
         XCTAssertTrue(payload.exists)
         XCTAssertEqual(copies.count, 1, app.debugDescription)
         // Return confirms the copy.
-        XCUIElement.perform(withKeyModifiers: [.option]) { payload.click(forDuration: 0.3, thenDragTo: leaf) }
+        XCUIElement.perform(withKeyModifiers: [.option]) { payload.dragAndDrop(onto: leaf) }
         XCTAssertTrue(app.staticTexts["Modify the Original Archive?"].firstMatch.waitForExistence(timeout: 5))
         app.typeKey(.return, modifierFlags: [])
         XCTAssertTrue(app.windows["Leaf"].firstMatch.waitForExistence(timeout: 8), app.debugDescription)
@@ -546,7 +546,7 @@ final class ZforgeUITests: XCTestCase {
         XCTAssertTrue(payload.waitForExistence(timeout: 5))
         let destination = app.descendants(matching: .any).matching(identifier: "sidebar-fixture-drop").firstMatch
         XCTAssertTrue(destination.waitForExistence(timeout: 5))
-        payload.click(forDuration: 0.3, thenDragTo: destination)
+        payload.dragAndDrop(onto: destination)
         let picture = XCTAttachment(screenshot: app.screenshot()); picture.name = "Archive copy icons"; picture.lifetime = .keepAlways; add(picture)
         destination.click()
         XCTAssertTrue(app.windows["Dropped"].firstMatch.waitForExistence(timeout: 8), app.debugDescription)
@@ -578,7 +578,7 @@ final class ZforgeUITests: XCTestCase {
                        .completed, "The windows overlap: \(sourceWindow.frame) and \(second.frame)")
         // Drop onto a directory row in the new window, then inspect its contents.
         let target = second.descendants(matching: .any).matching(identifier: "browser-item-Dropped").firstMatch.staticTexts["Dropped"].firstMatch
-        payload.staticTexts["Payload.txt"].firstMatch.click(forDuration: 0.3, thenDragTo: target)
+        payload.staticTexts["Payload.txt"].firstMatch.dragAndDrop(onto: target)
         target.doubleClick()
         let dropped = app.windows["Dropped"].firstMatch
         XCTAssertTrue(dropped.waitForExistence(timeout: 8), app.debugDescription)
@@ -598,7 +598,7 @@ final class ZforgeUITests: XCTestCase {
         let local = localRows.firstMatch.staticTexts["Local.txt"].firstMatch
         XCTAssertTrue(local.waitForExistence(timeout: 8))
         let archive = app.descendants(matching: .any).matching(identifier: "browser-item-Sample.zip").firstMatch
-        local.click(forDuration: 0.3, thenDragTo: archive.staticTexts["Sample.zip"].firstMatch)
+        local.dragAndDrop(onto: archive.staticTexts["Sample.zip"].firstMatch)
         let addButton = app.windows.firstMatch.buttons["Add to Archive"].firstMatch
         XCTAssertTrue(addButton.waitForExistence(timeout: 5), app.debugDescription)
         addButton.click()
@@ -613,7 +613,7 @@ final class ZforgeUITests: XCTestCase {
         let destination = app.descendants(matching: .any).matching(identifier: "browser-item-Dropped").firstMatch
         let target = destination.staticTexts["Dropped"].firstMatch
         XCUIElement.perform(withKeyModifiers: [.option]) {
-            local.click(forDuration: 0.3, thenDragTo: target)
+            local.dragAndDrop(onto: target)
         }
         destination.buttons.firstMatch.click()
         let copied = XCTNSPredicateExpectation(predicate: NSPredicate(format: "count == 2"), object: localRows)
@@ -676,7 +676,7 @@ final class ZforgeUITests: XCTestCase {
         let dropPoint = try XCTUnwrap(exposedDropPoint(), "No point of the test's Finder window is exposed: source \(window.frame), Finder \(finderFrame)")
         let drop = finderWindow.coordinate(withNormalizedOffset: .zero)
             .withOffset(CGVector(dx: dropPoint.x - finderFrame.minX, dy: dropPoint.y - finderFrame.minY))
-        payload.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).click(forDuration: 0.3, thenDragTo: drop)
+        payload.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).dragAndDrop(onto: drop)
         let published = directory.appendingPathComponent("Payload.txt")
         let written = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in FileManager.default.fileExists(atPath: published.path) }, object: nil)
         XCTAssertEqual(XCTWaiter.wait(for: [written], timeout: 10), .completed)
@@ -686,7 +686,7 @@ final class ZforgeUITests: XCTestCase {
         let stillExposed = try XCTUnwrap(frontmostWindowFrame(at: dropPoint))
         XCTAssertTrue(stillExposed.equalTo(finderFrame, tolerance: 2), "The drop point is no longer on the test's Finder window")
         XCUIElement.perform(withKeyModifiers: [.option]) {
-            payload.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).click(forDuration: 0.3, thenDragTo: drop)
+            payload.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).dragAndDrop(onto: drop)
         }
         XCTAssertTrue(app.staticTexts["Modify the Original Archive?"].firstMatch.waitForExistence(timeout: 5), app.debugDescription)
         app.typeKey(.return, modifierFlags: [])
