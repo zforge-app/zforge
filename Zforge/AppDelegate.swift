@@ -118,7 +118,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         return takeNextArchiveRequest()
     }
 
-    /// Ends the launch window's offer when it closes or presents other content.
+    /// Ends the launch window's offer when it presents other content.
     func releaseLaunchWindow(_ id: UUID) {
         if launchWindow?.id == id { endLaunchWindowOffer() }
     }

@@ -477,6 +477,46 @@ final class ZforgeUITests: XCTestCase {
         XCTAssertTrue(app.windows["Sample.zip"].firstMatch.exists, "The outer window stays open")
     }
 
+    /// ZF-77 / D-95: an archive that launches Zforge (Finder double click, Open With) is shown
+    /// in the launch window, as the root of its columns, and no second window opens. Only a
+    /// real LaunchServices launch delivers the file as the launch event, after SwiftUI has
+    /// created the launch window and while it is still settling; no offscreen layer
+    /// reproduces that order. The root and history are covered by `InitialWindowLocationTests`.
+    @MainActor
+    func testArchiveThatLaunchesZforgeOpensInOneWindowAsColumnsRoot() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ZforgeLaunchArchive-\(UUID().uuidString)", isDirectory: true)
+        let payload = directory.appendingPathComponent("Payload", isDirectory: true)
+        try FileManager.default.createDirectory(at: payload, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        try Data("readme".utf8).write(to: payload.appendingPathComponent("Readme.txt"))
+        let archive = directory.appendingPathComponent("Launch.zip")
+        let ditto = Process()
+        ditto.executableURL = URL(fileURLWithPath: "/usr/bin/ditto")
+        ditto.arguments = ["-c", "-k", payload.path, archive.path]
+        try ditto.run(); ditto.waitUntilExit()
+        XCTAssertEqual(ditto.terminationStatus, 0)
+
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-view-mode", "columns", "-appLanguagePreference", "english",
+                               "-ApplePersistenceIgnoreState", "YES", "-NSQuitAlwaysKeepsWindows", "NO"]
+        app.open(archive)
+        defer { app.terminate() }
+        let window = app.windows["Launch.zip"].firstMatch
+        XCTAssertTrue(window.waitForExistence(timeout: 10), app.debugDescription)
+        let firstColumn = window.descendants(matching: .any).matching(identifier: "browser-column-0").firstMatch
+        XCTAssertTrue(firstColumn.waitForExistence(timeout: 8), app.debugDescription)
+        XCTAssertTrue(firstColumn.descendants(matching: .any).matching(identifier: "browser-item-Readme.txt").firstMatch
+            .waitForExistence(timeout: 8), "The archive's items fill the first column: \(app.debugDescription)")
+        XCTAssertFalse(window.buttons["Back"].firstMatch.isEnabled, "The window starts at the archive")
+        // A second window would appear right after the first; give it the time the launch takes.
+        let browsers = app.windows.matching(NSPredicate(format: "identifier BEGINSWITH %@", "browser-"))
+        let second = XCTNSPredicateExpectation(predicate: NSPredicate(format: "count > 1"), object: browsers)
+        XCTAssertEqual(XCTWaiter.wait(for: [second], timeout: 3), .timedOut, "A second window opened: \(app.debugDescription)")
+        XCTAssertEqual(browsers.count, 1)
+        XCTAssertFalse(app.windows["Recents"].exists, "No launch window stays behind the archive")
+    }
+
     /// Real Option-drag inside an archive in Columns, with Escape and Return in the
     /// native confirmation. Per-mode reveal, duplicate counts, history and the move
     /// variants are characterized offscreen by `ArchiveDragDropTests`.
@@ -700,7 +740,9 @@ final class ZforgeUITests: XCTestCase {
     @MainActor
     func testTagEditorIsSharedByToolbarAndContextMenu() throws {
         let app = XCUIApplication()
-        app.launchArguments = ["--ui-fixtures", "--ui-window-width", "1100", "--ui-view-mode", "list", "-appLanguagePreference", "english"]
+        // Saved windows (from any earlier launch of the app) must not cover the fixture (D-95).
+        app.launchArguments = ["--ui-fixtures", "--ui-window-width", "1100", "--ui-view-mode", "list", "-appLanguagePreference", "english",
+                               "-ApplePersistenceIgnoreState", "YES", "-NSQuitAlwaysKeepsWindows", "NO"]
         app.launch()
         app.activate()
         openFixtureBrowserIfNeeded(app)
@@ -764,9 +806,11 @@ final class ZforgeUITests: XCTestCase {
         // checked offscreen (CompressionPanelLayoutTests); the real menu, sheet and
         // folder chooser stay here.
         let app = XCUIApplication()
+        // Saved windows (from any earlier launch of the app) must not cover the fixture (D-95).
         app.launchArguments = [
             "--ui-fixtures", "--ui-view-mode", "list",
-            "-appLanguagePreference", "english"
+            "-appLanguagePreference", "english",
+            "-ApplePersistenceIgnoreState", "YES", "-NSQuitAlwaysKeepsWindows", "NO"
         ]
         app.launch()
         app.activate()
