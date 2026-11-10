@@ -1,0 +1,94 @@
+{
+  "components": [
+    {
+      "id": "zforge",
+      "name": "Zforge",
+      "license": "MIT License",
+      "url": "https://github.com/zforge-app/zforge",
+      "version": null,
+      "files": [
+        {
+          "name": "Zforge-LICENSE.txt",
+          "source": "LICENSE"
+        }
+      ]
+    },
+    {
+      "id": "7zip",
+      "name": "7-Zip",
+      "license": "GNU LGPL 2.1 with the unRAR license restriction; BSD 3-clause and 2-clause licenses for some code",
+      "url": "https://www.7-zip.org/",
+      "version": "26.06",
+      "files": [
+        {
+          "name": "7-Zip-License.txt",
+          "source": "DOC/License.txt"
+        },
+        {
+          "name": "7-Zip-LGPL.txt",
+          "source": "DOC/copying.txt"
+        },
+        {
+          "name": "7-Zip-unRAR.txt",
+          "source": "DOC/unRarLicense.txt"
+        }
+      ]
+    },
+    {
+      "id": "eventsource",
+      "name": "EventSource",
+      "license": "MIT License",
+      "url": "https://github.com/mattt/eventsource",
+      "version": "1.5.1",
+      "files": [
+        {
+          "name": "eventsource-LICENSE.txt",
+          "source": "LICENSE.md"
+        }
+      ]
+    },
+    {
+      "id": "swift-sdk",
+      "name": "MCP Swift SDK",
+      "license": "Apache License 2.0; MIT License for earlier contributions",
+      "url": "https://github.com/modelcontextprotocol/swift-sdk",
+      "version": "0.12.0",
+      "files": [
+        {
+          "name": "swift-sdk-LICENSE.txt",
+          "source": "LICENSE"
+        }
+      ]
+    },
+    {
+      "id": "swift-log",
+      "name": "Swift Logging API",
+      "license": "Apache License 2.0",
+      "url": "https://github.com/apple/swift-log",
+      "version": "1.16.0",
+      "files": [
+        {
+          "name": "swift-log-LICENSE.txt",
+          "source": "LICENSE.txt"
+        },
+        {
+          "name": "swift-log-NOTICE.txt",
+          "source": "NOTICE.txt"
+        }
+      ]
+    },
+    {
+      "id": "swift-system",
+      "name": "Swift System",
+      "license": "Apache License 2.0",
+      "url": "https://github.com/apple/swift-system",
+      "version": "1.8.1",
+      "files": [
+        {
+          "name": "swift-system-LICENSE.txt",
+          "source": "LICENSE.txt"
+        }
+      ]
+    }
+  ]
+}

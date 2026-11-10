@@ -992,6 +992,39 @@ final class ZforgeUITests: XCTestCase {
         XCTAssertFalse(shortcutsWindow.staticTexts["New Folder"].exists)
     }
 
+    /// Zforge ▸ Acknowledgments… opens the notices window on Zforge; choosing 7-Zip shows its
+    /// version, the bridge's license note and its license texts (D-93). The menu item and the
+    /// window's opening are real menu and window behavior; the page's content and layout are
+    /// covered offscreen by AcknowledgmentsTests.
+    @MainActor
+    func testAcknowledgmentsOpenFromTheAppMenu() throws {
+        let app = XCUIApplication()
+        app.launchArguments = [
+            "--ui-fixtures",
+            "-appLanguagePreference", "english"
+        ]
+        addTeardownBlock { app.terminate() }
+        launchWithBrowserWindow(app)
+        XCTAssertTrue(app.staticTexts["Welcome.txt"].waitForExistence(timeout: 5))
+
+        app.menuBars.menuBarItems["Zforge"].click()
+        let item = app.menuBars.menuItems["Acknowledgments…"]
+        XCTAssertTrue(item.waitForExistence(timeout: 2))
+        // One item, although several scenes share the menu bar.
+        XCTAssertEqual(app.menuBars.menuBarItems["Zforge"].menuItems.matching(identifier: "Acknowledgments…").count, 1)
+        item.click()
+
+        let window = app.windows["Zforge"]
+        XCTAssertTrue(window.waitForExistence(timeout: 3))
+        XCTAssertTrue(window.staticTexts["MIT License"].waitForExistence(timeout: 2))
+        let sevenZip = window.descendants(matching: .any)["acknowledgment-7zip"]
+        XCTAssertTrue(sevenZip.waitForExistence(timeout: 2))
+        sevenZip.click()
+        XCTAssertTrue(app.windows["7-Zip"].waitForExistence(timeout: 2))
+        let note = app.windows["7-Zip"].staticTexts.matching(NSPredicate(format: "value BEGINSWITH %@", "Zforge contains 7-Zip")).firstMatch
+        XCTAssertTrue(note.waitForExistence(timeout: 2))
+    }
+
     @MainActor
     private func selectView(named name: String, in app: XCUIApplication) {
         let identifier = "view-mode-\(name.lowercased())"

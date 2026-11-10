@@ -649,6 +649,15 @@ Pending: in-app check of the row and the computer level in the four modes (light
 - [x] “Write-back alerts” snapshots (D-89): IconServices placeholder captured; the test waits until the application icon renders. Reference unchanged.
 - [x] Requirements: AGENT-INTEGRATION-PLAN measurement gate; RNF-Q08 rule on clocks in tests.
 
+### ZF-75 — License notices and the Acknowledgments window (2026-11-10, D-93)
+
+Requested: resolve the license gaps found by ZF-74 before publication. The user left the window's placement and the copyright holder to the recommendation: a menu item below About Zforge (the standard About panel cannot hold a button) and the author's name.
+- [x] `LICENSE` (MIT, Copyright (c) 2026 Felipe Liborio).
+- [x] `Scripts/update-notices.py` (+ `--check`) writes the notices of Zforge, 7-Zip and the four linked packages and `Acknowledgments.json`; refuses checkouts not at the pinned revision and unclassified pins. `Scripts/update-7zip.py` refreshes and `--verify` checks the 7-Zip notices. `Vendor/7-Zip-License.txt` (console package license) removed.
+- [x] Acknowledgments window and Zforge ▸ Acknowledgments…; strings in the 21 languages (own drafts).
+- [x] Tests: script tests, `AcknowledgmentsTests` (bundle contents, 7-Zip texts and versions against the vendored release and `Package.resolved`, toolbar title, 7-Zip page snapshot light/dark), UI test `testAcknowledgmentsOpenFromTheAppMenu`.
+- [ ] Real-window review of the window (VoiceOver, languages, widths) and native review of the translated note.
+
 ### ZF-74 — 7-Zip engine update process and update to 26.06 (2026-11-10)
 
 Requested: adopt the recommended way to keep 7-Zip current (vendored sources, an import script, updates committed on their own, `7zz` out of Git and its history), write the script and update the engine. Policy in PRODUCT-REQUIREMENTS, *Engine updates*.
@@ -659,7 +668,7 @@ Requested: adopt the recommended way to keep 7-Zip current (vendored sources, an
 - [x] Validation: Unit plan 703/703; 5/5 offscreen and 5/6 real UI tests (REGRESSION-COVERAGE “7-Zip engine update to 26.06”).
 - [x] `testArchivePromisesPublishIntoFinderBeforeRemovingOriginal` failed intermittently at `:691`: the move was decided from the modifier state at the promise request. Corrected (D-94): the operation chosen at the drop decides; unit case `externalMoveFollowsTheDrop` failed before the fix.
 - [x] No 26.02 versus 26.06 benchmark comparison (user decision, 2026-11-10).
-- [ ] Bundle the source license notices (D-93).
+- [x] Bundle the source license notices (D-93): done in ZF-75.
 - [ ] Scheduled upstream check (`--status`) once the repository is on GitHub.
 
 ### ZF-73 — Intermittent offscreen failure of the compact toolbar menus UI test (open, 2026-11-10)

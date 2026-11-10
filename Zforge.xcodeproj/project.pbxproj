@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A10000000000000000000002 /* 7-Zip-License.txt in Resources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000004 /* 7-Zip-License.txt */; };
 		A43000000000000000000001 /* MCP in Frameworks */ = {isa = PBXBuildFile; productRef = A43000000000000000000002 /* MCP */; };
 		B10000000000000000000002 /* ZforgeFinderExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B10000000000000000000001 /* ZforgeFinderExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		C10000000000000000000001 /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = C10000000000000000000002 /* SnapshotTesting */; };
@@ -55,7 +54,6 @@
 		55A3998430042A170038B088 /* Zforge.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Zforge.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		55A3999130042A180038B088 /* ZforgeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ZforgeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		55A3999B30042A180038B088 /* ZforgeUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ZforgeUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		A10000000000000000000004 /* 7-Zip-License.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "7-Zip-License.txt"; sourceTree = "<group>"; };
 		B10000000000000000000001 /* ZforgeFinderExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ZforgeFinderExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -150,7 +148,6 @@
 				55A3998630042A170038B088 /* Zforge */,
 				B10000000000000000000006 /* Shared */,
 				B10000000000000000000007 /* ZforgeFinderExtension */,
-				A10000000000000000000007 /* Vendor */,
 				55A3999430042A180038B088 /* ZforgeTests */,
 				55A3999E30042A180038B088 /* ZforgeUITests */,
 				55A3998530042A170038B088 /* Products */,
@@ -166,14 +163,6 @@
 				B10000000000000000000001 /* ZforgeFinderExtension.appex */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		A10000000000000000000007 /* Vendor */ = {
-			isa = PBXGroup;
-			children = (
-				A10000000000000000000004 /* 7-Zip-License.txt */,
-			);
-			path = Vendor;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -353,7 +342,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A10000000000000000000002 /* 7-Zip-License.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

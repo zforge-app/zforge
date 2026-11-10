@@ -45,6 +45,7 @@
       "ZforgeUITests/ZforgeUITests/testListKeyboardZoomAndArrowNavigationAfterChangingView": 17,
       "ZforgeUITests/SettingsUITests/testArchiveSizeLimitSliderHoldsRoundValuesWhileDragging": 17,
       "ZforgeUITests/ZforgeUITests/testKeyboardShortcutHelpOpensAndFilters": 15,
+      "ZforgeUITests/ZforgeUITests/testAcknowledgmentsOpenFromTheAppMenu": 15,
       "ZforgeUITests/ZforgeUITests/testFolderSelectionMenuAlternatesWithOptionInListMode": 13,
       "ZforgeUITests/BrowserSearchUITests/testCommandFFocusesToolbarSearchAndEscapeCollapsesIt": 12,
       "ZforgeUITests/ZforgeUITests/testDoubleClickInnerArchiveOpensItInNewWindow": 30,
@@ -112,6 +113,7 @@
         "ZforgeUITests/ZforgeUITests/testViewModeIsPerWindowAndLastClosedWindowRestoresIt",
         "ZforgeUITests/SettingsUITests/testListColumnsReorderByDragging",
         "ZforgeUITests/SettingsUITests/testArchiveSizeLimitSliderHoldsRoundValuesWhileDragging",
+        "ZforgeUITests/ZforgeUITests/testAcknowledgmentsOpenFromTheAppMenu",
         "ZforgeUITests/SettingsUITests/testCompressionProfileOpensSavesAndDeletes"
       ]
     },
@@ -204,6 +206,17 @@
         "ZforgeUITests/AutomationUITests/testSettingsProvidesLocalizedAgentSetupAndNativeCancellation",
         "ZforgeUITests/LocalizationUITests/testLanguageSelectionUpdatesOpenMenuAndPersists",
         "ZforgeUITests/ZforgeUITests/testKeyboardShortcutHelpOpensAndFilters"
+      ]
+    },
+    {
+      "name": "Acknowledgments",
+      "paths": [
+        "Zforge/Models/Acknowledgments.swift",
+        "Zforge/Views/AcknowledgmentsView.swift",
+        "LICENSE"
+      ],
+      "tests": [
+        "ZforgeUITests/ZforgeUITests/testAcknowledgmentsOpenFromTheAppMenu"
       ]
     },
     {

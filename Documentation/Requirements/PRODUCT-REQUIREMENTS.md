@@ -121,6 +121,7 @@ Zforge is planned as an open source project. The use of 7-Zip must not hide or r
 
 - Preserve a clear separation between the original code of Zforge and the engine derived from 7-Zip in the sources, modules and license notices. The current user preference is static linking; this choice does not change the licence applicable to each component.
 - Include in the product a third party licenses section with the `License.txt` integral of the distributed version, the text of the applicable GNU LGPL, BSD warnings, 7-Zip assignment, and link to `https://www.7-zip.org/`.
+- Implemented 2026-11-10 (ZF-75, D-93): Zforge ▸ Acknowledgments… shows Zforge's MIT license, 7-Zip's `DOC/License.txt`, LGPL and unRAR texts with its version and website, and the notices of every Swift package linked into the app. `Scripts/update-notices.py` writes them from the vendored engine and the pinned package checkouts; every pinned package must be classified as shipped or not, and `--check` and the unit tests report stale notices. The copyright holder of Zforge's MIT license is Felipe Liborio (`LICENSE`).
 - Lastingly make available the source code corresponding to the exact version of the distributed engine, including patches, build scripts and project changes. Do not rely only on the original repository to remain available.
 - Any modification to the LGPL code of 7-Zip and any wrapper derived from that code shall continue under LGPL or GPL and have its corresponding source code published. The remaining independent of Zforge shall use the open source license chosen for the project.
 - In the static link between 7-Zip and code under another license, meet the LGPL relinking requirements, including making available the materials needed for the user to produce an executable with a modified version of the library. Section 6(a) of LGPL 2.1 provides source and/or code object of application for that purpose; make available corresponding sources and reproducible build instructions, verifying that they actually allow the rewinding and relinking. The legal review of distribution remains a launch stage, not a dynamic linking requirement.
@@ -156,7 +157,7 @@ Zforge is planned as an open source project. The use of 7-Zip must not hide or r
   - `zforge-app/zforge-xcuitest-sim`: the offscreen XCUITest tool used by `Scripts/affected-tests.py`.
 - The design system (AkariDS) is not one of the organization's repositories; its own repository is named `akari-ds`. Pending decision: how the website consumes it. The recommendation is a versioned package instead of the current relative path to a sibling checkout.
 - Link repositories through pinned versions (tags or releases), not Git submodules.
-- Before the first push, the app repository needs a `.gitignore`, removal of the tracked `xcuserdata` files, a secret scan of the full history, and the third-party notices required in *Licensing and commercial distribution*.
+- Before the first push, the app repository needs a `.gitignore`, removal of the tracked `xcuserdata` files and a secret scan of the full history. The third-party notices and `LICENSE` were added by ZF-75.
 - `Vendor/7zz` is no longer tracked (ZF-74). The user decided on 2026-11-10 that it stays in the past history; no history rewrite.
 - State: names decided; the organization and repositories are not created and nothing is published.
 

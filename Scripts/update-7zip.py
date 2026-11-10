@@ -16,7 +16,8 @@ An import fetches the tag from the upstream repository recorded in
 `Vendor/7zip-provenance.json` (or from `--source`, a local clone), takes the
 `snapshot_paths` with `git archive`, applies the patches listed in the
 provenance from `Vendor/7zip-patches/` in order, replaces `Vendor/7zip`,
-regenerates `BuildSupport/SevenZip/inputs.xcfilelist`, and records the version,
+regenerates `BuildSupport/SevenZip/inputs.xcfilelist`, refreshes the 7-Zip notices the app
+ships (`Scripts/update-notices.py`), and records the version,
 revision, archive checksum and the matching macOS `7zz` release asset
 (`Scripts/fetch-7zz.py`). It then reports the files added and removed, license
 files that changed, and the upstream history entries since the previous version.
@@ -56,6 +57,9 @@ VERSION = re.compile(r"\d+\.\d+")
 _spec = importlib.util.spec_from_file_location("fetch_7zz", Path(__file__).with_name("fetch-7zz.py"))
 fetch_7zz = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(fetch_7zz)
+_spec = importlib.util.spec_from_file_location("update_notices", Path(__file__).with_name("update-notices.py"))
+notices = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(notices)
 
 
 class UpdateError(Exception):
@@ -220,6 +224,11 @@ def verify(provenance: dict, source: str) -> int:
         problems += [f"Vendor/7zip/{name} differs from upstream" for name in differing_files(expected, SNAPSHOT)]
     if INPUTS.read_text() != xcfilelist(snapshot_files(SNAPSHOT)):
         problems.append(f"{INPUTS.relative_to(REPO)} is out of date; rerun the import")
+    _, files = notices.sevenzip_entry()
+    for name, data in files.items():
+        shipped = notices.OUTPUT / name
+        if not shipped.is_file() or shipped.read_bytes() != data:
+            problems.append(f"{shipped.relative_to(REPO)} differs from the vendored notice; rerun the import")
     for problem in problems:
         print(problem, file=sys.stderr)
     print(f"Vendor/7zip {provenance['version']}: {'OK' if not problems else f'{len(problems)} problem(s)'}")
@@ -252,6 +261,7 @@ def update(provenance: dict, source: str, version: str) -> int:
     provenance.update(version=version, revision=revision,
                       git_archive_sha256=hashlib.sha256(archive).hexdigest(), reference_cli=cli)
     write_provenance(provenance)
+    notices.refresh_sevenzip()
 
     added, removed = sorted(new_files - old_files), sorted(old_files - new_files)
     print(f"Vendor/7zip: {previous} -> {version} ({revision})")
@@ -261,7 +271,7 @@ def update(provenance: dict, source: str, version: str) -> int:
     for name in removed:
         print(f"  - {name}")
     if changed_licenses:
-        print("License files changed; review the notices shipped in the app: " + ", ".join(changed_licenses))
+        print("License files changed (the app's notices were refreshed; review the change): " + ", ".join(changed_licenses))
     else:
         print("License files: unchanged")
     print(f"Reference 7zz: {cli['url']} (sha256 {cli['sha256']})")
