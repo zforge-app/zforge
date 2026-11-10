@@ -7,11 +7,7 @@ struct FinderExtensionSettingsSection: View {
     @State private var enabled = FIFinderSyncController.isExtensionEnabled
 
     var body: some View {
-        Section("Finder") {
-            Text("Adds a Zforge submenu to Finder's shortcut menu for files, folders and archives. Turn on the Zforge extension in System Settings to use it.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
+        SettingsGroup(header: Text("Finder")) {
             HStack {
                 if enabled {
                     Label("Finder extension enabled", systemImage: "checkmark.circle.fill")
@@ -26,6 +22,8 @@ struct FinderExtensionSettingsSection: View {
             }
             .accessibilityElement(children: .contain)
             .accessibilityIdentifier("finder-extension-status")
+        } footer: {
+            Text("Adds a Zforge submenu to Finder's shortcut menu for files, folders and archives. Turn on the Zforge extension in System Settings to use it.")
         }
         // Returning from System Settings reactivates Zforge.
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in

@@ -33,10 +33,7 @@ struct HTMLPreviewTests {
         #expect(!firstItem.usesTextThumbnailPreview)
 
         let host = HTMLPreviewHostView()
-        let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 600, height: 400),
-            styleMask: [.titled], backing: .buffered, defer: false
-        )
+        let window = TestWindow.make(contentRect: NSRect(x: 0, y: 0, width: 600, height: 400))
         window.contentView = host
         defer { window.close() }
 
@@ -81,10 +78,7 @@ struct HTMLPreviewTests {
         )
         .frame(width: 300, height: 640)
         let hostingView = NSHostingView(rootView: overview)
-        let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 300, height: 640),
-            styleMask: [.titled], backing: .buffered, defer: false
-        )
+        let window = TestWindow.make(contentRect: NSRect(x: 0, y: 0, width: 300, height: 640))
         window.contentView = hostingView
         defer { window.close() }
         hostingView.layoutSubtreeIfNeeded()

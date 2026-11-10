@@ -174,7 +174,7 @@ struct SidebarLocationMenuTests {
         #expect(SidebarLocationKind.externalVolume.category == .externalDisks)
         #expect(SidebarLocationKind.networkVolume.category == .connectedServers)
         #expect(SidebarLocationMenu.commands(for: .computer, canEject: true).isEmpty)
-        #expect(SidebarLocationCategory.allCases == [.computer, .home, .hardDisks, .externalDisks, .network, .connectedServers],
+        #expect(SidebarLocationCategory.allCases == [.computer, .home, .hardDisks, .externalDisks, .connectedServers],
                 "Settings ▸ Sidebar lists the categories in the order of the Locations and Shared rows")
     }
 
@@ -245,31 +245,33 @@ struct SidebarLocationMenuTests {
         #expect(browser.preferences.isSidebarLocationVisible(.home))
     }
 
-    @Test("The Network item's menu only removes it, hiding the Network category until Settings shows it again")
-    func networkMenuRemovesNetwork() throws {
-        let suite = "ZforgeTestSuite.SidebarLocationsNetwork-\(UUID())"
+    @Test("The sidebar has no Network item or category: Network lives only in the Computer level and Go ▸ Network (2026-11-09)")
+    func sidebarHasNoNetworkCategory() async throws {
+        #expect(!SidebarLocationCategory.allCases.map(\.rawValue).contains("network"),
+                "No Settings ▸ Sidebar toggle exists for a Network item")
+        #expect(ComputerLevelCatalog.items(volumes: []).map(\.location) == [.network],
+                "The Computer level still lists Network")
+
+        let suite = "ZforgeTestSuite.SidebarLocationsNoNetwork-\(UUID())"
         let defaults = try #require(UserDefaults(suiteName: suite))
         defer { defaults.removeTestSuite(named: suite) }
         let browser = state(defaults: defaults)
         defer { browser.close() }
-        browser.preferences.language = .english
-        var focusRestored = 0
-        let actions = SidebarItemMenuActions(browser: browser, sidebar: SidebarState()) { focusRestored += 1 }
-        #expect(browser.preferences.isSidebarLocationVisible(.network), "Network is shown by default")
+        await browser.navigateToNetwork()
+        #expect(browser.location == .network, "Go ▸ Network still opens the Network level")
+        #expect(browser.pathComponents.map(\.location) == [.computer, .network])
+    }
 
-        let built = actions.networkMenu().nsMenu()
-        #expect(layout(built) == ["Remove from Sidebar"], "No folder command applies to the virtual Network level")
-        #expect(built.items.compactMap { $0.identifier?.rawValue } == ["sidebar-menu-remove-from-sidebar"])
-        built.performActionForItem(at: 0)
-
-        #expect(!browser.preferences.isSidebarLocationVisible(.network))
-        #expect(browser.preferences.isSidebarLocationVisible(.computer))
-        #expect(browser.preferences.isSidebarLocationVisible(.connectedServers), "Shared volumes stay")
-        #expect(focusRestored == 1)
-        #expect(!FileBrowserPreferences(defaults: defaults).isSidebarLocationVisible(.network), "The choice persists")
-
-        browser.preferences.setSidebarLocation(.network, visible: true)
-        #expect(FileBrowserPreferences(defaults: defaults).isSidebarLocationVisible(.network))
+    @Test("A Network visibility choice stored by an earlier version is ignored and does not hide other categories")
+    func legacyNetworkPreferenceIsIgnored() throws {
+        let suite = "ZforgeTestSuite.SidebarLocationsLegacyNetwork-\(UUID())"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removeTestSuite(named: suite) }
+        defaults.set(["network", "home"], forKey: "browser.hiddenSidebarLocations")
+        let preferences = FileBrowserPreferences(defaults: defaults)
+        #expect(!preferences.isSidebarLocationVisible(.home), "The valid stored category is kept")
+        #expect(preferences.isSidebarLocationVisible(.computer))
+        #expect(SidebarLocationCategory(rawValue: "network") == nil)
     }
 
     /// Zforge no longer renames volumes, but one renamed by Finder or Disk Utility is still followed.

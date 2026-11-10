@@ -182,11 +182,8 @@ struct BrowserSidebar: View {
                                    isEjectable: volume.isEjectable)
                         .contextMenu { locationMenu(volume) }
                 }
-                // Finder lists Network last in Locations, after the volumes.
-                if browser.preferences.isSidebarLocationVisible(.network) {
-                    SidebarNetworkRow(browser: browser, restoreContentFocus: restoreContentFocus)
-                        .contextMenu { SidebarItemMenuContent(menu: sidebarMenuActions.networkMenu()) }
-                }
+                // Network is not a sidebar item (user request, 2026-11-09): it stays in the computer
+                // level and Go ▸ Network.
             } header: {
                 Text("Locations")
                     .frame(maxWidth: .infinity, alignment: .leading)

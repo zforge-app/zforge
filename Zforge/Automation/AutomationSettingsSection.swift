@@ -7,76 +7,78 @@ struct AutomationSettingsSection: View {
     @State private var copied = false
 
     var body: some View {
-        Section {
-            Text("Allow folders that agents and Zforge shortcuts may read and write. Existing browser permissions are separate. Removing a folder blocks new requests; running operations must be cancelled by their caller.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-            if folders.isEmpty {
-                Text("No folders allowed")
-                    .foregroundStyle(.secondary)
-                    .accessibilityIdentifier("automation-no-folders")
-            }
-            ForEach(folders) { folder in
+        // The groups are siblings in the pane column; modifiers attach to a container.
+        Group {
+            SettingsGroup {
+                if folders.isEmpty {
+                    Text("No folders allowed")
+                        .foregroundStyle(.secondary)
+                        .accessibilityIdentifier("automation-no-folders")
+                }
+                ForEach(folders) { folder in
+                    HStack {
+                        Text(folder.url.path)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                            .help(folder.url.path)
+                        Spacer()
+                        Button("Remove") {
+                            Task {
+                                await AutomationGrantStore.shared.remove(folder.id)
+                                await reload()
+                            }
+                        }
+                        .accessibilityLabel(Text("Remove automation access to \(folder.url.lastPathComponent)"))
+                    }
+                }
                 HStack {
-                    Text(folder.url.path)
-                        .lineLimit(1)
-                        .truncationMode(.middle)
-                        .help(folder.url.path)
+                    Button("Allow Folder…", action: chooseFolder)
+                        .accessibilityIdentifier("automation-allow-folder")
                     Spacer()
-                    Button("Remove") {
-                        Task {
-                            await AutomationGrantStore.shared.remove(folder.id)
-                            await reload()
+                    Button(copied ? "Configuration copied" : "Copy MCP Configuration") {
+                        guard let executable = Bundle.main.executableURL else { return }
+                        do {
+                            let configuration = try Self.configuration(executable: executable.path)
+                            NSPasteboard.general.clearContents()
+                            NSPasteboard.general.setString(configuration, forType: .string)
+                            copied = true
+                        } catch { self.error = error.localizedDescription }
+                    }
+                    .accessibilityIdentifier("automation-copy-mcp")
+                }
+            } footer: {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Allow folders that agents and Zforge shortcuts may read and write. Existing browser permissions are separate. Removing a folder blocks new requests; running operations must be cancelled by their caller.")
+                    Text("Use the copied configuration in a local MCP client. Missing folder access is requested when needed. Zforge needs no additional runtime. Disconnecting cancels pending authorization and that connection's running job.")
+                }
+            }
+            SettingsGroup {
+                if ArchiveContextCatalog.shared.unavailable {
+                    HStack {
+                        Text("Archive search is unavailable. Try again.")
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        Button("Try Again") {
+                            Task { try? await ArchiveIndexRuntime.shared.reindex() }
+                        }
+                        .accessibilityIdentifier("automation-retry-index")
+                    }
+                }
+                HStack {
+                    Button("Open Shortcuts") {
+                        guard let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: "com.apple.shortcuts"),
+                              NSWorkspace.shared.open(url) else {
+                            error = AppLocalization.string("Shortcuts is unavailable on this Mac.")
+                            return
                         }
                     }
-                    .accessibilityLabel(Text("Remove automation access to \(folder.url.lastPathComponent)"))
-                }
-            }
-            HStack {
-                Button("Allow Folder…", action: chooseFolder)
-                    .accessibilityIdentifier("automation-allow-folder")
-                Spacer()
-                Button(copied ? "Configuration copied" : "Copy MCP Configuration") {
-                    guard let executable = Bundle.main.executableURL else { return }
-                    do {
-                        let configuration = try Self.configuration(executable: executable.path)
-                        NSPasteboard.general.clearContents()
-                        NSPasteboard.general.setString(configuration, forType: .string)
-                        copied = true
-                    } catch { self.error = error.localizedDescription }
-                }
-                .accessibilityIdentifier("automation-copy-mcp")
-            }
-            Text("Use the copied configuration in a local MCP client. Missing folder access is requested when needed. Zforge needs no additional runtime. Disconnecting cancels pending authorization and that connection's running job.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-            Text("Archive names directly inside allowed folders are shared with Spotlight and Siri. Siri availability depends on macOS. Save shortcuts for compression and extraction.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-                .accessibilityIdentifier("automation-shortcuts-instructions")
-            if ArchiveContextCatalog.shared.unavailable {
-                HStack {
-                    Text("Archive search is unavailable. Try again.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                    .accessibilityIdentifier("automation-open-shortcuts")
                     Spacer()
-                    Button("Try Again") {
-                        Task { try? await ArchiveIndexRuntime.shared.reindex() }
-                    }
-                    .accessibilityIdentifier("automation-retry-index")
                 }
+            } footer: {
+                Text("Archive names directly inside allowed folders are shared with Spotlight and Siri. Siri availability depends on macOS. Save shortcuts for compression and extraction.")
+                    .accessibilityIdentifier("automation-shortcuts-instructions")
             }
-            Button("Open Shortcuts") {
-                guard let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: "com.apple.shortcuts"),
-                      NSWorkspace.shared.open(url) else {
-                    error = AppLocalization.string("Shortcuts is unavailable on this Mac.")
-                    return
-                }
-            }
-            .accessibilityIdentifier("automation-open-shortcuts")
         }
         .task { await reload() }
         .onReceive(NotificationCenter.default.publisher(for: AutomationGrantStore.changed)) { _ in

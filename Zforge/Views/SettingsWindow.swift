@@ -8,6 +8,10 @@ enum SettingsLayout {
     static let sidebarWidth: CGFloat = 220
     static let detailWidth: CGFloat = 568
     static let height: CGFloat = 620
+    static let sidebarRowHeight: CGFloat = 28
+    static let sidebarContentHeight: CGFloat = 20
+    /// The width a sidebar title has beside its 20 pt tile and 8 pt gap, with the list's insets; titles wrap to two lines within it.
+    static let sidebarTitleWidth: CGFloat = 140
 }
 
 /// Which pane the Settings window shows and which profile page is open over it. Choosing a pane
@@ -34,7 +38,7 @@ final class SettingsNavigation {
     func closeProfile() { path.removeAll() }
 }
 
-/// Settings as in System Settings (ZF-58): a sidebar of panes in three groups and the chosen
+/// Settings as in System Settings (ZF-58): a flat sidebar of panes and the chosen
 /// pane on the right, which opens on the pane shown last. Compression's profiles open their
 /// own page inside the pane, with the back button in the toolbar.
 struct ZforgeSettingsView: View {
@@ -49,14 +53,11 @@ struct ZforgeSettingsView: View {
     var body: some View {
         NavigationSplitView(columnVisibility: .constant(.all)) {
             List(selection: selection) {
-                ForEach(SettingsPane.groups, id: \.self) { group in
-                    Section {
-                        ForEach(group) { pane in
-                            SettingsSidebarRow(pane: pane).tag(pane)
-                        }
-                    }
+                ForEach(SettingsPane.allCases) { pane in
+                    SettingsSidebarRow(pane: pane).tag(pane)
                 }
             }
+            .environment(\.sidebarRowSize, .small)
             .navigationSplitViewColumnWidth(min: SettingsLayout.sidebarWidth, ideal: SettingsLayout.sidebarWidth, max: SettingsLayout.sidebarWidth)
             // SwiftUI alone leaves the sidebar narrower than its column width (D-75).
             .background {
@@ -77,33 +78,12 @@ struct ZforgeSettingsView: View {
             .navigationSplitViewColumnWidth(SettingsLayout.detailWidth)
         }
         .frame(width: SettingsLayout.sidebarWidth + SettingsLayout.detailWidth, height: SettingsLayout.height)
-        .background { SettingsToolbarStyle() }
+        .unifiedWindowToolbarStyle()
         .environment(\.locale, preferences.language.locale)
     }
 
     private var selection: Binding<SettingsPane?> {
         Binding(get: { navigation.pane }, set: { if let pane = $0 { navigation.choose(pane) } })
-    }
-}
-
-/// The Settings scene gives its window AppKit's preference toolbar, which centres the toolbar
-/// items under the title: a profile page's back button sat alone on a second row (D-75). As in
-/// System Settings, the unified style puts the back button and the title in one row at the
-/// detail column's leading edge.
-private struct SettingsToolbarStyle: NSViewRepresentable {
-    func makeNSView(context: Context) -> SettingsToolbarStyleView { SettingsToolbarStyleView() }
-    func updateNSView(_ view: SettingsToolbarStyleView, context: Context) { view.applyStyle() }
-}
-
-final class SettingsToolbarStyleView: NSView {
-    override func viewDidMoveToWindow() {
-        super.viewDidMoveToWindow()
-        applyStyle()
-    }
-
-    func applyStyle() {
-        guard let window, window.toolbarStyle != .unified else { return }
-        window.toolbarStyle = .unified
     }
 }
 
@@ -125,27 +105,13 @@ struct SettingsPaneView: View {
     }
 }
 
-/// A pane's SF Symbol in its coloured rounded square, as System Settings draws its panes: a
-/// vertical gradient, a faint light rim and a slight shadow under the symbol and the tile.
+/// A pane's SF Symbol in its coloured rounded square, as System Settings draws its panes.
 struct SettingsIconTile: View {
     let pane: SettingsPane
     let size: CGFloat
 
     var body: some View {
-        let shape = RoundedRectangle(cornerRadius: size * 0.24, style: .continuous)
-        let colors = pane.tileColors
-        ZStack {
-            shape.fill(LinearGradient(colors: [colors.top, colors.bottom], startPoint: .top, endPoint: .bottom))
-            shape.strokeBorder(.white.opacity(0.18), lineWidth: max(0.5, size / 40))
-                .blendMode(.plusLighter)
-            Image(systemName: pane.systemImage)
-                .font(.system(size: size * 0.56, weight: .semibold))
-                .foregroundStyle(.white)
-                .shadow(color: .black.opacity(0.18), radius: size / 40, y: size / 60)
-        }
-        .frame(width: size, height: size)
-        .shadow(color: .black.opacity(0.12), radius: size / 80, y: size / 80)
-        .accessibilityHidden(true)
+        SymbolTile(symbol: pane.systemImage, colors: pane.tileColors, size: size)
     }
 }
 
@@ -154,31 +120,32 @@ struct SettingsSidebarRow: View {
     let pane: SettingsPane
 
     var body: some View {
-        Label {
-            Text(verbatim: pane.title(locale: locale))
-                .lineLimit(2)
-        } icon: {
+        HStack(spacing: 8) {
             SettingsIconTile(pane: pane, size: 20)
+            Text(verbatim: pane.title(locale: locale))
+                .font(.system(size: 13))
+                .lineLimit(2)
         }
+        // The 20 pt tile sets the content height; the sidebar list adds 4 pt above and below (28 pt rows).
+        .frame(maxWidth: .infinity, minHeight: SettingsLayout.sidebarContentHeight, alignment: .leading)
         .help(Text(verbatim: AppLocalization.string(pane.descriptionKey, locale: locale)))
+        .accessibilityElement(children: .combine)
         .accessibilityHint(Text(verbatim: AppLocalization.string(pane.descriptionKey, locale: locale)))
         .accessibilityIdentifier("settings-pane-\(pane.rawValue)")
     }
 }
 
-/// A pane: its sections in a grouped form, under the window title that names the pane. No
-/// header repeats the selected sidebar row (user request, 2026-11-02).
+/// A pane: its groups in a scrolling column, under the window toolbar that names the pane in
+/// the browser window's title style. No header repeats the selected sidebar row (user request,
+/// 2026-11-02).
 struct SettingsPaneForm<Content: View>: View {
     @Environment(\.locale) private var locale
     let pane: SettingsPane
     @ViewBuilder let content: Content
 
     var body: some View {
-        Form {
-            content
-        }
-        .formStyle(.grouped)
-        .navigationTitle(Text(verbatim: pane.title(locale: locale)))
+        SettingsPaneColumn { content }
+            .windowToolbar(title: Text(verbatim: pane.title(locale: locale)))
     }
 }
 
@@ -189,14 +156,13 @@ struct GeneralSettingsPane: View {
 
     var body: some View {
         SettingsPaneForm(pane: .general) {
-            Section {
-                Picker("Language", selection: $preferences.language) {
+            SettingsGroup {
+                SettingsPickerRow(title: Text("Language"), identifier: "settings-language", selection: $preferences.language) {
                     ForEach(AppLanguagePreference.allCases) { language in
                         Text(AppLocalization.string(language.titleKey, locale: preferences.language.locale))
                             .tag(language)
                     }
                 }
-                .accessibilityIdentifier("settings-language")
             }
             FinderExtensionSettingsSection()
         }
@@ -213,8 +179,8 @@ struct ViewOptionsSettingsPane: View {
 
     var body: some View {
         SettingsPaneForm(pane: .viewOptions) {
-            Section {
-                Picker("Default View", selection: $preferences.viewMode) {
+            SettingsGroup {
+                SettingsPickerRow(title: Text("Default View"), identifier: "settings-default-view", selection: $preferences.viewMode) {
                     ForEach(BrowserViewMode.allCases) { mode in
                         Label(
                             AppLocalization.string(mode.titleKey, locale: preferences.language.locale),
@@ -222,22 +188,18 @@ struct ViewOptionsSettingsPane: View {
                         ).tag(mode)
                     }
                 }
-                .accessibilityIdentifier("settings-default-view")
-                Toggle("Show hidden files", isOn: $preferences.showHiddenFiles)
-                    .accessibilityIdentifier("settings-show-hidden-files")
-                Toggle("Show previews in icon view", isOn: $preferences.showIconPreviews)
-                    .accessibilityIdentifier("settings-show-icon-previews")
+                SettingsToggleRow(Text("Show hidden files"), identifier: "settings-show-hidden-files", isOn: $preferences.showHiddenFiles)
+                SettingsToggleRow(Text("Show previews in icon view"), identifier: "settings-show-icon-previews", isOn: $preferences.showIconPreviews)
             }
-            Section("List Columns") {
-                Text("Choose the columns shown by default. Drag them to change their order. A folder can override this layout from a column header.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+            SettingsGroup(header: Text("List Columns")) {
                 ForEach(preferences.globalListColumns) { column in
                     listColumnRow(column)
                 }
                 ForEach(hiddenListColumns) { column in
                     listColumnRow(column)
                 }
+            } footer: {
+                Text("Choose the columns shown by default. Drag them to change their order. A folder can override this layout from a column header.")
             }
         }
     }
@@ -265,7 +227,7 @@ struct ViewOptionsSettingsPane: View {
                     .onChanged { dragListColumn(column, translation: $0.translation.height) }
                     .onEnded { _ in draggedListColumn = nil }, isEnabled: isMovable)
                 .accessibilityHidden(true)
-            Toggle(column.title(locale: preferences.language.locale), isOn: Binding(
+            SettingsToggleRow(Text(verbatim: column.title(locale: preferences.language.locale)), identifier: "settings-list-column-toggle-" + column.rawValue, isOn: Binding(
                 get: { preferences.globalListColumns.contains(column) },
                 set: { isVisible in
                     var columns = preferences.globalListColumns
@@ -315,10 +277,12 @@ struct ViewOptionsSettingsPane: View {
 
 struct SidebarSettingsPane: View {
     let preferences: FileBrowserPreferences
+    var computerName: String?
+    var homeName: String?
 
     var body: some View {
         SettingsPaneForm(pane: .sidebar) {
-            SidebarSettingsSection(preferences: preferences)
+            SidebarSettingsSection(preferences: preferences, computerName: computerName, homeName: homeName)
         }
     }
 }

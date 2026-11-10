@@ -465,8 +465,8 @@ struct ArchiveMutationTests {
         #expect(BrowserViewMode.columns.archiveDragFormation == .list)
         #expect(BrowserViewMode.icons.archiveDragFormation == .default)
         #expect(BrowserViewMode.gallery.archiveDragFormation == .default)
-        let window = NSWindow(contentRect: NSRect(x: 100, y: 100, width: 600, height: 500),
-            styleMask: [.titled], backing: .buffered, defer: false)
+        let window = TestWindow.make(contentRect: NSRect(x: 100, y: 100, width: 600, height: 500))
+        defer { window.close() }
         let host = try! #require(window.contentView)
         let root = ArchiveDropDestinationView(frame: host.bounds)
         root.directory = URL(fileURLWithPath: "/root")

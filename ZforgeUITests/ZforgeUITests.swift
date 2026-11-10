@@ -978,7 +978,8 @@ final class ZforgeUITests: XCTestCase {
 
         app.typeKey("/", modifierFlags: .command)
 
-        let shortcutsWindow = app.windows["Keyboard Shortcuts"]
+        // The window is titled by the selected category and opens on All Shortcuts (ZF-59).
+        let shortcutsWindow = app.windows["All Shortcuts"]
         XCTAssertTrue(shortcutsWindow.waitForExistence(timeout: 3))
         app.windows.matching(NSPredicate(format: "identifier BEGINSWITH %@", "browser-")).firstMatch
             .buttons[XCUIIdentifierCloseWindow].click()

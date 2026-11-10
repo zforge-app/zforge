@@ -50,7 +50,7 @@ struct ZforgeApp: App {
         Window("Keyboard Shortcuts", id: "keyboard-shortcuts") {
             KeyboardShortcutsView()
         }
-        .defaultSize(width: 720, height: 680)
+        .defaultSize(width: KeyboardShortcutsLayout.defaultWidth, height: KeyboardShortcutsLayout.defaultHeight)
         .windowResizability(.contentMinSize)
         .environment(\.locale, preferences.language.locale)
         .commands { KeyboardShortcutHelpCommands() }
@@ -367,7 +367,7 @@ struct ArchivePreviewSettingsSection: View {
 
     var body: some View {
         let locale = preferences.language.locale
-        Section {
+        SettingsGroup {
             ArchiveSizeLimitRow(
                 title: "Preview size limit", value: $preferences.previewSizeLimit, scale: .preview,
                 identifier: "settings-preview-size-limit", locale: locale,
@@ -379,27 +379,27 @@ struct ArchivePreviewSettingsSection: View {
                 caption: "Applies to thumbnails of items inside archives in the icon view and in multiple selections."
             )
             VStack(alignment: .leading, spacing: 3) {
-                Toggle("Preview solid archives", isOn: $preferences.previewSolidArchives)
-                    .accessibilityIdentifier("settings-preview-solid-archives")
+                SettingsToggleRow(Text("Preview solid archives"), identifier: "settings-preview-solid-archives",
+                                  isOn: $preferences.previewSolidArchives)
                 Text(verbatim: Self.solidFormats)
-                    .font(.caption)
+                    .font(.system(size: 11))
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
                 Text("An item in a solid block is measured by the compressed size of its block.")
-                    .font(.caption)
+                    .font(.system(size: 11))
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
-            Toggle("Preview on removable drives", isOn: $preferences.previewOnRemovableVolumes.animation())
-                .accessibilityIdentifier("settings-preview-removable")
+            SettingsToggleRow(Text("Preview on removable drives"), identifier: "settings-preview-removable",
+                              isOn: $preferences.previewOnRemovableVolumes.animation())
             if preferences.previewOnRemovableVolumes {
                 ArchiveSizeLimitRow(
                     title: "Size limit on removable drives", value: $preferences.removableVolumePreviewLimit,
                     scale: .preview, identifier: "settings-preview-removable-limit", locale: locale, caption: nil
                 )
             }
-            Toggle("Preview on network volumes", isOn: $preferences.previewOnNetworkVolumes.animation())
-                .accessibilityIdentifier("settings-preview-network")
+            SettingsToggleRow(Text("Preview on network volumes"), identifier: "settings-preview-network",
+                              isOn: $preferences.previewOnNetworkVolumes.animation())
             if preferences.previewOnNetworkVolumes {
                 ArchiveSizeLimitRow(
                     title: "Size limit on network volumes", value: $preferences.networkVolumePreviewLimit,
@@ -434,9 +434,10 @@ struct ArchiveSizeLimitRow: View {
                 accessibilityIdentifier: identifier,
                 describe: { AppLocalization.byteCount($0, locale: locale) }
             )
+            .padding(.horizontal, SettingsMetrics.sliderInset)
             if let caption {
                 Text(AppLocalization.string(caption, locale: locale))
-                    .font(.caption)
+                    .font(.system(size: 11))
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -455,7 +456,7 @@ struct ScaleSliderUIFixtureSection: View {
 
     var body: some View {
         let locale = Locale(identifier: "en_US")
-        Section {
+        SettingsGroup {
             VStack(alignment: .leading, spacing: 5) {
                 LabeledContent {
                     Text(verbatim: AppLocalization.byteCount(value, locale: locale)).monospacedDigit()
@@ -470,6 +471,7 @@ struct ScaleSliderUIFixtureSection: View {
                     accessibilityIdentifier: "ui-fixture-size-slider",
                     describe: { AppLocalization.byteCount($0, locale: locale) }
                 )
+                .padding(.horizontal, SettingsMetrics.sliderInset)
             }
         }
     }

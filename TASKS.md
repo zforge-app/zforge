@@ -580,7 +580,7 @@ Pending: in-app check of the row and the computer level in the four modes (light
 **Follow-up — Add Remote in Network and Network in Locations (2026-10-30, user request). Implemented; offscreen tests added; results in REGRESSION-COVERAGE.** The user removed the “No Servers Found” notice and spinner, moved the sidebar's Shared ▸ Remote row into the Network level as **Add Remote**, and asked for Network in sidebar Locations while keeping it at the computer level.
 - [x] `NetworkLevelBar` (top of the Network level in every mode, independent of the server list) with **Add Remote…** → `FileBrowserState.showServerConnection()`, shared with Go ▸ Remote (`⌘K`) and the single sheet in `ContentView`. Empty state and spinner removed; “Local Network Access Is Off” kept (`NetworkLocalAccessDeniedView`).
 - [x] Sidebar: Remote row removed; Shared header hidden without mounted shares; `SidebarActionRow` kept for Recents.
-- [x] Sidebar Locations ▸ Network (`SidebarNetworkRow`, shared `SidebarVirtualLocationRow` with the computer row) after the volumes; `SidebarLocationCategory.network` with its Settings ▸ Sidebar toggle; menu `SidebarItemMenuActions.networkMenu()` (Remove from Sidebar only).
+- [x] Sidebar Locations ▸ Network (`SidebarNetworkRow`, shared `SidebarVirtualLocationRow` with the computer row) after the volumes; `SidebarLocationCategory.network` with its Settings ▸ Sidebar toggle; menu `SidebarItemMenuActions.networkMenu()` (Remove from Sidebar only). **Superseded by ZF-63 (2026-11-09): removed from the sidebar.**
 - [ ] In-app check of the bar in the four modes (light/dark, a long language, narrow width), the sheet from Add Remote, the sidebar row's highlight/inactive gray, and the mapped UI tests.
 
 ### ZF-53 — Toolbar search with Finder parity (2026-10-30, OR-24)
@@ -615,6 +615,43 @@ Pending: in-app check of the row and the computer level in the four modes (light
 - [x] Remove nested navigation and its settings; open an inner archive in a new window with a shared session and write-back on the last close. *Stage 2, 2026-11-02; evidence: REGRESSION-COVERAGE “Inner archive windows and shared sessions — ZF-55 stage 2”.*
 - [x] Preview/thumbnail limits, the solid-archives checkbox and removable/remote settings with the generalized logarithmic slider; localization of every new string. *Stage 3, 2026-11-02; evidence: REGRESSION-COVERAGE “Preview limits and opening progress — ZF-55 stage 3”.*
 - [ ] Synchronize CURRENT-STATE, PRODUCT-REQUIREMENTS, REGRESSION-COVERAGE and D-73; run `Scripts/affected-tests.py --run`. *Done for stages 1 to 3 (2026-11-02).* Pending outside the implementation: checks on real removable and network volumes and a visual review of the real windows (see D-73).
+
+### ZF-59 — Keyboard Shortcuts window redesign: sidebar, grouped rows and key caps (2026-11-09)
+
+**Implemented; unit tests and snapshots pass; the real window (sidebar material, title bar, search placement) has not been looked at yet. Results in REGRESSION-COVERAGE “Keyboard Shortcuts window redesign — ZF-59”.** User request: the window's spacing, margins and iconography were unsatisfying; approved mockup “option A · Sidebar” (search and category sidebar, All Shortcuts, grouped containers, individual key caps).
+- [x] `NavigationSplitView` of 780 × 560 pt (minimum 600 × 420), 206 pt sidebar with search, All Shortcuts, a separator and one row per section with a coloured tile (shared `SymbolTile`, also used by Settings) and a catalog-total count; detail titled by the selected category, 20 pt margins, section headers only in All Shortcuts, 32 pt rows with inset hairlines (`KeyboardShortcutsView.swift`, `SymbolTile.swift`).
+- [x] Key caps parsed from the existing shortcut strings (`ShortcutNotation`): one cap per glyph, wider word-key caps, “or” between alternatives, pointer gestures as secondary text, localized spoken form for VoiceOver (`ShortcutKeyCaps.swift`).
+- [x] 12 new strings in all 21 languages (the four gesture words are taken from the existing `⌘ + drag`-style translations).
+- [x] Catalog data and the search contract unchanged; `KeyboardShortcutCatalog.sections(in:matching:locale:)` adds the category filter.
+- [x] Follow-up after the user's first real run (2026-11-09): compact 32 pt title bar with a small grey title, larger sidebar rows and text. Fixed with the toolbar extracted from Settings into `WindowToolbar.swift` (`windowToolbar(title:)`, `unifiedWindowToolbarStyle()`, shared by both windows), Settings sidebar row metrics and system-colour tiles, and the detail rebuilt on `SettingsPaneColumn`/`SettingsGroup`/`SettingsRow`; title-bar geometry and row-metric tests in `KeyboardShortcutsWindowTests`. Real-window confirmation by the user pending.
+- [ ] Look at the real window in the user's build: sidebar material and selection, search field in the sidebar, window title per category, light/dark, reduced motion, increased contrast, VoiceOver reading of rows and key caps, Dynamic Type/text size. The offscreen snapshots cannot draw `NavigationSplitView`'s sidebar (see REGRESSION-COVERAGE).
+- [ ] Native-speaker review of the 12 new translations (modifier names follow Apple's keyboard terms where known; several languages keep the English key names).
+- [x] Investigate the intermittent unit-host crash (corrected by ZF-64, D-81) seen while running the full `Unit` plan in this work (see REGRESSION-COVERAGE and D-76).
+
+### ZF-62 — Settings window polish: title bar, flat sidebar, spacing, system colours (2026-11-09, D-80)
+
+**Implemented; unit tests and offscreen snapshots pass; real window not reviewed (see below).** User request: spacing inconsistencies, meaningless sidebar groups, a compact title bar with a small grey title beside the browser's toolbar, and unwanted icon colours; mockup approved with system colours (`settings-mock.html`, “cores do sistema”, both themes). Ids chosen high (ZF-62, D-80) because another agent redesigns Keyboard Shortcuts in parallel and may take the next ids.
+- [x] Title bar: 52 pt unified toolbar and the pane title in the toolbar title style (15 pt semibold, label colour) leading-aligned with the content margin, traffic lights centred; measured against the browser window offscreen. `SettingsToolbarAnchor` gives the window a toolbar item because SwiftUI makes the toolbar only then.
+- [x] Sidebar: flat list (removed `SettingsPane.groups`), uniform 28 pt rows, 13 pt titles, 20 pt tiles, 8 pt gap; titles checked to fit two lines in every language.
+- [x] Detail: `SettingsLayoutComponents.swift` (margins 20, groups 20 apart, header 13 semibold, footers 11 secondary below the group, 36 pt rows, 12 pt padding, small switches); List Columns, Sidebar, Finder and Automation explanations moved to footers; drag-handle alignment kept.
+- [x] Tiles: macOS system colours with a subtle top lightening (`SettingsPane.tileColor`).
+- [x] Tests and docs: D-80 (changed expectations), REGRESSION-COVERAGE “Settings polish — ZF-62”, CURRENT-STATE, UI-UX-GUIDE.
+- [ ] Look at the real window (title bar toolbar anchor, 220 pt sidebar rows, profile page back button beside the title, light and dark) in the user's build; the offscreen run could not show the glass sidebar or run the Settings UI tests (see REGRESSION-COVERAGE).
+- [ ] A profile page (`CompressionProfileDetailView`) still uses a grouped `Form`: its fields are shared with the compression dialog; bring it to the same group layout.
+- [ ] VoiceOver pass over the new switch rows (title is the switch's label) and the Compression profile rows (NavigationLink with plain style).
+
+### ZF-64 — Unit test host crash after macOS 27.2 (2026-11-09, D-81)
+
+**Corrected; results in REGRESSION-COVERAGE “Unit test host crash — ZF-64”.** Every full `Unit` run crashed the test host once (`objc_release` of a freed `NSWindow` in a main-actor job's autorelease pool) and reported the tests still running as failed.
+- [x] Symbolicate the 18 crash reports; reproduce with zombies and malloc scribbling in a copy of the `.xctestrun`; narrow it to `PreviewSelectionOrderTests` + `HTMLPreviewTests`.
+- [x] Cause: test windows left at `isReleasedWhenClosed = true` and closed, so they were released twice. `TestWindow.make` (test support) creates windows owned only by their Swift references; the four affected tests use it.
+- [x] Reproduction and guard: `TestWindowLifetimeTests` (deterministic, no crash): the default releases on close; a test window does not, and is freed once.
+- [x] RNF-Q08 states the rule for windows that unit tests create.
+
+### ZF-65 — Follow-ups found by ZF-64 (open, 2026-11-09)
+
+- [ ] `AutomationPermissionUIFixture`: set `isReleasedWhenClosed = false` on its closable window (same pattern as D-81, reachable only in the UI fixture), then run its two real-only `AutomationUITests` (they take over the screen).
+- [x] (Superseded by ZF-62, which re-recorded them as part of the approved Settings redesign.) D-82: review the five dark-appearance Settings snapshots that no longer match under macOS 27.2 (slider and switch knobs) and, if the user approves, re-record them.
 
 ### ZF-58 — Settings in two columns, as System Settings (2026-11-02)
 
@@ -654,3 +691,10 @@ Pending: in-app check of the row and the computer level in the four modes (light
 - [ ] Investigate the real-mode `Not hittable` File ▸ Open item (zero-size frame) in `testFileOpenNavigatesSelectedFolderAndArchiveInColumnsMode`, recovered only by XCTest's own action retry.
 - [x] The user's own app switches no longer close a simulated app's open menus (2026-11-02): AppKit's `_applicationDidSwitch` (LaunchServices frontmost notification) dismissed them, so `testBlankAreaUsesMoreMenuInEveryView` failed offscreen whenever the user switched apps with a menu open. The tool's agent skips that one dismissal (`zforge-xcuitest-sim/Notes/menus-app-switch-2026-11-02.md`).
 - [ ] Explain the intermittent launch without a browser window (`launchWithBrowserWindow`, `ZforgeUITests.swift:448`: no window after launch and none after File ▸ New Zforge Window within 8 s), seen offscreen with and without Automation Mode after ZF-55 (also in the ZF-55 merge run).
+
+### ZF-63 — Remove Network from the sidebar (2026-11-09, user request)
+
+**Implemented; offscreen tests added; results in REGRESSION-COVERAGE.** Network stays in the computer level and Go ▸ Network (`⇧⌘K`).
+- [x] `SidebarNetworkRow`, `SidebarItemMenuActions.networkMenu()`, `SidebarLocationCategory.network` and the Settings ▸ Sidebar Network toggle removed; a stored `network` hidden-category value is ignored.
+- [x] Tests: `SidebarLocationMenuTests` (no category, legacy value ignored, Go ▸ Network still opens `Computer › Network`), `NetworkLevelTests.goNetworkHistory`; sidebar-row tests and snapshots removed with the row.
+- [ ] In-app check: sidebar without Network in light/dark, Settings ▸ Sidebar, Go ▸ Network, Network from the computer level in the four modes.

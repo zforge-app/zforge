@@ -86,6 +86,9 @@
         "Zforge/ZforgeApp.swift",
         "Zforge/Views/SidebarSettingsSection.swift",
         "Zforge/Views/SettingsWindow.swift",
+        "Zforge/Views/SymbolTile.swift",
+        "Zforge/Views/WindowToolbar.swift",
+        "Zforge/Views/SettingsLayoutComponents.swift",
         "Zforge/Models/SettingsPane.swift",
         "Zforge/Views/CompressionProfileSettings.swift",
         "Zforge/AppDelegate.swift",
@@ -205,7 +208,10 @@
     {
       "name": "Keyboard shortcut help",
       "paths": [
-        "Zforge/Views/KeyboardShortcutsView.swift"
+        "Zforge/Views/KeyboardShortcutsView.swift",
+        "Zforge/Views/ShortcutKeyCaps.swift",
+        "Zforge/Views/SymbolTile.swift",
+        "Zforge/Views/WindowToolbar.swift"
       ],
       "tests": [
         "ZforgeUITests/ZforgeUITests/testKeyboardShortcutHelpOpensAndFilters"
