@@ -637,6 +637,10 @@ Cause: the offscreen sidebar starts at 144 pt with two-line rows until `SidebarS
 
 Correction (test only; scenario and the 28 pt assertion unchanged): the fixture's wait lays out the whole window between polls (`window.layoutIfNeeded()`, which updates constraints first, as the display cycle does), and the sidebar test waits until the rows exist, the table is 206 pt wide and neither the table nor any ancestor needs a constraint update or layout (`isLaidOut`). With the same `Task.yield()` injection the suite passed 50/50.
 
+### D-97 — Tag editor sheet presentation replaced at the user's request (2026-11-11, ZF-79)
+
+User report, 2026-11-11, with a screenshot: “O diálogo de edição de tags está muito feio, melhore a aparência dele.” The sheet showed the tags as a bare column of SF Symbol squares over the sheet background, in a fixed 190 pt area that left empty space with few tags, a divider, and a “Color” pop-up that named the color in text. Replaced by the presentation described in CURRENT-STATE (Finder Tag Editing): list in a card sized to its tags, row hover, trailing check/dash, color swatches. The editing contract is unchanged (toggle rules, creation, Cancel, Apply, errors); no existing test expectation changed.
+
 ### D-96 — SwiftUI opened a window of its own for each file or URL sent to Zforge (corrected 2026-11-10, ZF-78)
 
 Found while implementing ZF-78 (temporary logging in a Debug build, 2026-11-10): with Zforge running, a file opened from Finder made SwiftUI create a new default browser window (`makeDefaultWindowRequest`, a Recents window) about 200 ms **before** `application(_:open:)` ran; the delegate's request then opened the archive in yet another window, so the user got a Recents window and the archive window. With no window open the extra window was what showed the archive. With an archive to extract, the extra window would have contradicted “only the progress”. Not reported by the user; seen in the logs and window lists of the Debug build.

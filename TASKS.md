@@ -649,6 +649,17 @@ Pending: in-app check of the row and the computer level in the four modes (light
 - [x] “Write-back alerts” snapshots (D-89): IconServices placeholder captured; the test waits until the application icon renders. Reference unchanged.
 - [x] Requirements: AGENT-INTEGRATION-PLAN measurement gate; RNF-Q08 rule on clocks in tests.
 
+### ZF-79 — Tag editor sheet appearance (2026-11-11, D-97)
+
+User request, with a screenshot of the sheet in dark mode: “O diálogo de edição de tags está muito feio, melhore a aparência dele.” The sheet keeps its behavior (apply/remove existing tags, create a tag, Cancel/Apply); its presentation changes.
+- [x] Tag list in a rounded card that is as tall as its tags up to eight rows; a longer list ends on half a row and scrolls. Rows are 28 pt, highlight under the pointer, and show the state at the trailing edge: accent check on every target, dash on some, nothing on none. Empty list shows “No tags”.
+- [x] New tag: name field, eight color swatches (no color, struck through, then Finder's menu order) in place of the pop-up, Add. A created tag is scrolled into view.
+- [x] Progress indicator next to the buttons while applying.
+- [x] Draft logic extracted from the view to `FinderTagDraft`, unchanged in behavior; the editor takes the catalog tags as a parameter.
+- [x] Tests: `FinderTagEditorTests` (draft, layout, sheet size in five languages, six snapshots); `testTagEditorIsSharedByToolbarAndContextMenu` unchanged.
+- [x] No new strings (“No tags” and the color names already existed).
+- [x] The user checked the sheet in a Debug build of this change on 2026-11-11 (“OK, bem melhor”) and authorized integration into `main`. VoiceOver over the swatches was not reported as checked.
+
 ### ZF-78 — Open or extract an archive opened from Finder (2026-11-10, D-96)
 
 User request: when Zforge is the default app and an archive is double-clicked in Finder, ask whether to extract or open it, with a checkbox to make the choice the default, and add the setting to Settings. Decisions (user, same day): only where Zforge is the default app for the type; Extract into a folder named after the archive, next to it; no browser window while extracting, only the progress; the dialog every time until a default is saved.
