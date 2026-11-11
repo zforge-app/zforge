@@ -26,7 +26,7 @@ enum SettingsPane: String, CaseIterable, Identifiable, Sendable {
     /// What the pane holds, shown as the sidebar row's help tag.
     var descriptionKey: String.LocalizationValue {
         switch self {
-        case .general: "Language and the Zforge submenu in Finder."
+        case .general: "Language and how Zforge works with Finder."
         case .viewOptions: "How folders and archives appear in browser windows."
         case .sidebar: "Choose the items shown in the sidebar Locations and Shared sections."
         case .compression: "Profiles used to create archives."

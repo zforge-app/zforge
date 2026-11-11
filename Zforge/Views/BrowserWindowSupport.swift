@@ -91,6 +91,27 @@ struct BrowserWindowConfigurationView: NSViewRepresentable {
     }
 }
 
+/// Reports the window that hosts a SwiftUI view once the view is in it.
+struct HostingWindowReader: NSViewRepresentable {
+    let onWindow: @MainActor (NSWindow) -> Void
+
+    func makeNSView(context: Context) -> NSView { ReaderView(onWindow: onWindow) }
+    func updateNSView(_ view: NSView, context: Context) {}
+
+    private final class ReaderView: NSView {
+        let onWindow: @MainActor (NSWindow) -> Void
+        init(onWindow: @escaping @MainActor (NSWindow) -> Void) {
+            self.onWindow = onWindow
+            super.init(frame: .zero)
+        }
+        required init?(coder: NSCoder) { nil }
+        override func viewDidMoveToWindow() {
+            super.viewDidMoveToWindow()
+            if let window { onWindow(window) }
+        }
+    }
+}
+
 /// Save at native window closure, not SwiftUI disappearance (which also occurs
 /// when a tab or scene content is replaced). Keep only weak window/state links.
 @MainActor

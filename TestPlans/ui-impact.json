@@ -29,7 +29,8 @@
       "ZforgeUITests/ZforgeUITests/testCustomCompressionPanelOpensFolderChooser": "the sandboxed open panel runs out of process",
       "ZforgeUITests/AutomationUITests/testSettingsProvidesLocalizedAgentSetupAndNativeCancellation": "the sandboxed open panel runs out of process",
       "ZforgeUITests/AutomationUITests/testMCPContextualPermissionCancellationAndDisconnect": "the sandboxed open panel runs out of process",
-      "ZforgeUITests/ZforgeUITests/testArchiveThatLaunchesZforgeOpensInOneWindowAsColumnsRoot": "launched by LaunchServices with the archive as its launch event, which the offscreen tool cannot inject into"
+      "ZforgeUITests/ZforgeUITests/testArchiveThatLaunchesZforgeOpensInOneWindowAsColumnsRoot": "launched by LaunchServices with the archive as its launch event, which the offscreen tool cannot inject into",
+      "ZforgeUITests/ZforgeUITests/testArchiveOpenedFromFinderAsksAndExtractsWithoutWindow": "launched by LaunchServices with the archive as its launch event; the folder panel runs out of process"
     },
     "durations": {
       "ZforgeUITests/ZforgeUITests/testBlankAreaUsesMoreMenuInEveryView": 81,
@@ -96,7 +97,8 @@
         "Zforge/Views/CompressionProfileSettings.swift",
         "Zforge/AppDelegate.swift",
         "Zforge/Info.plist",
-        "Zforge/Zforge.entitlements"
+        "Zforge/Zforge.entitlements",
+        "Zforge/Views/FinderArchiveOpeningSettingsSection.swift"
       ],
       "tests": [
         "ZforgeUITests/AutomationUITests/testSettingsProvidesLocalizedAgentSetupAndNativeCancellation",
@@ -119,16 +121,21 @@
       ]
     },
     {
-      "name": "Launch documents: the window root and history are proven by InitialWindowLocationTests; the UI test proves that a file which launches Zforge through LaunchServices opens in the launch window, without a second window (ZF-77, D-95)",
+      "name": "Launch documents: the window root, history and the open-or-extract routing are proven by InitialWindowLocationTests and FinderArchiveOpeningTests; the UI tests prove that a file which launches Zforge through LaunchServices opens in the launch window, without a second window (ZF-77, D-95), and that an archive Zforge opens by default asks, then extracts with no browser window (ZF-78)",
       "paths": [
         "Zforge/ZforgeApp.swift",
         "Zforge/AppDelegate.swift",
         "Zforge/Views/BrowserWindowSupport.swift",
         "Zforge/ContentView.swift",
-        "Zforge/State/FileBrowserState.swift"
+        "Zforge/State/FileBrowserState.swift",
+        "Zforge/Models/FinderArchiveOpening.swift",
+        "Zforge/State/ArchiveExtractionCoordinator.swift",
+        "Zforge/State/ArchiveWriteBackCoordinator.swift",
+        "Zforge/Models/FileBrowserPreferences.swift"
       ],
       "tests": [
-        "ZforgeUITests/ZforgeUITests/testArchiveThatLaunchesZforgeOpensInOneWindowAsColumnsRoot"
+        "ZforgeUITests/ZforgeUITests/testArchiveThatLaunchesZforgeOpensInOneWindowAsColumnsRoot",
+        "ZforgeUITests/ZforgeUITests/testArchiveOpenedFromFinderAsksAndExtractsWithoutWindow"
       ]
     },
     {

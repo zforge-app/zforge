@@ -2720,28 +2720,7 @@ final class FileBrowserState {
     }
 
     private func resolveArchiveConflict(_ conflict: ArchiveConflict) -> ArchiveConflictDecision {
-        let locale = preferences.language.locale
-        let alert = NSAlert()
-        alert.messageText = AppLocalization.string("Replace existing item?", locale: locale)
-        alert.informativeText = conflict.destinationURL.path
-        alert.addButton(withTitle: AppLocalization.string("Replace", locale: locale))
-        alert.addButton(withTitle: AppLocalization.string("Keep", locale: locale))
-        alert.addButton(withTitle: AppLocalization.string("Cancel", locale: locale))
-
-        let applyToAll = NSButton(
-            checkboxWithTitle: AppLocalization.string("Apply this decision to all conflicts", locale: locale),
-            target: nil,
-            action: nil
-        )
-        alert.accessoryView = applyToAll
-
-        let response = alert.runModal()
-        let applies = applyToAll.state == .on
-        switch response {
-        case .alertFirstButtonReturn: return .replace(applyToAll: applies)
-        case .alertSecondButtonReturn: return .keep(applyToAll: applies)
-        default: return .cancel
-        }
+        ArchiveConflictAlert.run(conflict, locale: preferences.language.locale)
     }
 
     private func uniqueArchiveOutputURL(

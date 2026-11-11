@@ -15,6 +15,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var launchWindowOffered = false
     private var launchWindow: (id: UUID, deadline: ContinuousClock.Instant)?
     private var interactionMonitor: Any?
+    /// Every browser window, to know whether one is open to take a request.
+    private let browserWindows = NSHashTable<NSWindow>.weakObjects()
+    /// Opens a browser window. SwiftUI adds no window for files and URLs opened from outside
+    /// (`handlesExternalEvents(matching: [])`), so a request that no open window takes, such as
+    /// the archive that launched Zforge, opens its own through this (ZF-78).
+    private(set) var windowOpener: ((BrowserWindowRequest) -> Void)?
+    /// Until launching ends, SwiftUI may still create the default window, which takes the
+    /// waiting requests; the opener is used only after.
+    private(set) var hasFinishedLaunching = false
+    /// Open-or-extract questions are asked one at a time.
+    private var archiveChoice: Task<Void, Never>?
+    lazy var archiveOpening = FinderArchiveOpeningEnvironment.live
 
     func applicationWillFinishLaunching(_ notification: Notification) {
         // UI test launches keep window frames out of the user's preferences (D-63).
@@ -25,6 +37,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         Self.current = self
+        launchDidFinish()
         // Inner archives write back into their outer archives when their last window closes.
         ArchiveWriteBackCoordinator.shared.start()
         if !ProcessInfo.processInfo.arguments.contains("--ui-fixtures"),
@@ -43,11 +56,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     /// Quitting waits for inner archives to be written back (D-73): their windows close
-    /// first, innermost first, and the write-backs run with visible progress.
+    /// first, innermost first, and the write-backs run with visible progress. An
+    /// extraction started from Finder is cancelled first (ZF-78).
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
         let coordinator = ArchiveWriteBackCoordinator.shared
-        guard ArchiveWindowRegistry.shared.showsInnerArchives || !coordinator.isIdle else { return .terminateNow }
+        let extraction = ArchiveExtractionCoordinator.shared
+        guard ArchiveWindowRegistry.shared.showsInnerArchives || !coordinator.isIdle || !extraction.isIdle else {
+            return .terminateNow
+        }
         Task { @MainActor in
+            extraction.cancelAll()
+            await extraction.waitUntilIdle()
             await ArchiveWindowRegistry.shared.closeAllWindows()
             await coordinator.finishPendingWriteBacks()
             sender.reply(toApplicationShouldTerminate: true)
@@ -64,17 +83,89 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if urls.contains(where: { $0.scheme == FinderRequestInbox.urlScheme }) {
             receiveFinderRequests(from: FinderRequestInbox.shared())
         }
-        let archives = urls.filter { ArchiveFormatRegistry.recognizes($0.lastPathComponent) }
+        let archives = urls.filter { $0.isFileURL && ArchiveFormatRegistry.recognizes($0.lastPathComponent) }
         guard !archives.isEmpty else { return }
+        receiveOpenedArchives(archives)
+    }
 
+    /// Archives sent by Finder (double click, Open With, a drop on the Dock icon). Where
+    /// Zforge opens the archive's type by default, the Settings choice decides: ask,
+    /// open, or extract showing only the progress (ZF-78); the others open.
+    func receiveOpenedArchives(_ archives: [URL]) {
+        let routing = FinderArchiveRouting.route(
+            archives, choice: archiveOpening.preferences.finderArchiveOpening,
+            opensByDefault: archiveOpening.opensByDefault)
+        openArchives(routing.open)
+        if !routing.extract.isEmpty { archiveOpening.extract(routing.extract) }
+        if !routing.ask.isEmpty { askOpenOrExtract(routing.ask) }
+    }
+
+    private func openArchives(_ archives: [URL]) {
+        guard !archives.isEmpty else { return }
         pendingArchives.append(contentsOf: archives.map { BrowserWindowRequest(initialURL: $0) })
+        announcePendingRequests()
+    }
+
+    private func askOpenOrExtract(_ archives: [URL]) {
+        let previous = archiveChoice
+        archiveChoice = Task { [weak self] in
+            await previous?.value
+            guard let self else { return }
+            let answer = await archiveOpening.ask(archives.map(\.lastPathComponent))
+            if let answer, answer.remember { archiveOpening.preferences.finderArchiveOpening = answer.choice }
+            switch answer?.choice {
+            case .open: openArchives(archives)
+            case .extract: archiveOpening.extract(archives)
+            default: break
+            }
+        }
+    }
+
+    /// Waits until every open-or-extract question asked so far is answered (tests).
+    func waitForArchiveChoices() async {
+        await archiveChoice?.value
+    }
+
+    /// Open browser windows take waiting requests; with none open, each opens its own window.
+    private func announcePendingRequests() {
         NotificationCenter.default.post(name: Self.archiveURLsReceived, object: self)
+        openUntakenRequests()
+    }
+
+    /// Launching is over: a launch by a file or URL creates no default window, so the
+    /// requests that no window took open their own (ZF-78).
+    func launchDidFinish() {
+        hasFinishedLaunching = true
+        openUntakenRequests()
+    }
+
+    private func openUntakenRequests() {
+        guard hasFinishedLaunching, !pendingArchives.isEmpty, !hasOpenBrowserWindow, let windowOpener else { return }
+        for request in takePendingArchiveRequests() { windowOpener(request) }
+    }
+
+    private var hasOpenBrowserWindow: Bool {
+        browserWindows.allObjects.contains { $0.isVisible || $0.isMiniaturized }
+    }
+
+    /// The app's way to open a browser window, from its commands, which exist before any
+    /// window does; the first one offered is kept. Requests waiting with no window to take
+    /// them open right after, outside the SwiftUI update that offered it.
+    func offerWindowOpener(_ opener: @escaping (BrowserWindowRequest) -> Void) {
+        guard windowOpener == nil else { return }
+        windowOpener = opener
+        DispatchQueue.main.async { [weak self] in self?.openUntakenRequests() }
+    }
+
+    /// Records a browser window, so requests go to the open ones.
+    func registerBrowserWindow(_ window: NSWindow) {
+        browserWindows.add(window)
     }
 
     func receiveAutomationArchive(_ url: URL, lease: AutomationAccessLease) {
         guard ArchiveFormatRegistry.recognizes(url.lastPathComponent) else { return }
         pendingArchives.append(BrowserWindowRequest(initialURL: url, automationAccess: BrowserOpeningAccess(lease)))
-        NotificationCenter.default.post(name: Self.archiveURLsReceived, object: self)
+        announcePendingRequests()
     }
 
     /// Each action chosen in Finder's Zforge submenu opens a window that shows its
@@ -87,13 +178,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let requests = inbox.drain()
         guard !requests.isEmpty else { return }
         pendingArchives.append(contentsOf: requests.map { BrowserWindowRequest(finderRequest: $0) })
-        NotificationCenter.default.post(name: Self.archiveURLsReceived, object: self)
+        announcePendingRequests()
     }
 
     /// Opens a results window for an archive name search requested by Siri.
     func receiveArchiveSearch(_ term: String) {
         pendingArchives.append(BrowserWindowRequest(archiveSearch: term))
-        NotificationCenter.default.post(name: Self.archiveURLsReceived, object: self)
+        announcePendingRequests()
     }
 
     /// The value of a browser window opened without one. The first such window
