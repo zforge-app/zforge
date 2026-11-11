@@ -3149,6 +3149,266 @@
         }
       }
     },
+    "Archives Opened from Finder" : {
+      "localizations" : {
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finder থেকে খোলা আর্কাইভ"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Archivy otevřené z Finderu"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arkiver åbnet fra Finder"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Im Finder geöffnete Archive"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Archives Opened from Finder"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Archivos comprimidos abiertos desde el Finder"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Archives ouvertes depuis le Finder"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finder से खोले गए आर्काइव"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Archivi aperti dal Finder"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finderから開いたアーカイブ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finder에서 연 압축 파일"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Archieven geopend vanuit de Finder"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Archiwa otwierane z Findera"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arquivos compactados abertos pelo Finder"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Архивы, открытые из Finder"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arkiv som öppnas från Finder"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ไฟล์บีบอัดที่เปิดจาก Finder"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finder’dan Açılan Arşivler"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Архіви, відкриті з Finder"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "从“访达”打开的压缩文件"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "從 Finder 打開的壓縮檔案"
+          }
+        }
+      }
+    },
+    "Ask Each Time" : {
+      "localizations" : {
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "প্রতিবার জিজ্ঞাসা করুন"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pokaždé se zeptat"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spørg hver gang"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jedes Mal fragen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ask Each Time"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preguntar siempre"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toujours demander"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "हर बार पूछें"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chiedi ogni volta"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "毎回確認"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "매번 묻기"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vraag elke keer"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zawsze pytaj"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Perguntar sempre"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Всегда спрашивать"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fråga varje gång"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ถามทุกครั้ง"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Her Seferinde Sor"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Щоразу питати"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每次询问"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每次詢問"
+          }
+        }
+      }
+    },
     "Clear Search" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3670,6 +3930,266 @@
         }
       }
     },
+    "Don’t ask again" : {
+      "localizations" : {
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "আর জিজ্ঞাসা করবেন না"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Už se neptat"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spørg ikke igen"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nicht mehr fragen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Don’t ask again"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No volver a preguntar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ne plus demander"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "फिर से न पूछें"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non chiedere più"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今後確認しない"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다시 묻지 않기"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Niet meer vragen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie pytaj ponownie"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não perguntar novamente"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Больше не спрашивать"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fråga inte igen"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ไม่ต้องถามอีก"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bir daha sorma"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Більше не питати"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不再询问"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不再詢問"
+          }
+        }
+      }
+    },
+    "Double-clicking an archive whose type opens with Zforge asks, opens it, or extracts it into a folder named after it, next to it, showing only the progress. Open With always opens." : {
+      "localizations" : {
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "যে আর্কাইভের ধরন Zforge দিয়ে খোলে সেটিতে ডাবল-ক্লিক করলে জিজ্ঞাসা করা হয়, সেটি খোলে, অথবা তার পাশে তার নামের একটি ফোল্ডারে এক্সট্র্যাক্ট করে এবং শুধু অগ্রগতি দেখায়। “এটি দিয়ে খুলুন” সবসময় খোলে।"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dvojité kliknutí na archiv, jehož typ se otevírá v Zforge, se zeptá, archiv otevře, nebo ho rozbalí do složky s jeho názvem vedle něj a zobrazí jen průběh. Otevřít v aplikaci vždy otevírá."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Et dobbeltklik på et arkiv, hvis type åbnes med Zforge, spørger, åbner det eller pakker det ud i en mappe med dets navn ved siden af det og viser kun status. Åbn med åbner altid."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein Doppelklick auf ein Archiv, dessen Typ mit Zforge geöffnet wird, fragt nach, öffnet es oder entpackt es in einen Ordner mit seinem Namen daneben und zeigt nur den Fortschritt. „Öffnen mit“ öffnet es immer."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Double-clicking an archive whose type opens with Zforge asks, opens it, or extracts it into a folder named after it, next to it, showing only the progress. Open With always opens."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Al hacer doble clic en un archivo comprimido cuyo tipo se abre con Zforge, se pregunta qué hacer, se abre o se extrae en una carpeta con su nombre, junto a él, mostrando solo el progreso. «Abrir con» siempre lo abre."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un double-clic sur une archive dont le type s’ouvre avec Zforge demande quoi faire, l’ouvre ou l’extrait dans un dossier portant son nom, à côté d’elle, en n’affichant que la progression. « Ouvrir avec » l’ouvre toujours."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "जिस आर्काइव का प्रकार Zforge से खुलता है, उस पर डबल-क्लिक करने पर पूछा जाता है, वह खुलता है, या उसके बगल में उसके नाम के फ़ोल्डर में एक्सट्रैक्ट होता है और केवल प्रगति दिखती है। “इससे खोलें” हमेशा खोलता है।"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Con un doppio clic su un archivio il cui tipo si apre con Zforge viene chiesto cosa fare, oppure l’archivio viene aperto o estratto in una cartella con il suo nome, accanto a esso, mostrando solo l’avanzamento. “Apri con” lo apre sempre."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zforgeで開く種類のアーカイブをダブルクリックすると、確認するか、開くか、アーカイブの横にある同じ名前のフォルダに展開して進行状況だけを表示します。“このアプリケーションで開く”では常に開きます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zforge로 열리는 유형의 압축 파일을 이중 클릭하면 묻거나, 열거나, 압축 파일 옆에 같은 이름의 폴더로 압축을 풀고 진행 상황만 표시합니다. ‘다음으로 열기’는 항상 엽니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dubbelklikken op een archief waarvan het type met Zforge opent, vraagt wat er moet gebeuren, opent het of pakt het uit in een map met de naam ervan, ernaast, en toont alleen de voortgang. ‘Open met’ opent altijd."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dwukrotne kliknięcie archiwum, którego typ otwiera się w Zforge, wyświetla pytanie, otwiera je lub rozpakowuje do folderu o jego nazwie obok niego, pokazując tylko postęp. „Otwórz w aplikacji” zawsze otwiera."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clicar duas vezes em um arquivo compactado cujo tipo abre com o Zforge pergunta, abre ou extrai o conteúdo em uma pasta com o nome dele, ao lado dele, mostrando apenas o progresso. Abrir com sempre abre."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Двойной щелчок по архиву, тип которого открывается в Zforge, вызывает вопрос, открывает архив или распаковывает его в папку с его именем рядом с ним, показывая только ход выполнения. «Открыть в программе» всегда открывает."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ett dubbelklick på ett arkiv vars typ öppnas med Zforge frågar, öppnar det eller packar upp det i en mapp med dess namn bredvid det och visar bara förloppet. Öppna med öppnar alltid."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "การคลิกสองครั้งที่ไฟล์บีบอัดประเภทที่เปิดด้วย Zforge จะถาม เปิด หรือคลายไฟล์ไปยังโฟลเดอร์ที่ตั้งชื่อตามไฟล์นั้นไว้ข้างๆ โดยแสดงเพียงความคืบหน้า “เปิดด้วย” จะเปิดเสมอ"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Türü Zforge ile açılan bir arşive çift tıklandığında ne yapılacağı sorulur, arşiv açılır ya da yanında onun adını taşıyan bir klasöre çıkarılır ve yalnızca ilerleme gösterilir. Birlikte Aç her zaman açar."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Подвійне клацання архіву, тип якого відкривається в Zforge, викликає запитання, відкриває архів або розпаковує його в папку з його назвою поруч із ним, показуючи лише перебіг. «Відкрити у програмі» завжди відкриває."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "连按以 Zforge 打开的类型的压缩文件时，会询问、打开，或解压到其旁边以其命名的文件夹并仅显示进度。“打开方式”始终会打开。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "按兩下以 Zforge 打開之類型的壓縮檔案時，會詢問、打開，或解壓到其旁邊以其命名的檔案夾並只顯示進度。「打開方式」一律會打開。"
+          }
+        }
+      }
+    },
     "Duplicate Profile" : {
       "localizations" : {
         "bn" : {
@@ -3932,6 +4452,136 @@
         }
       }
     },
+    "Enter the password of “%@” to extract it." : {
+      "localizations" : {
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "এক্সট্র্যাক্ট করতে “%@”-এর পাসওয়ার্ড দিন।"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chcete-li „%@“ rozbalit, zadejte jeho heslo."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Indtast adgangskoden til “%@” for at pakke det ud."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gib das Passwort für „%@“ ein, um es zu entpacken."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter the password of “%@” to extract it."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Introduce la contraseña de “%@” para extraerlo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saisissez le mot de passe de « %@ » pour l’extraire."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "एक्सट्रैक्ट करने के लिए “%@” का पासवर्ड दर्ज करें।"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inserisci la password di “%@” per estrarlo."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "展開するには“%@”のパスワードを入力してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "압축을 풀려면 “%@”의 암호를 입력하십시오."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voer het wachtwoord van ‘%@’ in om het uit te pakken."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wprowadź hasło do „%@”, aby je rozpakować."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Digite a senha de “%@” para extraí-lo."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Введите пароль от «%@», чтобы распаковать его."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ange lösenordet för ”%@” för att packa upp det."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ป้อนรหัสผ่านของ “%@” เพื่อคลายไฟล์"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arşivden çıkarmak için “%@” parolasını girin."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Введіть пароль до «%@», щоб розпакувати його."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "输入“%@”的密码以解压。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "輸入「%@」的密碼以解壓。"
+          }
+        }
+      }
+    },
     "Enter the password of “%@” to write the inner archive back." : {
       "localizations" : {
         "bn" : {
@@ -4058,6 +4708,396 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "輸入「%@」的密碼以寫回內部壓縮檔案。"
+          }
+        }
+      }
+    },
+    "Extract creates a folder named after the archive, next to it. You can change this choice in Settings ▸ General." : {
+      "localizations" : {
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "এক্সট্র্যাক্ট করলে আর্কাইভের পাশে তার নামে একটি ফোল্ডার তৈরি হয়। আপনি এই পছন্দটি সেটিংস ▸ সাধারণ-এ পরিবর্তন করতে পারেন।"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rozbalení vytvoří vedle archivu složku s jeho názvem. Tuto volbu můžete změnit v Nastavení ▸ Obecné."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Udpakning opretter en mappe med arkivets navn ved siden af det. Du kan ændre dette valg i Indstillinger ▸ Generelt."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beim Entpacken wird neben dem Archiv ein Ordner mit seinem Namen erstellt. Du kannst diese Auswahl unter „Einstellungen“ ▸ „Allgemein“ ändern."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extract creates a folder named after the archive, next to it. You can change this choice in Settings ▸ General."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extraer crea una carpeta con el nombre del archivo comprimido, junto a él. Puedes cambiar esta opción en Ajustes ▸ General."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extraire crée un dossier portant le nom de l’archive, à côté de celle-ci. Vous pouvez modifier ce choix dans Réglages ▸ Général."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "एक्सट्रैक्ट करने पर आर्काइव के बगल में उसके नाम का एक फ़ोल्डर बनता है। आप यह विकल्प सेटिंग्ज़ ▸ सामान्य में बदल सकते हैं।"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estrai crea una cartella con il nome dell’archivio, accanto a esso. Puoi modificare questa scelta in Impostazioni ▸ Generali."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "展開すると、アーカイブの横に同じ名前のフォルダが作成されます。この選択は“設定”▸“一般”で変更できます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "압축을 풀면 압축 파일 옆에 같은 이름의 폴더가 생성됩니다. 이 선택은 설정 ▸ 일반에서 변경할 수 있습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uitpakken maakt naast het archief een map met de naam van het archief. Je kunt deze keuze wijzigen in Instellingen ▸ Algemeen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rozpakowanie tworzy obok archiwum folder o jego nazwie. Ten wybór możesz zmienić w Ustawieniach ▸ Ogólne."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extrair cria uma pasta com o nome do arquivo compactado, ao lado dele. Você pode mudar essa escolha em Ajustes ▸ Geral."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "При распаковке рядом с архивом создается папка с его именем. Этот выбор можно изменить в разделе «Настройки» ▸ «Основные»."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uppackning skapar en mapp med arkivets namn bredvid det. Du kan ändra valet i Inställningar ▸ Allmänt."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "การคลายไฟล์จะสร้างโฟลเดอร์ที่ตั้งชื่อตามไฟล์บีบอัดไว้ข้างๆ คุณสามารถเปลี่ยนตัวเลือกนี้ได้ในการตั้งค่า ▸ ทั่วไป"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arşivden çıkarma, arşivin yanında onun adını taşıyan bir klasör oluşturur. Bu seçimi Ayarlar ▸ Genel bölümünden değiştirebilirsiniz."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Розпакування створює поруч з архівом папку з його назвою. Цей вибір можна змінити в розділі «Параметри» ▸ «Загальні»."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "解压会在压缩文件旁边创建一个以其命名的文件夹。你可以在“设置”▸“通用”中更改此选择。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "解壓會在壓縮檔案旁建立以其命名的檔案夾。你可以在「設定」▸「一般」中更改此選擇。"
+          }
+        }
+      }
+    },
+    "Extracting Archive" : {
+      "localizations" : {
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "আর্কাইভ এক্সট্র্যাক্ট করা হচ্ছে"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rozbalování archivu"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pakker arkiv ud"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Archiv wird entpackt"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extracting Archive"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extrayendo archivo comprimido"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extraction de l’archive"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "आर्काइव एक्सट्रैक्ट कर रहे हैं"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estrazione dell’archivio"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アーカイブを展開中"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "압축 파일 푸는 중"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Archief uitpakken"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rozpakowywanie archiwum"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extraindo arquivo compactado"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Распаковка архива"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Packar upp arkiv"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "กำลังคลายไฟล์บีบอัด"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arşivden Çıkarılıyor"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Розпакування архіву"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在解压压缩文件"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在解壓壓縮檔案"
+          }
+        }
+      }
+    },
+    "Extracting “%@”…" : {
+      "localizations" : {
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” এক্সট্র্যাক্ট করা হচ্ছে…"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rozbalování „%@“…"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pakker “%@” ud…"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%@“ wird entpackt…"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extracting “%@”…"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extrayendo “%@”…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extraction de « %@ »…"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” एक्सट्रैक्ट कर रहे हैं…"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estrazione di “%@”…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@”を展開中…"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” 압축 푸는 중…"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "‘%@’ uitpakken…"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rozpakowywanie „%@”…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extraindo “%@”…"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Распаковка «%@»…"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Packar upp ”%@”…"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "กำลังคลายไฟล์ “%@”…"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” çıkarılıyor…"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Розпакування «%@»…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在解压“%@”…"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在解壓「%@」…"
           }
         }
       }
@@ -5107,132 +6147,132 @@
         }
       }
     },
-    "Language and the Zforge submenu in Finder." : {
+    "Language and how Zforge works with Finder." : {
       "localizations" : {
         "bn" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ভাষা এবং Finder-এ Zforge সাবমেনু।"
+            "value" : "ভাষা এবং Finder-এর সাথে Zforge কীভাবে কাজ করে।"
           }
         },
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Jazyk a podnabídka Zforge ve Finderu."
+            "value" : "Jazyk a spolupráce Zforge s Finderem."
           }
         },
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sprog og Zforge-undermenuen i Finder."
+            "value" : "Sprog og hvordan Zforge fungerer med Finder."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sprache und das Zforge-Untermenü im Finder."
+            "value" : "Sprache und wie Zforge mit dem Finder zusammenarbeitet."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Language and the Zforge submenu in Finder."
+            "value" : "Language and how Zforge works with Finder."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Idioma y el submenú de Zforge en el Finder."
+            "value" : "Idioma y cómo funciona Zforge con el Finder."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La langue et le sous-menu Zforge dans le Finder."
+            "value" : "La langue et le fonctionnement de Zforge avec le Finder."
           }
         },
         "hi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "भाषा और Finder में Zforge सबमेनू।"
+            "value" : "भाषा और Zforge, Finder के साथ कैसे काम करता है।"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La lingua e il sottomenu di Zforge nel Finder."
+            "value" : "La lingua e il funzionamento di Zforge con il Finder."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "言語と、FinderのZforgeサブメニュー。"
+            "value" : "言語と、ZforgeとFinderの連携。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "언어 및 Finder의 Zforge 하위 메뉴."
+            "value" : "언어 및 Zforge와 Finder의 연동 방식."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "De taal en het Zforge-submenu in de Finder."
+            "value" : "De taal en hoe Zforge met de Finder werkt."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Język i podmenu Zforge w Finderze."
+            "value" : "Język i współpraca Zforge z Finderem."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Idioma e o submenu do Zforge no Finder."
+            "value" : "Idioma e como o Zforge funciona com o Finder."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Язык и подменю Zforge в Finder."
+            "value" : "Язык и работа Zforge с Finder."
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Språk och Zforge-undermenyn i Finder."
+            "value" : "Språk och hur Zforge fungerar med Finder."
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ภาษาและเมนูย่อย Zforge ใน Finder"
+            "value" : "ภาษาและการทำงานของ Zforge ร่วมกับ Finder"
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dil ve Finder’daki Zforge alt menüsü."
+            "value" : "Dil ve Zforge’un Finder ile çalışması."
           }
         },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Мова й підменю Zforge у Finder."
+            "value" : "Мова й робота Zforge з Finder."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "语言以及“访达”中的 Zforge 子菜单。"
+            "value" : "语言以及 Zforge 与“访达”的协作方式。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "語言以及 Finder 中的 Zforge 子選單。"
+            "value" : "語言以及 Zforge 與 Finder 的搭配方式。"
           }
         }
       }
@@ -6014,6 +7054,396 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "在新標籤頁中打開"
+          }
+        }
+      }
+    },
+    "Open in Zforge" : {
+      "localizations" : {
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zforge-এ খুলুন"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otevřít v Zforge"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Åbn i Zforge"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In Zforge öffnen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open in Zforge"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir en Zforge"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir dans Zforge"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zforge में खोलें"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apri in Zforge"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zforgeで開く"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zforge에서 열기"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open in Zforge"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otwórz w Zforge"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir no Zforge"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Открыть в Zforge"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Öppna i Zforge"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เปิดใน Zforge"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zforge’da Aç"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Відкрити в Zforge"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在 Zforge 中打开"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在 Zforge 中打開"
+          }
+        }
+      }
+    },
+    "Open or extract these archives?" : {
+      "localizations" : {
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "এই আর্কাইভগুলো খুলবেন নাকি এক্সট্র্যাক্ট করবেন?"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otevřít, nebo rozbalit tyto archivy?"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vil du åbne eller pakke disse arkiver ud?"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese Archive öffnen oder entpacken?"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open or extract these archives?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Abrir o extraer estos archivos comprimidos?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir ou extraire ces archives ?"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "इन आर्काइव को खोलें या एक्सट्रैक्ट करें?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aprire o estrarre questi archivi?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "これらのアーカイブを開きますか？展開しますか？"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 압축 파일을 열거나 압축을 푸시겠습니까?"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deze archieven openen of uitpakken?"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otworzyć czy rozpakować te archiwa?"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir ou extrair estes arquivos compactados?"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Открыть или распаковать эти архивы?"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vill du öppna eller packa upp de här arkiven?"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เปิดหรือคลายไฟล์บีบอัดเหล่านี้หรือไม่"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu arşivler açılsın mı, arşivden çıkarılsın mı?"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Відкрити чи розпакувати ці архіви?"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开还是解压这些压缩文件？"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "要打開還是解壓這些壓縮檔案？"
+          }
+        }
+      }
+    },
+    "Open or extract “%@”?" : {
+      "localizations" : {
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” খুলবেন নাকি এক্সট্র্যাক্ট করবেন?"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otevřít, nebo rozbalit „%@“?"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vil du åbne eller pakke “%@” ud?"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%@“ öffnen oder entpacken?"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open or extract “%@”?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Abrir o extraer “%@”?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir ou extraire « %@ » ?"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” खोलें या एक्सट्रैक्ट करें?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aprire o estrarre “%@”?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@”を開きますか？展開しますか？"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@”을(를) 열거나 압축을 푸시겠습니까?"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "‘%@’ openen of uitpakken?"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otworzyć czy rozpakować „%@”?"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir ou extrair “%@”?"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Открыть или распаковать «%@»?"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vill du öppna eller packa upp ”%@”?"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เปิดหรือคลายไฟล์ “%@” หรือไม่"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” açılsın mı, arşivden çıkarılsın mı?"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Відкрити чи розпакувати «%@»?"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开还是解压“%@”？"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "要打開還是解壓「%@」？"
           }
         }
       }
@@ -9142,6 +10572,136 @@
         }
       }
     },
+    "When Zforge Is the Default App" : {
+      "localizations" : {
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zforge ডিফল্ট অ্যাপ হলে"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Když je Zforge výchozí aplikací"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Når Zforge er standardappen"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wenn Zforge die Standard-App ist"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "When Zforge Is the Default App"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuando Zforge es la app por omisión"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lorsque Zforge est l’app par défaut"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "जब Zforge डिफ़ॉल्ट ऐप हो"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quando Zforge è l’app predefinita"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zforgeがデフォルトのアプリの場合"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zforge가 기본 앱일 때"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Als Zforge de standaardapp is"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gdy Zforge jest aplikacją domyślną"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quando o Zforge é o app padrão"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Если Zforge — программа по умолчанию"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "När Zforge är standardappen"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เมื่อ Zforge เป็นแอปเริ่มต้น"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zforge Varsayılan Uygulama Olduğunda"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Якщо Zforge — програма за замовчуванням"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "当 Zforge 为默认 App 时"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "當 Zforge 為預設 App 時"
+          }
+        }
+      }
+    },
     "Writing the inner archive back would replace those changes. You can save the inner archive separately or discard its changes." : {
       "localizations" : {
         "bn" : {
@@ -9659,6 +11219,136 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "「%1$@」在從中打開「%2$@」後已更改。"
+          }
+        }
+      }
+    },
+    "“%@” couldn’t be extracted." : {
+      "localizations" : {
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” এক্সট্র্যাক্ট করা যায়নি।"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%@“ se nepodařilo rozbalit."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” kunne ikke pakkes ud."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%@“ konnte nicht entpackt werden."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” couldn’t be extracted."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se ha podido extraer “%@”."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossible d’extraire « %@ »."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” को एक्सट्रैक्ट नहीं किया जा सका।"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile estrarre “%@”."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@”を展開できませんでした。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@”의 압축을 풀 수 없습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "‘%@’ kon niet worden uitgepakt."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie można rozpakować „%@”."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível extrair “%@”."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не удалось распаковать «%@»."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "”%@” kunde inte packas upp."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ไม่สามารถคลายไฟล์ “%@” ได้"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” arşivden çıkarılamadı."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не вдалося розпакувати «%@»."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法解压“%@”。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法解壓「%@」。"
           }
         }
       }

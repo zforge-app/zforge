@@ -649,6 +649,19 @@ Pending: in-app check of the row and the computer level in the four modes (light
 - [x] “Write-back alerts” snapshots (D-89): IconServices placeholder captured; the test waits until the application icon renders. Reference unchanged.
 - [x] Requirements: AGENT-INTEGRATION-PLAN measurement gate; RNF-Q08 rule on clocks in tests.
 
+### ZF-78 — Open or extract an archive opened from Finder (2026-11-10, D-96)
+
+User request: when Zforge is the default app and an archive is double-clicked in Finder, ask whether to extract or open it, with a checkbox to make the choice the default, and add the setting to Settings. Decisions (user, same day): only where Zforge is the default app for the type; Extract into a folder named after the archive, next to it; no browser window while extracting, only the progress; the dialog every time until a default is saved.
+- [x] Choice, routing by default app, preference `finder.archiveOpening` and Settings ▸ General ▸ Archives Opened from Finder.
+- [x] Dialog (Open / Extract / Cancel, Don’t ask again), asked one at a time.
+- [x] Windowless extraction: progress panel, folder access, password, conflicts (shared alert), failure, cancellation, empty-folder cleanup, quit waits.
+- [x] SwiftUI opens no window for files and URLs (D-96); the app opens one when no browser window takes the request.
+- [x] Tests: `FinderArchiveOpeningTests` (unit and snapshots), real-only UI test `testArchiveOpenedFromFinderAsksAndExtractsWithoutWindow`; ZF-77's UI test pinned to Open; isolation argument `--ui-finder-archive-opening`.
+- [x] 13 new strings and the General pane description in the 21 languages (own drafts).
+- [ ] Native review of the translations.
+- [ ] The user checks a Finder double click with Zforge set as the default app for ZIP (the UI test uses ARJ, which Zforge already opens by default on this Mac).
+- [ ] Observed, not changed: a non-archive file with an archive extension (a text file named `.zip`) opens and extracts as a one-item archive (engine behavior).
+
 ### ZF-77 — An archive opened from Finder: one window, archive as the window root (2026-11-10, D-95)
 
 User report (installed build 26): opening a ZIP from Finder with Zforge closed showed the archive window exactly over a second, Recents window; in Columns the archive's contents were in the second column, after an empty Recents column. Reproduced with the current code (cold launches of a Debug build), so not only the installed build.
@@ -658,7 +671,7 @@ User report (installed build 26): opening a ZIP from Finder with Zforge closed s
 - [x] Requirements: CURRENT-STATE (Common Window, File sent by Finder, One window per request); D-95; REGRESSION-COVERAGE.
 - [x] Release build of the fix (uncommitted working tree on `fix/zip-finder-window-root`, still build 26) installed in `/Applications` on 2026-11-10 at the user's request, replacing the 2026-10-13 build; opened with a ZIP through LaunchServices it showed one window, the archive in the first column, Back disabled.
 - [ ] The user checks a Finder double click with the installed build.
-- [ ] Observed, not changed: the launch window shows Recents for a fraction of a second before the file that launched Zforge replaces it (the file arrives about 0.3 s after SwiftUI shows the window, in a Debug build).
+- [x] Observed: the launch window showed Recents for a fraction of a second before the file that launched Zforge replaced it. Resolved by ZF-78/D-96: a file that launches Zforge no longer creates a launch window.
 
 ### ZF-76 — Repository hygiene before publication: `.gitignore` (2026-11-10)
 

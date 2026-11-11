@@ -27,11 +27,14 @@ struct ZforgeApp: App {
             appDelegate.makeDefaultWindowRequest()
         }
         .defaultSize(width: defaultWindowWidth, height: 720)
+        // Files and URLs opened from outside go to `AppDelegate`, which decides whether a
+        // window opens (ZF-78); SwiftUI must not add a window of its own for each of them.
+        .handlesExternalEvents(matching: [])
         // The unit test host opens no browser window (RNF-Q08).
         .defaultLaunchBehavior(UnitTestHostPresentation.isQuietLaunch ? .suppressed : .automatic)
         .environment(\.locale, preferences.language.locale)
         .commands {
-            BrowserCommands()
+            BrowserCommands(appDelegate: appDelegate)
             KeyboardShortcutHelpCommands()
             AcknowledgmentsCommands()
             if ProcessInfo.processInfo.arguments.contains("--ui-fixtures"),
@@ -51,6 +54,7 @@ struct ZforgeApp: App {
         Window("Keyboard Shortcuts", id: "keyboard-shortcuts") {
             KeyboardShortcutsView()
         }
+        .handlesExternalEvents(matching: [])
         .defaultSize(width: KeyboardShortcutsLayout.defaultWidth, height: KeyboardShortcutsLayout.defaultHeight)
         .windowResizability(.contentMinSize)
         .environment(\.locale, preferences.language.locale)
@@ -59,6 +63,7 @@ struct ZforgeApp: App {
         Window("Acknowledgments", id: "acknowledgments") {
             AcknowledgmentsView()
         }
+        .handlesExternalEvents(matching: [])
         .defaultSize(width: KeyboardShortcutsLayout.defaultWidth, height: KeyboardShortcutsLayout.defaultHeight)
         .windowResizability(.contentMinSize)
         .environment(\.locale, preferences.language.locale)
@@ -92,6 +97,8 @@ private struct BrowserWindowRoot: View {
             archiveSession: request.archiveSession
         )
             .id(request.id)
+            // Requests go to open browser windows; with none, they open their own (ZF-78).
+            .background(HostingWindowReader { window in appDelegate.registerBrowserWindow(window) })
             .onAppear {
                 // A file can arrive after SwiftUI computes the default scene value.
                 // In that case, use the first new window for the archive.
@@ -129,10 +136,14 @@ private struct BrowserWindowRoot: View {
 }
 
 private struct BrowserCommands: Commands {
+    let appDelegate: AppDelegate
     @FocusedValue(\.fileBrowserState) private var browser
     @Environment(\.openWindow) private var openWindow
 
     var body: some Commands {
+        // Commands exist before any window: they give the app its way to open a browser
+        // window for a request that no open window takes (ZF-78).
+        let _ = appDelegate.offerWindowOpener { [openWindow] request in openWindow(id: "browser", value: request) }
         CommandGroup(replacing: .newItem) {
             Button("New Zforge Window") {
                 openWindow(id: "browser", value: BrowserWindowRequest())

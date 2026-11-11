@@ -164,6 +164,7 @@ struct GeneralSettingsPane: View {
                     }
                 }
             }
+            FinderArchiveOpeningSettingsSection(preferences: preferences)
             FinderExtensionSettingsSection()
         }
     }

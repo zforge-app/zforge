@@ -182,12 +182,20 @@ final class ArchiveWriteBackPanelPresenter: ArchiveWriteBackPresenting {
         AppLocalization.string("Writing “\(inner)” back into “\(outer)”…", locale: locale)
     }
 
-    /// The utility panel: the sentence, an indeterminate bar and Cancel (Escape).
+    /// The write-back panel, titled Saving Inner Archive.
     static func makePanel(locale: Locale?, target: AnyObject?, action: Selector?)
+        -> (panel: NSPanel, label: NSTextField, indicator: NSProgressIndicator) {
+        makePanel(title: AppLocalization.string("Saving Inner Archive", locale: locale), locale: locale,
+            target: target, action: action)
+    }
+
+    /// The utility panel: the sentence, an indeterminate bar and Cancel (Escape). Shared
+    /// by write-back and windowless extraction (ZF-78).
+    static func makePanel(title: String, locale: Locale?, target: AnyObject?, action: Selector?)
         -> (panel: NSPanel, label: NSTextField, indicator: NSProgressIndicator) {
         let panel = NSPanel(contentRect: NSRect(x: 0, y: 0, width: 420, height: 112),
             styleMask: [.titled, .utilityWindow], backing: .buffered, defer: false)
-        panel.title = AppLocalization.string("Saving Inner Archive", locale: locale)
+        panel.title = title
         panel.isReleasedWhenClosed = false
         panel.hidesOnDeactivate = false
         panel.level = .floating

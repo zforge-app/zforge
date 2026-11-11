@@ -144,6 +144,7 @@ struct SettingsWindowTests {
         }
         let general = String(reflecting: GeneralSettingsPane.Body.self)
         #expect(general.contains("AppLanguagePreference") && general.contains("FinderExtensionSettingsSection"), "\(general)")
+        #expect(general.contains("FinderArchiveOpeningSettingsSection"), "\(general)")
         let view = String(reflecting: ViewOptionsSettingsPane.Body.self)
         #expect(view.contains("BrowserViewMode") && view.contains("BrowserListColumn"), "\(view)")
         #expect(!view.contains("FinderExtensionSettingsSection"))

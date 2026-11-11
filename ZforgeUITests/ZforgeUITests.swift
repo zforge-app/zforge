@@ -430,6 +430,20 @@ final class ZforgeUITests: XCTestCase {
         return nil
     }
 
+    /// Normal-level windows of the Zforge under test that draw on screen (alpha above zero);
+    /// the user's own Zforge in /Applications is not counted. A veiled launch window is still
+    /// an accessibility window, so only the window server tells whether it shows (ZF-78).
+    private func visibleZforgeWindowCount() -> Int {
+        let pids = Set(NSRunningApplication.runningApplications(withBundleIdentifier: "io.libor.Zforge")
+            .filter { $0.bundleURL?.path != "/Applications/Zforge.app" }.map(\.processIdentifier))
+        let windows = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]] ?? []
+        return windows.filter { info in
+            (info[kCGWindowLayer as String] as? Int) == 0
+                && pids.contains((info[kCGWindowOwnerPID as String] as? Int32) ?? -1)
+                && ((info[kCGWindowAlpha as String] as? Double) ?? 1) > 0
+        }.count
+    }
+
     @MainActor
     private func launchWithBrowserWindow(_ app: XCUIApplication) {
         // Saved windows from a previous test must not cover the fixture or change
@@ -498,7 +512,9 @@ final class ZforgeUITests: XCTestCase {
         XCTAssertEqual(ditto.terminationStatus, 0)
 
         let app = XCUIApplication()
-        app.launchArguments = ["--ui-view-mode", "columns", "-appLanguagePreference", "english",
+        // Open whether or not Zforge is the default app for ZIP on this Mac (ZF-78).
+        app.launchArguments = ["--ui-view-mode", "columns", "--ui-finder-archive-opening", "open",
+                               "-appLanguagePreference", "english",
                                "-ApplePersistenceIgnoreState", "YES", "-NSQuitAlwaysKeepsWindows", "NO"]
         app.open(archive)
         defer { app.terminate() }
@@ -515,6 +531,115 @@ final class ZforgeUITests: XCTestCase {
         XCTAssertEqual(XCTWaiter.wait(for: [second], timeout: 3), .timedOut, "A second window opened: \(app.debugDescription)")
         XCTAssertEqual(browsers.count, 1)
         XCTAssertFalse(app.windows["Recents"].exists, "No launch window stays behind the archive")
+    }
+
+    /// ZF-78: an archive whose type Zforge opens by default, launching Zforge from Finder, asks
+    /// whether to open or extract it; Extract with “Don’t ask again” asks for the folder once,
+    /// extracts next to the archive and shows no browser window; the next archive is extracted
+    /// without asking. Routing, the dialog's contents, passwords and conflicts are covered by
+    /// `FinderArchiveOpeningTests`; only a LaunchServices launch delivers the file as Finder
+    /// does, and the alert, the out-of-process folder panel and the hidden launch window are
+    /// real window-server state.
+    @MainActor
+    func testArchiveOpenedFromFinderAsksAndExtractsWithoutWindow() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ZforgeFinderExtract-\(UUID().uuidString)", isDirectory: true)
+        let payload = directory.appendingPathComponent("Payload", isDirectory: true)
+        try FileManager.default.createDirectory(at: payload, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        try Data("readme".utf8).write(to: payload.appendingPathComponent("Readme.txt"))
+        // ARJ is a type Zforge opens by default unless another app claims it; the engine
+        // recognizes the ZIP content by its signature.
+        func archive(named name: String) throws -> URL {
+            let url = directory.appendingPathComponent(name)
+            let ditto = Process()
+            ditto.executableURL = URL(fileURLWithPath: "/usr/bin/ditto")
+            ditto.arguments = ["-c", "-k", payload.path, url.path]
+            try ditto.run(); ditto.waitUntilExit()
+            XCTAssertEqual(ditto.terminationStatus, 0)
+            return url
+        }
+        let first = try archive(named: "First.arj")
+        let second = try archive(named: "Second.arj")
+        let handler = NSWorkspace.shared.urlForApplication(toOpen: first).flatMap { Bundle(url: $0)?.bundleIdentifier }
+        guard handler == "io.libor.Zforge" else {
+            throw XCTSkip("Zforge is not the default app for ARJ on this Mac (\(handler ?? "none")).")
+        }
+        let zipProbe = directory.appendingPathComponent("Probe.zip")
+        try FileManager.default.copyItem(at: first, to: zipProbe)
+        let zipHandler = NSWorkspace.shared.urlForApplication(toOpen: zipProbe).flatMap { Bundle(url: $0)?.bundleIdentifier }
+        guard zipHandler != "io.libor.Zforge" else {
+            throw XCTSkip("Zforge is the default app for ZIP on this Mac; the last step needs another one.")
+        }
+
+        let app = XCUIApplication()
+        // An instance left running by an earlier test would receive the archive with its
+        // windows open; this scenario starts with Zforge closed.
+        app.terminate()
+        let leftovers = NSRunningApplication.runningApplications(withBundleIdentifier: "io.libor.Zforge")
+            .filter { $0.bundleURL?.path != "/Applications/Zforge.app" }
+        leftovers.forEach { $0.forceTerminate() }
+        let closed = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in leftovers.allSatisfy(\.isTerminated) }, object: nil)
+        XCTAssertEqual(XCTWaiter.wait(for: [closed], timeout: 10), .completed, "Zforge is closed before the launch")
+        app.launchArguments = ["--ui-finder-archive-opening", "ask", "-appLanguagePreference", "english",
+                               "-ApplePersistenceIgnoreState", "YES", "-NSQuitAlwaysKeepsWindows", "NO"]
+        app.open(first)
+        defer { app.terminate() }
+        let question = app.staticTexts["Open or extract “First.arj”?"]
+        XCTAssertTrue(question.waitForExistence(timeout: 10), app.debugDescription)
+        XCTAssertEqual(visibleZforgeWindowCount(), 0, "Nothing shows behind the question")
+        app.checkBoxes["Don’t ask again"].click()
+        app.buttons["Extract"].click()
+
+        let access = app.dialogs["Allow Zforge to Access This Folder"]
+        XCTAssertTrue(access.waitForExistence(timeout: 10), app.debugDescription)
+        access.buttons["Open"].click()
+        let firstOutput = directory.appendingPathComponent("First/Readme.txt")
+        let extracted = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+            FileManager.default.fileExists(atPath: firstOutput.path) }, object: nil)
+        XCTAssertEqual(XCTWaiter.wait(for: [extracted], timeout: 15), .completed)
+        XCTAssertEqual(try String(contentsOf: firstOutput, encoding: .utf8), "readme")
+        XCTAssertEqual(visibleZforgeWindowCount(), 0, "Extracting shows no browser window")
+
+        // The saved choice extracts the next archive without asking; the folder is granted.
+        // `XCUIApplication.open` would relaunch the app, so the running instance gets the file
+        // through LaunchServices, as from Finder.
+        let running = try XCTUnwrap(NSRunningApplication.runningApplications(withBundleIdentifier: "io.libor.Zforge")
+            .first { $0.bundleURL?.path != "/Applications/Zforge.app" })
+        let handedOver = expectation(description: "LaunchServices hands the archive to the running Zforge")
+        let configuration = NSWorkspace.OpenConfiguration()
+        configuration.activates = false
+        NSWorkspace.shared.open([second], withApplicationAt: try XCTUnwrap(running.bundleURL),
+                                configuration: configuration) { _, error in
+            XCTAssertNil(error)
+            handedOver.fulfill()
+        }
+        wait(for: [handedOver], timeout: 10)
+        XCTAssertEqual(NSRunningApplication.runningApplications(withBundleIdentifier: "io.libor.Zforge")
+            .filter { $0.bundleURL?.path != "/Applications/Zforge.app" }.map(\.processIdentifier),
+            [running.processIdentifier], "The same instance receives it")
+        let secondOutput = directory.appendingPathComponent("Second/Readme.txt")
+        let extractedAgain = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+            FileManager.default.fileExists(atPath: secondOutput.path) }, object: nil)
+        XCTAssertEqual(XCTWaiter.wait(for: [extractedAgain], timeout: 15), .completed)
+        XCTAssertFalse(app.staticTexts["Open or extract “Second.arj”?"].exists)
+        XCTAssertEqual(visibleZforgeWindowCount(), 0)
+
+        // With no window open, an archive Zforge only opens (ZIP's default app is another one,
+        // or Open With) gets one window of its own, and SwiftUI adds no other.
+        let zip = directory.appendingPathComponent("Third.zip")
+        try FileManager.default.copyItem(at: first, to: zip)
+        let opened = expectation(description: "LaunchServices hands the ZIP to the running Zforge")
+        NSWorkspace.shared.open([zip], withApplicationAt: try XCTUnwrap(running.bundleURL),
+                                configuration: configuration) { _, error in
+            XCTAssertNil(error)
+            opened.fulfill()
+        }
+        wait(for: [opened], timeout: 10)
+        XCTAssertTrue(app.windows["Third.zip"].firstMatch.waitForExistence(timeout: 10), app.debugDescription)
+        XCTAssertTrue(app.windows["Third.zip"].descendants(matching: .any).matching(identifier: "browser-item-Readme.txt")
+            .firstMatch.waitForExistence(timeout: 8))
+        XCTAssertEqual(visibleZforgeWindowCount(), 1, "Only the archive's window opens")
     }
 
     /// Real Option-drag inside an archive in Columns, with Escape and Return in the

@@ -147,6 +147,10 @@ final class FileBrowserPreferences {
         didSet { defaults.set(previewVisibleGallery, forKey: Key.previewVisibleGallery) }
     }
     var language: AppLanguagePreference { didSet { defaults.set(language.rawValue, forKey: Key.language) } }
+    /// What opening an archive from Finder does when Zforge opens its type by default (ZF-78).
+    var finderArchiveOpening: FinderArchiveOpeningChoice {
+        didSet { defaults.set(finderArchiveOpening.rawValue, forKey: FinderArchiveOpeningChoice.defaultsKey) }
+    }
     var compressionProfiles: [CompressionProfile] {
         didSet {
             if let data = try? JSONEncoder().encode(compressionProfiles) {
@@ -413,6 +417,8 @@ final class FileBrowserPreferences {
             key: Key.previewVisibleGallery
         )
         language = AppLanguagePreference(rawValue: defaults.string(forKey: Key.language) ?? "") ?? .system
+        finderArchiveOpening = FinderArchiveOpeningChoice(
+            rawValue: defaults.string(forKey: FinderArchiveOpeningChoice.defaultsKey) ?? "") ?? .ask
         // Nested-archive navigation and its depth/root-size limits were removed (D-73).
         Key.removedArchiveNavigationKeys.forEach(defaults.removeObject(forKey:))
         let limits = ArchivePreviewLimits.defaults
@@ -456,6 +462,13 @@ final class FileBrowserPreferences {
            ProcessInfo.processInfo.arguments.indices.contains(argumentIndex + 1),
            let fixtureMode = BrowserViewMode(rawValue: ProcessInfo.processInfo.arguments[argumentIndex + 1]) {
             viewMode = fixtureMode
+        }
+        // UI tests choose what opening an archive from Finder does (ZF-78); `--ui-` launches
+        // keep their preferences in a private suite.
+        if let argumentIndex = ProcessInfo.processInfo.arguments.firstIndex(of: "--ui-finder-archive-opening"),
+           ProcessInfo.processInfo.arguments.indices.contains(argumentIndex + 1),
+           let choice = FinderArchiveOpeningChoice(rawValue: ProcessInfo.processInfo.arguments[argumentIndex + 1]) {
+            finderArchiveOpening = choice
         }
     }
 
