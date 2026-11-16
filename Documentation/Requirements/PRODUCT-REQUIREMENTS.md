@@ -157,9 +157,9 @@ Zforge is planned as an open source project. The use of 7-Zip must not hide or r
   - `zforge-app/zforge-xcuitest-sim`: the offscreen XCUITest tool used by `Scripts/affected-tests.py`.
 - The design system (AkariDS) is not one of the organization's repositories; its own repository is named `akari-ds`. Pending decision: how the website consumes it. The recommendation is a versioned package instead of the current relative path to a sibling checkout.
 - Link repositories through pinned versions (tags or releases), not Git submodules.
-- Pre-publication hygiene: `.gitignore`, untracking of `xcuserdata` and a full-history secret scan with no real finding (ZF-76); third-party notices and `LICENSE` (ZF-75). The home path in the documentation was replaced by `~`. Commits carry the author's GitHub no-reply address: the app's history was rewritten on 2026-11-15 (TASKS ZF-76); the website and XCUITest tool repositories need the same rewrite before their first push.
+- Pre-publication hygiene: `.gitignore`, untracking of `xcuserdata` and a full-history secret scan with no real finding (ZF-76); third-party notices and `LICENSE` (ZF-75). The home path in the documentation was replaced by `~`. Commits carry the author's GitHub no-reply address: the app's history was rewritten on 2026-11-15 and the XCUITest tool's on 2026-11-16 (TASKS ZF-76); the website repository needs the same rewrite before its first push.
 - `Vendor/7zz` is no longer tracked (ZF-74). The user decided on 2026-11-10 that it stays in the past history; no history rewrite.
-- State (2026-11-15): the organization `zforge-app` exists. `zforge-app/zforge` holds the app's `main` and is **private** for now (user decision); opening the source is a later decision. `zforge-website` and `zforge-xcuitest-sim` are not published yet.
+- State (2026-11-15): the organization `zforge-app` exists. `zforge-app/zforge` (the app) and, since 2026-11-16, `zforge-app/zforge-xcuitest-sim` hold their `main` branches and are **private** for now (user decision); opening the source is a later decision. `zforge-website` is not published yet.
 
 ## Functional mark: browser read-only
 
