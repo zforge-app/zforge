@@ -16,7 +16,7 @@ Resource contracts preserved: utility priority, one worker, 128-item/8 ms slices
 
 ## Environment and measurement conditions
 
-MacBook Air (Apple M5, 4 + 6 cores, 24 GiB), macOS 27.0.1 (26A434), Xcode 27.1 (27A9275). Real Home/Shared metadata is read only; no file, tag or application index is modified. All diagnostics use the shared Release recipe of `tag-index-scale-benchmark.py` (`-O -whole-module-optimization`, application concurrency features), fresh processes, `caffeinate -i` and warm filesystem caches. Baseline binaries compile `HEAD` (`6778795`) through `--source-ref HEAD`; candidates compile the working tree.
+MacBook Air (Apple M5, 4 + 6 cores, 24 GiB), macOS 27.0.1 (26A434), Xcode 27.1 (27A9275). Real Home/Shared metadata is read only; no file, tag or application index is modified. All diagnostics use the shared Release recipe of `tag-index-scale-benchmark.py` (`-O -whole-module-optimization`, application concurrency features), fresh processes, `caffeinate -i` and warm filesystem caches. Baseline binaries compile `HEAD` (`2ba9559`) through `--source-ref HEAD`; candidates compile the working tree.
 
 - **Shared-machine window (2026-10-23, 13:58–15:40 -03):** another agent concurrently compiled and benchmarked 7-Zip in a separate worktree. Variants were interleaved (A/B…, then reversed) to share contention. These samples are kept for the per-candidate attribution.
 - **Quiet window (2026-10-24, from 12:15 -03):** the 7-Zip agent had finished; no other build/test/benchmark ran. Acceptance numbers come from this window.

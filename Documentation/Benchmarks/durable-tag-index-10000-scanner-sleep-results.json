@@ -1,7 +1,7 @@
 {
   "files": 100000,
   "tagged_files": 10000,
-  "reference_commit": "8af9fcb",
+  "reference_commit": "3aa216a",
   "source_sha256": {
     "TagDirectoryReader.c": "aa5901c4e00383fd1a1707c549316591a3942ca60a2f3885f1b30317a5b38329",
     "TagDirectoryReader.h": "37b44201d83531cb74a9fc8040adb31e94bf0420319749a85b49e2ff1208e7cb",

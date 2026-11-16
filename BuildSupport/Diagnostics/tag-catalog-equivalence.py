@@ -122,7 +122,7 @@ class Worker:
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", required=True, type=pathlib.Path)
-    parser.add_argument("--baseline-ref", default="fd1bacc")
+    parser.add_argument("--baseline-ref", default="ceaf39c")
     parser.add_argument("--reuse-builds", type=pathlib.Path, help="Reuse compiler outputs only after verifying all source/harness hashes")
     args = parser.parse_args()
     output = args.output.resolve()

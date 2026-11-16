@@ -54,7 +54,7 @@ actor Result {
 }
 '''
 variants = {
- 'foundation': subprocess.check_output(['git','show','8af9fcb:Zforge/Services/TaggedFileScanner.swift'], cwd=repo, text=True),
+ 'foundation': subprocess.check_output(['git','show','3aa216a:Zforge/Services/TaggedFileScanner.swift'], cwd=repo, text=True),
  'native': (repo/'Zforge/Services/TaggedFileScanner.swift').read_text()
 }
 hashes = {}
@@ -115,6 +115,6 @@ for repeat in range(3):
             row['records_sha256'] = hashlib.sha256(json.dumps(measured['records'], sort_keys=True, separators=(',', ':')).encode()).hexdigest()
             if tagged_files <= 100: row['records'] = measured['records']
             published.append(row)
-        (out/'results.json').write_text(json.dumps(dict(files=a.files,tagged_files=tagged_files,reference_commit='8af9fcb',source_sha256=hashes,benchmark_script_sha256=hashlib.sha256(pathlib.Path(__file__).read_bytes()).hexdigest(),measurements=published),indent=2)+'\n')
+        (out/'results.json').write_text(json.dumps(dict(files=a.files,tagged_files=tagged_files,reference_commit='3aa216a',source_sha256=hashes,benchmark_script_sha256=hashlib.sha256(pathlib.Path(__file__).read_bytes()).hexdigest(),measurements=published),indent=2)+'\n')
 assert all(item['records'] == results[0]['records'] for item in results)
 assert len(results[0]['records']) == tagged_files

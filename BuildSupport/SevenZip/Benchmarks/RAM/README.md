@@ -1,6 +1,6 @@
 # RAM total of Zforge and its engine processes
 
-This test compiles three temporary Release copies: anterior CLI (`05d1720`), static branch and dynamic branch. Inject `driver.swift` only on these copies to start the same `ArchiveServing` calls within the application, including staging and cleaning. No instrumentation is added to the app distributed in the branches. It normalizes arm64 and minimum architecture macOS 26.0 on the CLI baseline.
+This test compiles three temporary Release copies: anterior CLI (`5c2b960`), static branch and dynamic branch. Inject `driver.swift` only on these copies to start the same `ArchiveServing` calls within the application, including staging and cleaning. No instrumentation is added to the app distributed in the branches. It normalizes arm64 and minimum architecture macOS 26.0 on the CLI baseline.
 
 The instrumentation creates a window of 1100 × 720 with the actual `ContentView` and the already existing fixture UI services, to maintain the initial visual status equal and avoid variable queries to Spotlight. The measured operations use the actual engine of each variant, not `UIFixtureArchiveEngine`. Launch Services starts the app; `AppDelegate` creates the measurement window in a signed build, without XCTest and without separate harness for the engine. Do not measure gestures, menu, preview or the entire interface status catalog.
 

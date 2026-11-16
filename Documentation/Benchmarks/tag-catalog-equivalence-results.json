@@ -1,11 +1,11 @@
 {
   "started_utc": "2026-10-07T00:46:01.722031+00:00",
   "configuration": "Release",
-  "baseline_ref": "fd1bacc",
+  "baseline_ref": "ceaf39c",
   "provenance": {
     "baseline": {
       "configuration": "Release",
-      "source_commit": "fd1baccaf9841b63cea1288c78c051445f17749a",
+      "source_commit": "ceaf39c1d9a1317f8825fbfd371baee48548311b",
       "source_overrides": [
         "Zforge/Services/TagJournal.swift"
       ],

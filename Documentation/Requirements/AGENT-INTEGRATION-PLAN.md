@@ -102,7 +102,7 @@ The explicit index and all-mode archive annotations are implemented under the CU
 
 The user reports successful Spotlight discovery/opening in build 13 and a failing English direct Siri request for the same synthetic archive. Native inspection confirms the archive content. Preserve this split result: donation is useful and opening works, while direct Siri name resolution is still unaccepted. The remaining diagnosis compares a separate signed `system.open` control (`Intent Probe`, synthetic `Lyra Control.zip`) with no MCP, archive engine, filesystem grants or network dependencies. The user subsequently specifically authorizes execution; the baseline control runs and opens from Spotlight. The original approval checkpoint is resolved. Prepare redacted feedback evidence if the control also fails, without claiming an Apple defect from a single refusal or submitting feedback without authorization.
 
-Parallel localization work in the shared checkout is preserved. Integration validation uses a managed worktree from `72a9ab7` plus the explicit source manifest; its unit results do not validate those unrelated localization changes. Executed counts, performance failures/samples, native observations and remaining gaps are tracked in REGRESSION-COVERAGE and the integration benchmark.
+Parallel localization work in the shared checkout is preserved. Integration validation uses a managed worktree from `2d25d0d` plus the explicit source manifest; its unit results do not validate those unrelated localization changes. Executed counts, performance failures/samples, native observations and remaining gaps are tracked in REGRESSION-COVERAGE and the integration benchmark.
 
 ### Entity semantics and transport control — 2026-10-11
 

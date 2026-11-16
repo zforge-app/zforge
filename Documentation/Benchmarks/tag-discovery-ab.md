@@ -2,7 +2,7 @@
 
 ## Result
 
-Disabling the corrected global tag catalog reduces startup CPU almost to zero, with a small memory difference in the measured window. The experiment uses production source `9d9e3bc` and an isolated diagnostic snapshot. Application source in the working checkout remains unchanged, and the normal enabled bundle is left running afterward.
+Disabling the corrected global tag catalog reduces startup CPU almost to zero, with a small memory difference in the measured window. The experiment uses production source `57ded5f` and an isolated diagnostic snapshot. Application source in the working checkout remains unchanged, and the normal enabled bundle is left running afterward.
 
 | Metric | Global catalog enabled | Global catalog disabled |
 | --- | ---: | ---: |
@@ -38,7 +38,7 @@ The JSON preserves all **720 numeric samples**, process identifiers, selected wi
 
 ## Reproduction and limits
 
-Create an isolated `git archive 9d9e3bc` snapshot, apply the preserved patch there, and build Debug with `xcodebuild` using a separate temporary derived-data directory. Keep the normal enabled build from the same source. Compile the sampler with `clang BuildSupport/Diagnostics/app-resource-sampler.c -o /private/tmp/zforge-app-resource-sampler`; launch one variant through the native app, then run `/private/tmp/zforge-app-resource-sampler <pid> 250 180 > <series.csv>`. Use the specified order, screen and process-age window. Never apply the disabling patch to production as part of this measurement.
+Create an isolated `git archive 57ded5f` snapshot, apply the preserved patch there, and build Debug with `xcodebuild` using a separate temporary derived-data directory. Keep the normal enabled build from the same source. Compile the sampler with `clang BuildSupport/Diagnostics/app-resource-sampler.c -o /private/tmp/zforge-app-resource-sampler`; launch one variant through the native app, then run `/private/tmp/zforge-app-resource-sampler <pid> 250 180 > <series.csv>`. Use the specified order, screen and process-age window. Never apply the disabling patch to production as part of this measurement.
 
 Environment: macOS 27.0.1 arm64, Xcode/SDK 27.0, target macOS 26.0, Debug. The disabled build succeeds. Initial preparation failed because the host Python lacks `tarfile.extractall(filter=...)`; extraction was redone with the system tar before building. That failed preparation produced no comparison measurements.
 

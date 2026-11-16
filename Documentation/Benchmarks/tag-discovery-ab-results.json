@@ -1,7 +1,7 @@
 {
   "date": "2026-10-06",
   "protocol": {
-    "source_ref": "9d9e3bc",
+    "source_ref": "57ded5f",
     "configuration": "Debug",
     "disabled_scope": "Global FinderTagCatalog start/refresh/observe; no recursive discovery, catalog Spotlight query or FSEvents stream. Local file tag metadata remains enabled.",
     "order": [

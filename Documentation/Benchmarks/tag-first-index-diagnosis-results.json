@@ -193,7 +193,7 @@
       "variant": "baseline-debug",
       "provenance": {
         "configuration": "Debug",
-        "source_commit": "fd1baccaf9841b63cea1288c78c051445f17749a",
+        "source_commit": "ceaf39c1d9a1317f8825fbfd371baee48548311b",
         "source_overrides": [],
         "compile_commands": [
           [
@@ -1646,7 +1646,7 @@
     }
   ],
   "coverage_dylib_uuid": "0F29D733-8AD6-3EC3-BF1B-8DCF022DD3CE",
-  "baseline_ref": "fd1baccaf9841b63cea1288c78c051445f17749a",
+  "baseline_ref": "ceaf39c1d9a1317f8825fbfd371baee48548311b",
   "production_changed": false,
   "power_windows": [
     {
@@ -1680,7 +1680,7 @@
     "deferred_scopes": 1,
     "ready_minus_scan_seconds": 0.042827708999993774,
     "cached_reopen_seconds": 0.416192,
-    "logging_added_commit": "fd1bacc",
+    "logging_added_commit": "ceaf39c",
     "full_app_timing_gap_attributed": false
   },
   "collection_notes": [

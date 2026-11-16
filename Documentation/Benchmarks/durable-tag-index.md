@@ -1,6 +1,6 @@
 # Durable tag index and bounded startup work
 
-Measured on 2026-10-06, macOS 27.0.1 arm64, Xcode/SDK 27.0, Debug app. Production tags remain enabled. The preceding scope baseline is commit `8af9fcb`; its sandboxed app took 288.424 seconds to discover visible Home/Shared. Earlier scope and enabled/disabled comparisons remain in [visible-tag-discovery.md](visible-tag-discovery.md) and [tag-discovery-ab.md](tag-discovery-ab.md).
+Measured on 2026-10-06, macOS 27.0.1 arm64, Xcode/SDK 27.0, Debug app. Production tags remain enabled. The preceding scope baseline is commit `3aa216a`; its sandboxed app took 288.424 seconds to discover visible Home/Shared. Earlier scope and enabled/disabled comparisons remain in [visible-tag-discovery.md](visible-tag-discovery.md) and [tag-discovery-ab.md](tag-discovery-ab.md).
 
 ## Problem and delivered behavior
 
@@ -38,7 +38,7 @@ This pass precedes the final event-window, inode-visibility, stat-fallback and h
 
 ## Final source: controlled algorithm comparison
 
-[All six runs and exact tagged results](durable-tag-index-scanner-results.json) compare the Foundation scanner from `8af9fcb` with current native traversal. Both compile against the same current metadata reader. The fixture contains 100,000 visible files in 100 directories, ten tagged files, 100 tagged hidden descendants and 100 tagged package descendants. Results exclude hidden/package descendants and match exactly in every run. Order is Foundation/native, native/Foundation, Foundation/native; caches are not cleared. No build/unit runner overlaps these timed runs; the app remains open. These are standalone diagnostic invocations, not application test cases.
+[All six runs and exact tagged results](durable-tag-index-scanner-results.json) compare the Foundation scanner from `3aa216a` with current native traversal. Both compile against the same current metadata reader. The fixture contains 100,000 visible files in 100 directories, ten tagged files, 100 tagged hidden descendants and 100 tagged package descendants. Results exclude hidden/package descendants and match exactly in every run. Order is Foundation/native, native/Foundation, Foundation/native; caches are not cleared. No build/unit runner overlaps these timed runs; the app remains open. These are standalone diagnostic invocations, not application test cases.
 
 | Median | Foundation | Native |
 | --- | ---: | ---: |
@@ -77,7 +77,7 @@ The user requests a high-tag-count benchmark and the serialized index size. Keep
 
 [All six runs](durable-tag-index-10000-scanner-results.json) pass the same exact 10,000-file/tag oracle, exclude hidden/package descendants, and have identical result hashes. Order is Foundation/native, native/Foundation, Foundation/native. The final run uses the unchanged fixture inside the runtime temporary boundary, standardizes logical root identity and obtains its physical alias with POSIX realpath. Wall-versus-monotonic process elapsed differs by less than 0.002 s in every sample; no sleep-contaminated sample is selected. All compilation completes before timed runs; no unit/UI runner or other benchmark overlaps. The ordinary app remains open and filesystem caches are not cleared.
 
-| Median | Foundation from 8af9fcb | Current native |
+| Median | Foundation from 3aa216a | Current native |
 | --- | ---: | ---: |
 | Scanner elapsed | 34.917 s | 29.732 s |
 | Whole-process CPU time | 6.68 s | 5.68 s |
@@ -117,7 +117,7 @@ python3 BuildSupport/Diagnostics/tag-scanner-comparison.py --output "$TMPDIR/Zfo
 caffeinate -i python3 BuildSupport/Diagnostics/tag-index-scale-benchmark.py --output /private/tmp/zforge-index-scale --fixture "$TMPDIR/ZforgeTagScale/fixture" --files 100000 --tagged-files 10000
 ```
 
-For comparison captures, wrap the scanner command in `caffeinate -i` as well. Explicit fixture reuse is supported by `--fixture`; generated fixtures must start empty so stale tags cannot alter density. The sparse default remains ten tagged files per 100,000 total files. All output names and fixture content are English. Large tagged result maps are verified exactly and published as counts/hashes instead of repeating thousands of filenames. No new unit/UI suite execution is claimed: these are diagnostic invocations, and the production code remains at `fd1bacc`.
+For comparison captures, wrap the scanner command in `caffeinate -i` as well. Explicit fixture reuse is supported by `--fixture`; generated fixtures must start empty so stale tags cannot alter density. The sparse default remains ten tagged files per 100,000 total files. All output names and fixture content are English. Large tagged result maps are verified exactly and published as counts/hashes instead of repeating thousands of filenames. No new unit/UI suite execution is claimed: these are diagnostic invocations, and the production code remains at `ceaf39c`.
 
 ## ZF-42 follow-up
 

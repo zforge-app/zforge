@@ -23,7 +23,7 @@ A single utterance such as “Open Vega Demo.zip in Zforge” depends on Siri's 
 ## Continuation branch and delivery decision
 
 - **Development branch:** `codex/apple-intelligence`.
-- **Branch source:** `main` at `2b35eb9`, with the complete current Apple Intelligence implementation, tests, diagnostic variants and evidence preserved before the MCP-only delivery split.
+- **Branch source:** `main` at `dbb5e48`, with the complete current Apple Intelligence implementation, tests, diagnostic variants and evidence preserved before the MCP-only delivery split.
 - **Delivery decision, 2026-10-12:** deliver the validated MCP on `main`; keep App Intents, native archive-entity discovery/indexing, onscreen context and Siri diagnosis on this branch for future continuation. The original native shortcut actions are part of the deferred Apple integration too.
 - Shared filesystem/archive operations, contextual MCP folder consent and redundant-grant consolidation remain in the MCP delivery. Existing folder grants and unrelated 21-language localization work must be preserved.
 - **Merged into `main`, 2026-10-13:** at the user's request, this branch is merged into `main`, superseding the MCP-only split; the acceptance gates below remain open.
