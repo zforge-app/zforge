@@ -149,7 +149,7 @@ Zforge is planned as an open source project. The use of 7-Zip must not hide or r
 - Cadence: a release that fixes a vulnerability is imported promptly and followed by a Zforge release; other releases are imported per upstream release or before each Zforge release. Once the repository is on GitHub, a scheduled workflow runs `--status` and opens an issue or pull request for a newer release (pending).
 - The official `7zz` console binary is a development reference only (benchmarks, fixture generation and comparison). It is not tracked in Git: `Scripts/fetch-7zz.py` downloads the macOS asset of the vendored release recorded under `reference_cli`, verifies its checksum and reported version, and caches it under `~/Library/Caches/dev.zforge/7zz`.
 
-### Source hosting — decided 2026-11-10 (not yet published)
+### Source hosting — decided 2026-11-10
 
 - Host the public source on GitHub under the organization `zforge-app` (the name was unclaimed on 2026-11-10), one repository per project rather than a monorepo:
   - `zforge-app/zforge`: the macOS app (this repository).
@@ -157,9 +157,9 @@ Zforge is planned as an open source project. The use of 7-Zip must not hide or r
   - `zforge-app/zforge-xcuitest-sim`: the offscreen XCUITest tool used by `Scripts/affected-tests.py`.
 - The design system (AkariDS) is not one of the organization's repositories; its own repository is named `akari-ds`. Pending decision: how the website consumes it. The recommendation is a versioned package instead of the current relative path to a sibling checkout.
 - Link repositories through pinned versions (tags or releases), not Git submodules.
-- Pre-publication hygiene: `.gitignore`, untracking of `xcuserdata` and a full-history secret scan with no real finding (ZF-76); third-party notices and `LICENSE` (ZF-75). The home path in the documentation was replaced by `~`. Pending, for the user to analyze before the first push: the author email in the commit metadata of the app, website and XCUITest tool repositories (TASKS ZF-76).
+- Pre-publication hygiene: `.gitignore`, untracking of `xcuserdata` and a full-history secret scan with no real finding (ZF-76); third-party notices and `LICENSE` (ZF-75). The home path in the documentation was replaced by `~`. Commits carry the author's GitHub no-reply address: the app's history was rewritten on 2026-11-15 (TASKS ZF-76); the website and XCUITest tool repositories need the same rewrite before their first push.
 - `Vendor/7zz` is no longer tracked (ZF-74). The user decided on 2026-11-10 that it stays in the past history; no history rewrite.
-- State: names decided; the organization and repositories are not created and nothing is published.
+- State (2026-11-15): the organization `zforge-app` exists. `zforge-app/zforge` holds the app's `main` and is **private** for now (user decision); opening the source is a later decision. `zforge-website` and `zforge-xcuitest-sim` are not published yet.
 
 ## Functional mark: browser read-only
 
