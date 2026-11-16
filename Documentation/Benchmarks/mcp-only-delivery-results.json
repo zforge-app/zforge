@@ -1,10 +1,10 @@
 {
   "date": "2026-10-12",
   "scope": "MCP-only mainline delivery; native Apple development deferred",
-  "original_main": "2b35eb9733348f1c7a6ddd3723014b1b1a6706da",
+  "original_main": "dbb5e48d5b9784d1b5e0569f04af211ed1239c90",
   "apple_continuation_branch": "codex/apple-intelligence",
-  "apple_preservation_commit": "ffee8fb",
-  "apple_api_corpus_commit": "2314342",
+  "apple_preservation_commit": "0196bd8",
+  "apple_api_corpus_commit": "9b47eb2",
   "build": 24,
   "environment": {
     "os": "macOS 27.0.1",

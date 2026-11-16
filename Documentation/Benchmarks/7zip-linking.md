@@ -2,7 +2,7 @@
 
 > **Superseded for adapter costs (2026-10-23, ZF-25):** these times predate D-21. Re-measured with current code, native extraction of the 2,000-file load was +44 % over the CLI, and 2.5–3.2 × at 10,000 entries, because of an O(n²) bridge lookup. After the ZF-25 fixes, bridge extraction is at CLI parity. See [7zip-adapter-optimization.md](7zip-adapter-optimization.md). The linkage conclusion (static ≈ dynamic) still holds there.
 
-Execution in 2026-10-03. Branches requested: `feat/7zz-static-linking` and `feat/7zz-dinamic-linking`; Git does not allow `:` in the name. Static reference: `d584002`, on official sources 26.02 (`08fa476`). The dynamic variant maintains the same bridge and policies, but incorporates `libSevenZipNative.dylib` in `Contents/Frameworks`, signed by `CodeSignOnCopy`. Dynamic implementation does not automatically change the choice of product distribution.
+Execution in 2026-10-03. Branches requested: `feat/7zz-static-linking` and `feat/7zz-dinamic-linking`; Git does not allow `:` in the name. Static reference: `0261322`, on official sources 26.02 (`c90da4d`). The dynamic variant maintains the same bridge and policies, but incorporates `libSevenZipNative.dylib` in `Contents/Frameworks`, signed by `CodeSignOnCopy`. Dynamic implementation does not automatically change the choice of product distribution.
 
 ## Method and reproduction
 

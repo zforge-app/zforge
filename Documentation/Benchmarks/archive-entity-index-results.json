@@ -1,8 +1,8 @@
 {
   "date": "2026-10-11",
-  "base": "72a9ab7",
+  "base": "2d25d0d",
   "sourceManifest": {
-    "base": "72a9ab7",
+    "base": "2d25d0d",
     "sources": {
       "Zforge/AppDelegate.swift": "8a600e45713461533a9bb2b40054080193f0b79e7b56c6cda73177c3fe84d52c",
       "Zforge/Automation/AutomationAccess.swift": "ea89a26cdc18a24839976dd46838a3ec851544065b2bb9e9203320db15a9d6d3",
@@ -756,7 +756,7 @@
     }
   },
   "limitations": [
-    "The final integration snapshot passes its new contracts but complete regression has preexisting tag persistence failures reproduced in unchanged 72a9ab7.",
+    "The final integration snapshot passes its new contracts but complete regression has preexisting tag persistence failures reproduced in unchanged 2d25d0d.",
     "Source manifest isolates concurrent localization work; it is not whole shared-checkout approval.",
     "macOS 26 runtime and broad UI/accessibility matrix are pending.",
     "Native initial 100-entity publication passes; exclusive index idle CPU and incremental memory remain unmeasured.",

@@ -19,7 +19,7 @@ assert args.repetitions>0 and args.interval_ms>0
 repo=Path(__file__).resolve().parents[4]
 root=args.output_dir.resolve()
 root.mkdir(parents=True,exist_ok=args.reuse_builds)
-refs={'CLI':'05d1720','static':'feat/7zz-static-linking','dynamic':'feat/7zz-dinamic-linking'}
+refs={'CLI':'5c2b960','static':'feat/7zz-static-linking','dynamic':'feat/7zz-dinamic-linking'}
 metadata={'refs':{},'driver_sha256':hashlib.sha256(Path(__file__).with_name('driver.swift').read_bytes()).hexdigest(),'sampler_sha256':hashlib.sha256(Path(__file__).with_name('sampler.c').read_bytes()).hexdigest(),'host':subprocess.check_output(['sw_vers'],text=True).strip(),'variants':args.variants,'datasets':args.datasets,'formats':args.formats,'interval_ms':args.interval_ms,'repetitions':args.repetitions,'scope':'Real Release app with fixture UI; actual ArchiveServing engine and staging; full descendant process tree; RSS and physical footprint sampled externally; temporary injected automation only'}
 apps={}
 for variant,ref in refs.items():

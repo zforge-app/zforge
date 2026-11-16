@@ -18,7 +18,7 @@ The [raw scanner profile](../../BuildSupport/Diagnostics/TagDiscoveryColdProfile
 
 | Single process | Elapsed | CPU time | Actual suspension | Requested suspension |
 | --- | ---: | ---: | ---: | ---: |
-| Immutable `fd1bacc` scanner, Debug | 179.154 s | 30.565 s | 148.799 s | 120.817 s |
+| Immutable `ceaf39c` scanner, Debug | 179.154 s | 30.565 s | 148.799 s | 120.817 s |
 | Current scanner, Debug | 171.135 s | 29.118 s | 142.190 s | 115.174 s |
 | Current scanner, Release | 197.894 s | 30.121 s | 163.818 s | 135.960 s |
 | Current scanner, Debug + coverage | 182.628 s | 31.074 s | 151.804 s | 122.710 s |
@@ -35,7 +35,7 @@ No raw-scanner regression is reproduced against the immutable baseline. A [curre
 
 ## Logging existed previously and is present in Release
 
-`git log -S 'Tag journal batch'` identifies **`fd1bacc`**, the prior durable-index commit, as the introduction of these messages. The current optimization/correctness round did not add them. `TagJournal.receive` uses `Logger.debug` without `#if DEBUG`, so that call remains in Release. The signed Release binary contains its format string, and a Release executable compiled from the same production journal emits the actual messages when debug collection is enabled.
+`git log -S 'Tag journal batch'` identifies **`ceaf39c`**, the prior durable-index commit, as the introduction of these messages. The current optimization/correctness round did not add them. `TagJournal.receive` uses `Logger.debug` without `#if DEBUG`, so that call remains in Release. The signed Release binary contains its format string, and a Release executable compiled from the same production journal emits the actual messages when debug collection is enabled.
 
 The [logging profile](../../BuildSupport/Diagnostics/TagDiscoveryLoggingProfile.swift) delivers 1,000 synthetic metadata-event batches through production `TagJournal.receive`, with no catalog/filesystem work:
 
@@ -67,6 +67,6 @@ python3 BuildSupport/Diagnostics/tag-index-scale-benchmark.py \
 caffeinate -i /private/tmp/zforge-cold-profile-new/measure
 ```
 
-Use `--source-ref fd1bacc --configuration Debug` for the raw reference and the catalog/logging harness paths above for those separate controls. The coverage control adds Swift `-profile-generate -profile-coverage-mapping` and Clang `-fprofile-instr-generate -fcoverage-mapping`; its actual commands are recorded in the numeric artifact. Direct profile outputs contain counts/hashes only. The first custom harness compilation fails because an actor attempted to return non-Sendable `[String: Any]`; returning encoded `Data` corrects diagnostic isolation without changing production behavior. The Xcode accessibility query unexpectedly blocks for 1,288 seconds; the coverage process finishes independently in 182.628 seconds and the query delay is not treated as scanner time.
+Use `--source-ref ceaf39c --configuration Debug` for the raw reference and the catalog/logging harness paths above for those separate controls. The coverage control adds Swift `-profile-generate -profile-coverage-mapping` and Clang `-fprofile-instr-generate -fcoverage-mapping`; its actual commands are recorded in the numeric artifact. Direct profile outputs contain counts/hashes only. The first custom harness compilation fails because an actor attempted to return non-Sendable `[String: Any]`; returning encoded `Data` corrects diagnostic isolation without changing production behavior. The Xcode accessibility query unexpectedly blocks for 1,288 seconds; the coverage process finishes independently in 182.628 seconds and the query delay is not treated as scanner time.
 
 D-41/OR-19 remain open for real first-pass latency and complete application attribution. The next optimization must reduce uncached metadata/traversal work or unnecessary suspension while preserving tag correctness and the declared resource contract. Removing messages alone is not supported as a latency fix by this evidence.

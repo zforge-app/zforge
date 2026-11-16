@@ -4,7 +4,7 @@
     "os": "macOS 27.0.1 (26A434)",
     "xcode": "27 (27A266a)",
     "sdk": "macOS 27",
-    "mainline": "2b35eb9",
+    "mainline": "dbb5e48",
     "deploymentFloor": "macOS 26"
   },
   "contract": {

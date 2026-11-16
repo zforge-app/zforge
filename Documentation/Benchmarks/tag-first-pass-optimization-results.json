@@ -3,7 +3,7 @@
   "base-apppath-release": {
    "configuration": "Release",
    "diagnostic_harness_sha256": "a9471dbaa6a0f9912b38e783983390661f8d2d4fe16300ad87d9b3fbba3b76be",
-   "source_commit": "6778795e2b6ec48e93c032fdf9b4ac522f69ddcd",
+   "source_commit": "2ba9559bb70a0b53701a2e61eb3ed702fdeaf1a0",
    "source_sha256": {
     "Zforge/Native/TagDirectoryReader.c": "aa5901c4e00383fd1a1707c549316591a3942ca60a2f3885f1b30317a5b38329",
     "Zforge/Native/TagDirectoryReader.h": "37b44201d83531cb74a9fc8040adb31e94bf0420319749a85b49e2ff1208e7cb",
@@ -18,7 +18,7 @@
   "base-catalog-release": {
    "configuration": "Release",
    "diagnostic_harness_sha256": "e129a6a459dfbca3428b784bc22bcc193b600bf5949b1aeea314d5645733e3f4",
-   "source_commit": "6778795e2b6ec48e93c032fdf9b4ac522f69ddcd",
+   "source_commit": "2ba9559bb70a0b53701a2e61eb3ed702fdeaf1a0",
    "source_sha256": {
     "Zforge/Native/TagDirectoryReader.c": "aa5901c4e00383fd1a1707c549316591a3942ca60a2f3885f1b30317a5b38329",
     "Zforge/Native/TagDirectoryReader.h": "37b44201d83531cb74a9fc8040adb31e94bf0420319749a85b49e2ff1208e7cb",
@@ -33,7 +33,7 @@
   "base-cold-release": {
    "configuration": "Release",
    "diagnostic_harness_sha256": "7e738435e3fb818c4090e3d1c2dabc9a48a14ae2b058c0d1500887def91d240e",
-   "source_commit": "6778795e2b6ec48e93c032fdf9b4ac522f69ddcd",
+   "source_commit": "2ba9559bb70a0b53701a2e61eb3ed702fdeaf1a0",
    "source_sha256": {
     "Zforge/Native/TagDirectoryReader.c": "aa5901c4e00383fd1a1707c549316591a3942ca60a2f3885f1b30317a5b38329",
     "Zforge/Native/TagDirectoryReader.h": "37b44201d83531cb74a9fc8040adb31e94bf0420319749a85b49e2ff1208e7cb",
@@ -48,7 +48,7 @@
   "base-work-release": {
    "configuration": "Release",
    "diagnostic_harness_sha256": "c7982396eada378ad873cd81219e14fe9142a4453825b50a0d766a5194ffd161",
-   "source_commit": "6778795e2b6ec48e93c032fdf9b4ac522f69ddcd",
+   "source_commit": "2ba9559bb70a0b53701a2e61eb3ed702fdeaf1a0",
    "source_sha256": {
     "Zforge/Native/TagDirectoryReader.c": "aa5901c4e00383fd1a1707c549316591a3942ca60a2f3885f1b30317a5b38329",
     "Zforge/Native/TagDirectoryReader.h": "37b44201d83531cb74a9fc8040adb31e94bf0420319749a85b49e2ff1208e7cb",
@@ -198,7 +198,7 @@
   "d43-base-debug-1": {
    "configuration": "Debug",
    "diagnostic_harness_sha256": "fe171f5fbff20e15fbd69aa9a9b4e1354e25c6a719ae064d2295e939c2ff5d10",
-   "source_commit": "6778795e2b6ec48e93c032fdf9b4ac522f69ddcd",
+   "source_commit": "2ba9559bb70a0b53701a2e61eb3ed702fdeaf1a0",
    "source_sha256": {
     "Zforge/Native/TagDirectoryReader.c": "aa5901c4e00383fd1a1707c549316591a3942ca60a2f3885f1b30317a5b38329",
     "Zforge/Native/TagDirectoryReader.h": "37b44201d83531cb74a9fc8040adb31e94bf0420319749a85b49e2ff1208e7cb",
@@ -213,7 +213,7 @@
   "d43-base-debug-2": {
    "configuration": "Debug",
    "diagnostic_harness_sha256": "fe171f5fbff20e15fbd69aa9a9b4e1354e25c6a719ae064d2295e939c2ff5d10",
-   "source_commit": "6778795e2b6ec48e93c032fdf9b4ac522f69ddcd",
+   "source_commit": "2ba9559bb70a0b53701a2e61eb3ed702fdeaf1a0",
    "source_sha256": {
     "Zforge/Native/TagDirectoryReader.c": "aa5901c4e00383fd1a1707c549316591a3942ca60a2f3885f1b30317a5b38329",
     "Zforge/Native/TagDirectoryReader.h": "37b44201d83531cb74a9fc8040adb31e94bf0420319749a85b49e2ff1208e7cb",
@@ -228,7 +228,7 @@
   "d43-base-release-1": {
    "configuration": "Release",
    "diagnostic_harness_sha256": "fe171f5fbff20e15fbd69aa9a9b4e1354e25c6a719ae064d2295e939c2ff5d10",
-   "source_commit": "6778795e2b6ec48e93c032fdf9b4ac522f69ddcd",
+   "source_commit": "2ba9559bb70a0b53701a2e61eb3ed702fdeaf1a0",
    "source_sha256": {
     "Zforge/Native/TagDirectoryReader.c": "aa5901c4e00383fd1a1707c549316591a3942ca60a2f3885f1b30317a5b38329",
     "Zforge/Native/TagDirectoryReader.h": "37b44201d83531cb74a9fc8040adb31e94bf0420319749a85b49e2ff1208e7cb",
@@ -243,7 +243,7 @@
   "d43-base-release-2": {
    "configuration": "Release",
    "diagnostic_harness_sha256": "fe171f5fbff20e15fbd69aa9a9b4e1354e25c6a719ae064d2295e939c2ff5d10",
-   "source_commit": "6778795e2b6ec48e93c032fdf9b4ac522f69ddcd",
+   "source_commit": "2ba9559bb70a0b53701a2e61eb3ed702fdeaf1a0",
    "source_sha256": {
     "Zforge/Native/TagDirectoryReader.c": "aa5901c4e00383fd1a1707c549316591a3942ca60a2f3885f1b30317a5b38329",
     "Zforge/Native/TagDirectoryReader.h": "37b44201d83531cb74a9fc8040adb31e94bf0420319749a85b49e2ff1208e7cb",
@@ -333,7 +333,7 @@
   "d43b-base-debug-1": {
    "configuration": "Debug",
    "diagnostic_harness_sha256": "fe171f5fbff20e15fbd69aa9a9b4e1354e25c6a719ae064d2295e939c2ff5d10",
-   "source_commit": "6778795e2b6ec48e93c032fdf9b4ac522f69ddcd",
+   "source_commit": "2ba9559bb70a0b53701a2e61eb3ed702fdeaf1a0",
    "source_sha256": {
     "Zforge/Native/TagDirectoryReader.c": "aa5901c4e00383fd1a1707c549316591a3942ca60a2f3885f1b30317a5b38329",
     "Zforge/Native/TagDirectoryReader.h": "37b44201d83531cb74a9fc8040adb31e94bf0420319749a85b49e2ff1208e7cb",
@@ -348,7 +348,7 @@
   "d43b-base-debug-2": {
    "configuration": "Debug",
    "diagnostic_harness_sha256": "fe171f5fbff20e15fbd69aa9a9b4e1354e25c6a719ae064d2295e939c2ff5d10",
-   "source_commit": "6778795e2b6ec48e93c032fdf9b4ac522f69ddcd",
+   "source_commit": "2ba9559bb70a0b53701a2e61eb3ed702fdeaf1a0",
    "source_sha256": {
     "Zforge/Native/TagDirectoryReader.c": "aa5901c4e00383fd1a1707c549316591a3942ca60a2f3885f1b30317a5b38329",
     "Zforge/Native/TagDirectoryReader.h": "37b44201d83531cb74a9fc8040adb31e94bf0420319749a85b49e2ff1208e7cb",
@@ -363,7 +363,7 @@
   "d43b-base-release-1": {
    "configuration": "Release",
    "diagnostic_harness_sha256": "fe171f5fbff20e15fbd69aa9a9b4e1354e25c6a719ae064d2295e939c2ff5d10",
-   "source_commit": "6778795e2b6ec48e93c032fdf9b4ac522f69ddcd",
+   "source_commit": "2ba9559bb70a0b53701a2e61eb3ed702fdeaf1a0",
    "source_sha256": {
     "Zforge/Native/TagDirectoryReader.c": "aa5901c4e00383fd1a1707c549316591a3942ca60a2f3885f1b30317a5b38329",
     "Zforge/Native/TagDirectoryReader.h": "37b44201d83531cb74a9fc8040adb31e94bf0420319749a85b49e2ff1208e7cb",
@@ -378,7 +378,7 @@
   "d43b-base-release-2": {
    "configuration": "Release",
    "diagnostic_harness_sha256": "fe171f5fbff20e15fbd69aa9a9b4e1354e25c6a719ae064d2295e939c2ff5d10",
-   "source_commit": "6778795e2b6ec48e93c032fdf9b4ac522f69ddcd",
+   "source_commit": "2ba9559bb70a0b53701a2e61eb3ed702fdeaf1a0",
    "source_sha256": {
     "Zforge/Native/TagDirectoryReader.c": "aa5901c4e00383fd1a1707c549316591a3942ca60a2f3885f1b30317a5b38329",
     "Zforge/Native/TagDirectoryReader.h": "37b44201d83531cb74a9fc8040adb31e94bf0420319749a85b49e2ff1208e7cb",
@@ -834,7 +834,7 @@
    ],
    "resource_helper_sha256": "fa12fd697d6d108a03665b2adba467fcdf0e2353754a101b416855bfff697a53",
    "reused_checkpoint": "/private/tmp/zf41r/d43-final-release-full/index-1.json",
-   "source_commit": "6778795e2b6ec48e93c032fdf9b4ac522f69ddcd",
+   "source_commit": "2ba9559bb70a0b53701a2e61eb3ed702fdeaf1a0",
    "source_overrides": [],
    "source_sha256": {
     "Zforge/Native/TagDirectoryReader.c": "aa5901c4e00383fd1a1707c549316591a3942ca60a2f3885f1b30317a5b38329",
@@ -960,7 +960,7 @@
    ],
    "resource_helper_sha256": "fa12fd697d6d108a03665b2adba467fcdf0e2353754a101b416855bfff697a53",
    "reused_checkpoint": "/private/tmp/zf41r/d43-final-release-full/index-1.json",
-   "source_commit": "6778795e2b6ec48e93c032fdf9b4ac522f69ddcd",
+   "source_commit": "2ba9559bb70a0b53701a2e61eb3ed702fdeaf1a0",
    "source_overrides": [],
    "source_sha256": {
     "Zforge/Native/TagDirectoryReader.c": "aa5901c4e00383fd1a1707c549316591a3942ca60a2f3885f1b30317a5b38329",
@@ -1086,7 +1086,7 @@
    ],
    "resource_helper_sha256": "fa12fd697d6d108a03665b2adba467fcdf0e2353754a101b416855bfff697a53",
    "reused_checkpoint": "/private/tmp/zf41r/d43-final-release-full/index-1.json",
-   "source_commit": "6778795e2b6ec48e93c032fdf9b4ac522f69ddcd",
+   "source_commit": "2ba9559bb70a0b53701a2e61eb3ed702fdeaf1a0",
    "source_overrides": [],
    "source_sha256": {
     "Zforge/Native/TagDirectoryReader.c": "aa5901c4e00383fd1a1707c549316591a3942ca60a2f3885f1b30317a5b38329",
@@ -1212,7 +1212,7 @@
    ],
    "resource_helper_sha256": "fa12fd697d6d108a03665b2adba467fcdf0e2353754a101b416855bfff697a53",
    "reused_checkpoint": "/private/tmp/zf41r/d43-final-release-full/index-1.json",
-   "source_commit": "6778795e2b6ec48e93c032fdf9b4ac522f69ddcd",
+   "source_commit": "2ba9559bb70a0b53701a2e61eb3ed702fdeaf1a0",
    "source_overrides": [],
    "source_sha256": {
     "Zforge/Native/TagDirectoryReader.c": "aa5901c4e00383fd1a1707c549316591a3942ca60a2f3885f1b30317a5b38329",
@@ -2256,7 +2256,7 @@
    ],
    "resource_helper_sha256": "fa12fd697d6d108a03665b2adba467fcdf0e2353754a101b416855bfff697a53",
    "reused_checkpoint": "/private/tmp/zf41r/d43-final-release-full/index-1.json",
-   "source_commit": "6778795e2b6ec48e93c032fdf9b4ac522f69ddcd",
+   "source_commit": "2ba9559bb70a0b53701a2e61eb3ed702fdeaf1a0",
    "source_overrides": [],
    "source_sha256": {
     "Zforge/Native/TagDirectoryReader.c": "aa5901c4e00383fd1a1707c549316591a3942ca60a2f3885f1b30317a5b38329",
@@ -2382,7 +2382,7 @@
    ],
    "resource_helper_sha256": "fa12fd697d6d108a03665b2adba467fcdf0e2353754a101b416855bfff697a53",
    "reused_checkpoint": "/private/tmp/zf41r/d43-final-release-full/index-1.json",
-   "source_commit": "6778795e2b6ec48e93c032fdf9b4ac522f69ddcd",
+   "source_commit": "2ba9559bb70a0b53701a2e61eb3ed702fdeaf1a0",
    "source_overrides": [],
    "source_sha256": {
     "Zforge/Native/TagDirectoryReader.c": "aa5901c4e00383fd1a1707c549316591a3942ca60a2f3885f1b30317a5b38329",
@@ -2508,7 +2508,7 @@
    ],
    "resource_helper_sha256": "fa12fd697d6d108a03665b2adba467fcdf0e2353754a101b416855bfff697a53",
    "reused_checkpoint": "/private/tmp/zf41r/d43-final-release-full/index-1.json",
-   "source_commit": "6778795e2b6ec48e93c032fdf9b4ac522f69ddcd",
+   "source_commit": "2ba9559bb70a0b53701a2e61eb3ed702fdeaf1a0",
    "source_overrides": [],
    "source_sha256": {
     "Zforge/Native/TagDirectoryReader.c": "aa5901c4e00383fd1a1707c549316591a3942ca60a2f3885f1b30317a5b38329",
@@ -2634,7 +2634,7 @@
    ],
    "resource_helper_sha256": "fa12fd697d6d108a03665b2adba467fcdf0e2353754a101b416855bfff697a53",
    "reused_checkpoint": "/private/tmp/zf41r/d43-final-release-full/index-1.json",
-   "source_commit": "6778795e2b6ec48e93c032fdf9b4ac522f69ddcd",
+   "source_commit": "2ba9559bb70a0b53701a2e61eb3ed702fdeaf1a0",
    "source_overrides": [],
    "source_sha256": {
     "Zforge/Native/TagDirectoryReader.c": "aa5901c4e00383fd1a1707c549316591a3942ca60a2f3885f1b30317a5b38329",
@@ -3155,7 +3155,7 @@
  },
  "description": "D-41/D-43 first-pass optimization samples; aggregate counts, timings and record hashes only.",
  "environment": {
-  "baseline_commit": "6778795",
+  "baseline_commit": "2ba9559",
   "host": "MacBook Air, Apple M5 (4+6 cores), 24 GiB",
   "os": "macOS 27.0.1 (26A434)",
   "sleep": "no power-log sleep inside retained samples; interrupted 2026-10-23 15:30 app-path series discarded",

@@ -2,7 +2,7 @@
   "files": 100000,
   "tagged_files": 10000,
   "configuration": "Release",
-  "source_commit": "fd1baccaf9841b63cea1288c78c051445f17749a",
+  "source_commit": "ceaf39c1d9a1317f8825fbfd371baee48548311b",
   "compile_commands": [
     [
       "xcrun",

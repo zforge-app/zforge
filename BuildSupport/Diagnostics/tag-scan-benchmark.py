@@ -23,7 +23,7 @@ for index in range(args.files):
 
 
 def historical(path):
-    return subprocess.check_output(['git', 'show', f'866a55c:{path}'], cwd=REPO, text=True)
+    return subprocess.check_output(['git', 'show', f'951d939:{path}'], cwd=REPO, text=True)
 
 
 def metadata(source):

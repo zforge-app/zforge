@@ -8,7 +8,7 @@ The user reported high CPU and fluctuating high memory immediately after launch,
 
 ## Live evidence
 
-Environment: macOS 27.0.1 (26A434), arm64, Xcode Debug process with `-NSDocumentRevisionsDebugMode YES`, PID 30153. Working source reference: `866a55c`; the exact binary/source correspondence was not independently established. Launch time: 23:09:09 America/Recife.
+Environment: macOS 27.0.1 (26A434), arm64, Xcode Debug process with `-NSDocumentRevisionsDebugMode YES`, PID 30153. Working source reference: `951d939`; the exact binary/source correspondence was not independently established. Launch time: 23:09:09 America/Recife.
 
 - Around 37 seconds after launch: 79.7% CPU, RSS 2,255,312 KiB.
 - Around 101 seconds after launch: 83.6% CPU, RSS 2,314,144 KiB.
@@ -60,7 +60,7 @@ After the queue drains, its task is released: there is no scanner polling timer 
 
 ## Reproducible corrected measurements
 
-Run `python3 BuildSupport/Diagnostics/tag-scan-benchmark.py --output /private/tmp/<new-directory>` from a local macOS checkout with process-metric access. The script extracts the historical scanner at `866a55c`, compiles it and the current production scanner with an explicit temporary module cache, generates 30,000 empty untagged files, rotates baseline/corrected order for three runs each, and measures ten seconds after the corrected scanner returns. Every measured process exited successfully. The versioned JSON preserves the original nine causal measurements, intermediate corrected measurements, and both final-source comparisons; source hashes identify the final implementation.
+Run `python3 BuildSupport/Diagnostics/tag-scan-benchmark.py --output /private/tmp/<new-directory>` from a local macOS checkout with process-metric access. The script extracts the historical scanner at `951d939`, compiles it and the current production scanner with an explicit temporary module cache, generates 30,000 empty untagged files, rotates baseline/corrected order for three runs each, and measures ten seconds after the corrected scanner returns. Every measured process exited successfully. The versioned JSON preserves the original nine causal measurements, intermediate corrected measurements, and both final-source comparisons; source hashes identify the final implementation.
 
 | Final comparison without a unit runner | Median elapsed | Median CPU time | Median peak RSS | Median peak footprint |
 | --- | ---: | ---: | ---: | ---: |
