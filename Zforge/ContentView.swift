@@ -101,9 +101,9 @@ struct ContentView: View {
     let tabSourceWindowNumber: Int?
 
     init(initialURL: URL? = nil, tabSourceWindowNumber: Int? = nil, automationAccess: BrowserOpeningAccess? = nil,
-         archiveSearch: String? = nil, finderRequest: FinderMenuRequest? = nil, archiveSession: ArchiveSessionHandoff? = nil) {
+         archiveSearch: String? = nil, finderRequest: FinderMenuRequest? = nil) {
         _browser = State(initialValue: FileBrowserState(initialURL: initialURL, automationAccessLease: automationAccess?.take(),
-            archiveSearch: archiveSearch, finderRequest: finderRequest, archiveSession: archiveSession))
+            archiveSearch: archiveSearch, finderRequest: finderRequest))
         self.tabSourceWindowNumber = tabSourceWindowNumber
     }
 
@@ -192,9 +192,6 @@ struct ContentView: View {
                     id: "browser",
                     value: BrowserWindowRequest(initialURL: url)
                 )
-            }
-            browser.configureOpenArchiveWindowAction { request in
-                openWindow(id: "browser", value: request)
             }
             browser.configureWindowCloseAction { [browser] in
                 if let window = BrowserWindowLifecycle.shared.window(for: browser) { window.close() } else { browser.close() }

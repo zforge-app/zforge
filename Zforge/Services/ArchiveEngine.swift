@@ -84,7 +84,8 @@ nonisolated struct ArchiveOpenResult: Sendable {
     /// Writes are refused: an archive opened from inside an archive that cannot be
     /// updated (RAR, compressed tar, ISO…, multi-volume), or a format that cannot be.
     var isReadOnly = false
-    /// For an archive opened from inside another archive, the session it came from.
+    /// For an archive opened from inside another archive (D-98), the session of the archive
+    /// that contains it.
     var parentSessionID: UUID? = nil
     /// Increases each time the shared session's listing is replaced after a change.
     var revision = 0
@@ -101,7 +102,8 @@ nonisolated protocol ArchiveServing: Sendable {
     func openArchive(at url: URL, password: String?) async throws -> ArchiveOpenResult
     func items(at address: ArchiveAddress) async throws -> [BrowserItem]
     /// Materializes an archive stored inside an archive into its own writable copy and
-    /// opens, or joins, its shared session (one per outer session and internal path).
+    /// opens, or joins, its shared session (one per outer session and internal path). The
+    /// copy is kept, for returning to it, until its outermost archive's session closes (D-98).
     func openInnerArchive(item: BrowserItem, password: String?) async throws -> ArchiveOpenResult
     /// The current state of a session this caller holds, after a change written through it.
     func reopenSession(_ sessionID: UUID, at url: URL, password: String?) async throws -> ArchiveOpenResult
@@ -153,9 +155,9 @@ nonisolated protocol ArchiveServing: Sendable {
     func outermostArchiveURL(for address: ArchiveAddress) async throws -> URL
     /// Change notifications of shared sessions are posted with this object (nil: none).
     nonisolated var sessionChangeSource: AnyObject? { get }
-    /// Moves a held session reference to the window that adopts it.
-    func relinquishSession(_ sessionID: UUID) async
-    func adoptSession(_ sessionID: UUID) async
+    /// Holds one more reference to a session that is still open, such as an inner archive
+    /// kept after it closed, which a window shows again (Back, Forward).
+    func retainSession(_ sessionID: UUID) async throws
     func setPassword(_ password: String?, for sessionID: UUID) async
     func closeSession(_ sessionID: UUID) async
     func closeAllSessions() async
@@ -226,9 +228,8 @@ extension ArchiveServing {
 
     /// Change notifications of shared sessions are posted with this object (nil: none).
     nonisolated var sessionChangeSource: AnyObject? { nil }
-    /// Moves a held session reference to a window that adopts it (no-op without tracking).
-    func relinquishSession(_ sessionID: UUID) async {}
-    func adoptSession(_ sessionID: UUID) async {}
+    /// Sessions without reference counting have nothing to hold.
+    func retainSession(_ sessionID: UUID) async throws {}
 }
 
 /// Identity and version of the files a session reads in place: the archive and its volumes.
@@ -269,10 +270,14 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
     /// Posted (object: the engine) after a session's listing is replaced in place. User
     /// info: `sessionID` (UUID) and `revision` (Int).
     nonisolated static let sessionDidChange = Notification.Name("ZforgeArchiveSessionDidChange")
-    /// Posted (object: the engine) when the last reference to a modified inner archive is
-    /// released: its outer archive must be rebuilt (`writeBack`), or the changes saved or
-    /// discarded. User info: `sessionID` (UUID).
+    /// Posted (object: the engine) when a modified inner archive closes, once the archives
+    /// opened from inside it have been written into it: its outer archive must be rebuilt
+    /// (`writeBack`), or the changes saved or discarded (D-98). User info: `sessionID` (UUID).
     nonisolated static let innerArchiveNeedsWriteBack = Notification.Name("ZforgeInnerArchiveNeedsWriteBack")
+    /// Posted (object: the engine) when inner archive sessions end while windows may still
+    /// show or remember them: their entry was removed or replaced in the outer archive, or
+    /// their changes were discarded or saved elsewhere. User info: `sessionIDs` ([UUID]).
+    nonisolated static let sessionsDidEnd = Notification.Name("ZforgeArchiveSessionsDidEnd")
 
     private struct ArchiveRecord: Sendable {
         let id: UUID
@@ -305,7 +310,27 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
     /// Where an inner archive comes from: its outer session and its path there.
     private struct InnerOrigin: Sendable, Hashable {
         let sessionID: UUID
-        let internalPath: String
+        var internalPath: String
+    }
+
+    /// The outer archive's entry an inner archive's copy was extracted from, or last written
+    /// back as: a different entry means the copy no longer belongs there.
+    private struct EntrySignature: Sendable, Equatable {
+        let size: Int64?
+        let checksum: String?
+        let modified: Date?
+
+        init(_ entry: Entry) {
+            size = entry.size
+            checksum = entry.checksum
+            modified = entry.modified
+        }
+
+        func matches(_ other: EntrySignature) -> Bool {
+            guard size == other.size else { return false }
+            if let checksum, let otherChecksum = other.checksum { return checksum == otherChecksum }
+            return modified == other.modified
+        }
     }
 
     private struct Session: Sendable {
@@ -316,14 +341,24 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
         var password: String?
         var archive: ArchiveRecord
         var materialized: [String: URL]
-        /// Windows and inner sessions holding the session; it closes at zero.
+        /// Windows showing the session. A root session closes at zero, with every inner
+        /// archive opened from it; an inner archive closed at zero is written back if it was
+        /// modified, and its copy is kept until its root session closes (D-98).
         var references = 1
         var revision = 0
-        let origin: InnerOrigin?
+        var origin: InnerOrigin?
+        /// The outer entry the copy stands for (inner archives only).
+        var originSignature: EntrySignature?
         let isReadOnly: Bool
-        /// An inner archive written since it was opened, to be written back into its outer one.
+        /// An inner archive written since it was opened or last written back.
         var isModified = false
+        /// Increases with each change of an inner archive, so that a change made while its
+        /// write-back runs is not taken as written.
+        var modificationCount = 0
         var awaitingWriteBack = false
+        /// Its outer entry was removed or replaced, or its changes were discarded: windows
+        /// leave it, nothing writes it back, and it ends with its last reference.
+        var isDetached = false
         /// Native reads of this session are registered under this URL so closing it cancels them.
         var readScope: URL { directoryURL.appendingPathComponent("Reads", isDirectory: true) }
         var archives: [UUID: ArchiveRecord] { [archive.id: archive] }
@@ -382,9 +417,8 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
     /// Joins the open session of this file (same volume and file identifier), if any.
     private func joinSession(forFileAt url: URL, password: String?) async throws -> ArchiveOpenResult? {
         guard let identity = try? ArchiveSourceFingerprint.capture([url]).files.first,
-              let existing = sessions.values.first(where: {
-                  $0.origin == nil && !$0.awaitingWriteBack && $0.archive.identity == identity
-              }) else { return nil }
+              let existing = sessions.values.first(where: { $0.origin == nil && $0.archive.identity == identity })
+        else { return nil }
         let id = existing.id
         // Encrypted names stay protected: joining needs the password the listing needed.
         if existing.archive.listingNeedsPassword {
@@ -403,18 +437,19 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
     }
 
     func openInnerArchive(item: BrowserItem, password: String?) async throws -> ArchiveOpenResult {
-        guard item.opensAsInnerArchive, case let .archive(address) = item.location,
-              let outer = sessions[address.sessionID], outer.archive.id == address.archiveID,
+        guard item.isArchiveInsideArchive, case let .archive(address) = item.location,
+              let outer = sessions[address.sessionID], !outer.isDetached, outer.archive.id == address.archiveID,
               let entry = outer.archive.entries[address.internalPath], !entry.isDirectory else {
             throw ArchiveEngineError.itemNotFound
         }
         let origin = InnerOrigin(sessionID: address.sessionID, internalPath: address.internalPath)
+        // A copy kept after the archive closed is shown again, even while it is written back.
         if let existing = try joinInnerSession(origin, password: password) { return existing }
         try ensureUnchanged(outer.archive)
 
         let sessionID = UUID()
         let sessionDirectory = sessionsRoot.appendingPathComponent(sessionID.uuidString, isDirectory: true)
-        // The inner archive's own writable copy belongs to its session, not to the outer window.
+        // The inner archive's own writable copy belongs to its session, not to a window.
         let copyDirectory = sessionDirectory.appendingPathComponent("Archive", isDirectory: true)
         let copy = copyDirectory.appendingPathComponent(sanitizedFileName(item.name))
         let expectedSize = entry.size
@@ -440,23 +475,21 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
             let permissions = ((try fileManager.attributesOfItem(atPath: copy.path)[.posixPermissions]) as? NSNumber)?.intValue ?? 0
             try fileManager.setAttributes([.posixPermissions: permissions | 0o600], ofItemAtPath: copy.path)
             let archive = try await listArchive(
-                at: copy, sources: [copy],
-                displayName: outer.archive.displayName + " › " + item.name,
-                password: password,
+                at: copy, sources: [copy], displayName: item.name, password: password,
                 cancellationScope: sessionDirectory.appendingPathComponent("Reads", isDirectory: true)
             )
             if let existing = try joinInnerSession(origin, password: password) {
                 try? fileManager.removeItem(at: sessionDirectory)
                 return existing
             }
-            guard sessions[origin.sessionID] != nil else { throw ArchiveEngineError.cancelled }
-            // The inner session keeps its outer session open until it is written back.
-            sessions[origin.sessionID]?.references += 1
-            let parentReadOnly = sessions[origin.sessionID]?.isReadOnly ?? true
+            // The outer archive closed, or its entry changed, while the copy was made.
+            guard let current = sessions[origin.sessionID], !current.isDetached,
+                  current.archive.entries[origin.internalPath].map({ EntrySignature($0).matches(EntrySignature(entry)) }) == true
+            else { throw ArchiveEngineError.cancelled }
             let session = Session(
                 id: sessionID, originalURL: copy, directoryURL: sessionDirectory, password: password,
-                archive: archive, materialized: [:], origin: origin,
-                isReadOnly: parentReadOnly || !ArchiveFormatRegistry.supportsUpdating(item.name)
+                archive: archive, materialized: [:], origin: origin, originSignature: EntrySignature(entry),
+                isReadOnly: current.isReadOnly || !ArchiveFormatRegistry.supportsUpdating(item.name)
             )
             sessions[sessionID] = session
             return session.result()
@@ -467,7 +500,7 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
     }
 
     private func joinInnerSession(_ origin: InnerOrigin, password: String?) throws -> ArchiveOpenResult? {
-        guard let existing = sessions.values.first(where: { $0.origin == origin && !$0.awaitingWriteBack }) else {
+        guard let existing = sessions.values.first(where: { $0.origin == origin && !$0.isDetached }) else {
             return nil
         }
         let id = existing.id
@@ -475,7 +508,7 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
             guard let password else { throw ArchiveEngineError.passwordRequired }
             guard password == existing.password else { throw ArchiveEngineError.invalidPassword }
         }
-        sessions[id]?.references += 1
+        sessions[id]?.references = max(existing.references, 0) + 1
         if let password { sessions[id]?.password = password }
         return sessions[id]?.result()
     }
@@ -488,10 +521,10 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
         return session.result()
     }
 
-    /// Adds a reference to an open session (a window attaching to it).
+    /// Adds a reference to an open session (a window showing it again).
     func retainSession(_ sessionID: UUID) throws {
-        guard sessions[sessionID] != nil else { throw ArchiveEngineError.itemNotFound }
-        sessions[sessionID]?.references += 1
+        guard let session = sessions[sessionID], !session.isDetached else { throw ArchiveEngineError.itemNotFound }
+        sessions[sessionID]?.references = max(session.references, 0) + 1
     }
 
     /// Whether the archive file can be rewritten: a single-volume ZIP or 7z.
@@ -502,7 +535,10 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
 
     /// Replaces the session's listing with the archive's current one, keeping its session
     /// and archive identifiers so every window's addresses stay valid, and tells them.
-    private func relist(_ sessionID: UUID, markingModified: Bool) async throws {
+    /// `writtenBack` is the inner archive whose write-back produced this change: its copy
+    /// now stands for the new entry. Inner archives whose entry was removed, or replaced
+    /// while they had no changes of their own, end (D-98).
+    private func relist(_ sessionID: UUID, markingModified: Bool, writtenBack: UUID? = nil) async throws {
         guard let session = sessions[sessionID] else { return }
         let old = session.archive
         let archive = try await listArchive(
@@ -513,10 +549,55 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
         current.archive = archive
         current.materialized = [:]
         current.revision += 1
-        if markingModified && current.origin != nil { current.isModified = true }
+        if markingModified && current.origin != nil {
+            current.isModified = true
+            current.modificationCount += 1
+        }
         sessions[sessionID] = current
         NotificationCenter.default.post(name: Self.sessionDidChange, object: self,
             userInfo: ["sessionID": sessionID, "revision": current.revision])
+
+        var ended: [UUID] = []
+        for child in sessions.values where child.origin?.sessionID == sessionID && !child.isDetached {
+            guard let path = child.origin?.internalPath else { continue }
+            let entry = archive.entries[path].flatMap { $0.isDirectory ? nil : $0 }
+            if child.id == writtenBack {
+                sessions[child.id]?.originSignature = entry.map(EntrySignature.init)
+                continue
+            }
+            guard let entry else {
+                ended += detach(child.id)
+                continue
+            }
+            // A modified copy is kept: its write-back reports the conflict.
+            if !child.isModified, let signature = child.originSignature, !signature.matches(EntrySignature(entry)) {
+                ended += detach(child.id)
+            }
+        }
+        if !ended.isEmpty { await endDetachedSessions(ended) }
+    }
+
+    /// Marks an inner archive and the archives opened from it as no longer part of their
+    /// outer archive.
+    private func detach(_ sessionID: UUID) -> [UUID] {
+        var detached: [UUID] = []
+        var pending = [sessionID]
+        while let id = pending.popLast() {
+            guard var session = sessions[id], !session.isDetached else { continue }
+            session.isDetached = true
+            session.awaitingWriteBack = false
+            sessions[id] = session
+            detached.append(id)
+            pending += sessions.values.filter { $0.origin?.sessionID == id }.map(\.id)
+        }
+        return detached
+    }
+
+    /// Ends the detached sessions no window holds and tells the windows that may still
+    /// show or remember any of them.
+    private func endDetachedSessions(_ detached: [UUID]) async {
+        for id in detached where (sessions[id]?.references ?? 0) <= 0 { await finishSession(id) }
+        NotificationCenter.default.post(name: Self.sessionsDidEnd, object: self, userInfo: ["sessionIDs": detached])
     }
 
     private func relistIfChanged(_ sessionID: UUID) async throws {
@@ -774,7 +855,7 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
         let fingerprint = try ArchiveSourceFingerprint.capture([archive])
         // Every open session of this file shows the addition (and an inner one is marked modified).
         let affected = sessions.values.filter { $0.archive.identity == fingerprint.files[0] }
-        guard !affected.contains(where: \.isReadOnly) else { throw ArchiveEngineError.updateUnsupported }
+        guard !affected.contains(where: { $0.isReadOnly || $0.isDetached }) else { throw ArchiveEngineError.updateUnsupported }
         progress(ArchiveProgress(phase: .staging, fraction: 0))
         var names: [String] = []
         for sourceURL in sourceURLs { names.append(uniqueStagedName(sourceURL.lastPathComponent, in: names)) }
@@ -856,7 +937,7 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
     @discardableResult
     func removeItems(_ items: [BrowserItem], password: String?, progress: @escaping ArchiveProgressHandler) async throws -> String? {
         guard let first = items.first, case let .archive(address) = first.location,
-              let session = sessions[address.sessionID], !session.isReadOnly else {
+              let session = sessions[address.sessionID], !session.isReadOnly, !session.isDetached else {
             throw ArchiveEngineError.updateUnsupported
         }
         let archive = session.originalURL.standardizedFileURL.resolvingSymlinksInPath()
@@ -901,7 +982,7 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
         guard !items.isEmpty,
               let session = sessions[destination.sessionID],
               let record = session.archives[destination.archiveID] else { throw ArchiveEngineError.itemNotFound }
-        guard !session.isReadOnly else { throw ArchiveEngineError.updateUnsupported }
+        guard !session.isReadOnly, !session.isDetached else { throw ArchiveEngineError.updateUnsupported }
         let archive = session.originalURL.standardizedFileURL.resolvingSymlinksInPath()
         guard ArchiveFormatRegistry.supportsUpdating(archive.lastPathComponent) else { throw ArchiveEngineError.updateUnsupported }
         try rejectMultiVolumeZip(archive)
@@ -940,6 +1021,7 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
         var paths: [String] = []
         var exclusions: [String] = []
         var repeated: ArchiveConflictDecision?
+        var moves: [(source: String, destination: String)] = []
         let effectivePassword = password ?? session.password
         for (item, source) in roots {
             var name = item.name
@@ -962,7 +1044,7 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
             try fileManager.createDirectory(at: staged.deletingLastPathComponent(), withIntermediateDirectories: true)
             try await exportItem(item, to: staged, password: effectivePassword, progress: progress)
             occupied.append(name); stagedNames.insert(name); paths.append(path)
-            if moving { exclusions.append(source) }
+            if moving { exclusions.append(source); moves.append((source, path)) }
         }
         guard !paths.isEmpty else { return ArchiveReorganizationResult(paths: [], password: effectivePassword) }
         try Task.checkCancellation()
@@ -970,6 +1052,12 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
             sources: paths.map { NativeSevenZipBackend.WriteSource(url: input.appendingPathComponent($0), archivePath: $0) },
             excluding: exclusions)
         if let password { sessions[destination.sessionID]?.password = password }
+        // Archives opened from a moved entry follow it (D-98).
+        for child in sessions.values where child.origin?.sessionID == destination.sessionID {
+            guard let path = child.origin?.internalPath,
+                  let move = moves.first(where: { path == $0.source || path.hasPrefix($0.source + "/") }) else { continue }
+            sessions[child.id]?.origin?.internalPath = move.destination + path.dropFirst(move.source.count)
+        }
         try await relist(destination.sessionID, markingModified: true)
         return ArchiveReorganizationResult(paths: paths, password: effectivePassword)
     }
@@ -1122,30 +1210,72 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
         sessions[sessionID] = session
     }
 
-    /// Releases one reference. At zero the session closes, unless it is an inner archive
-    /// that was modified: then it waits for `writeBack`, `saveInnerArchive` or
-    /// `discardInnerArchive`, and its outer session stays open until then.
+    /// Releases one reference. A root session closes at zero, with the inner archives
+    /// opened from it, once none of them is shown or waiting to be written back. An inner
+    /// archive closed at zero is written back into its outer archive if it was modified,
+    /// after the archives opened from it (D-98); its copy stays until its root closes.
     func closeSession(_ sessionID: UUID) async {
-        guard var session = sessions[sessionID] else { return }
-        session.references -= 1
-        guard session.references <= 0 else { sessions[sessionID] = session; return }
-        if session.origin != nil && session.isModified {
-            guard !session.awaitingWriteBack else { return }
-            session.awaitingWriteBack = true
-            sessions[sessionID] = session
-            NotificationCenter.default.post(name: Self.innerArchiveNeedsWriteBack, object: self,
-                userInfo: ["sessionID": sessionID])
-            return
-        }
-        await finishSession(sessionID)
+        guard let session = sessions[sessionID] else { return }
+        sessions[sessionID]?.references = max(session.references - 1, 0)
+        await settle(sessionID)
     }
 
-    /// Removes the session and its files, then releases its outer session.
+    /// Requests the write-backs that are due in the tree of this session and closes the
+    /// tree when nothing in it is shown or pending.
+    private func settle(_ sessionID: UUID) async {
+        for session in sessions.values where session.isDetached && session.references <= 0 {
+            await finishSession(session.id)
+        }
+        guard let root = rootSessionID(of: sessionID) else { return }
+        let members = tree(of: root)
+        func isQuiet(_ id: UUID) -> Bool {
+            guard let session = sessions[id] else { return true }
+            return session.references <= 0 && !session.awaitingWriteBack && !session.isModified
+        }
+        // Innermost first: an archive is written back once its own inner archives are.
+        for (id, _) in members.sorted(by: { $0.depth > $1.depth }) {
+            guard let session = sessions[id], session.origin != nil, !session.isDetached,
+                  session.references <= 0, session.isModified, !session.awaitingWriteBack,
+                  tree(of: id).dropFirst().allSatisfy({ isQuiet($0.id) }) else { continue }
+            sessions[id]?.awaitingWriteBack = true
+            NotificationCenter.default.post(name: Self.innerArchiveNeedsWriteBack, object: self,
+                userInfo: ["sessionID": id])
+        }
+        if members.allSatisfy({ isQuiet($0.id) }) {
+            for (id, _) in members.sorted(by: { $0.depth > $1.depth }) { await finishSession(id) }
+        }
+    }
+
+    /// The root session of an inner archive's chain (itself for a root session).
+    private func rootSessionID(of sessionID: UUID) -> UUID? {
+        guard var session = sessions[sessionID] else { return nil }
+        var visited: Set<UUID> = [sessionID]
+        while let origin = session.origin, let outer = sessions[origin.sessionID], visited.insert(outer.id).inserted {
+            session = outer
+        }
+        return session.id
+    }
+
+    /// The session and every inner archive opened from it, with their depth below it.
+    private func tree(of sessionID: UUID) -> [(id: UUID, depth: Int)] {
+        guard sessions[sessionID] != nil else { return [] }
+        var result: [(id: UUID, depth: Int)] = [(sessionID, 0)]
+        var index = 0
+        while index < result.count {
+            let (id, depth) = result[index]
+            for child in sessions.values where child.origin?.sessionID == id && child.id != sessionID && !child.isDetached {
+                result.append((child.id, depth + 1))
+            }
+            index += 1
+        }
+        return result
+    }
+
+    /// Removes the session and its files.
     private func finishSession(_ sessionID: UUID) async {
         guard let session = sessions.removeValue(forKey: sessionID) else { return }
         await nativeBackend.cancelOperations(in: session.directoryURL)
         try? fileManager.removeItem(at: session.directoryURL)
-        if let origin = session.origin { await closeSession(origin.sessionID) }
     }
 
     /// Inner archives waiting for their outer archive to be rebuilt.
@@ -1155,45 +1285,65 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
 
     /// Names shown while writing back: the inner archive and the archive it goes into.
     func writeBackDescription(_ sessionID: UUID) -> (inner: String, outer: String)? {
-        guard let session = sessions[sessionID], let origin = session.origin,
-              let outer = sessions[origin.sessionID] else { return nil }
+        guard let session = sessions[sessionID], session.awaitingWriteBack, !session.isDetached,
+              let origin = session.origin, let outer = sessions[origin.sessionID] else { return nil }
         return (URL(fileURLWithPath: origin.internalPath).lastPathComponent, outer.archive.displayName)
     }
 
     /// Rebuilds the outer archive with the modified inner archive replacing its entry, in
-    /// one pass beside the original, validated before the atomic replacement. Throws
-    /// `archiveChanged` when the outer archive changed since it was read, unless
-    /// `replacingChangedOuter`; on any failure the modified copy is kept for another attempt.
+    /// one pass beside the original (or the outer archive's own copy), validated before the
+    /// atomic replacement. Throws `archiveChanged` when the outer archive, or the inner
+    /// archive's entry in it, changed since the copy was made, unless `replacingChangedOuter`;
+    /// on any failure the modified copy is kept for another attempt. The copy stays open
+    /// for returning to it; the outer archive, if it is an inner one too, is now modified.
     func writeBack(_ sessionID: UUID, password: String? = nil, replacingChangedOuter: Bool = false) async throws {
         try Task.checkCancellation()
-        guard let session = sessions[sessionID], session.awaitingWriteBack, let origin = session.origin,
-              let outer = sessions[origin.sessionID] else { throw ArchiveEngineError.itemNotFound }
+        guard let session = sessions[sessionID], session.awaitingWriteBack, !session.isDetached,
+              let origin = session.origin, let outer = sessions[origin.sessionID], !outer.isDetached
+        else { throw ArchiveEngineError.itemNotFound }
         guard !outer.isReadOnly else { throw ArchiveEngineError.updateUnsupported }
         let target = outer.originalURL.standardizedFileURL.resolvingSymlinksInPath()
         let expected = replacingChangedOuter
             ? try ArchiveSourceFingerprint.capture([target])
             : outer.archive.fingerprint
         guard expected.matches([target]) else { throw ArchiveEngineError.archiveChanged }
+        if !replacingChangedOuter, let signature = session.originSignature {
+            // The entry must still be the one the copy came from.
+            guard let entry = outer.archive.entries[origin.internalPath], signature.matches(EntrySignature(entry)) else {
+                throw ArchiveEngineError.archiveChanged
+            }
+        }
+        let written = session.modificationCount
         let effectivePassword = password ?? outer.password
         try await rewriteArchive(target, expecting: expected, password: effectivePassword,
             sources: [NativeSevenZipBackend.WriteSource(url: session.originalURL, archivePath: origin.internalPath)],
             excluding: [])
         if let password { sessions[origin.sessionID]?.password = password }
-        try? await relist(origin.sessionID, markingModified: true)
-        await finishSession(sessionID)
+        if var current = sessions[sessionID] {
+            current.awaitingWriteBack = false
+            // A change made while the copy was written is still to be written back.
+            current.isModified = current.modificationCount != written
+            sessions[sessionID] = current
+        }
+        try? await relist(origin.sessionID, markingModified: true, writtenBack: sessionID)
+        await settle(sessionID)
     }
 
-    /// Saves the modified inner archive elsewhere instead and ends its session.
+    /// Saves the modified inner archive elsewhere instead; its changes leave the outer
+    /// archive, so the session ends.
     func saveInnerArchive(_ sessionID: UUID, to destination: URL) async throws {
         guard let session = sessions[sessionID], session.awaitingWriteBack else { throw ArchiveEngineError.itemNotFound }
         try fileManager.copyItem(at: session.originalURL, to: destination)
-        await finishSession(sessionID)
+        await discardInnerArchive(sessionID)
     }
 
-    /// Drops the inner archive's changes and ends its session.
+    /// Drops the inner archive's changes: the session ends (at once, or when the windows
+    /// that went back into it meanwhile leave it).
     func discardInnerArchive(_ sessionID: UUID) async {
-        guard sessions[sessionID]?.awaitingWriteBack == true else { return }
-        await finishSession(sessionID)
+        guard let session = sessions[sessionID], session.awaitingWriteBack, let origin = session.origin else { return }
+        await endDetachedSessions(detach(sessionID))
+        // The outer archive may have been waiting for this one.
+        await settle(origin.sessionID)
     }
 
     /// Open sessions and their references (diagnostics and tests).

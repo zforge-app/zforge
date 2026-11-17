@@ -649,6 +649,24 @@ Pending: in-app check of the row and the computer level in the four modes (light
 - [x] “Write-back alerts” snapshots (D-89): IconServices placeholder captured; the test waits until the application icon renders. Reference unchanged.
 - [x] Requirements: AGENT-INTEGRATION-PLAN measurement gate; RNF-Q08 rule on clocks in tests.
 
+### ZF-81 — Columns preview slot held while an archive file's preview loads (2026-11-17, D-99)
+
+User report (2026-11-17, in Portuguese, with a recording): navigating inside an archive, the preview column expanded and retracted again.
+- [x] Reproduced offscreen first: `ColumnBrowserLayoutTests.loadingArchivePreviewKeepsTheLayout` failed (wider column; wider, scrolled columns after a branch had opened).
+- [x] Fix: preview-loading state in `FileBrowserState`; `ColumnBrowserView` holds the preview slot while it loads and keeps the column beside it at its base width.
+- [ ] Real-window check of fast keyboard navigation through archive files (the user's scenario).
+
+### ZF-80 — Nested archive navigation without a depth limit, edited in place (2026-11-16, D-98)
+
+User request (2026-11-16, in Portuguese): bring back opening archives inside archives, without a nesting limit, since the preview limits already bound what is read. Decisions (user, same day): editing in place; an archive's copy is discarded when its root archive closes; in Columns entering by selection is implicit (the reason nesting had been removed in D-73 was that it could not stay implicit), within the preview limit, “consistent with the user seeing a preview of the compressed files”; a modified inner archive is written into its parent when it closes, the parent into its own when it closes, up to the root; the “inner archive in a new window” flow is removed.
+- [x] Engine: inner sessions no longer hold their outer session; a root session closes with every copy made from it once nothing in its tree is shown or pending; closing an inner archive requests its write-back after the archives opened from it (`settle`); the write-back keeps the copy, marks the containing archive modified and lets it be written when it closes; an entry removed (or replaced while unmodified) ends its inner session (`sessionsDidEnd`); a moved entry keeps it; a replaced entry of a modified copy is a write-back conflict; returning to a copy whose write-back is due joins it (`modificationCount`).
+- [x] State: in-place entry in the four modes; one reference per shown inner archive (`innerArchiveHolds`), released innermost first; Columns implicit entry within the preview limit and 1 GiB, explicit with Right Arrow, Return, double click; List inline expansion, collapse closes, expand-all skips nested archives; large-item confirmation and password resume in the right column; history purge and window exit when a session ends; inline nested extraction keeps its boundary (fixed during this work, test reproduced it first).
+- [x] Removed: new-window handoff (`ArchiveSessionHandoff`, `BrowserWindowRequest.archiveSession`, `configureOpenArchiveWindowAction`), the window-ordering registry (quitting still closes windows and waits).
+- [x] Tests: `NestedArchiveTests` (replaces `InnerArchiveWindowTests`, 26 tests); `ZforgeTests` nested expectations restored (recognition, Columns extraction through three nested archives, List inline nested expansion, inner session naming); UI test `testClickInnerArchiveInColumnsShowsItsContents` replaces `testDoubleClickInnerArchiveOpensItInNewWindow`.
+- [x] No new strings.
+- [ ] Real-window visual review of the four modes inside nested archives, the write-back panel during navigation, and VoiceOver.
+- [ ] UI tests selected by the change: 19 offscreen (need an unlocked session; it was locked) and 11 real-only (take over the screen), including the new `testClickInnerArchiveInColumnsShowsItsContents` — not run yet (REGRESSION-COVERAGE).
+
 ### ZF-79 — Tag editor sheet appearance (2026-11-11, D-97)
 
 User request, with a screenshot of the sheet in dark mode: “O diálogo de edição de tags está muito feio, melhore a aparência dele.” The sheet keeps its behavior (apply/remove existing tags, create a tag, Cancel/Apply); its presentation changes.

@@ -174,8 +174,8 @@ struct ZforgeTests {
         #expect(rootArchive.canExpandInlineInList)
         #expect(rootArchive.usesStaticIconPreview)
 
-        // D-73: an archive inside an archive is an ordinary file. It is neither browsed in
-        // place nor expanded; opening it shows it in its own window.
+        // D-98: an archive inside an archive is browsed in place, at any depth; fast formats
+        // also expand inline in List.
         let address = ArchiveAddress(sessionID: UUID(), archiveID: UUID(), internalPath: "inner.zip")
         let innerArchive = BrowserItem(
             id: BrowserItemID(rawValue: "inner.zip"), name: "inner.zip", location: .archive(address),
@@ -185,10 +185,10 @@ struct ZforgeTests {
             tags: [], contentTypeIdentifier: nil, encrypted: false, checksum: nil,
             compressionMethod: "Deflate"
         )
-        #expect(!innerArchive.canExpandInlineInList)
-        #expect(!innerArchive.canNavigateAsArchive)
-        #expect(!innerArchive.isNavigableContainer)
-        #expect(innerArchive.opensAsInnerArchive)
+        #expect(innerArchive.canExpandInlineInList)
+        #expect(innerArchive.canNavigateAsArchive)
+        #expect(innerArchive.isNavigableContainer)
+        #expect(innerArchive.isArchiveInsideArchive)
 
         let innerRAR = BrowserItem(
             id: BrowserItemID(rawValue: "inner.rar"), name: "inner.rar", location: .archive(address),
@@ -198,10 +198,10 @@ struct ZforgeTests {
             tags: [], contentTypeIdentifier: nil, encrypted: false, checksum: nil,
             compressionMethod: nil
         )
-        #expect(!innerRAR.canNavigateAsArchive)
+        #expect(innerRAR.canNavigateAsArchive)
         #expect(!innerRAR.canExpandInlineInList)
-        #expect(innerRAR.opensAsInnerArchive)
-        #expect(!rootArchive.opensAsInnerArchive)
+        #expect(innerRAR.isArchiveInsideArchive)
+        #expect(!rootArchive.isArchiveInsideArchive)
     }
 
     // D-73 removed the nesting policy (depth and root-size limits); the address keeps its path rule.
@@ -617,7 +617,7 @@ struct ZforgeTests {
         )
     }
 
-    @Test("Extracting from archives opened inside archives preserves every archive boundary")
+    @Test("Extracting from nested archives preserves every archive boundary")
     @MainActor
     func columnNestedArchiveExtractionPreservesHierarchy() async throws {
         let fileManager = FileManager.default
@@ -670,50 +670,35 @@ struct ZforgeTests {
         let preferences = FileBrowserPreferences(defaults: defaults)
         preferences.viewMode = .columns
         preferences.language = .english
-        // D-73: each inner archive opens in its own window sharing the engine; the
-        // extraction still lands beside the archive on disk, with every archive boundary.
-        let requests = WindowRequestLog()
-        func browser(_ handoff: ArchiveSessionHandoff? = nil) -> FileBrowserState {
-            let state = FileBrowserState(
-                preferences: preferences,
-                fileSystem: FileSystemService(),
-                fileOperations: FileOperationService(),
-                grants: UIFixtureAccessGrantStore(),
-                archives: ArchiveSessionClient(engine: engine),
-                initialArchiveSession: handoff
-            )
-            state.configureOpenArchiveWindowAction { requests.append($0) }
-            return state
-        }
-        let state = browser()
+        // D-98: Columns enters each archive inside an archive by selection, from a copy; the
+        // extraction lands beside the archive on disk, with every archive boundary.
+        let state = FileBrowserState(
+            preferences: preferences,
+            fileSystem: FileSystemService(),
+            fileOperations: FileOperationService(),
+            grants: UIFixtureAccessGrantStore(),
+            archives: ArchiveSessionClient(engine: engine)
+        )
         defer { state.close() }
 
         await state.navigateToSidebar(browsingRoot, name: browsingRoot.lastPathComponent)
         let outerArchive = try #require(state.items.first(where: { $0.name == "Archive 2.zip" }))
         await state.activateColumnItem(outerArchive, in: state.location).value
         let middleArchive = try #require(state.items.first(where: { $0.name == "Archive.zip" }))
-        #expect(!middleArchive.isNavigableContainer)
-        await state.open(middleArchive)
-        let middle = browser(try #require(requests.last?.archiveSession))
-        defer { middle.close() }
-        await middle.start()
-        #expect(middle.title == "Archive 2.zip › Archive.zip")
-        let workArchive = try #require(middle.items.first(where: { $0.name == "work.zip" }))
-        await middle.open(workArchive)
-        let work = browser(try #require(requests.last?.archiveSession))
-        defer { work.close() }
-        await work.start()
-        #expect(work.pathComponents.map(\.name) == ["Archive 2.zip › Archive.zip › work.zip"])
+        await state.activateColumnItem(middleArchive, in: state.location).value
+        let workArchive = try #require(state.items.first(where: { $0.name == "work.zip" }))
+        await state.activateColumnItem(workArchive, in: state.location).value
+        #expect(state.pathComponents.map(\.name) == [browsingRoot.lastPathComponent, "Archive 2.zip", "Archive.zip", "work.zip"])
 
         for folderName in ["work", "qintess", "sgo", "gestao-orcamentaria-nginx"] {
-            let folder = try #require(work.items.first(where: { $0.name == folderName }))
-            await work.activateColumnItem(folder, in: work.location).value
+            let folder = try #require(state.items.first(where: { $0.name == folderName }))
+            await state.activateColumnItem(folder, in: state.location).value
         }
-        let readme = try #require(work.items.first(where: { $0.name == "README.md" }))
-        work.select(readme)
+        let readme = try #require(state.items.first(where: { $0.name == "README.md" }))
+        state.select(readme)
 
-        #expect(work.archiveToolbarAction == .extractSelected)
-        #expect(await work.performArchiveToolbarAction() != nil)
+        #expect(state.archiveToolbarAction == .extractSelected)
+        #expect(await state.performArchiveToolbarAction() != nil)
         let expectedURL = browsingRoot
             .appendingPathComponent("Archive 2", isDirectory: true)
             .appendingPathComponent("Archive", isDirectory: true)
@@ -724,8 +709,11 @@ struct ZforgeTests {
             .appendingPathComponent("gestao-orcamentaria-nginx", isDirectory: true)
             .appendingPathComponent("README.md")
         #expect(fileManager.fileExists(atPath: expectedURL.path))
-        let sessions = ZforgeTemporaryStorage.archiveSessionsRoot().path
-        #expect(!expectedURL.path.hasPrefix(sessions), "Extracted into the temporary copy")
+        #expect(
+            state.columnItems[.fileSystem(browsingRoot)]?.contains(where: {
+                $0.name == "Archive 2"
+            }) == true
+        )
     }
 
     @Test("Column action extracts an external archive selected in the base column")
@@ -1657,8 +1645,7 @@ struct ZforgeTests {
         await engine.closeSession(opened.address.sessionID)
     }
 
-    // D-73: archives inside archives no longer expand; they are ordinary files.
-    @Test("List expands fast archives inline, and an archive inside one is an ordinary file")
+    @Test("List recursively expands fast nested archives inline")
     @MainActor
     func listInlineArchiveExpansion() async throws {
         let fileSystem = FileSystemService()
@@ -1696,11 +1683,10 @@ struct ZforgeTests {
         )
 
         #expect(innerArchive.isArchive)
-        #expect(!innerArchive.canExpandInlineInList)
-        #expect(!innerArchive.isContainer)
+        #expect(innerArchive.canExpandInlineInList)
         await state.toggleExpansion(innerArchive)
-        #expect(!state.expandedItems.contains(innerArchive.id))
-        #expect(state.expandedChildren[innerArchive.id] == nil)
+        #expect(state.expandedItems.contains(innerArchive.id))
+        #expect(state.expandedChildren[innerArchive.id]?.contains(where: { $0.name == "hello.txt" }) == true)
     }
 
     @Test("Encrypted archive requires and accepts an in-memory password")
@@ -1748,20 +1734,20 @@ struct ZforgeTests {
         await engine.closeSession(opened.address.sessionID)
     }
 
-    // D-73: an archive inside an archive opens as its own root session over a writable
-    // copy owned by that session (replaces recursive nesting in the outer session).
-    @Test("An archive inside an archive opens in its own session, named after both archives")
+    // D-73/D-98: an archive inside an archive opens in its own session over a writable copy
+    // owned by that session, whose hierarchy leads back to the archive on disk.
+    @Test("Nested archives open in their own sessions, chained to the archive containing them")
     func innerArchiveSession() async throws {
         let engine = NativeSevenZipArchiveEngine()
         defer { Task { await engine.closeAllSessions() } }
         let outer = try await engine.openArchive(at: fixturesURL.appendingPathComponent("nested.7z"), password: nil)
         let outerItems = try await engine.items(at: outer.address)
         let inner = try #require(outerItems.first(where: { $0.name == "inner.zip" && $0.isArchive }))
-        #expect(!inner.canNavigateAsArchive)
+        #expect(inner.canNavigateAsArchive)
         let opened = try await engine.openInnerArchive(item: inner, password: nil)
         #expect(opened.address.sessionID != outer.address.sessionID)
         #expect(opened.parentSessionID == outer.address.sessionID)
-        #expect(opened.displayName == "nested.7z › inner.zip")
+        #expect(opened.displayName == "inner.zip")
         #expect(!opened.isReadOnly)
         let hierarchy = try await engine.archiveHierarchy(for: opened.address)
         #expect(hierarchy == ["nested.7z", "inner.zip"], "Unexpected archive hierarchy: \(hierarchy)")
@@ -2052,12 +2038,4 @@ private actor ColumnArchiveRaceEngine: ArchiveServing {
     func closeAllSessions() async {}
     func cancelAllOperations() async {}
     func cleanupStaleSessions() async {}
-}
-
-/// Browser window requests a test's browser asked to open.
-@MainActor
-final class WindowRequestLog {
-    private(set) var requests: [BrowserWindowRequest] = []
-    var last: BrowserWindowRequest? { requests.last }
-    func append(_ request: BrowserWindowRequest) { requests.append(request) }
 }

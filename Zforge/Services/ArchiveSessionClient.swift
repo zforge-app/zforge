@@ -63,8 +63,10 @@ nonisolated final class ArchiveSessionClient: ArchiveServing, @unchecked Sendabl
         return result
     }
 
-    func relinquishSession(_ sessionID: UUID) async { _ = drop(sessionID) }
-    func adoptSession(_ sessionID: UUID) async { hold(sessionID) }
+    func retainSession(_ sessionID: UUID) async throws {
+        try await engine.retainSession(sessionID)
+        hold(sessionID)
+    }
 
     func closeSession(_ sessionID: UUID) async {
         guard drop(sessionID) else { return }
@@ -176,31 +178,5 @@ nonisolated final class ArchiveSessionClient: ArchiveServing, @unchecked Sendabl
 
     func cleanupStaleSessions() async {
         await engine.cleanupStaleSessions()
-    }
-}
-
-/// A session reference handed from the window that opened an inner archive to the new
-/// window that shows it. Released if no window takes it.
-nonisolated final class ArchiveSessionHandoff: @unchecked Sendable {
-    let result: ArchiveOpenResult
-    private let lock = NSLock()
-    private var release: (@Sendable () async -> Void)?
-
-    init(result: ArchiveOpenResult, release: @escaping @Sendable () async -> Void) {
-        self.result = result
-        self.release = release
-    }
-
-    /// The opened session, once; the taker now holds its reference.
-    func take() -> ArchiveOpenResult? {
-        lock.withLock {
-            guard release != nil else { return nil }
-            release = nil
-            return result
-        }
-    }
-
-    deinit {
-        if let release { Task { await release() } }
     }
 }

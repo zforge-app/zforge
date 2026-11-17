@@ -44,7 +44,9 @@ final class FileBrowserState {
     enum PasswordOperation {
         /// `asWindowRoot`: the archive is the window's own location, as `openArchive(_:asWindowRoot:)`.
         case openFile(URL, asWindowRoot: Bool)
-        case openInnerArchive(BrowserItem)
+        /// An archive inside an archive (D-98); `columnParent` is the Columns column it was
+        /// entered from, so that the entry continues there.
+        case openInnerArchive(BrowserItem, columnParent: BrowserLocation?)
         case expandInline(BrowserItem)
         case extractArchive(BrowserItem)
         case validateArchive(BrowserItem)
@@ -53,7 +55,7 @@ final class FileBrowserState {
         var sessionID: UUID? {
             let item: BrowserItem?
             switch self {
-            case let .openInnerArchive(value), let .extractArchive(value), let .validateArchive(value): item = value
+            case let .openInnerArchive(value, _), let .extractArchive(value), let .validateArchive(value): item = value
             case let .extractItems(values, _): item = values.first
             case .openFile, .expandInline: item = nil
             }
@@ -70,12 +72,14 @@ final class FileBrowserState {
     }
 
     enum LargeOperation {
-        case openInnerArchive(BrowserItem)
+        case openInnerArchive(BrowserItem, columnParent: BrowserLocation?)
+        /// Expanding an archive inside an archive in List (D-98).
+        case expandInline(BrowserItem)
         case openExternally(BrowserItem)
 
         var item: BrowserItem {
             switch self {
-            case let .openInnerArchive(item), let .openExternally(item): item
+            case let .openInnerArchive(item, _), let .expandInline(item), let .openExternally(item): item
             }
         }
     }
@@ -207,12 +211,15 @@ final class FileBrowserState {
     @ObservationIgnored private var pendingAuthorizationPurpose: AuthorizationPurpose?
     @ObservationIgnored private var openWindowHandler: ((URL?) -> Void)?
     @ObservationIgnored private var openTabHandler: ((URL) -> Void)?
-    @ObservationIgnored private var openArchiveWindowHandler: ((BrowserWindowRequest) -> Void)?
     @ObservationIgnored private var windowCloseHandler: (() -> Void)?
-    /// An inner archive opened by another window, shown when this window starts.
-    @ObservationIgnored private var initialArchiveSession: ArchiveSessionHandoff?
     /// The session each inner archive session this window knows was opened from.
     @ObservationIgnored private(set) var archiveSessionParents: [UUID: UUID] = [:]
+    /// References this window holds to inner archive sessions: one while it shows the
+    /// archive or an archive inside it, none once it leaves it (D-98).
+    @ObservationIgnored private(set) var innerArchiveHolds: [UUID: Int] = [:]
+    /// The latest adjustment of `innerArchiveHolds` (tests await it).
+    @ObservationIgnored private(set) var innerArchiveSyncTask: Task<Void, Never>?
+    @ObservationIgnored private var sessionsEndObserver: NSObjectProtocol?
     /// The latest listing revision this window shows for each shared session it knows.
     @ObservationIgnored private var shownSessionRevisions: [UUID: Int] = [:]
     @ObservationIgnored private var pendingSessionChanges: [UUID: Int] = [:]
@@ -323,6 +330,14 @@ final class FileBrowserState {
     var previewRequiresManualLoad = false
     var previewURLs: [BrowserItemID: URL] = [:]
     var previewItemsRequiringManualLoad: Set<BrowserItemID> = []
+    /// Selected items whose preview is being read from their archive, so the views can keep
+    /// its place while it loads.
+    private(set) var previewLoadingItemIDs: Set<BrowserItemID> = []
+
+    /// Whether the primary selection's preview is being read from its archive.
+    var isLoadingPrimaryPreview: Bool {
+        primarySelection.map { previewLoadingItemIDs.contains($0.id) } ?? false
+    }
     var pendingLargeOperation: LargeOperation?
     var pendingPermanentDeletion: PermanentDeletionRequest?
     var pendingArchiveAddition: ArchiveAdditionRequest?
@@ -636,14 +651,16 @@ final class FileBrowserState {
                       return false
                   }) else { return nil }
             do {
+                // The selection's own archive: in List it may be one expanded inline, inside
+                // the archive being browsed (D-98).
                 let address: ArchiveAddress
-                if case let .archive(currentAddress) = location {
-                    address = currentAddress
-                } else if let selectedAddress = selectedItems.compactMap({ item -> ArchiveAddress? in
+                if let selectedAddress = selectedItems.compactMap({ item -> ArchiveAddress? in
                     guard case let .archive(itemAddress) = item.location else { return nil }
                     return itemAddress
                 }).first {
                     address = selectedAddress
+                } else if case let .archive(currentAddress) = location {
+                    address = currentAddress
                 } else {
                     return nil
                 }
@@ -836,7 +853,7 @@ final class FileBrowserState {
     }
 
     convenience init(initialURL: URL? = nil, automationAccessLease: AutomationAccessLease? = nil, archiveSearch: String? = nil,
-                     finderRequest: FinderMenuRequest? = nil, archiveSession: ArchiveSessionHandoff? = nil) {
+                     finderRequest: FinderMenuRequest? = nil) {
         if ProcessInfo.processInfo.arguments.contains("--ui-finder-fixtures") {
             // Real files in Zforge's own temporary folder, revealed in Finder so a UI
             // test can choose the Zforge submenu there; windows opened from Finder
@@ -844,28 +861,23 @@ final class FileBrowserState {
             self.init(preferences: FileBrowserPreferences.shared, fileSystem: FileSystemService(),
                 recentItems: UIFixtureRecentItemsService(), grants: UIFixtureAccessGrantStore(),
                 archives: ArchiveSessionClient(),
-                initialURL: finderRequest == nil && archiveSession == nil
+                initialURL: finderRequest == nil
                     ? ZforgeTemporaryStorage.root().appendingPathComponent("FinderFixture-" + UUID().uuidString) : nil,
-                initialFinderRequest: finderRequest, initialArchiveSession: archiveSession)
+                initialFinderRequest: finderRequest)
             return
         }
         if ProcessInfo.processInfo.arguments.contains("--ui-icon-preview-fixtures") {
             self.init(preferences: FileBrowserPreferences.shared, fileSystem: FileSystemService(),
                 recentItems: UIFixtureRecentItemsService(), grants: UIFixtureAccessGrantStore(),
                 archives: ArchiveSessionClient(),
-                initialURL: archiveSession == nil
-                    ? ZforgeTemporaryStorage.root().appendingPathComponent("IconPreviewFixture-" + UUID().uuidString) : nil,
-                initialArchiveSession: archiveSession)
+                initialURL: ZforgeTemporaryStorage.root().appendingPathComponent("IconPreviewFixture-" + UUID().uuidString))
             return
         }
         if ProcessInfo.processInfo.arguments.contains("--ui-archive-drag-fixtures") {
             self.init(preferences: FileBrowserPreferences.shared, fileSystem: FileSystemService(),
                 recentItems: UIFixtureRecentItemsService(), grants: UIFixtureAccessGrantStore(),
                 archives: ArchiveSessionClient(),
-                // A window showing an inner archive (D-73) gets its session, not a new fixture.
-                initialURL: archiveSession == nil
-                    ? ZforgeTemporaryStorage.root().appendingPathComponent("ArchiveDragFixture-" + UUID().uuidString) : nil,
-                initialArchiveSession: archiveSession)
+                initialURL: ZforgeTemporaryStorage.root().appendingPathComponent("ArchiveDragFixture-" + UUID().uuidString))
             return
         }
         if ProcessInfo.processInfo.arguments.contains("--ui-fixtures") {
@@ -879,7 +891,6 @@ final class FileBrowserState {
                 grants: UIFixtureAccessGrantStore(),
                 archives: UIFixtureArchiveEngine(itemsDelay: columnLoadDelay),
                 initialURL: initialURL,
-                initialArchiveSession: archiveSession,
                 searcher: UIFixtureSearchService()
             )
             return
@@ -893,8 +904,7 @@ final class FileBrowserState {
             initialURL: initialURL,
             automationAccessLease: automationAccessLease,
             initialArchiveSearch: archiveSearch,
-            initialFinderRequest: finderRequest,
-            initialArchiveSession: archiveSession
+            initialFinderRequest: finderRequest
         )
     }
 
@@ -911,7 +921,6 @@ final class FileBrowserState {
         archiveSearch: (any ArchiveSearching)? = nil,
         initialArchiveSearch: String? = nil,
         initialFinderRequest: FinderMenuRequest? = nil,
-        initialArchiveSession: ArchiveSessionHandoff? = nil,
         volumes: (any VolumeCataloging)? = nil,
         networkBrowser: (any NetworkServerBrowsing)? = nil,
         networkMounter: (any NetworkServerMounting)? = nil,
@@ -936,7 +945,6 @@ final class FileBrowserState {
         self.archiveSearch = archiveSearch ?? AuthorizedArchiveSearch()
         self.initialArchiveSearch = initialArchiveSearch
         self.initialFinderRequest = initialFinderRequest
-        self.initialArchiveSession = initialArchiveSession
         location = .recents
         pathComponents = [
             BrowserPathComponent(
@@ -962,6 +970,12 @@ final class FileBrowserState {
                 guard let sessionID = notification.userInfo?["sessionID"] as? UUID,
                       let revision = notification.userInfo?["revision"] as? Int else { return }
                 Task { @MainActor in self?.archiveSessionDidChange(sessionID, revision: revision) }
+            }
+            sessionsEndObserver = NotificationCenter.default.addObserver(
+                forName: NativeSevenZipArchiveEngine.sessionsDidEnd, object: source, queue: .main
+            ) { [weak self] notification in
+                guard let sessionIDs = notification.userInfo?["sessionIDs"] as? [UUID] else { return }
+                Task { @MainActor in await self?.archiveSessionsDidEnd(Set(sessionIDs)) }
             }
         }
         ArchiveWindowRegistry.shared.register(self)
@@ -999,7 +1013,7 @@ final class FileBrowserState {
                 try Data("local".utf8).write(to: initialURL.appendingPathComponent("Local.txt"))
                 var sources = [inside, target]
                 if ProcessInfo.processInfo.arguments.contains("--ui-inner-archive-fixtures") {
-                    // An archive stored inside Sample.zip, opened in its own window (D-73).
+                    // An archive stored inside Sample.zip, browsed in place (D-98).
                     let payload = initialURL.appendingPathComponent("InnerPayload.txt")
                     try Data("inner payload".utf8).write(to: payload)
                     let inner = initialURL.appendingPathComponent("Inner.zip")
@@ -1023,19 +1037,6 @@ final class FileBrowserState {
                 try Data("note".utf8).write(to: initialURL.appendingPathComponent("Note.txt"))
                 NSWorkspace.shared.activateFileViewerSelecting([archive])
             } catch { self.error = mapError(error); return }
-        }
-        if let handoff = initialArchiveSession {
-            initialArchiveSession = nil
-            if let result = handoff.take() {
-                await archives.adoptSession(result.address.sessionID)
-                recordArchiveSession(result)
-                if let outermost = try? await archives.outermostArchiveURL(for: result.address) {
-                    recordArchiveVolume(result.address.sessionID, url: outermost)
-                }
-                await navigate(to: .archive(result.address), named: result.displayName, isArchive: true,
-                    resetPath: true, recordsHistory: false)
-            }
-            return
         }
         if let finderRequest = initialFinderRequest {
             initialFinderRequest = nil
@@ -1636,12 +1637,8 @@ final class FileBrowserState {
         openTabHandler = action
     }
 
-    /// Opens a window for a request built here, such as an inner archive's window.
-    func configureOpenArchiveWindowAction(_ action: @escaping (BrowserWindowRequest) -> Void) {
-        openArchiveWindowHandler = action
-    }
-
-    /// Closes this browser's window (used to close inner archive windows first).
+    /// Closes this browser's window (quitting closes every window before waiting for the
+    /// write-backs their inner archives start).
     func configureWindowCloseAction(_ action: @escaping () -> Void) {
         windowCloseHandler = action
     }
@@ -1652,57 +1649,156 @@ final class FileBrowserState {
         if let windowCloseHandler { windowCloseHandler() } else { close() }
     }
 
-    /// Sessions this window holds; a window that only knows them treats them as held.
-    var heldArchiveSessionIDs: Set<UUID> {
-        if let client = archives as? ArchiveSessionClient { return Set(client.heldSessions.keys) }
-        return Set(shownSessionRevisions.keys)
+    /// Whether this window entered an archive inside an archive: quitting then closes it
+    /// and waits for the write-backs that releasing it may start (D-98).
+    var hasOpenedInnerArchives: Bool { !archiveSessionParents.isEmpty || !innerArchiveHolds.isEmpty }
+
+    // MARK: Archives inside archives (D-98)
+
+    /// Above this size, entering an archive inside an archive asks for confirmation and is
+    /// never implicit.
+    static let largeArchiveItemSize: Int64 = 1_073_741_824
+
+    /// Whether selecting the item in Columns shows its contents in the next column. An archive
+    /// inside an archive is entered so, from a copy, only within the automatic preview limit
+    /// of its volume (and 1 GiB), as its contents are a preview of it; above that, the
+    /// selection shows its preview and Right Arrow, Return or a double click enter it.
+    func opensColumnBranch(_ item: BrowserItem) -> Bool {
+        guard item.isNavigableContainer else { return false }
+        guard item.isArchiveInsideArchive else { return true }
+        if let size = item.size, size > Self.largeArchiveItemSize { return false }
+        return preferences.archivePreviewLimits.allowsAutomaticPreview(of: item, on: archiveVolumeKind(of: item))
     }
 
-    /// Materializes an archive stored inside the current archive and shows it, as a root
-    /// archive, in a new window that shares its session (D-73).
-    func openInnerArchiveWindow(_ item: BrowserItem, password: String? = nil) async {
-        guard item.opensAsInnerArchive else { return }
-        if let size = item.size, size > 1_073_741_824, !confirmedLargeItems.contains(item.id) {
-            pendingLargeOperation = .openInnerArchive(item)
-            return
+    /// Opens, or joins, the session of an archive inside an archive and holds it for this
+    /// window until the window no longer shows it.
+    private func openNestedArchiveSession(_ item: BrowserItem, password: String?) async throws -> ArchiveOpenResult {
+        let result = try await archives.openInnerArchive(item: item, password: password)
+        innerArchiveHolds[result.address.sessionID, default: 0] += 1
+        recordArchiveSession(result)
+        // The caller shows it, which adjusts the holds; one not shown is released then.
+        return result
+    }
+
+    /// The inner archive sessions this window shows: its location, path (the columns), the
+    /// visible List rows and inline expansions, and the archives containing them.
+    private var shownInnerArchiveSessions: Set<UUID> {
+        var shown: Set<UUID> = []
+        func add(_ location: BrowserLocation) {
+            if case let .archive(address) = location { shown.insert(address.sessionID) }
         }
-        beginArchiveOpening(named: item.name)
-        defer {
-            archiveOperationInProgress = false
-            archiveProgress = nil
+        add(location)
+        pathComponents.forEach { add($0.location) }
+        let visible = flattenedItems()
+        visible.forEach { add($0.location) }
+        let visibleIDs = Set(visible.map(\.id))
+        for (itemID, result) in inlineArchiveResults where expandedItems.contains(itemID) && visibleIDs.contains(itemID) {
+            shown.insert(result.address.sessionID)
         }
-        do {
-            let result = try await archives.openInnerArchive(item: item, password: password)
-            let sessionID = result.address.sessionID
-            guard !Task.isCancelled, !isClosed else {
-                await archives.closeSession(sessionID)
-                return
+        var withOuter = shown
+        for sessionID in shown {
+            var current = sessionID
+            var visited: Set<UUID> = [sessionID]
+            while let parent = archiveSessionParents[current], visited.insert(parent).inserted {
+                withOuter.insert(parent)
+                current = parent
             }
-            passwordOperation = nil
-            passwordError = nil
-            // Only the window showing the inner archive follows its changes; this one keeps
-            // the relationship so that closing it closes the inner window first.
-            if let parent = result.parentSessionID { archiveSessionParents[sessionID] = parent }
-            // The new window takes this window's reference; unclaimed, it is released.
-            await archives.relinquishSession(sessionID)
-            let archives = self.archives
-            let handoff = ArchiveSessionHandoff(result: result) {
-                await archives.adoptSession(sessionID)
+        }
+        return withOuter.filter { archiveSessionParents[$0] != nil }
+    }
+
+    /// Adjusts this window's references to inner archives after it changed what it shows:
+    /// one for each shown, none for the others, released innermost first. Releasing the last
+    /// reference closes an inner archive, which writes a modified one back into the archive
+    /// containing it; its copy stays for returning until its root archive closes (D-98).
+    func scheduleInnerArchiveSynchronization() {
+        guard !isClosed, hasOpenedInnerArchives else { return }
+        let previous = innerArchiveSyncTask
+        innerArchiveSyncTask = Task { [weak self] in
+            await previous?.value
+            await self?.synchronizeInnerArchiveHolds()
+        }
+    }
+
+    private func synchronizeInnerArchiveHolds() async {
+        guard !isClosed else { return }
+        let shown = shownInnerArchiveSessions
+        func depth(_ sessionID: UUID) -> Int {
+            var count = 0
+            var current = sessionID
+            var visited: Set<UUID> = [sessionID]
+            while let parent = archiveSessionParents[current], visited.insert(parent).inserted {
+                count += 1
+                current = parent
+            }
+            return count
+        }
+        // Shown again, such as by Back: hold it again, outer archives first.
+        for sessionID in shown.sorted(by: { depth($0) < depth($1) }) where (innerArchiveHolds[sessionID] ?? 0) == 0 {
+            do {
+                try await archives.retainSession(sessionID)
+                innerArchiveHolds[sessionID] = 1
+            } catch {
+                // It ended: its end notification moves the window out of it.
+            }
+            guard !isClosed else { return }
+        }
+        // What is shown now, after the awaits above.
+        let stillShown = shownInnerArchiveSessions
+        for sessionID in innerArchiveHolds.keys.sorted(by: { depth($0) > depth($1) }) {
+            let kept = stillShown.contains(sessionID) ? 1 : 0
+            while let held = innerArchiveHolds[sessionID], held > kept {
+                innerArchiveHolds[sessionID] = held - 1 > 0 ? held - 1 : nil
                 await archives.closeSession(sessionID)
             }
-            openArchiveWindowHandler?(BrowserWindowRequest(archiveSession: handoff))
-        } catch ArchiveEngineError.passwordRequired {
-            guard !Task.isCancelled else { return }
-            passwordOperation = .openInnerArchive(item)
-        } catch ArchiveEngineError.invalidPassword {
-            guard !Task.isCancelled else { return }
-            passwordError = AppLocalization.string("Incorrect password. Try again.", locale: preferences.language.locale)
-            passwordOperation = .openInnerArchive(item)
-        } catch ArchiveEngineError.cancelled {
-        } catch is CancellationError {
-        } catch {
-            guard !Task.isCancelled else { return }
-            self.error = mapError(error)
+        }
+    }
+
+    /// Inner archives that ended (their entry was removed or replaced in the archive
+    /// containing them, or their changes were discarded): the window leaves them for the
+    /// folder that contained the outermost one, and forgets them in its history (D-98).
+    private func archiveSessionsDidEnd(_ ended: Set<UUID>) async {
+        guard !isClosed, !ended.isDisjoint(with: Set(archiveSessionParents.keys).union(innerArchiveHolds.keys)) else { return }
+        func isEnded(_ location: BrowserLocation) -> Bool {
+            guard case let .archive(address) = location else { return false }
+            return ended.contains(address.sessionID)
+        }
+        backStack.removeAll { $0.components.contains { isEnded($0.location) } || isEnded($0.location) }
+        forwardStack.removeAll { $0.components.contains { isEnded($0.location) } || isEnded($0.location) }
+        let expansions = Set(inlineArchiveResults.filter { ended.contains($0.value.address.sessionID) }.keys)
+        purgeCachedHierarchies(rootedAt: expansions)
+        let expandedInside = Set(knownItems.filter { expandedItems.contains($0.id) && isEnded($0.location) }.map(\.id))
+        purgeCachedHierarchies(rootedAt: expandedInside)
+        columnItems = columnItems.filter { !isEnded($0.key) }
+        columnSelections = columnSelections.filter { !isEnded($0.key) }
+        var leaves = false
+        if let index = pathComponents.firstIndex(where: { isEnded($0.location) }), index > 0 {
+            pathComponents = Array(pathComponents.prefix(index))
+            location = pathComponents[index - 1].location
+            activeColumnLocation = location
+            pendingColumnExpansionItemID = nil
+            leaves = true
+        }
+        for sessionID in ended {
+            while let held = innerArchiveHolds[sessionID], held > 0 {
+                innerArchiveHolds[sessionID] = held - 1 > 0 ? held - 1 : nil
+                await archives.closeSession(sessionID)
+            }
+            shownSessionRevisions[sessionID] = nil
+            pendingSessionChanges[sessionID] = nil
+            readOnlyArchiveSessions.remove(sessionID)
+        }
+        if leaves {
+            selection.removeAll()
+            selectionOrder.removeAll()
+            selectionAnchor = nil
+            focusedItemID = nil
+            stopExpandedDirectoryMonitors()
+            expandedItems.removeAll()
+            expandedChildren.removeAll()
+            await reload()
+        } else {
+            updatePreview()
         }
     }
 
@@ -1913,12 +2009,20 @@ final class FileBrowserState {
         } else if item.isContainer {
             await openContainer(item, recordsHistory: recordsHistory, clearsSelection: clearsSelection)
         } else if item.canNavigateAsArchive {
-            await openArchive(item, recordsHistory: recordsHistory, clearsSelection: clearsSelection)
-        } else if item.opensAsInnerArchive {
-            await openInnerArchiveWindow(item)
+            if viewMode == .columns, item.isArchiveInsideArchive, let parent = columnParentLocation(of: item) {
+                // Return or Open in Columns enters it in the next column, like a selection would.
+                await activateColumnItem(item, in: parent, recordsHistory: recordsHistory, entersExplicitly: true).value
+            } else {
+                await openArchive(item, recordsHistory: recordsHistory, clearsSelection: clearsSelection)
+            }
         } else {
             await openExternally(item)
         }
+    }
+
+    /// The shown column that lists the item, if any.
+    func columnParentLocation(of item: BrowserItem) -> BrowserLocation? {
+        pathComponents.last { columnItems[$0.location]?.contains { $0.id == item.id } == true }?.location
     }
 
     func openFromDoubleClick(
@@ -1983,16 +2087,21 @@ final class FileBrowserState {
 
     /// Opens an archive file in this window. `asWindowRoot` is for the archive the window
     /// was opened for: it replaces the window's initial location as the root of its
-    /// hierarchy instead of being entered from it, and leaves no history behind it.
+    /// hierarchy instead of being entered from it, and leaves no history behind it. An
+    /// archive inside an archive is entered in place from a copy of it (D-98); above 1 GiB
+    /// that asks for confirmation first. `columnParent` is the Columns column it is entered
+    /// from, for continuing there after a confirmation or a password.
     func openArchive(
         _ item: BrowserItem,
         password: String? = nil,
         recordsHistory: Bool = true,
         clearsSelection: Bool = true,
-        asWindowRoot: Bool = false
+        asWindowRoot: Bool = false,
+        columnParent: BrowserLocation? = nil
     ) async {
-        if item.opensAsInnerArchive {
-            await openInnerArchiveWindow(item, password: password)
+        if item.isArchiveInsideArchive, let size = item.size, size > Self.largeArchiveItemSize,
+           !confirmedLargeItems.contains(item.id) {
+            pendingLargeOperation = .openInnerArchive(item, columnParent: columnParent)
             return
         }
         let openingAccess = initialAutomationAccessLease
@@ -2018,12 +2127,14 @@ final class FileBrowserState {
                 }
                 recordArchiveVolume(result.address.sessionID, url: url)
             case .archive:
-                return
+                result = try await openNestedArchiveSession(item, password: password)
             }
             recordArchiveSession(result)
             guard !Task.isCancelled else {
                 if case .fileSystem = item.location {
                     await archives.closeSession(result.address.sessionID)
+                } else {
+                    scheduleInnerArchiveSynchronization()
                 }
                 return
             }
@@ -2041,14 +2152,16 @@ final class FileBrowserState {
             )
         } catch ArchiveEngineError.passwordRequired {
             guard !Task.isCancelled else { return }
-            passwordOperation = item.localURL.map { .openFile($0, asWindowRoot: asWindowRoot) } ?? .openInnerArchive(item)
+            passwordOperation = item.localURL.map { .openFile($0, asWindowRoot: asWindowRoot) }
+                ?? .openInnerArchive(item, columnParent: columnParent)
         } catch ArchiveEngineError.invalidPassword {
             guard !Task.isCancelled else { return }
             passwordError = AppLocalization.string(
                 "Incorrect password. Try again.",
                 locale: preferences.language.locale
             )
-            passwordOperation = item.localURL.map { .openFile($0, asWindowRoot: asWindowRoot) } ?? .openInnerArchive(item)
+            passwordOperation = item.localURL.map { .openFile($0, asWindowRoot: asWindowRoot) }
+                ?? .openInnerArchive(item, columnParent: columnParent)
         } catch ArchiveEngineError.cancelled {
             // Cancelled from the progress overlay: nothing opened, nothing to report.
         } catch is CancellationError {
@@ -2071,8 +2184,8 @@ final class FileBrowserState {
             } catch {
                 self.error = mapError(error)
             }
-        case let .openInnerArchive(item):
-            await openInnerArchiveWindow(item, password: password)
+        case let .openInnerArchive(item, columnParent):
+            await enterInnerArchive(item, password: password, columnParent: columnParent)
         case let .expandInline(item):
             await toggleExpansion(item, password: password)
         case .extractArchive:
@@ -2097,8 +2210,20 @@ final class FileBrowserState {
         confirmedLargeItems.insert(item.id)
         pendingLargeOperation = nil
         switch operation {
-        case .openInnerArchive: await openInnerArchiveWindow(item)
+        case let .openInnerArchive(_, columnParent): await enterInnerArchive(item, columnParent: columnParent)
+        case .expandInline: await toggleExpansion(item)
         case .openExternally: await openExternally(item)
+        }
+    }
+
+    /// Continues entering an archive inside an archive after a confirmation or a password:
+    /// in Columns, from the column it was selected in, while that column is still shown.
+    private func enterInnerArchive(_ item: BrowserItem, password: String? = nil, columnParent: BrowserLocation?) async {
+        if viewMode == .columns, let columnParent, pathComponents.contains(where: { $0.location == columnParent }) {
+            await activateColumnItem(item, in: columnParent, recordsHistory: false, entersExplicitly: true,
+                password: password).value
+        } else {
+            await openArchive(item, password: password)
         }
     }
 
@@ -2214,6 +2339,8 @@ final class FileBrowserState {
         for session in sessions.values {
             if case let .archive(currentAddress) = self.location,
                currentAddress.sessionID == session.address.sessionID { continue }
+            // Archives inside archives are released by what the window shows (D-98).
+            guard self.archiveSessionParents[session.address.sessionID] == nil else { continue }
             await self.archives.closeSession(session.address.sessionID)
         }
     }
@@ -2324,6 +2451,9 @@ final class FileBrowserState {
                 if case let .archive(address) = $0.location { return address.sessionID == oldAddress.sessionID }
                 return false
             }) else { return entry }
+            // Inside an archive opened from this one: its session is unchanged, and ends with
+            // a notification if its entry went away (D-98).
+            if case let .archive(address) = entry.location, address.sessionID != oldAddress.sessionID { return entry }
             guard case let .archive(address) = entry.location,
                   address.sessionID == oldAddress.sessionID,
                   address.archiveID == oldAddress.archiveID,
@@ -2933,8 +3063,11 @@ final class FileBrowserState {
             synchronizeExpandedDirectoryMonitors()
             updatePreview()
             synchronizeRenamingSelection()
+            // Archives inside archives the window left close; ones it shows again are held.
+            scheduleInnerArchiveSynchronization()
         } catch {
             guard generation == reloadGeneration else { return }
+            scheduleInnerArchiveSynchronization()
             if viewMode == .columns,
                case let .fileSystem(currentURL) = currentLocation,
                !FileManager.default.fileExists(atPath: currentURL.path) {
@@ -3866,6 +3999,7 @@ final class FileBrowserState {
         previewRequiresManualLoad = false
         previewURLs.removeAll()
         previewItemsRequiringManualLoad.removeAll()
+        previewLoadingItemIDs.removeAll()
     }
 
     @discardableResult
@@ -4042,12 +4176,17 @@ final class FileBrowserState {
         )
     }
 
+    /// Selects the item in its column and, for a container, shows its contents in the next
+    /// column. `entersExplicitly` (Right Arrow, Return, double click) also enters an archive
+    /// inside an archive that selection alone does not enter (`opensColumnBranch`).
     @discardableResult
     func activateColumnItem(
         _ item: BrowserItem,
         in parentLocation: BrowserLocation,
         modifiers: NSEvent.ModifierFlags = [],
-        recordsHistory: Bool = true
+        recordsHistory: Bool = true,
+        entersExplicitly: Bool = false,
+        password: String? = nil
     ) -> Task<Void, Never> {
         guard let parentIndex = pathComponents.firstIndex(where: { $0.location == parentLocation }) else {
             return Task {}
@@ -4065,7 +4204,7 @@ final class FileBrowserState {
         let retainedComponents = Array(pathComponents.prefix(parentIndex + 1))
         let opensBranch = !modifiers.contains(.command)
             && !modifiers.contains(.shift)
-            && item.isNavigableContainer
+            && (entersExplicitly ? item.isNavigableContainer : opensColumnBranch(item))
         pendingColumnExpansionItemID = opensBranch ? item.id : nil
         if recordsHistory && (retainedComponents != pathComponents || opensBranch) {
             pushHistory()
@@ -4080,6 +4219,8 @@ final class FileBrowserState {
         expandedItems.removeAll()
         expandedChildren.removeAll()
         configureMonitor()
+        // Columns to the right of the selection, inside archives, are no longer shown.
+        scheduleInnerArchiveSynchronization()
 
         let activationTask = Task { [weak self] in
             if let previousActivationTask {
@@ -4099,7 +4240,12 @@ final class FileBrowserState {
                 }
             }
             guard opensBranch else { return }
-            await self.open(item, recordsHistory: false, clearsSelection: false)
+            if item.isArchiveInsideArchive {
+                await self.openArchive(item, password: password, recordsHistory: false, clearsSelection: false,
+                    columnParent: parentLocation)
+            } else {
+                await self.open(item, recordsHistory: false, clearsSelection: false)
+            }
         }
         columnActivationTask = activationTask
         return activationTask
@@ -4176,6 +4322,8 @@ final class FileBrowserState {
 
     private func toggleExpansionImpl(_ item: BrowserItem, password: String? = nil) async {
         guard item.canExpandInlineInList else { return }
+        // Expanding or collapsing an archive inside an archive opens or closes it (D-98).
+        defer { scheduleInnerArchiveSynchronization() }
         if expandedItems.contains(item.id) {
             expandedItems.remove(item.id)
             stopExpandedDirectoryMonitors(in: cachedHierarchyIDs(rootedAt: item.id))
@@ -4185,6 +4333,11 @@ final class FileBrowserState {
             guard try await activateComputerLevelAccess(for: item) else { return }
         } catch {
             self.error = mapError(error)
+            return
+        }
+        if item.isArchiveInsideArchive, inlineArchiveResults[item.id] == nil, let size = item.size,
+           size > Self.largeArchiveItemSize, !confirmedLargeItems.contains(item.id) {
+            pendingLargeOperation = .expandInline(item)
             return
         }
         expandedItems.insert(item.id)
@@ -4213,7 +4366,8 @@ final class FileBrowserState {
                         result = try await archives.openArchive(at: url, password: password)
                         recordArchiveVolume(result.address.sessionID, url: url)
                     case .archive:
-                        return
+                        // Expanding an archive inside an archive opens it from a copy (D-98).
+                        result = try await openNestedArchiveSession(item, password: password)
                     }
                     recordArchiveSession(result)
                     inlineArchiveResults[item.id] = result
@@ -4270,7 +4424,9 @@ final class FileBrowserState {
         guard generation == recursiveExpansionGeneration,
               expandedItems.contains(item.id),
               let children = expandedChildren[item.id] else { return }
-        for child in children where child.canExpandInlineInList {
+        // Archives inside archives stay closed: each would be copied out, without end for
+        // an archive that contains itself (D-98).
+        for child in children where child.canExpandInlineInList && !child.isArchiveInsideArchive {
             await expandAllDescendants(of: child, generation: generation)
         }
     }
@@ -4287,6 +4443,7 @@ final class FileBrowserState {
         }
         expandedItems.subtract(identifiers)
         stopExpandedDirectoryMonitors(in: identifiers)
+        scheduleInnerArchiveSynchronization()
     }
 
     func flattenedList() -> [VisibleBrowserItem] {
@@ -4319,6 +4476,7 @@ final class FileBrowserState {
         previewRequiresManualLoad = false
         previewURLs.removeAll()
         previewItemsRequiringManualLoad.removeAll()
+        if !previewLoadingItemIDs.isEmpty { previewLoadingItemIDs.removeAll() }
         guard previewVisible || viewMode == .gallery else { return }
         let previewableItems = selectedItems.filter { !$0.usesStaticIconPreview }
         guard !previewableItems.isEmpty else { return }
@@ -4341,6 +4499,7 @@ final class FileBrowserState {
         }
         synchronizePrimaryPreviewState()
         guard !itemsToMaterialize.isEmpty else { return }
+        previewLoadingItemIDs = Set(itemsToMaterialize.map(\.id))
 
         previewTask = Task { [weak self] in
             guard let self else { return }
@@ -4352,6 +4511,9 @@ final class FileBrowserState {
                 }
             }
             for item in itemsToMaterialize {
+                defer {
+                    if generation == previewGeneration { previewLoadingItemIDs.remove(item.id) }
+                }
                 guard isPreviewRequestCurrent(itemID: item.id, generation: generation) else { continue }
                 do {
                     // The limits were applied above, with the solid-block measure.
@@ -4526,11 +4688,11 @@ final class FileBrowserState {
 
     func close() {
         guard !isClosed else { return }
-        // Inner archive windows close first, innermost first, so their write-backs run in order.
-        ArchiveWindowRegistry.shared.windowWillClose(self)
+        ArchiveWindowRegistry.shared.unregister(self)
         if let sessionChangeObserver { NotificationCenter.default.removeObserver(sessionChangeObserver) }
         sessionChangeObserver = nil
-        initialArchiveSession = nil
+        if let sessionsEndObserver { NotificationCenter.default.removeObserver(sessionsEndObserver) }
+        sessionsEndObserver = nil
         initialAutomationAccessLease = nil
         archiveSessionAccessLease = nil
         archiveSearchLease = nil
@@ -4554,8 +4716,25 @@ final class FileBrowserState {
         synchronizeNetworkDiscovery()
         let archives = self.archives
         let grants = self.grants
-        closingTask = Task {
+        // Inner archives are released innermost first, after any adjustment in progress, so
+        // modified ones are written back into the archives containing them (D-98).
+        let innerSync = innerArchiveSyncTask
+        let parents = archiveSessionParents
+        closingTask = Task { [self] in
+            await innerSync?.value
+            let innerHolds = innerArchiveHolds
+            innerArchiveHolds.removeAll()
             await archives.cancelAllOperations()
+            func depth(_ sessionID: UUID) -> Int {
+                var count = 0
+                var current = sessionID
+                var visited: Set<UUID> = [sessionID]
+                while let parent = parents[current], visited.insert(parent).inserted { count += 1; current = parent }
+                return count
+            }
+            for (sessionID, count) in innerHolds.sorted(by: { depth($0.key) > depth($1.key) }) {
+                for _ in 0..<count { await archives.closeSession(sessionID) }
+            }
             await archives.closeAllSessions()
             await grants.stopAll()
         }

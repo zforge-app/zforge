@@ -50,7 +50,7 @@
       "ZforgeUITests/ZforgeUITests/testAcknowledgmentsOpenFromTheAppMenu": 15,
       "ZforgeUITests/ZforgeUITests/testFolderSelectionMenuAlternatesWithOptionInListMode": 13,
       "ZforgeUITests/BrowserSearchUITests/testCommandFFocusesToolbarSearchAndEscapeCollapsesIt": 12,
-      "ZforgeUITests/ZforgeUITests/testDoubleClickInnerArchiveOpensItInNewWindow": 30,
+      "ZforgeUITests/ZforgeUITests/testClickInnerArchiveInColumnsShowsItsContents": 30,
       "ZforgeUITests/SettingsUITests/testCompressionProfileOpensSavesAndDeletes": 25
     }
   },
@@ -186,8 +186,7 @@
         "ZforgeUITests/ZforgeUITests/testArchiveCopyIntoAnotherZforgeWindow",
         "ZforgeUITests/ZforgeUITests/testFileOpenNavigatesSelectedFolderAndArchiveInColumnsMode",
         "ZforgeUITests/ZforgeUITests/testNewFolderWithSelectionMenuAndShortcutInListMode",
-        "ZforgeUITests/ZforgeUITests/testViewModeIsPerWindowAndLastClosedWindowRestoresIt",
-        "ZforgeUITests/ZforgeUITests/testDoubleClickInnerArchiveOpensItInNewWindow"
+        "ZforgeUITests/ZforgeUITests/testViewModeIsPerWindowAndLastClosedWindowRestoresIt"
       ]
     },
     {
@@ -331,7 +330,7 @@
         "ZforgeUITests/ZforgeUITests/testArchivePromisesPublishIntoFinderBeforeRemovingOriginal",
         "ZforgeUITests/ZforgeUITests/testFileOpenNavigatesSelectedFolderAndArchiveInColumnsMode",
         "ZforgeUITests/ZforgeUITests/testLocalDragsOptionCopyAndConfirmAdditionToArchive",
-        "ZforgeUITests/ZforgeUITests/testDoubleClickInnerArchiveOpensItInNewWindow"
+        "ZforgeUITests/ZforgeUITests/testClickInnerArchiveInColumnsShowsItsContents"
       ]
     },
     {
@@ -383,7 +382,8 @@
         "ZforgeUITests/ZforgeUITests/testArchiveInternalCopyConfirmationKeepsHistoryAndAncestorColumns",
         "ZforgeUITests/ZforgeUITests/testColumnPreviewRefitsAfterUserScrollsLeft",
         "ZforgeUITests/ZforgeUITests/testFileOpenNavigatesSelectedFolderAndArchiveInColumnsMode",
-        "ZforgeUITests/ZforgeUITests/testListHeaderDividerResizesAndHeaderBodyReorders"
+        "ZforgeUITests/ZforgeUITests/testListHeaderDividerResizesAndHeaderBodyReorders",
+        "ZforgeUITests/ZforgeUITests/testClickInnerArchiveInColumnsShowsItsContents"
       ]
     },
     {

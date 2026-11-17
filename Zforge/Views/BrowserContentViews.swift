@@ -223,7 +223,8 @@ struct BrowserContent: View {
             guard let selectedID = state.columnSelections[activeLocation],
                   let selectedItem = items.first(where: { $0.id == selectedID }),
                   selectedItem.isNavigableContainer else { return }
-            let activation = state.activateColumnItem(selectedItem, in: activeLocation)
+            // Also enters an archive inside an archive that selection alone does not (D-98).
+            let activation = state.activateColumnItem(selectedItem, in: activeLocation, entersExplicitly: true)
             Task {
                 await activation.value
                 let nextIndex = activeIndex + 1

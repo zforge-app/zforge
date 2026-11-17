@@ -26,7 +26,7 @@ struct ColumnBrowserView: View {
         let selectedItems = state.previewItems
         guard !selectedItems.isEmpty else { return [] }
         if selectedItems.count > 1 { return selectedItems }
-        guard !selectedItems[0].isNavigableContainer else { return [] }
+        guard !state.opensColumnBranch(selectedItems[0]) else { return [] }
         if selectedItems[0].usesStaticIconPreview { return selectedItems }
         guard state.previewURL != nil || state.previewRequiresManualLoad else { return [] }
         return selectedItems
@@ -59,20 +59,22 @@ struct ColumnBrowserView: View {
         return state.columnSelections[activeLocation] == pendingID
     }
 
-    private var isAwaitingAnchoredPreview: Bool {
+    /// The selected file's preview has no content yet but keeps its slot: always while it is
+    /// read from its archive, and at a level that opened a column, whose track it takes.
+    private var isAwaitingPreview: Bool {
         guard state.previewVisible && !hasNextColumn && previewItemIDs.isEmpty,
               let activeLocation = state.activeColumnLocation ?? state.pathComponents.last?.location,
-              expandedPreviewParents.contains(activeLocation),
               let item = state.primarySelection,
-              !item.isNavigableContainer
+              !state.opensColumnBranch(item),
+              state.columnSelections[activeLocation] == item.id
         else { return false }
-        return state.columnSelections[activeLocation] == item.id
+        return expandedPreviewParents.contains(activeLocation) || state.isLoadingPrimaryPreview
     }
 
     private var shouldKeepUserScrollPosition: Bool {
         userScrolledAwayFromTrailingEdge
             && state.pendingColumnExpansionItemID == nil
-            && state.primarySelection?.isNavigableContainer != true
+            && state.primarySelection.map(state.opensColumnBranch) != true
     }
 
     private var isUserScrollPhase: Bool {
@@ -129,13 +131,15 @@ struct ColumnBrowserView: View {
                                 isActive: component.location == (state.activeColumnLocation ?? state.location),
                                 selectedID: state.columnSelections[component.location],
                                 scale: scale,
-                                // While the next column loads, its pending slot takes the
-                                // terminal width; keeping it here too would briefly widen the
-                                // columns, and a scroll to their end then hid the new column.
+                                // While the next column or the preview loads, its pending slot
+                                // takes the terminal width; keeping it here too would briefly
+                                // widen the columns, and a scroll to their end then hid the new
+                                // column or slid the columns sideways.
                                 width: state.previewVisible && previewItemIDs.isEmpty
                                     && index == visibleComponents.count - 1
                                     && index > 0
                                     && !isAwaitingTerminalColumn
+                                    && !isAwaitingPreview
                                     ? terminalColumnWidth(
                                         availableWidth: geometry.size.width,
                                         precedingCount: index
@@ -158,7 +162,7 @@ struct ColumnBrowserView: View {
                                 .id("column-pending-slot")
                         }
 
-                        if isAwaitingAnchoredPreview {
+                        if isAwaitingPreview {
                             Color.clear
                                 .frame(width: initialPreviewWidth(availableWidth: geometry.size.width))
                                 .id("preview-pending-slot")
@@ -378,6 +382,9 @@ private struct FinderColumn: View {
                                         state.openInNewWindow(item)
                                     } else if !item.isNavigableContainer {
                                         Task { await state.open(item) }
+                                    } else if !state.opensColumnBranch(item) {
+                                        // An archive inside an archive above the preview limit (D-98).
+                                        state.activateColumnItem(item, in: component.location, entersExplicitly: true)
                                     }
                                 }
                             )

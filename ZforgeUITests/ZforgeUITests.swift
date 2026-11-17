@@ -462,33 +462,31 @@ final class ZforgeUITests: XCTestCase {
         XCTAssertTrue(browser.waitForExistence(timeout: 8), app.debugDescription)
     }
 
-    /// D-73: double-clicking an archive stored inside an archive opens it as a root archive in
-    /// a new window titled `outer › inner`. The engine, session sharing and title are covered
-    /// offscreen (`InnerArchiveWindowTests`); only a real run proves that the double click
-    /// reaches the row and that SwiftUI creates and shows the second window.
+    /// D-98: in Columns, clicking an archive stored inside an archive (within the preview limit)
+    /// shows its contents in the next column of the same window, like a folder. The sessions,
+    /// copies, limits and write-back are covered offscreen (`NestedArchiveTests`); only a real
+    /// run proves that the click reaches the row inside the archive's column and that the
+    /// window shows the new column without opening another window.
     @MainActor
-    func testDoubleClickInnerArchiveOpensItInNewWindow() throws {
+    func testClickInnerArchiveInColumnsShowsItsContents() throws {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-archive-drag-fixtures", "--ui-inner-archive-fixtures", "--ui-window-width", "1100",
-                               "--ui-view-mode", "list", "-appLanguagePreference", "english"]
+                               "--ui-view-mode", "columns", "-appLanguagePreference", "english"]
         launchWithBrowserWindow(app)
         defer { app.terminate() }
         let archive = app.descendants(matching: .any).matching(identifier: "browser-item-Sample.zip").firstMatch
             .staticTexts["Sample.zip"].firstMatch
         XCTAssertTrue(archive.waitForExistence(timeout: 8))
-        archive.doubleClick()
-        XCTAssertTrue(app.windows["Sample.zip"].firstMatch.waitForExistence(timeout: 8))
+        archive.click()
         let inner = app.descendants(matching: .any).matching(identifier: "browser-item-Inner.zip").firstMatch
             .staticTexts["Inner.zip"].firstMatch
         XCTAssertTrue(inner.waitForExistence(timeout: 8))
+        inner.click()
+        let payload = app.descendants(matching: .any).matching(identifier: "browser-item-InnerPayload.txt").firstMatch
+        XCTAssertTrue(payload.waitForExistence(timeout: 8), app.debugDescription)
         let browsers = app.windows.matching(NSPredicate(format: "identifier BEGINSWITH %@", "browser-"))
-        XCTAssertEqual(browsers.count, 1)
-        inner.doubleClick()
-        let innerWindow = app.windows["Sample.zip › Inner.zip"].firstMatch
-        XCTAssertTrue(innerWindow.waitForExistence(timeout: 8), app.debugDescription)
-        XCTAssertEqual(browsers.count, 2, "The inner archive opens in a new window")
-        XCTAssertTrue(innerWindow.staticTexts["InnerPayload.txt"].waitForExistence(timeout: 8))
-        XCTAssertTrue(app.windows["Sample.zip"].firstMatch.exists, "The outer window stays open")
+        XCTAssertEqual(browsers.count, 1, "The archive inside the archive opens in the same window")
+        XCTAssertTrue(app.windows["Inner.zip"].firstMatch.waitForExistence(timeout: 8), "The window shows where it is")
     }
 
     /// ZF-77 / D-95: an archive that launches Zforge (Finder double click, Open With) is shown
