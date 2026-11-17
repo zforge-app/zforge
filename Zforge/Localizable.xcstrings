@@ -4080,7 +4080,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Adicionar %lld item a %@? O archive será modificado."
+            "value" : "Adicionar %lld item a %@? O arquivo compactado será modificado."
           }
         },
         "ru" : {
@@ -4318,7 +4318,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Adicionar %lld itens a %@? O archive será modificado."
+            "value" : "Adicionar %lld itens a %@? O arquivo compactado será modificado."
           }
         },
         "ru" : {
@@ -5020,7 +5020,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Adicionar ao archive"
+            "value" : "Adicionar ao arquivo compactado"
           }
         },
         "ru" : {
@@ -5150,7 +5150,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Adicionar ao archive…"
+            "value" : "Adicionar ao arquivo compactado…"
           }
         },
         "ru" : {
@@ -5410,7 +5410,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Adicionando ao archive…"
+            "value" : "Adicionando ao arquivo compactado…"
           }
         },
         "ru" : {
@@ -7763,7 +7763,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aplica-se às miniaturas de itens dentro de archives na visualização de ícones e em seleções múltiplas."
+            "value" : "Aplica-se às miniaturas de itens dentro de arquivos compactados na visualização de ícones e em seleções múltiplas."
           }
         },
         "ru" : {
@@ -8414,7 +8414,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Archive criado, mas não foi possível aplicar as tags."
+            "value" : "Arquivo compactado criado, mas não foi possível aplicar as tags."
           }
         },
         "ru" : {
@@ -9065,7 +9065,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Senha do archive"
+            "value" : "Senha do arquivo compactado"
           }
         },
         "ru" : {
@@ -9327,7 +9327,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O archive está vazio ou não é compatível."
+            "value" : "O arquivo compactado está vazio ou não é compatível."
           }
         },
         "ru" : {
@@ -9459,7 +9459,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O componente auxiliar do archive não está disponível."
+            "value" : "O componente auxiliar do arquivo compactado não está disponível."
           }
         },
         "ru" : {
@@ -9987,7 +9987,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "É necessária uma senha para abrir este archive."
+            "value" : "É necessária uma senha para abrir este arquivo compactado."
           }
         },
         "ru" : {
@@ -10119,7 +10119,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A sessão do archive foi encerrada."
+            "value" : "A sessão do arquivo compactado foi encerrada."
           }
         },
         "ru" : {
@@ -10251,7 +10251,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O limite de tamanho do archive foi excedido."
+            "value" : "O limite de tamanho do arquivo compactado foi excedido."
           }
         },
         "ru" : {
@@ -10383,7 +10383,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O caminho do archive não é seguro."
+            "value" : "O caminho do arquivo compactado não é seguro."
           }
         },
         "ru" : {
@@ -10513,7 +10513,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Archives criados com este perfil não são afetados."
+            "value" : "Arquivos compactados criados com este perfil não são afetados."
           }
         },
         "ru" : {
@@ -13382,7 +13382,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "As alterações se aplicam apenas a este archive."
+            "value" : "As alterações se aplicam apenas a este arquivo compactado."
           }
         },
         "ru" : {
@@ -13773,7 +13773,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Escolher um archive"
+            "value" : "Escolher um arquivo compactado"
           }
         },
         "ru" : {
@@ -18789,7 +18789,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Copiar %lld item(ns) para %@ modificará o archive original %@. As entradas de origem serão preservadas."
+            "value" : "Copiar %lld item(ns) para %@ modificará o arquivo compactado original %@. As entradas de origem serão preservadas."
           }
         },
         "ru" : {
@@ -26277,7 +26277,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Digite a senha de “%@” para gravar o archive interno de volta."
+            "value" : "Digite a senha de “%@” para gravar o arquivo compactado interno de volta."
           }
         },
         "ru" : {
@@ -26409,7 +26409,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Digite a senha para navegar neste archive. Ela permanece apenas na memória desta janela."
+            "value" : "Digite a senha para navegar neste arquivo compactado. Ela permanece apenas na memória desta janela."
           }
         },
         "ru" : {
@@ -26539,7 +26539,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Digite a senha para atualizar este archive."
+            "value" : "Digite a senha para atualizar este arquivo compactado."
           }
         },
         "ru" : {
@@ -34247,7 +34247,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Como pastas e archives aparecem nas janelas do navegador."
+            "value" : "Como pastas e arquivos compactados aparecem nas janelas do navegador."
           }
         },
         "ru" : {
@@ -35402,7 +35402,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Itens adicionados ao archive com sucesso."
+            "value" : "Itens adicionados ao arquivo compactado com sucesso."
           }
         },
         "ru" : {
@@ -35664,7 +35664,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Itens movidos para fora do archive com sucesso."
+            "value" : "Itens movidos para fora do arquivo compactado com sucesso."
           }
         },
         "ru" : {
@@ -35794,7 +35794,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Itens removidos do archive com sucesso."
+            "value" : "Itens removidos do arquivo compactado com sucesso."
           }
         },
         "ru" : {
@@ -36834,7 +36834,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Itens maiores dentro de archives mostram o ícone até você carregar a pré-visualização."
+            "value" : "Itens maiores dentro de arquivos compactados mostram o ícone até você carregar a pré-visualização."
           }
         },
         "ru" : {
@@ -37356,7 +37356,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Limites das pré-visualizações e miniaturas de itens dentro de archives."
+            "value" : "Limites das pré-visualizações e miniaturas de itens dentro de arquivos compactados."
           }
         },
         "ru" : {
@@ -39051,7 +39051,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Modificar archive?"
+            "value" : "Modificar arquivo compactado?"
           }
         },
         "ru" : {
@@ -39181,7 +39181,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Modificar o archive original?"
+            "value" : "Modificar o arquivo compactado original?"
           }
         },
         "ru" : {
@@ -40354,7 +40354,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mover para o Lixo / Remover do archive"
+            "value" : "Mover para o Lixo / Remover do arquivo compactado"
           }
         },
         "ru" : {
@@ -40544,7 +40544,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mover %lld item(ns) para %@ modificará o archive original %@. As entradas de origem só serão removidas após o sucesso da transferência."
+            "value" : "Mover %lld item(ns) para %@ modificará o arquivo compactado original %@. As entradas de origem só serão removidas após o sucesso da transferência."
           }
         },
         "ru" : {
@@ -40852,7 +40852,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Movendo para fora do archive…"
+            "value" : "Movendo para fora do arquivo compactado…"
           }
         },
         "ru" : {
@@ -40982,7 +40982,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Archives multivolume não podem ser atualizados."
+            "value" : "Arquivos compactados multivolume não podem ser atualizados."
           }
         },
         "ru" : {
@@ -43988,7 +43988,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Somente archives ZIP e 7z podem ser atualizados."
+            "value" : "Somente arquivos compactados ZIP e 7z podem ser atualizados."
           }
         },
         "ru" : {
@@ -48683,7 +48683,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pré-visualizações em archives"
+            "value" : "Pré-visualizações em arquivos compactados"
           }
         },
         "ru" : {
@@ -49073,7 +49073,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Perfis usados para criar archives."
+            "value" : "Perfis usados para criar arquivos compactados."
           }
         },
         "ru" : {
@@ -50377,7 +50377,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Remover do archive?"
+            "value" : "Remover do arquivo compactado?"
           }
         },
         "ru" : {
@@ -50507,7 +50507,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Remover do archive…"
+            "value" : "Remover do arquivo compactado…"
           }
         },
         "ru" : {
@@ -50767,7 +50767,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Removendo do archive…"
+            "value" : "Removendo do arquivo compactado…"
           }
         },
         "ru" : {
@@ -52073,7 +52073,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Salvar Archive Interno Como…"
+            "value" : "Salvar Arquivo Compactado Interno Como…"
           }
         },
         "ru" : {
@@ -52334,7 +52334,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Salvando o archive interno"
+            "value" : "Salvando o arquivo compactado interno"
           }
         },
         "ru" : {
@@ -58215,7 +58215,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O archive não pode ser adicionado a si mesmo."
+            "value" : "O arquivo compactado não pode ser adicionado a si mesmo."
           }
         },
         "ru" : {
@@ -58345,7 +58345,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O archive foi alterado desde que foi aberto. Abra-o novamente antes de remover itens."
+            "value" : "O arquivo compactado foi alterado desde que foi aberto. Abra-o novamente antes de remover itens."
           }
         },
         "ru" : {
@@ -58475,7 +58475,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O archive foi alterado desde que foi aberto. Abra-o novamente para continuar."
+            "value" : "O arquivo compactado foi alterado desde que foi aberto. Abra-o novamente para continuar."
           }
         },
         "ru" : {
@@ -58605,7 +58605,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O próprio archive não pode ser o destino da extração."
+            "value" : "O próprio arquivo compactado não pode ser o destino da extração."
           }
         },
         "ru" : {
@@ -59387,7 +59387,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O archive interno modificado é mantido."
+            "value" : "O arquivo compactado interno modificado é mantido."
           }
         },
         "ru" : {
@@ -60168,7 +60168,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Os itens selecionados serão removidos permanentemente do archive."
+            "value" : "Os itens selecionados serão removidos permanentemente do arquivo compactado."
           }
         },
         "ru" : {
@@ -60430,7 +60430,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Este archive é somente leitura porque o archive que o contém não pode ser atualizado."
+            "value" : "Este arquivo compactado é somente leitura porque o arquivo compactado que o contém não pode ser atualizado."
           }
         },
         "ru" : {
@@ -60562,7 +60562,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Este item do archive é maior que 10 MB."
+            "value" : "Este item do arquivo compactado é maior que 10 MB."
           }
         },
         "ru" : {
@@ -64607,7 +64607,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Gravar o archive interno de volta substituiria essas alterações. Você pode salvar o archive interno separadamente ou descartar as alterações dele."
+            "value" : "Gravar o arquivo compactado interno de volta substituiria essas alterações. Você pode salvar o arquivo compactado interno separadamente ou descartar as alterações dele."
           }
         },
         "ru" : {

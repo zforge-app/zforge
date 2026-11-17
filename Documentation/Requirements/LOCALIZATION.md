@@ -71,3 +71,14 @@ The final executed counts, UI observations, screenshots and outstanding themes/a
 
 The window title and menu item use Apple's own translation of “Acknowledgments” in each language, read from the `Acknowledgments` key of the macOS 27.2 Books and Shortcuts `Localizable.loctable` (identical in both): cs Uznání, da Tak til, de Anmerkungen, es Reconocimientos, fr Remerciements, hi अभिस्वीकृतियाँ, it Note legali, ja 謝辞, ko 승인서, nl Colofon, pl Podziękowania, pt-BR Reconhecimentos, ru Подтверждения, sv Tillkännagivanden, th กิตติกรรมประกาศ, tr Teşekkürler, uk Подяки, zh-Hans 版权声明, zh-Hant 版權宣告. Bengali has no system translation; it keeps the own draft স্বীকৃতি. “License”, “Website” and the 7-Zip note are own translations, reviewed on 2026-11-10 for meaning and terminology: “repository” is never translated with the word the catalog uses for a compressed archive (Danish and Swedish use kodelager and kodförråd), and the bridge and source terms match the English note. No native-speaker review.
 
+
+## Brazilian Portuguese terminology: “arquivo compactado” — 2026-11-17
+
+The product owner requires that the word “archive” never appears in Brazilian Portuguese interface text; it does not work in that language. The term is **“arquivo compactado”** (plural “arquivos compactados”), as already used by the app and by the website (Finder item “Adicionar ao arquivo compactado…”).
+
+- Implemented: 52 pt-BR values in `Zforge/Localizable.xcstrings` and `ZforgeFinderExtension/Localizable.xcstrings` were rewritten (two Finder-extension values share keys with the app catalog), with agreement adjusted (“O arquivo compactado será modificado”, “Arquivo compactado criado…”, “Arquivos compactados multivolume…”). Keys, English text, other languages and state (`translated`) are unchanged. Menu items keep the ellipsis form (“Adicionar ao arquivo compactado…”, “Remover do arquivo compactado…”).
+- Intentional remainder: the four App Shortcut phrase values `Compress ${files} as ${archiveName}…`, `Extract ${archive}…`, `Open ${archive}…` and `Test ${archive}` keep the parameter identifiers `${archive}` / `${archiveName}`, which must be preserved exactly (see the grammatical rules above). They are not visible text.
+- No other Portuguese localization exists (no `pt-PT`); `pt-PT` preferences resolve to `pt-BR`.
+- `InfoPlist.xcstrings` has no pt-BR value containing “archive”.
+- Check: no pt-BR value contains “archive” outside `${…}` parameter names. `SettingsWindowTests` asserts the rewritten profile-note text.
+- Linguistic review remains without a native speaker.

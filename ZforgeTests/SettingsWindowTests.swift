@@ -117,7 +117,7 @@ struct SettingsWindowTests {
         #expect(AppLocalization.string("Duplicate Profile", locale: portuguese) == "Duplicar perfil")
         #expect(AppLocalization.string("Delete “\("Auto")”?", locale: portuguese) == "Excluir “Auto”?")
         #expect(AppLocalization.string("Archives created with this profile are not affected.", locale: portuguese)
-            == "Archives criados com este perfil não são afetados.")
+            == "Arquivos compactados criados com este perfil não são afetados.")
         let german = AppLanguagePreference.german.locale
         #expect(SettingsPane.general.title(locale: german) == "Allgemein")
         #expect(AppLocalization.string("Delete “\("Auto")”?", locale: german) == "„Auto“ löschen?")
