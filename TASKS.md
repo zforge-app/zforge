@@ -649,6 +649,14 @@ Pending: in-app check of the row and the computer level in the four modes (light
 - [x] “Write-back alerts” snapshots (D-89): IconServices placeholder captured; the test waits until the application icon renders. Reference unchanged.
 - [x] Requirements: AGENT-INTEGRATION-PLAN measurement gate; RNF-Q08 rule on clocks in tests.
 
+### ZF-82 — Columns select the following item after a deletion (2026-11-17, D-100)
+
+User request (2026-11-17, in Portuguese): after deleting a file with ⌘⌫ in Columns no item stays selected; it should behave like the other views, selecting the item that followed the deleted one.
+- [x] Reproduced offscreen first: `ColumnDeletionSelectionTests` failed in 7 of its 8 scenarios (empty selection after the deletion).
+- [x] Fix: `refreshColumnsAfterRemovingLocalItems(_:movesCursorFromRemovedItems:)` records the focused item's column and position before the removal and, after the refresh, selects the item now at that position (`activateColumnItem`, no history entry); an emptied column leaves its folder selected in the previous column. Turned on by Move to Trash, Delete Immediately and an open folder found gone on reload; moves, grouping, duplication and their Undo keep their own selection (the first version applied it to every caller and broke two New Folder with Selection tests in Columns, caught by the full `Unit` plan).
+- [x] Requirements: UI-UX-GUIDE “Column view”, CURRENT-STATE “Update” and “Columns”.
+- [ ] Real-window check of ⌘⌫ in Columns (the Trash path itself is not run by unit tests, which do not move files to the user's Trash).
+
 ### ZF-81 — Columns preview slot held while an archive file's preview loads (2026-11-17, D-99)
 
 User report (2026-11-17, in Portuguese, with a recording): navigating inside an archive, the preview column expanded and retracted again.

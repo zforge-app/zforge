@@ -34,6 +34,11 @@ final class FileBrowserState {
         }
     }
 
+    private struct ColumnCursorSnapshot {
+        let columnLocation: BrowserLocation
+        let cursor: HierarchyCursorSnapshot
+    }
+
     private struct FileUndoRecord {
         let removals: [URL]
         let moves: [BrowserExactFileMove]
@@ -3071,7 +3076,7 @@ final class FileBrowserState {
             if viewMode == .columns,
                case let .fileSystem(currentURL) = currentLocation,
                !FileManager.default.fileExists(atPath: currentURL.path) {
-                await refreshColumnsAfterRemovingLocalItems([currentURL])
+                await refreshColumnsAfterRemovingLocalItems([currentURL], movesCursorFromRemovedItems: true)
                 return
             }
             self.error = mapError(error)
@@ -3498,7 +3503,10 @@ final class FileBrowserState {
                     self.error = self.mapError(operationError)
                 }
                 if self.viewMode == .columns, !newURLs.isEmpty {
-                    await self.refreshColumnsAfterRemovingLocalItems(Array(newURLs.keys))
+                    await self.refreshColumnsAfterRemovingLocalItems(
+                        Array(newURLs.keys),
+                        movesCursorFromRemovedItems: true
+                    )
                 } else {
                     await self.reload()
                 }
@@ -3532,7 +3540,10 @@ final class FileBrowserState {
             }
 
             if viewMode == .columns {
-                await refreshColumnsAfterRemovingLocalItems(request.urls)
+                await refreshColumnsAfterRemovingLocalItems(
+                    request.urls,
+                    movesCursorFromRemovedItems: true
+                )
             } else {
                 await reload()
             }
@@ -4049,7 +4060,14 @@ final class FileBrowserState {
     /// `location` points at that container while `activeColumnLocation` still
     /// points at its parent. Reloading first would therefore try to enumerate
     /// a path that no longer exists and surface a misleading error.
-    func refreshColumnsAfterRemovingLocalItems(_ urls: [URL]) async {
+    /// `movesCursorFromRemovedItems` is for removals (Trash, deletion, an open
+    /// folder gone from disk): the cursor then takes the removed item's place
+    /// in its column (D-100). Moves and grouping leave it off and select their
+    /// results themselves.
+    func refreshColumnsAfterRemovingLocalItems(
+        _ urls: [URL],
+        movesCursorFromRemovedItems: Bool = false
+    ) async {
         guard viewMode == .columns, !urls.isEmpty else {
             await reload()
             return
@@ -4097,6 +4115,11 @@ final class FileBrowserState {
                 }
             }
         )
+        // Taken before the removed items leave the cached columns: the cursor
+        // is restored at the removed item's position in its column.
+        let cursorSnapshot = movesCursorFromRemovedItems
+            ? columnCursorSnapshot(removing: removedItemIDs)
+            : nil
 
         columnItems = columnItems.filter { !staleColumnLocations.contains($0.key) }
         columnSelections = columnSelections.filter {
@@ -4174,6 +4197,60 @@ final class FileBrowserState {
             preservingColumnSelection: true,
             refreshingColumnLocations: affectedColumnLocations
         )
+        if let cursorSnapshot {
+            await restoreColumnCursor(after: cursorSnapshot)
+        }
+    }
+
+    /// The column that held the focused item and its order, when a removal
+    /// takes the focused item away.
+    private func columnCursorSnapshot(
+        removing removedItemIDs: Set<BrowserItemID>
+    ) -> ColumnCursorSnapshot? {
+        guard let focusedItemID, removedItemIDs.contains(focusedItemID) else { return nil }
+        var candidates: [BrowserLocation] = pathComponents.map(\.location).reversed()
+        if let activeColumnLocation {
+            candidates.insert(activeColumnLocation, at: 0)
+        }
+        for columnLocation in candidates {
+            let orderedIDs = sortedColumnItems(at: columnLocation).map(\.id)
+            guard orderedIDs.contains(focusedItemID) else { continue }
+            return ColumnCursorSnapshot(
+                columnLocation: columnLocation,
+                cursor: HierarchyCursorSnapshot(orderedIDs: orderedIDs, focusedID: focusedItemID)
+            )
+        }
+        return nil
+    }
+
+    /// Applies the cursor rule of the other modes to Columns (ZF-82, D-100):
+    /// the item now at the removed item's position in its column is selected,
+    /// or the new last item when the position is past the end. A column left
+    /// empty never takes the cursor, so its folder stays selected in the
+    /// previous column. Nothing changes when the user already selected
+    /// something else or the column is no longer shown.
+    private func restoreColumnCursor(after snapshot: ColumnCursorSnapshot) async {
+        guard viewMode == .columns, selection.isEmpty, focusedItemID == nil,
+              let previousIndex = snapshot.cursor.focusedIndex,
+              let columnIndex = pathComponents.firstIndex(where: {
+                  $0.location == snapshot.columnLocation
+              }) else { return }
+        let remaining = sortedColumnItems(at: snapshot.columnLocation)
+        if !remaining.isEmpty {
+            let replacement = remaining[min(previousIndex, remaining.count - 1)]
+            await activateColumnItem(
+                replacement,
+                in: snapshot.columnLocation,
+                recordsHistory: false
+            ).value
+            return
+        }
+        guard columnIndex > 0 else { return }
+        let parentLocation = pathComponents[columnIndex - 1].location
+        guard let folderID = columnSelections[parentLocation],
+              let folder = sortedColumnItems(at: parentLocation).first(where: { $0.id == folderID })
+        else { return }
+        await activateColumnItem(folder, in: parentLocation, recordsHistory: false).value
     }
 
     /// Selects the item in its column and, for a container, shows its contents in the next

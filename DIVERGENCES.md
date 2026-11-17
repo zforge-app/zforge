@@ -637,6 +637,16 @@ Cause: the offscreen sidebar starts at 144 pt with two-line rows until `SidebarS
 
 Correction (test only; scenario and the 28 pt assertion unchanged): the fixture's wait lays out the whole window between polls (`window.layoutIfNeeded()`, which updates constraints first, as the display cycle does), and the sidebar test waits until the rows exist, the table is 206 pt wide and neither the table nor any ancestor needs a constraint update or layout (`isLaidOut`). With the same `Task.yield()` injection the suite passed 50/50.
 
+### D-100 — In Columns, nothing stayed selected after deleting the selected item (corrected 2026-11-17, ZF-82)
+
+Reported by the user on 2026-11-17: deleting a file with ⌘⌫ in Columns left no item selected, while Icons, List and Gallery select the item that followed it. The specification (UI-UX-GUIDE “List” hierarchy rule: when the active item ceases to exist during an update, the cursor takes its position; CURRENT-STATE “Update”) states the rule for every view, so Columns was wrong.
+
+Cause: Columns refresh after a removal through `refreshColumnsAfterRemovingLocalItems`, which drops the removed items from the selection and clears the focused item before reloading, so the reload's cursor reconciliation (used by the other modes) had nothing to reposition; it also works on the flattened order of the current location, not on the removed item's column.
+
+Evidence: `ColumnDeletionSelectionTests` (8 scenarios) — 7 failed before the fix with an empty selection (the eighth, an emptied first column, already left no selection); all pass after it.
+
+Correction (app): for removals only (Move to Trash, Delete Immediately, an open folder found gone on reload; moves and grouping that share the refresh select their own results), the cursor's column and position are recorded before the removal and restored in that column after the refresh: the item now at that position (the new last item past the end) is selected and, for a folder, its column opens; an emptied column leaves its folder selected in the previous column; nothing changes if the user selected something meanwhile. With several items removed the focused item's position is used, as in the other modes. Requirement text: UI-UX-GUIDE “Column view”, CURRENT-STATE “Update” and “Columns”. Pending: real-window check of ⌘⌫.
+
 ### D-99 — In Columns, the column beside an archive file widened while its preview loaded (corrected 2026-11-17, ZF-81)
 
 Reported by the user on 2026-11-17 with a screen recording of the ZF-80 build: moving through the files of a `.7z` in Columns, the preview column “expanded and retracted” again. The specification (UI-UX-GUIDE “Columns”, D-14/D-69: an empty slot keeps the geometry while a column or preview loads) decides that the app was wrong.
