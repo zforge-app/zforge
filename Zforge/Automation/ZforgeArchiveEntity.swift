@@ -162,6 +162,8 @@ actor AutomationArchiveEntities {
                 let name = url.lastPathComponent
                 if let string, !name.localizedStandardContains(string) { continue }
                 guard ArchiveFormatRegistry.recognizes(name) else { continue }
+                // One entity per split archive: the volume that opens it (ZF-83).
+                if let volume = ArchiveVolumeName.parse(name), !volume.opensSet { continue }
                 // Construct operational URLs only for archive candidates. URL
                 // construction may infer directory metadata for ordinary files.
                 let presented = folder.appendingPathComponent(name)

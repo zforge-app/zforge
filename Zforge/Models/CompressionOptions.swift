@@ -57,10 +57,27 @@ nonisolated struct CompressionOptions: Codable, Equatable, Sendable {
     var requiresPassword: Bool = false
     var encryptFileNames: Bool = true
     var zipEncryption: ZIPEncryption = .aes256
+    /// Split the archive into volumes of this many bytes (`Name.7z.001`, `.002`…), ZIP and 7z
+    /// only (ZF-83 stage 5); nil writes one file.
+    var volumeSize: UInt64? = nil
 
     static let dictionaryChoices = [1, 2, 4, 8, 16, 32, 64, 128, 256]
     static let fastBytesChoices = [32, 64, 128, 273]
     static let levelChoices = [0, 1, 3, 5, 7, 9]
+    /// Volume sizes offered by the menus, in bytes (decimal, as Finder shows sizes): 10 MB,
+    /// 100 MB, a CD (700 MB), a FAT32 drive (4 GB, below its 4 GiB file limit) and a DVD (4.7 GB).
+    static let volumeSizeChoices: [UInt64] = [10_000_000, 100_000_000, 700_000_000, 4_000_000_000, 4_700_000_000]
+    /// The medium a preset volume size is meant for, shown after its size (not translated).
+    static func volumeMedium(_ size: UInt64) -> String? {
+        switch size {
+        case 700_000_000: "CD"
+        case 4_000_000_000: "FAT32"
+        case 4_700_000_000: "DVD"
+        default: nil
+        }
+    }
+    /// Custom volume sizes are whole megabytes (1,000,000 bytes), at least 1 MB.
+    static let minimumVolumeSize: UInt64 = 1_000_000
 
     var availableMethods: [CompressionMethod] {
         switch format {
@@ -80,6 +97,7 @@ nonisolated struct CompressionOptions: Codable, Equatable, Sendable {
     }
     var supportsThreads: Bool { [.sevenZip, .zip, .xz].contains(format) }
     var supportsPassword: Bool { format == .sevenZip || format == .zip }
+    var supportsVolumes: Bool { format == .sevenZip || format == .zip }
 
     func normalized() -> Self {
         var result = self
@@ -96,6 +114,7 @@ nonisolated struct CompressionOptions: Codable, Equatable, Sendable {
             result.requiresPassword = false
             result.encryptFileNames = false
         }
+        if !result.supportsVolumes || (volumeSize ?? 0) < Self.minimumVolumeSize { result.volumeSize = nil }
         return result
     }
 
@@ -123,6 +142,9 @@ nonisolated struct CompressionOptions: Codable, Equatable, Sendable {
         }
         if options.format == .sevenZip && options.solid { parts.append(AppLocalization.string("Solid", locale: locale)) }
         if options.requiresPassword { parts.append(AppLocalization.string("Password", locale: locale)) }
+        if let size = options.volumeSize {
+            parts.append(AppLocalization.string("Volumes of \(AppLocalization.byteCount(Int64(size), locale: locale))", locale: locale))
+        }
         return parts.joined(separator: " · ")
     }
 }

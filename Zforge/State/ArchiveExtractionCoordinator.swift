@@ -44,7 +44,11 @@ final class ArchiveExtractionCoordinator {
     var isIdle: Bool { queue.isEmpty && running == nil }
 
     func extract(_ urls: [URL]) {
-        queue.append(contentsOf: urls.map(\.standardizedFileURL).filter { !queue.contains($0) })
+        // Any volume of a split archive extracts the whole set, once (ZF-83).
+        for url in urls.map(\.standardizedFileURL)
+        where !queue.contains(where: { ArchiveVolumeName.setKey(for: $0) == ArchiveVolumeName.setKey(for: url) }) {
+            queue.append(url)
+        }
         guard running == nil, !queue.isEmpty else { return }
         cancelsQueue = false
         running = Task { [weak self] in await self?.drain() }

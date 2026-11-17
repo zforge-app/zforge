@@ -502,8 +502,7 @@ extension View {
                 destinationURL: destinationURL,
                 dragSession: dragSession
             )
-        } else if item.isArchive, let archiveURL = item.localURL,
-                  ArchiveFormatRegistry.supportsUpdating(item.name) {
+        } else if item.acceptsArchiveAdditions, let archiveURL = item.localURL {
             modifier(BrowserArchiveDropTargetModifier(
                 state: state, archiveURL: archiveURL, address: nil,
                 dragSession: dragSession

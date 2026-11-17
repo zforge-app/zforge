@@ -79,6 +79,12 @@ actor FileSystemService: FileSystemServing {
         do {
             let values = try url.resourceValues(forKeys: [.isDirectoryKey, .fileSizeKey])
             guard values.isDirectory == true else {
+                // A volume of a split archive measures the whole set (ZF-83).
+                if let set = ArchiveVolumeSet.resolve(url, fileManager: fileManager) {
+                    return try set.members.reduce(Int64(0)) { total, volume in
+                        total + Int64(try volume.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? 0)
+                    }
+                }
                 return Int64(values.fileSize ?? 0)
             }
 
@@ -154,6 +160,7 @@ actor FileSystemService: FileSystemServing {
             compressionMethod: nil
         )
         item.fileIdentity = values.fileResourceIdentifier as? Data
+        if item.isArchive { item.archiveVolume = ArchiveVolumeName.parse(url) }
         if includeExtendedMetadata,
            let metadataItem = MDItemCreateWithURL(kCFAllocatorDefault, url as CFURL) {
             item.extendedMetadata = BrowserExtendedMetadata(

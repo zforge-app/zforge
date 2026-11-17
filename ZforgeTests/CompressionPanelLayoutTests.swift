@@ -85,6 +85,43 @@ struct CompressionPanelLayoutTests {
         #expect(try fixture.nameField().stringValue == "Welcome.zip")
     }
 
+    @Test("Split into volumes offers presets and a custom size in the right column, for ZIP and 7z only (ZF-83)")
+    func splitIntoVolumes() async throws {
+        let fixture = try PanelFixture(format: .sevenZip)
+        defer { fixture.close() }
+        let panel = fixture.panel
+        let host = try #require(panel.contentView)
+        host.layoutSubtreeIfNeeded()
+        let volumes = try fixture.popUp("Split into volumes")
+        #expect(volumes.itemTitles == ["Don’t split", "10 MB", "100 MB", "700 MB – CD", "4 GB – FAT32", "4.7 GB – DVD", "Custom Size"])
+        #expect(volumes.titleOfSelectedItem == "Don’t split")
+        let dictionary = try fixture.popUp("Dictionary size")
+        #expect(abs(volumes.windowFrame.minX - dictionary.windowFrame.minX) < 3, "The volume menu sits in the right column.")
+        #expect(fixture.customVolumeField() == nil)
+
+        try fixture.choose("100 MB", in: "Split into volumes")
+        #expect(fixture.draft.options.volumeSize == 100_000_000)
+        let compactHeight = panel.contentLayoutRect.height
+
+        try fixture.choose("Custom Size", in: "Split into volumes")
+        try await fixture.waitUntil("the custom size field appears") { fixture.customVolumeField() != nil }
+        let field = try #require(fixture.customVolumeField())
+        #expect(field.stringValue == "101")
+        #expect(fixture.draft.options.volumeSize == 101_000_000)
+        #expect(field.windowFrame.minX >= dictionary.windowFrame.minX - 1, "The custom size stays in the right column.")
+        #expect(field.windowFrame.maxY <= volumes.windowFrame.minY)
+        try await fixture.waitUntil("the panel fits the custom size") {
+            abs(panel.contentLayoutRect.height - host.fittingSize.height) <= 1
+        }
+        #expect(panel.contentLayoutRect.height >= compactHeight)
+        #expect(try fixture.nameField().stringValue == "Welcome.zip")
+        ZforgeSnapshot.assert(host, appearance: .aqua, named: "split-custom-7z")
+
+        try fixture.choose("TAR", in: "Archive format")
+        try await fixture.waitUntil("TAR hides the volume options") { fixture.popUpIfPresent("Split into volumes") == nil }
+        #expect(fixture.draft.options.volumeSize == nil)
+    }
+
     private func expectSaveFields(_ fixture: PanelFixture, alignedWith rightEdge: NSView) throws {
         let name = try fixture.nameField().windowFrame
         let tags = try fixture.tagsField().windowFrame
@@ -134,10 +171,13 @@ private final class PanelFixture {
         host.descendants(of: NSTextField.self).filter { $0.isEditable && !($0 is NSSecureTextField) }
     }
     func secureFields() -> [NSSecureTextField] { host.descendants(of: NSSecureTextField.self) }
+    /// SwiftUI gives the custom volume size field its title as the AppKit placeholder.
+    func customVolumeField() -> NSTextField? { textFields().first { $0.placeholderString == "Volume size in MB" } }
     /// The save fields expose their identifiers only to accessibility clients, so they are
     /// told apart by position: Save As is the top field and Tags the one below it.
     private func saveField(_ index: Int) throws -> NSTextField {
-        let fields = textFields().sorted { $0.windowFrame.maxY > $1.windowFrame.maxY }
+        let fields = textFields().filter { $0.placeholderString != "Volume size in MB" }
+            .sorted { $0.windowFrame.maxY > $1.windowFrame.maxY }
         return try #require(fields.indices.contains(index) ? fields[index] : nil, "\(fields.count) save fields")
     }
     func nameField() throws -> NSTextField { try saveField(0) }

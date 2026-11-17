@@ -18,6 +18,8 @@ nonisolated enum ArchiveEngineError: LocalizedError, Equatable {
     /// A read found the archive or one of its volumes changed since the session opened it.
     case archiveChangedSinceOpening
     case archiveIncludedInSources
+    /// A volume of a split archive is missing (ZF-83); the name is the volume's file name.
+    case missingVolume(String)
 
     var errorDescription: String? {
         switch self {
@@ -37,6 +39,7 @@ nonisolated enum ArchiveEngineError: LocalizedError, Equatable {
         case .archiveChanged: AppLocalization.string("The archive changed since it was opened. Reopen it before removing items.")
         case .archiveChangedSinceOpening: AppLocalization.string("The archive changed since it was opened. Reopen it to continue.")
         case .archiveIncludedInSources: AppLocalization.string("The archive cannot be added to itself.")
+        case let .missingVolume(name): AppLocalization.string("archive.missing_volume \(name)")
         }
     }
 }
@@ -244,9 +247,29 @@ nonisolated struct ArchiveSourceFingerprint: Sendable, Equatable {
     }
 
     let files: [File]
+    /// For a split archive (ZF-83): whether a volume after the last one exists. A volume added
+    /// after the set was read changes the set; a removed one fails `capture`.
+    var successorExists = false
 
     /// Throws when a file cannot be examined (removed, unmounted or inaccessible).
     static func capture(_ urls: [URL]) throws -> Self {
+        var fingerprint = try captureFiles(urls)
+        if let successor = successorVolume(of: urls) {
+            fingerprint.successorExists = FileManager.default.fileExists(atPath: successor.path)
+        }
+        return fingerprint
+    }
+
+    /// The volume that would follow the last one of a split archive's volumes (nil for a
+    /// whole archive).
+    private static func successorVolume(of urls: [URL]) -> URL? {
+        guard let first = urls.first, urls.count > 1 || ArchiveVolumeName.parse(first) != nil else { return nil }
+        let volumes = urls.compactMap { ArchiveVolumeName.parse($0.lastPathComponent, firstSiblingExists: { _ in true }) }
+        guard let last = volumes.filter({ $0.number != Int.max }).max(by: { $0.number < $1.number }) else { return nil }
+        return first.deletingLastPathComponent().appendingPathComponent(last.siblingName(number: last.number + 1))
+    }
+
+    private static func captureFiles(_ urls: [URL]) throws -> Self {
         Self(files: try urls.map { url in
             var status = stat()
             guard stat(url.path, &status) == 0 else { throw ArchiveEngineError.itemNotFound }
@@ -391,7 +414,9 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
 
     nonisolated var sessionChangeSource: AnyObject? { self }
 
-    func openArchive(at url: URL, password: String?) async throws -> ArchiveOpenResult {
+    func openArchive(at requestedURL: URL, password: String?) async throws -> ArchiveOpenResult {
+        // Any volume of a split archive opens the whole set from its first volume (ZF-83).
+        let url = try openingURL(for: requestedURL)
         if let existing = try await joinSession(forFileAt: url, password: password) { return existing }
         let sessionID = UUID()
         let sessionDirectory = sessionsRoot.appendingPathComponent(sessionID.uuidString, isDirectory: true)
@@ -439,10 +464,16 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
     func openInnerArchive(item: BrowserItem, password: String?) async throws -> ArchiveOpenResult {
         guard item.isArchiveInsideArchive, case let .archive(address) = item.location,
               let outer = sessions[address.sessionID], !outer.isDetached, outer.archive.id == address.archiveID,
-              let entry = outer.archive.entries[address.internalPath], !entry.isDirectory else {
+              outer.archive.entries[address.internalPath]?.isDirectory == false else {
             throw ArchiveEngineError.itemNotFound
         }
-        let origin = InnerOrigin(sessionID: address.sessionID, internalPath: address.internalPath)
+        // Any volume of a split archive stored here opens the whole set, from its opening
+        // volume, with every volume copied (ZF-83 stage 2).
+        let volumes = try innerVolumeSet(at: address.internalPath, in: outer.archive)
+        let openingPath = volumes?.opening ?? address.internalPath
+        guard let entry = outer.archive.entries[openingPath], !entry.isDirectory else { throw ArchiveEngineError.itemNotFound }
+        let memberPaths = volumes?.members ?? [address.internalPath]
+        let origin = InnerOrigin(sessionID: address.sessionID, internalPath: openingPath)
         // A copy kept after the archive closed is shown again, even while it is written back.
         if let existing = try joinInnerSession(origin, password: password) { return existing }
         try ensureUnchanged(outer.archive)
@@ -451,8 +482,10 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
         let sessionDirectory = sessionsRoot.appendingPathComponent(sessionID.uuidString, isDirectory: true)
         // The inner archive's own writable copy belongs to its session, not to a window.
         let copyDirectory = sessionDirectory.appendingPathComponent("Archive", isDirectory: true)
-        let copy = copyDirectory.appendingPathComponent(sanitizedFileName(item.name))
-        let expectedSize = entry.size
+        let copy = copyDirectory.appendingPathComponent(sanitizedFileName(Self.lastComponent(openingPath)))
+        let members = memberPaths.compactMap { path in outer.archive.entries[path].map { (path: path, entry: $0) } }
+        let expectedSize: Int64? = members.contains { $0.entry.size == nil } ? nil
+            : members.reduce(Int64(0)) { $0 + ($1.entry.size ?? 0) }
         let hardLimit: Int64 = if let expectedSize {
             expectedSize > Int64.max - 1_048_576 ? Int64.max : expectedSize + 1_048_576
         } else {
@@ -461,21 +494,29 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
         do {
             try fileManager.createDirectory(at: copyDirectory, withIntermediateDirectories: true)
             try ensureAvailableSpace(for: expectedSize ?? hardLimit, at: copyDirectory)
-            let paths = outer.archive.isRawStream ? [] : [address.internalPath]
             // An encrypted outer archive may not have a known password yet: the one given now
             // unlocks it (and is kept in its session) as well as the inner archive.
             let outerPassword = outer.password ?? password
-            try await nativeBackend.extract(at: outer.archive.fileURL, password: outerPassword,
-                paths: paths, destination: copyDirectory, outputFile: copy, byteLimit: UInt64(hardLimit),
-                lastIndex: lastNativeIndex(in: outer.archive, selecting: paths), cancellationScope: outer.readScope,
-                verify: outer.archive.unchanged)
+            var copies: [URL] = []
+            for member in members {
+                let paths = outer.archive.isRawStream ? [] : [member.path]
+                let output = copyDirectory.appendingPathComponent(sanitizedFileName(Self.lastComponent(member.path)))
+                let memberLimit: Int64 = member.entry.size.map { $0 > Int64.max - 1_048_576 ? Int64.max : $0 + 1_048_576 } ?? hardLimit
+                try await nativeBackend.extract(at: outer.archive.fileURL, password: outerPassword,
+                    paths: paths, destination: copyDirectory, outputFile: output, byteLimit: UInt64(memberLimit),
+                    lastIndex: lastNativeIndex(in: outer.archive, selecting: paths), cancellationScope: outer.readScope,
+                    verify: outer.archive.unchanged)
+                copies.append(output)
+            }
             try ensureUnchanged(outer.archive)
             if outer.password == nil, let outerPassword { sessions[origin.sessionID]?.password = outerPassword }
             // Writable whatever the stored permissions: it is edited and written back.
-            let permissions = ((try fileManager.attributesOfItem(atPath: copy.path)[.posixPermissions]) as? NSNumber)?.intValue ?? 0
-            try fileManager.setAttributes([.posixPermissions: permissions | 0o600], ofItemAtPath: copy.path)
+            for file in copies {
+                let permissions = ((try fileManager.attributesOfItem(atPath: file.path)[.posixPermissions]) as? NSNumber)?.intValue ?? 0
+                try fileManager.setAttributes([.posixPermissions: permissions | 0o600], ofItemAtPath: file.path)
+            }
             let archive = try await listArchive(
-                at: copy, sources: [copy], displayName: item.name, password: password,
+                at: copy, sources: copies, displayName: Self.lastComponent(openingPath), password: password,
                 cancellationScope: sessionDirectory.appendingPathComponent("Reads", isDirectory: true)
             )
             if let existing = try joinInnerSession(origin, password: password) {
@@ -489,7 +530,10 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
             let session = Session(
                 id: sessionID, originalURL: copy, directoryURL: sessionDirectory, password: password,
                 archive: archive, materialized: [:], origin: origin, originSignature: EntrySignature(entry),
-                isReadOnly: current.isReadOnly || !ArchiveFormatRegistry.supportsUpdating(item.name)
+                // `.NNN` split archives inside archives are written back like whole ones (ZF-83
+                // stage 4); spanned ZIP and RAR sets are read-only.
+                isReadOnly: current.isReadOnly || !ArchiveFormatRegistry.supportsUpdating(Self.lastComponent(openingPath))
+                    || (volumes != nil && ArchiveVolumeName.parse(copy)?.scheme.isNumbered != true)
             )
             sessions[sessionID] = session
             return session.result()
@@ -541,8 +585,11 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
     private func relist(_ sessionID: UUID, markingModified: Bool, writtenBack: UUID? = nil) async throws {
         guard let session = sessions[sessionID] else { return }
         let old = session.archive
+        // A split archive may have gained or lost volumes (ZF-83): its sources are found again.
+        let sources = old.sources.count > 1 || ArchiveVolumeName.parse(old.fileURL) != nil
+            ? relatedVolumeURLs(for: old.fileURL) : old.sources
         let archive = try await listArchive(
-            at: old.fileURL, sources: old.sources, displayName: old.displayName,
+            at: old.fileURL, sources: sources, displayName: old.displayName,
             password: session.password, archiveID: old.id, cancellationScope: session.readScope
         )
         guard var current = sessions[sessionID] else { return }
@@ -612,6 +659,10 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
         }
 
         let parent = normalized(address.internalPath)
+        let siblings = (archive.children[parent] ?? []).map(Self.lastComponent)
+        let lowercasedSiblings = Set(siblings.map { $0.lowercased() })
+        // Each split set is resolved once per listing, not once per volume.
+        var sets: [String: ArchiveVolumeSet] = [:]
         return (archive.children[parent] ?? []).compactMap { path in
             guard let entry = archive.entries[path] else { return nil }
             let childName = path.lastIndex(of: "/").map { String(path[path.index(after: $0)...]) } ?? path
@@ -641,8 +692,35 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
                 archiveDirectoryContainsFiles: entry.isDirectory && archive.directoriesContainingFiles.contains(childPath)
             )
             item.solidBlock = entry.solidBlock
+            // A volume of a split archive stored here stands for its set (ZF-83 stage 2).
+            if isArchive, let volume = ArchiveVolumeName.parse(childName, firstSiblingExists: { lowercasedSiblings.contains($0.lowercased()) }),
+               let set = sets[volume.openingName.lowercased()]
+                ?? ArchiveVolumeSet.resolve(name: childName, folder: URL(fileURLWithPath: "/"), siblings: siblings) {
+                sets[volume.openingName.lowercased()] = set
+                item.archiveVolume = volume
+                let members = set.members.compactMap { archive.entries[parent.isEmpty ? $0.lastPathComponent : parent + "/" + $0.lastPathComponent] }
+                    .filter { !$0.isDirectory }
+                item.archiveSetSize = members.reduce(Int64(0)) { $0 + ($1.size ?? 0) }
+                item.archiveSetMeasure = members.reduce(Int64(0)) { $0 + ($1.solidBlock?.packedSize ?? $1.size ?? 0) }
+            }
             return item
         }
+    }
+
+    private static func lastComponent(_ path: String) -> String {
+        path.lastIndex(of: "/").map { String(path[path.index(after: $0)...]) } ?? path
+    }
+
+    /// The volumes of the split archive at `path` in `archive`, by internal path in reading
+    /// order, and the path of its opening volume (ZF-83 stage 2); nil for a whole archive.
+    private func innerVolumeSet(at path: String, in archive: ArchiveRecord) throws -> (opening: String, members: [String])? {
+        let name = Self.lastComponent(path)
+        let parent = path.count > name.count ? String(path.dropLast(name.count + 1)) : ""
+        let siblings = (archive.children[parent] ?? []).filter { archive.entries[$0]?.isDirectory == false }.map(Self.lastComponent)
+        guard let set = ArchiveVolumeSet.resolve(name: name, folder: URL(fileURLWithPath: "/"), siblings: siblings) else { return nil }
+        if let missing = set.missing.first { throw ArchiveEngineError.missingVolume(missing) }
+        func internalPath(_ volume: URL) -> String { parent.isEmpty ? volume.lastPathComponent : parent + "/" + volume.lastPathComponent }
+        return (internalPath(set.opening), set.members.map(internalPath))
     }
 
     func recursiveSize(of item: BrowserItem) throws -> Int64 {
@@ -804,6 +882,14 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
                 sourceNames: [tarURL.lastPathComponent],
                 workingDirectory: operationDirectory
             )
+        } else if let volumeSize = options.volumeSize {
+            // A split archive (ZF-83 stage 5): `Name.7z.001`, `.002`… of the chosen size.
+            try await nativeBackend.write(to: stagedOutput, options: options, password: password,
+                names: stagedNames, directory: inputDirectory, volumeSizes: [volumeSize])
+            try Task.checkCancellation()
+            progress(ArchiveProgress(phase: .compressing, fraction: 1))
+            try publishVolumes(of: stagedOutput, as: outputURL)
+            return
         } else {
             try await runCreate(
                 outputURL: stagedOutput,
@@ -823,6 +909,33 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
         try fileManager.copyItem(at: stagedOutput, to: outputURL)
     }
 
+    /// Copies the volumes `staged.001`, `staged.002`… to `output.001`, `output.002`…; a volume
+    /// name already taken stops before anything is copied, and a failure removes the copies.
+    private func publishVolumes(of staged: URL, as output: URL) throws {
+        let folder = staged.deletingLastPathComponent()
+        let prefix = staged.lastPathComponent + "."
+        let volumes = try fileManager.contentsOfDirectory(atPath: folder.path)
+            .filter { $0.hasPrefix(prefix) && Int($0.dropFirst(prefix.count)) != nil }
+            .sorted { Int($0.dropFirst(prefix.count))! < Int($1.dropFirst(prefix.count))! }
+        guard !volumes.isEmpty else { throw ArchiveEngineError.itemNotFound }
+        let destination = output.deletingLastPathComponent()
+        try fileManager.createDirectory(at: destination, withIntermediateDirectories: true)
+        let targets = volumes.map { destination.appendingPathComponent(output.lastPathComponent + "." + $0.dropFirst(prefix.count)) }
+        if let taken = targets.first(where: { fileManager.fileExists(atPath: $0.path) }) {
+            throw CocoaError(.fileWriteFileExists, userInfo: [NSFilePathErrorKey: taken.path])
+        }
+        var copied: [URL] = []
+        do {
+            for (volume, target) in zip(volumes, targets) {
+                try fileManager.copyItem(at: folder.appendingPathComponent(volume), to: target)
+                copied.append(target)
+            }
+        } catch {
+            for target in copied { try? fileManager.removeItem(at: target) }
+            throw error
+        }
+    }
+
     func addItems(
         from sourceURLs: [URL],
         to archiveURL: URL,
@@ -834,16 +947,20 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
         guard ArchiveFormatRegistry.supportsUpdating(archiveURL.lastPathComponent) else {
             throw ArchiveEngineError.updateUnsupported
         }
-        let archive = archiveURL.standardizedFileURL.resolvingSymlinksInPath()
+        // Any volume of a split archive adds to the whole set (ZF-83).
+        let archive = try openingURL(for: archiveURL.standardizedFileURL.resolvingSymlinksInPath())
         guard ArchiveFormatRegistry.supportsUpdating(archive.lastPathComponent) else {
             throw ArchiveEngineError.updateUnsupported
         }
         try rejectMultiVolumeZip(archive)
         guard fileManager.fileExists(atPath: archive.path) else { throw ArchiveEngineError.itemNotFound }
-        guard !sourceURLs.contains(where: {
-            $0.standardizedFileURL.resolvingSymlinksInPath() == archive
-                || (isDirectory(at: $0) && archive.path.hasPrefix(
-                    $0.standardizedFileURL.resolvingSymlinksInPath().path + "/"
+        ArchiveVolumeReplacement.recover(in: archive.deletingLastPathComponent(), fileManager: fileManager)
+        let volumes = relatedVolumeURLs(for: archive)
+        guard !sourceURLs.contains(where: { source in
+            let resolved = source.standardizedFileURL.resolvingSymlinksInPath()
+            return volumes.contains(resolved)
+                || (isDirectory(at: source) && archive.path.hasPrefix(
+                    resolved.path + "/"
                 ))
         }) else { throw ArchiveEngineError.archiveIncludedInSources }
 
@@ -852,7 +969,7 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
             throw ArchiveEngineError.unsafePath
         }
         // Sources are read in place under unique names; nothing is copied.
-        let fingerprint = try ArchiveSourceFingerprint.capture([archive])
+        let fingerprint = try ArchiveSourceFingerprint.capture(volumes)
         // Every open session of this file shows the addition (and an inner one is marked modified).
         let affected = sessions.values.filter { $0.archive.identity == fingerprint.files[0] }
         guard !affected.contains(where: { $0.isReadOnly || $0.isDetached }) else { throw ArchiveEngineError.updateUnsupported }
@@ -1068,6 +1185,10 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
     /// write and again before the replacement.
     private func rewriteArchive(_ archive: URL, expecting fingerprint: ArchiveSourceFingerprint, password: String?,
                                 sources: [NativeSevenZipBackend.WriteSource], excluding: [String]) async throws {
+        if let set = ArchiveVolumeSet.resolve(archive, fileManager: fileManager) {
+            try await rewriteSplitArchive(set, expecting: fingerprint, password: password, sources: sources, excluding: excluding)
+            return
+        }
         let format: ArchiveCompressionFormat = archive.pathExtension.lowercased() == "zip" ? .zip : .sevenZip
         let updated = archive.deletingLastPathComponent()
             .appendingPathComponent(".zforge-update-\(UUID().uuidString)-\(archive.lastPathComponent)")
@@ -1081,27 +1202,66 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
         _ = try fileManager.replaceItemAt(archive, withItemAt: updated)
     }
 
-    private func rejectMultiVolumeZip(_ archive: URL) throws {
-        guard archive.pathExtension.lowercased() == "zip" else { return }
-        let volumeName = archive.deletingPathExtension().lastPathComponent.lowercased() + ".z01"
-        guard !(try fileManager.contentsOfDirectory(atPath: archive.deletingLastPathComponent().path))
-            .contains(where: { $0.lowercased() == volumeName }) else { throw ArchiveEngineError.multiVolumeUpdateUnsupported }
+    /// Rewrites a `.7z.NNN`/`.zip.NNN` split archive (ZF-83 stage 3): the updated archive is
+    /// written once, in volumes of the original sizes (the last full size repeating when it
+    /// grows), into a staging folder beside the set, validated, and swapped in by
+    /// `ArchiveVolumeReplacement`; nothing of the original is copied.
+    private func rewriteSplitArchive(_ set: ArchiveVolumeSet, expecting fingerprint: ArchiveSourceFingerprint, password: String?,
+                                     sources: [NativeSevenZipBackend.WriteSource], excluding: [String]) async throws {
+        guard set.scheme.isNumbered, set.missing.isEmpty,
+              let opening = ArchiveVolumeName.parse(set.opening.lastPathComponent) else {
+            throw ArchiveEngineError.multiVolumeUpdateUnsupported
+        }
+        ArchiveVolumeReplacement.recover(in: set.folder, fileManager: fileManager)
+        guard fingerprint.matches(set.members) else { throw ArchiveEngineError.archiveChanged }
+        let format: ArchiveCompressionFormat = set.scheme == .zipNumbered ? .zip : .sevenZip
+        let staging = set.folder.appendingPathComponent(ArchiveVolumeReplacement.stagingPrefix + UUID().uuidString, isDirectory: true)
+        try fileManager.createDirectory(at: staging, withIntermediateDirectories: false)
+        var committed = false
+        defer { if !committed { try? fileManager.removeItem(at: staging) } }
+        let sizes = try set.members.map { UInt64(try $0.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? 0) }
+        let volumeSizes = sizes.count > 1 ? Array(sizes.dropLast()) : sizes
+        guard !volumeSizes.isEmpty, !volumeSizes.contains(0) else { throw ArchiveEngineError.multiVolumeUpdateUnsupported }
+        // The staged volumes carry the set's own names, so the stream reader validates them.
+        let prefix = staging.appendingPathComponent(opening.stem + "." + opening.marker)
+        try await nativeBackend.write(to: prefix, updating: set.opening, options: CompressionOptions(format: format),
+            password: password, sources: sources, excludingPaths: excluding, volumeSizes: volumeSizes)
+        let written = try fileManager.contentsOfDirectory(at: staging, includingPropertiesForKeys: nil)
+            .compactMap { url in ArchiveVolumeName.parse(url.lastPathComponent).map { (url, $0.number) } }
+            .sorted { $0.1 < $1.1 }.map(\.0)
+        guard let first = written.first else { throw ArchiveEngineError.multiVolumeUpdateUnsupported }
+        try await nativeBackend.test(at: first, password: password)
+        try Task.checkCancellation()
+        guard fingerprint.matches(set.members) else { throw ArchiveEngineError.archiveChanged }
+        let replacement = try ArchiveVolumeReplacement(folder: set.folder, staging: staging, old: set.members, new: written)
+        try replacement.commit(fileManager: fileManager)
+        committed = true
     }
 
-    func testArchive(at url: URL, password: String?) async throws {
-        // Reads the archive and its volumes in place.
+    /// Spanned ZIP and RAR split archives cannot be written (ZF-83): 7-Zip writes neither.
+    /// `.7z.NNN`/`.zip.NNN` sets are rewritten in volumes.
+    private func rejectMultiVolumeZip(_ archive: URL) throws {
+        if let volume = ArchiveVolumeName.parse(archive), !volume.scheme.isNumbered {
+            throw ArchiveEngineError.multiVolumeUpdateUnsupported
+        }
+    }
+
+    func testArchive(at requestedURL: URL, password: String?) async throws {
+        // Reads the archive and its volumes in place, from the set's first volume (ZF-83).
+        let url = try openingURL(for: requestedURL)
         try await nativeBackend.test(at: url, password: password)
     }
 
     func extractArchive(
-        at url: URL,
+        at requestedURL: URL,
         to destinationURL: URL,
         password: String?,
         resolveConflict: @escaping ArchiveConflictResolver,
         progress: @escaping ArchiveProgressHandler
     ) async throws {
         // Reads the archive and its volumes in place; the listing and the extraction must see
-        // the same files.
+        // the same files. Any volume of a split archive extracts the whole set (ZF-83).
+        let url = try openingURL(for: requestedURL)
         progress(ArchiveProgress(phase: .staging, fraction: 0))
         try fileManager.createDirectory(at: destinationURL, withIntermediateDirectories: true)
         let archive = try await listArchive(
@@ -1303,10 +1463,12 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
         else { throw ArchiveEngineError.itemNotFound }
         guard !outer.isReadOnly else { throw ArchiveEngineError.updateUnsupported }
         let target = outer.originalURL.standardizedFileURL.resolvingSymlinksInPath()
+        // A split outer archive is covered by all of its volumes (ZF-83).
+        let targetFiles = outer.origin == nil ? relatedVolumeURLs(for: target) : [target]
         let expected = replacingChangedOuter
-            ? try ArchiveSourceFingerprint.capture([target])
+            ? try ArchiveSourceFingerprint.capture(targetFiles)
             : outer.archive.fingerprint
-        guard expected.matches([target]) else { throw ArchiveEngineError.archiveChanged }
+        guard expected.matches(targetFiles) else { throw ArchiveEngineError.archiveChanged }
         if !replacingChangedOuter, let signature = session.originSignature {
             // The entry must still be the one the copy came from.
             guard let entry = outer.archive.entries[origin.internalPath], signature.matches(EntrySignature(entry)) else {
@@ -1315,9 +1477,18 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
         }
         let written = session.modificationCount
         let effectivePassword = password ?? outer.password
+        // A split inner archive replaces all of its volumes: the ones it has now, under its
+        // folder in the outer archive, and drops the ones it no longer has (ZF-83 stage 4).
+        let parent = origin.internalPath.contains("/") ? String(origin.internalPath[..<origin.internalPath.lastIndex(of: "/")!]) : ""
+        func internalPath(_ name: String) -> String { parent.isEmpty ? name : parent + "/" + name }
+        let copies = relatedVolumeURLs(for: session.originalURL)
+        let writeSources = copies.count > 1 || ArchiveVolumeName.parse(session.originalURL) != nil
+            ? copies.map { NativeSevenZipBackend.WriteSource(url: $0, archivePath: internalPath($0.lastPathComponent)) }
+            : [NativeSevenZipBackend.WriteSource(url: session.originalURL, archivePath: origin.internalPath)]
+        let previous = (try? innerVolumeSet(at: origin.internalPath, in: outer.archive))?.members ?? []
+        let dropped = previous.filter { path in !writeSources.contains { $0.archivePath == path } }
         try await rewriteArchive(target, expecting: expected, password: effectivePassword,
-            sources: [NativeSevenZipBackend.WriteSource(url: session.originalURL, archivePath: origin.internalPath)],
-            excluding: [])
+            sources: writeSources, excluding: dropped)
         if let password { sessions[origin.sessionID]?.password = password }
         if var current = sessions[sessionID] {
             current.awaitingWriteBack = false
@@ -1462,38 +1633,25 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
         return total
     }
 
-    /// The archive and the sibling volumes the native handlers read with it.
+    /// The archive and the sibling volumes the native handlers read with it, in reading order.
     private func relatedVolumeURLs(for url: URL) -> [URL] {
-        let folder = url.deletingLastPathComponent()
-        let name = url.lastPathComponent.lowercased()
-        guard let siblings = try? fileManager.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil) else {
-            return [url]
+        guard let set = ArchiveVolumeSet.resolve(url, fileManager: fileManager) else { return [url] }
+        return set.members
+    }
+
+    /// The file a split archive is opened from: its first volume (the `.zip` of a spanned ZIP),
+    /// whichever volume was asked for. A volume missing before the last one present fails with
+    /// its name (ZF-83); a whole archive opens as is.
+    private func openingURL(for url: URL) throws -> URL {
+        guard var set = ArchiveVolumeSet.resolve(url, fileManager: fileManager) else { return url }
+        // A replacement of its volumes interrupted by a crash is undone first (ZF-83 stage 3).
+        if (try? fileManager.contentsOfDirectory(atPath: set.folder.path))?
+            .contains(where: { $0.hasPrefix(ArchiveVolumeReplacement.stagingPrefix) }) == true {
+            ArchiveVolumeReplacement.recover(in: set.folder, fileManager: fileManager)
+            set = ArchiveVolumeSet.resolve(url, fileManager: fileManager) ?? set
         }
-        func matching(_ pattern: String) -> [URL] {
-            let matches = siblings.filter {
-                $0.lastPathComponent.lowercased().range(of: pattern, options: .regularExpression) != nil
-            }
-            guard matches.contains(where: { $0.lastPathComponent.lowercased() == name }) else { return [url] }
-            return matches.sorted { $0.lastPathComponent < $1.lastPathComponent }
-        }
-        if let range = name.range(of: #"\.(7z|zip)\.\d{3}$"#, options: .regularExpression) {
-            let prefix = NSRegularExpression.escapedPattern(for: String(name[..<range.lowerBound]))
-            let kind = name[range].dropFirst().prefix { $0 != "." }
-            return matching("^" + prefix + "\\." + kind + #"\.\d{3}$"#)
-        }
-        if let range = name.range(of: #"\.part\d+\.rar$"#, options: .regularExpression) {
-            let prefix = NSRegularExpression.escapedPattern(for: String(name[..<range.lowerBound]))
-            return matching("^" + prefix + #"\.part\d+\.rar$"#)
-        }
-        if name.hasSuffix(".rar") || name.range(of: #"\.r\d{2}$"#, options: .regularExpression) != nil {
-            let prefix = name.replacingOccurrences(of: #"\.(rar|r\d{2})$"#, with: "", options: .regularExpression)
-            return matching("^" + NSRegularExpression.escapedPattern(for: prefix) + #"\.(rar|r\d{2})$"#)
-        }
-        if name.hasSuffix(".zip") {
-            let prefix = NSRegularExpression.escapedPattern(for: String(name.dropLast(4)))
-            return matching("^" + prefix + #"\.(zip|z\d{2})$"#)
-        }
-        return [url]
+        if let missing = set.missing.first { throw ArchiveEngineError.missingVolume(missing) }
+        return set.opening
     }
 
     private func runCreate(

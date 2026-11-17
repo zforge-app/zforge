@@ -82,3 +82,7 @@ The product owner requires that the word “archive” never appears in Brazilia
 - `InfoPlist.xcstrings` has no pt-BR value containing “archive”.
 - Check: no pt-BR value contains “archive” outside `${…}` parameter names. `SettingsWindowTests` asserts the rewritten profile-note text.
 - Linguistic review remains without a native speaker.
+
+## Split archive strings — ZF-83, 2026-11-17
+
+Seven new keys, translated in all 21 languages by the agent (no native-speaker review yet): `archive.missing_volume %@` (missing-volume error, with the volume's file name), `Split archive` (kind of a volume), and the compression option `Split into volumes` with `Don’t split`, `Custom Size`, `Volume size in MB` and the profile-summary fragment `Volumes of %@` (a byte count from the system's formatter). Preset volume sizes are byte counts from the system's formatter followed by an untranslated medium name (CD, FAT32, DVD); the unit after the custom size field is taken from the same formatter (“MB”, “Mo”, “МБ”…). Terminology follows the existing catalog: “arquivo compactado dividido” in pt-BR, “分割アーカイブ” in Japanese, “분할 압축 파일” in Korean, “分卷” in Chinese, the existing word for a volume in each language.

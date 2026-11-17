@@ -83,7 +83,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if urls.contains(where: { $0.scheme == FinderRequestInbox.urlScheme }) {
             receiveFinderRequests(from: FinderRequestInbox.shared())
         }
-        let archives = urls.filter { $0.isFileURL && ArchiveFormatRegistry.recognizes($0.lastPathComponent) }
+        // Several volumes of one split archive open or extract it once (ZF-83).
+        let archives = ArchiveVolumeName.onePerSet(
+            urls.filter { $0.isFileURL && ArchiveFormatRegistry.recognizes($0.lastPathComponent) })
         guard !archives.isEmpty else { return }
         receiveOpenedArchives(archives)
     }

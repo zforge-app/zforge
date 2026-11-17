@@ -649,6 +649,19 @@ Pending: in-app check of the row and the computer level in the four modes (light
 - [x] “Write-back alerts” snapshots (D-89): IconServices placeholder captured; the test waits until the application icon renders. Reference unchanged.
 - [x] Requirements: AGENT-INTEGRATION-PLAN measurement gate; RNF-Q08 rule on clocks in tests.
 
+### ZF-83 — Split archives with the features of whole archives (implemented 2026-11-17, D-101; real-window review pending)
+
+User request (2026-11-17, in Portuguese): “let's handle split archives and give them the same features we give whole ones.” Contract and stages: OPEN-REQUIREMENTS “Split archives with the features of whole archives (ZF-83, D-101)”. Defects found while planning: D-101. User decisions (2026-11-17): every volume stays visible and acts on the whole set; WinZip-style `.zip` + `.zNN` sets stay read-only; creating split archives is the last stage; RAR fixtures are made with RARLAB's `rar`, installed temporarily.
+- [x] Stage 0 — characterization: fixtures for the four schemes (`.7z.NNN`, `.zip.NNN`, Info-ZIP `spanned.zip` + `.z01`/`.z02`, RARLAB `parts.partN.rar` and the same set renamed `legacy.rar`/`.r00`/`.r01`, since RAR 7 no longer writes legacy names); reading from the first volume passed for all five before any change; the stage 1 behaviours failed on `main` (12 issues, REGRESSION-COVERAGE).
+- [x] Stage 1 — set identity (`Shared/ArchiveVolumeSet.swift`) and complete reading from any volume: open, browse, preview, export, extract, validate once per set; folder named after the set; total size; missing-volume error; early refusal of drops on read-only sets; Finder, Dock, Intents, Spotlight, MCP.
+- [x] Stage 2 — inline List expansion of split 7z/ZIP sets (measured: same latency as whole archives); split sets stored inside archives entered from any volume, all volumes copied.
+- [x] Stage 3 — editing `.7z.NNN`/`.zip.NNN` sets (add, drop, remove, reorganize, move out) with 7-Zip's `CMultiOutStream` and a journaled volume swap (`ArchiveVolumeReplacement`) undone on failure and recovered after a crash; archives inside split sets are written back into them.
+- [x] Stage 4 — write-back of `.NNN` sets stored inside archives (volumes added or dropped in the outer archive).
+- [x] Stage 5 — creating split 7z/ZIP archives (Split into volumes in Compress Custom… and profiles, MCP `compress` `volume_size`).
+- [ ] Real-window review: List triangle on volumes, Get Info/preview total size, drop highlight on a volume row, Split into volumes in Compress Custom… and Settings (light/dark, a long language), the missing-volume alert.
+- [ ] Native-speaker review of the 7 new strings (21 languages).
+- [ ] Not planned (user decision 2026-11-17): writing spanned `.zip` + `.zNN` sets; RAR is never written.
+
 ### ZF-82 — Columns select the following item after a deletion (2026-11-17, D-100)
 
 User request (2026-11-17, in Portuguese): after deleting a file with ⌘⌫ in Columns no item stays selected; it should behave like the other views, selecting the item that followed the deleted one.

@@ -168,7 +168,12 @@ struct ZforgeTests {
         #expect(!ArchiveFormatRegistry.supportsFastTreeListing("backup.tar"))
         #expect(!ArchiveFormatRegistry.supportsFastTreeListing("backup.tar.gz"))
         #expect(!ArchiveFormatRegistry.supportsFastTreeListing("backup.rar"))
-        #expect(!ArchiveFormatRegistry.supportsFastTreeListing("backup.7z.001"))
+        // ZF-83 stage 2 (user request 2026-11-17, D-101): a `.7z.NNN`/`.zip.NNN` set expands
+        // from its first volume, like a whole archive; its other volumes and RAR sets do not.
+        #expect(ArchiveFormatRegistry.supportsFastTreeListing("backup.7z.001"))
+        #expect(ArchiveFormatRegistry.supportsFastTreeListing("backup.zip.001"))
+        #expect(!ArchiveFormatRegistry.supportsFastTreeListing("backup.7z.002"))
+        #expect(!ArchiveFormatRegistry.supportsFastTreeListing("backup.part1.rar"))
 
         let rootArchive = item("backup.zip", archive: true)
         #expect(rootArchive.canExpandInlineInList)

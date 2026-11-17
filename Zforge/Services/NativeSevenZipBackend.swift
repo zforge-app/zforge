@@ -90,6 +90,8 @@ nonisolated final class NativeSevenZipBackend: @unchecked Sendable {
         case 4: return ArchiveEngineError.cancelled
         case 6: return ArchiveEngineError.insufficientSpace
         case 8: return ArchiveEngineError.archiveChangedSinceOpening
+        case 9 where native.userInfo["missingVolume"] is String:
+            return ArchiveEngineError.missingVolume(native.userInfo["missingVolume"] as? String ?? "")
         default: return ArchiveEngineError.invalidArchive(AppLocalization.string("archive.empty_or_unsupported"))
         }
     }
@@ -310,14 +312,18 @@ nonisolated final class NativeSevenZipBackend: @unchecked Sendable {
     }
 
     func write(to url: URL, updating original: URL? = nil, options: CompressionOptions,
-               password: String?, names: [String], directory: URL, excludingPaths: [String] = []) async throws {
+               password: String?, names: [String], directory: URL, excludingPaths: [String] = [],
+               volumeSizes: [UInt64] = []) async throws {
         try await write(to: url, updating: original, options: options, password: password,
             sources: names.map { WriteSource(url: directory.appendingPathComponent($0), archivePath: $0) },
-            excludingPaths: excludingPaths)
+            excludingPaths: excludingPaths, volumeSizes: volumeSizes)
     }
 
+    /// Writes the archive at `url`, or, with `volumeSizes`, the split archive `url.001`,
+    /// `url.002`… of those sizes (the last one repeating, ZF-83).
     func write(to url: URL, updating original: URL? = nil, options: CompressionOptions,
-               password: String?, sources items: [WriteSource], excludingPaths: [String] = []) async throws {
+               password: String?, sources items: [WriteSource], excludingPaths: [String] = [],
+               volumeSizes: [UInt64] = []) async throws {
         let options = options.normalized()
         try await perform(resource: url) { operation in
             let properties = try options.nativeProperties(password: password)
@@ -347,7 +353,8 @@ nonisolated final class NativeSevenZipBackend: @unchecked Sendable {
             for item in items { try append(item.url, name: item.archivePath) }
             try ZFSevenZipBridge.write(atPath: url.path, format: options.format.nativeHandlerName,
                 updatingPath: original?.path, sources: sources, properties: properties,
-                excludingPaths: excludingPaths, password: options.requiresPassword || original != nil ? password : nil, operation: operation)
+                excludingPaths: excludingPaths, password: options.requiresPassword || original != nil ? password : nil,
+                volumeSizes: volumeSizes.map { NSNumber(value: $0) }, operation: operation)
         }
     }
 }

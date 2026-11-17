@@ -36,9 +36,10 @@ nonisolated enum ZforgeMCPServer {
              properties: ["path": path, "show_hidden": .object(["type": "boolean"]), "offset": offset, "limit": limit], required: ["path"], readOnly: true),
         tool("list_archive", "List direct archive children. internal_path is relative to the archive root. Pagination is live; restart if the archive changes.",
              properties: ["path": path, "internal_path": string, "password": string, "offset": offset, "limit": limit], required: ["path"], readOnly: true),
-        tool("compress", "Start ZIP or 7z compression of 1–256 authorized sources into a NEW archive. Returns a job; inspect operation_status. Existing items are never replaced.",
+        tool("compress", "Start ZIP or 7z compression of 1–256 authorized sources into a NEW archive. Returns a job; inspect operation_status. Existing items are never replaced. With volume_size (bytes, at least 1000000) the archive is split into destination.001, destination.002…",
              properties: ["sources": .object(["type": "array", "items": path, "minItems": 1, "maxItems": 256]), "destination": path,
-                          "format": .object(["type": "string", "enum": ["zip", "7z"]])], required: ["sources", "destination", "format"], readOnly: false),
+                          "format": .object(["type": "string", "enum": ["zip", "7z"]]),
+                          "volume_size": .object(["type": "integer", "minimum": 1_000_000])], required: ["sources", "destination", "format"], readOnly: false),
         tool("extract", "Start extraction of an authorized archive into a NEW folder. Returns a job; inspect operation_status. Cancellation/failure can leave partial output, reported in output_path.",
              properties: ["archive": path, "destination": path, "password": string], required: ["archive", "destination"], readOnly: false),
         tool("test_archive", "Start an archive integrity test. Poll the returned job until succeeded or failed; password is optional.",
@@ -85,7 +86,7 @@ nonisolated enum ZforgeMCPServer {
                 let format = try input.required("format")
                 guard format == "zip" || format == "7z" else { throw AutomationError.invalidArguments }
                 return try job(await operations.compress(sources: input.strings("sources"), destination: input.required("destination"),
-                    format: format == "zip" ? .zip : .sevenZip))
+                    format: format == "zip" ? .zip : .sevenZip, volumeSize: input.byteCount("volume_size")))
             case "extract":
                 return try job(await operations.extract(archive: input.required("archive"), destination: input.required("destination"), password: input.optional("password")))
             case "test_archive":
@@ -139,6 +140,12 @@ nonisolated enum ZforgeMCPServer {
             guard let value = values[key] else { return fallback }
             guard case let .bool(flag) = value else { throw AutomationError.invalidArguments }
             return flag
+        }
+        /// A byte count (volume sizes): absent is nil; at most 1 TB.
+        func byteCount(_ key: String) throws -> Int? {
+            guard let value = values[key] else { return nil }
+            guard case let .int(number) = value, number > 0, number <= 1_000_000_000_000 else { throw AutomationError.invalidArguments }
+            return number
         }
         func integer(_ key: String, default fallback: Int) throws -> Int {
             guard let value = values[key] else { return fallback }

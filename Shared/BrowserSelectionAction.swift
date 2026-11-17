@@ -59,8 +59,10 @@ nonisolated enum BrowserSelectionActionPolicy {
 }
 
 nonisolated enum ArchiveNaming {
-    /// The archive name without its format suffix, including compound tar suffixes.
+    /// The archive name without its format suffix, including compound tar suffixes and the
+    /// volume suffix of a split archive (`Backup.7z.001`, `Backup.part2.rar`, `Backup.z01` → `Backup`).
     static func baseName(_ name: String) -> String {
+        if let volume = ArchiveVolumeName.parse(name) { return volume.stem }
         let lowercased = name.lowercased()
         for suffix in [".tar.gz", ".tar.bz2", ".tar.xz", ".tgz", ".tbz2", ".txz"] {
             if lowercased.hasSuffix(suffix) {
@@ -84,15 +86,21 @@ nonisolated enum ArchiveFormatRegistry {
         "lzh", "lha", "cpio", "xar", "wim", "swm", "iso"
     ]
 
+    /// Archive names, including every volume of a split archive (ZF-83): any volume opens,
+    /// extracts and validates the whole set.
     static func recognizes(_ name: String) -> Bool {
         let lowercased = name.lowercased()
-        if lowercased.hasSuffix(".7z.001") || lowercased.hasSuffix(".zip.001") { return true }
+        if ArchiveVolumeName.parse(name) != nil { return true }
         // This is filename classification, not URL resolution. Constructing a
         // relative file URL repeatedly consults the working directory.
         return commonExtensions.contains((lowercased as NSString).pathExtension)
     }
 
+    /// Archives the engine rewrites: ZIP, 7z and their `.NNN` split sets (ZF-83 stage 3). A
+    /// `.zip` whose `.z01` sibling makes it a spanned ZIP passes this name check; the file
+    /// check (`ArchiveVolumeName.parse(_: URL)`) refuses it.
     static func supportsUpdating(_ name: String) -> Bool {
+        if let volume = ArchiveVolumeName.parse(name) { return volume.scheme.isNumbered }
         let lowercased = name.lowercased()
         return lowercased.hasSuffix(".zip") || lowercased.hasSuffix(".7z")
     }
@@ -101,6 +109,9 @@ nonisolated enum ArchiveFormatRegistry {
     /// sequentially compressed payload. Keep this deliberately conservative:
     /// inline list expansion must feel as immediate as expanding a folder.
     static func supportsFastTreeListing(_ name: String) -> Bool {
+        // A `.7z.NNN`/`.zip.NNN` set reads as one 7z or ZIP stream; its first volume expands
+        // (ZF-83 stage 2). A spanned ZIP expands from its `.zip`; RAR never does.
+        if let volume = ArchiveVolumeName.parse(name), volume.scheme.isNumbered { return volume.opensSet }
         let extensionName = URL(fileURLWithPath: name.lowercased()).pathExtension
         return extensionName == "zip" || extensionName == "7z"
     }

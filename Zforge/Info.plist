@@ -14,6 +14,7 @@
 				<string>gz</string><string>gzip</string><string>bz2</string><string>bzip2</string><string>xz</string>
 				<string>zst</string><string>lzma</string><string>cab</string><string>arj</string><string>lzh</string>
 				<string>lha</string><string>cpio</string><string>xar</string><string>wim</string><string>swm</string><string>iso</string>
+				<string>001</string>
 			</array>
 			<key>CFBundleTypeIconSystemGenerated</key><true/>
 			<key>CFBundleTypeName</key><string>Archive</string>

@@ -195,7 +195,11 @@ nonisolated private final class IndexAcknowledgement: @unchecked Sendable {
     func clear() { identifiers = []; presentationIdentifiers = [:]; physicalIdentifiers = [:] }
 
     func identifier(for item: BrowserItem) -> EntityIdentifier? {
-        guard !item.isHidden, !item.isDirectory, !item.isSymbolicLink, item.isArchive, let url = item.localURL else { return nil }
+        guard !item.isHidden, !item.isDirectory, !item.isSymbolicLink, item.isArchive, var url = item.localURL else { return nil }
+        // Any volume of a split archive stands for the set, published under its opening volume (ZF-83).
+        if let volume = item.archiveVolume, !volume.opensSet {
+            url = url.deletingLastPathComponent().appendingPathComponent(volume.openingName)
+        }
         let identifier = presentationIdentifiers[url.path] ?? item.fileIdentity.flatMap { physicalIdentifiers[$0] }
         if Self.diagnosticsEnabled {
             Logger(subsystem: "io.libor.Zforge", category: "ArchiveContext").notice("Archive context lookup; published=\(self.identifiers.count); matched=\(identifier != nil).")

@@ -112,12 +112,18 @@ actor AutomationOperations {
         }
     }
 
-    func compress(sources: [String], destination: String, format: ArchiveCompressionFormat) async throws -> AutomationOperation {
+    /// `volumeSize` (bytes) splits the archive into `destination.001`, `.002`… (ZF-83 stage 5).
+    func compress(sources: [String], destination: String, format: ArchiveCompressionFormat,
+                  volumeSize: Int? = nil) async throws -> AutomationOperation {
         guard (1...256).contains(sources.count), [.zip, .sevenZip].contains(format) else { throw AutomationError.invalidArguments }
+        if let volumeSize, volumeSize < Int(CompressionOptions.minimumVolumeSize) { throw AutomationError.invalidArguments }
+        var requested = CompressionOptions(format: format)
+        requested.volumeSize = volumeSize.map(UInt64.init)
+        let options = requested
         let urls = try sources.map(AutomationPath.url)
         let output = try AutomationPath.url(destination)
         return try await start(kind: "compress", inputs: urls, output: output) { engine, progress in
-            try await engine.createArchive(from: urls, outputURL: output, options: CompressionOptions(format: format),
+            try await engine.createArchive(from: urls, outputURL: output, options: options,
                                            password: nil, progress: progress)
         }
     }

@@ -74,6 +74,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (BOOL)writeAtPath:(NSString *)path format:(NSString *)format
     updatingPath:(nullable NSString *)updatingPath sources:(NSArray<ZFSevenZipSource *> *)sources
     properties:(NSDictionary<NSString *, id> *)properties excludingPaths:(NSArray<NSString *> *)excludingPaths password:(nullable NSString *)password
+    volumeSizes:(NSArray<NSNumber *> *)volumeSizes
     operation:(ZFSevenZipOperation *)operation error:(NSError **)error;
 @end
 NS_ASSUME_NONNULL_END

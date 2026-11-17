@@ -70,7 +70,7 @@ private struct BrowserInfoWindow: View {
         _calculatingFolderSizes = State(
             initialValue: Set(
                 items
-                    .filter { $0.isDirectory && !$0.isSymbolicLink }
+                    .filter(\.hasComputedSize)
                     .map(\.id)
             )
         )
@@ -149,7 +149,7 @@ private struct BrowserInfoWindow: View {
 
     private func calculateFolderSizes() async {
         let folders = items.filter {
-            $0.isDirectory && !$0.isSymbolicLink
+            $0.hasComputedSize
         }
         calculatingFolderSizes = Set(folders.map(\.id))
         resolvedFolderSizes = [:]
