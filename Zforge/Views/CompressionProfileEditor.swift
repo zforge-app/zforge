@@ -163,6 +163,10 @@ struct CompressionOptionsFields: View {
                                   items: [(AppLocalization.string("Automatic", locale: locale), Int?.none)]
                                     + [1, 2, 4, 8, 16, 32].map { ("\($0)", Int?.some($0)) })
                 }
+                if options.supportsVolumes {
+                    compactPicker("Split into volumes", selection: volumeChoice, items: volumeItems)
+                    if volumeChoice.wrappedValue == .custom { customVolumeField }
+                }
                 if options.requiresPassword && options.supportsPassword {
                     if options.format == .sevenZip {
                         encryptNamesToggle
@@ -208,6 +212,12 @@ struct CompressionOptionsFields: View {
         if options.supportsFastBytes { fastBytesPicker }
         if options.format == .sevenZip { solidToggle }
         if options.supportsThreads { threadsPicker }
+        if options.supportsVolumes {
+            Picker("Split into volumes", selection: volumeChoice) {
+                ForEach(volumeItems, id: \.1) { item in Text(item.0).tag(item.1) }
+            }
+            if volumeChoice.wrappedValue == .custom { customVolumeField }
+        }
         if options.supportsPassword {
             passwordToggle
             if options.requiresPassword {
@@ -283,6 +293,69 @@ struct CompressionOptionsFields: View {
                 Text(AppLocalization.string(encryption.titleKey, locale: locale)).tag(encryption)
             }
         }
+    }
+
+    /// Whole archive, a preset volume size or a custom one (ZF-83 stage 5).
+    private enum VolumeChoice: Hashable {
+        case whole
+        case preset(UInt64)
+        case custom
+    }
+
+    private var volumeChoice: Binding<VolumeChoice> {
+        Binding(
+            get: {
+                guard let size = options.volumeSize else { return .whole }
+                return CompressionOptions.volumeSizeChoices.contains(size) ? .preset(size) : .custom
+            },
+            set: { choice in
+                switch choice {
+                case .whole: options.volumeSize = nil
+                case let .preset(size): options.volumeSize = size
+                case .custom:
+                    // Custom starts from the size shown, or 50 MB.
+                    if options.volumeSize == nil { options.volumeSize = 50_000_000 }
+                    else if let size = options.volumeSize, CompressionOptions.volumeSizeChoices.contains(size) {
+                        options.volumeSize = size + 1_000_000
+                    }
+                }
+            }
+        )
+    }
+
+    private var volumeItems: [(String, VolumeChoice)] {
+        [(AppLocalization.string("Don’t split", locale: locale), .whole)]
+            + CompressionOptions.volumeSizeChoices.map { size in
+                let text = AppLocalization.byteCount(Int64(size), locale: locale)
+                return (CompressionOptions.volumeMedium(size).map { "\(text) – \($0)" } ?? text, .preset(size))
+            }
+            + [(AppLocalization.string("Custom Size", locale: locale), .custom)]
+    }
+
+    private var customVolumeField: some View {
+        HStack(spacing: 6) {
+            TextField(
+                AppLocalization.string("Volume size in MB", locale: locale),
+                value: Binding(
+                    get: { Int((options.volumeSize ?? 0) / 1_000_000) },
+                    set: { options.volumeSize = UInt64(max($0, 1)) * 1_000_000 }
+                ),
+                format: .number
+            )
+            .labelsHidden()
+            .multilineTextAlignment(.trailing)
+            .frame(width: 96)
+            .accessibilityLabel(AppLocalization.string("Volume size in MB", locale: locale))
+            Text(verbatim: megabyteUnit)
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    /// “MB” as the language writes it (“Mo”, “МБ”…), from the system's byte-count format.
+    private var megabyteUnit: String {
+        let unit = ByteCountFormatStyle(style: .file, allowedUnits: .mb, locale: locale).format(2_000_000)
+            .filter { !$0.isNumber && $0 != "," && $0 != "." }.trimmingCharacters(in: .whitespaces)
+        return unit.isEmpty ? "MB" : unit
     }
 
     private var solidToggle: some View { Toggle("Solid archive", isOn: $options.solid) }

@@ -489,7 +489,7 @@ final class FileBrowserState {
         switch action {
         case .open:
             if selected.count > 1, selected.allSatisfy(\.isArchive) {
-                selected.compactMap(\.localURL).forEach { openWindowHandler?($0) }
+                Self.onePerArchiveSet(selected).compactMap(\.localURL).forEach { openWindowHandler?($0) }
             } else {
                 for item in selected { await open(item) }
             }
@@ -544,7 +544,8 @@ final class FileBrowserState {
                 let basename = archiveBaseName(selection.name)
                 outputURL = selection.directory
                     .appendingPathComponent("\(basename).\(outputExtension)")
-                if FileManager.default.fileExists(atPath: outputURL.path) {
+                // A split archive takes `Name.7z.001`… (ZF-83 stage 5).
+                if FileManager.default.fileExists(atPath: options.volumeSize == nil ? outputURL.path : outputURL.path + ".001") {
                     self.error = .unavailable(AppLocalization.string(
                         "An archive with that name already exists.", locale: preferences.language.locale
                     ))
@@ -601,13 +602,24 @@ final class FileBrowserState {
             } else {
                 pendingExtractionDestination = action == .extractHere ? .here : .named
             }
-            pendingArchiveExtractionItems = selected
+            pendingArchiveExtractionItems = Self.onePerArchiveSet(selected)
             pendingArchiveExtractionIndex = 0
             return await processNextArchiveExtraction(password: nil)
         case .validate:
-            pendingValidationItems = selected
+            pendingValidationItems = Self.onePerArchiveSet(selected)
             pendingValidationIndex = 0
             return await processNextArchiveValidation(password: nil)
+        }
+    }
+
+    /// The items with one volume per split archive (the first selected): any volume opens,
+    /// extracts or validates the whole set, which is processed once (ZF-83).
+    nonisolated static func onePerArchiveSet(_ items: [BrowserItem]) -> [BrowserItem] {
+        var seen = Set<String>()
+        return items.filter { item in
+            guard let volume = item.archiveVolume, let url = item.localURL else { return true }
+            let key = url.deletingLastPathComponent().path + "/" + volume.openingName.lowercased()
+            return seen.insert(key).inserted
         }
     }
 
@@ -645,7 +657,7 @@ final class FileBrowserState {
                       $0.isArchive && $0.localURL != nil
                   }) else { return nil }
             pendingExtractionDestination = .named
-            pendingArchiveExtractionItems = externalArchives
+            pendingArchiveExtractionItems = Self.onePerArchiveSet(externalArchives)
             pendingArchiveExtractionIndex = 0
             return await processNextArchiveExtraction(password: nil)
         case .extractSelected:
@@ -1671,7 +1683,7 @@ final class FileBrowserState {
     func opensColumnBranch(_ item: BrowserItem) -> Bool {
         guard item.isNavigableContainer else { return false }
         guard item.isArchiveInsideArchive else { return true }
-        if let size = item.size, size > Self.largeArchiveItemSize { return false }
+        if let size = item.innerArchiveCopySize, size > Self.largeArchiveItemSize { return false }
         return preferences.archivePreviewLimits.allowsAutomaticPreview(of: item, on: archiveVolumeKind(of: item))
     }
 
@@ -2104,7 +2116,7 @@ final class FileBrowserState {
         asWindowRoot: Bool = false,
         columnParent: BrowserLocation? = nil
     ) async {
-        if item.isArchiveInsideArchive, let size = item.size, size > Self.largeArchiveItemSize,
+        if item.isArchiveInsideArchive, let size = item.innerArchiveCopySize, size > Self.largeArchiveItemSize,
            !confirmedLargeItems.contains(item.id) {
             pendingLargeOperation = .openInnerArchive(item, columnParent: columnParent)
             return
@@ -2242,6 +2254,14 @@ final class FileBrowserState {
         internalPath: String = ""
     ) {
         guard !sourceURLs.isEmpty else { return }
+        // Refused before the confirmation: spanned ZIP and RAR split archives cannot be
+        // written (ZF-83); `.NNN` sets can.
+        guard ArchiveVolumeName.parse(archiveURL).map(\.scheme.isNumbered) != false else {
+            error = .unavailable(AppLocalization.string(
+                "Multi-volume archives cannot be updated.", locale: preferences.language.locale
+            ))
+            return
+        }
         guard ArchiveFormatRegistry.supportsUpdating(archiveURL.lastPathComponent) else {
             error = .unavailable(AppLocalization.string(
                 "Only ZIP and 7z archives can be updated.", locale: preferences.language.locale
@@ -2256,6 +2276,12 @@ final class FileBrowserState {
 
     func requestArchiveAddition(_ sourceURLs: [URL], to address: ArchiveAddress) async {
         guard isArchiveSessionWritable(address.sessionID) else {
+            // An archive on disk says why it cannot be written; an inner one names its chain.
+            if archiveSessionParents[address.sessionID] == nil,
+               let url = try? await archives.archiveRootURL(for: address) {
+                requestArchiveAddition(sourceURLs, to: url, internalPath: address.internalPath)
+                return
+            }
             error = .unavailable(AppLocalization.string(
                 "This archive is read-only because the archive that contains it cannot be updated.",
                 locale: preferences.language.locale
@@ -2874,7 +2900,9 @@ final class FileBrowserState {
 
         var candidate = directory.appendingPathComponent("\(baseName).\(extensionName)")
         var index = 2
-        while FileManager.default.fileExists(atPath: candidate.path) {
+        // A split archive's first volume takes the name as well (ZF-83).
+        while FileManager.default.fileExists(atPath: candidate.path)
+                || FileManager.default.fileExists(atPath: candidate.path + ".001") {
             candidate = directory.appendingPathComponent("\(baseName) \(index).\(extensionName)")
             index += 1
         }
@@ -4412,7 +4440,7 @@ final class FileBrowserState {
             self.error = mapError(error)
             return
         }
-        if item.isArchiveInsideArchive, inlineArchiveResults[item.id] == nil, let size = item.size,
+        if item.isArchiveInsideArchive, inlineArchiveResults[item.id] == nil, let size = item.innerArchiveCopySize,
            size > Self.largeArchiveItemSize, !confirmedLargeItems.contains(item.id) {
             pendingLargeOperation = .expandInline(item)
             return

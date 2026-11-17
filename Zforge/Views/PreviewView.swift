@@ -336,7 +336,7 @@ struct SelectionOverview: View {
         _calculatingFolderSizes = State(
             initialValue: Set(
                 items
-                    .filter { $0.isDirectory && !$0.isSymbolicLink }
+                    .filter(\.hasComputedSize)
                     .map(\.id)
             )
         )
@@ -454,7 +454,7 @@ struct SelectionOverview: View {
 
     private func calculateFolderSizes() async {
         let folders = items.filter {
-            $0.isDirectory && !$0.isSymbolicLink
+            $0.hasComputedSize
         }
         calculatingFolderSizes = Set(folders.map(\.id))
         resolvedFolderSizes = [:]
@@ -769,6 +769,7 @@ nonisolated struct BrowserSelectionSummary {
 
     private func kind(_ item: BrowserItem) -> String {
         if item.isDirectory { return AppLocalization.string("Folder", locale: locale) }
+        if item.archiveVolume != nil { return AppLocalization.string("Split archive", locale: locale) }
         if item.isArchive { return AppLocalization.string("Archive", locale: locale) }
         return item.contentType?.localizedDescription ?? AppLocalization.string("Document", locale: locale)
     }

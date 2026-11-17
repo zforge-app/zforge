@@ -18,6 +18,7 @@
 #include "../../Vendor/7zip/CPP/Common/UTFConvert.h"
 #include "../../Vendor/7zip/CPP/Windows/PropVariant.h"
 #include "../../Vendor/7zip/CPP/7zip/Common/FileStreams.h"
+#include "../../Vendor/7zip/CPP/7zip/Common/MultiOutStream.h"
 #include "../../Vendor/7zip/CPP/7zip/Common/StreamObjects.h"
 #include "../../Vendor/7zip/CPP/7zip/Archive/IArchive.h"
 #include "../../Vendor/7zip/CPP/7zip/IPassword.h"
@@ -82,6 +83,8 @@ struct Context {
     NSString *password;
     int failure = 0;
     bool passwordRequested = false;
+    /// A volume a handler asked for that is not in the archive's folder (ZF-83, failure 9).
+    NSString *missingVolume = nil;
     // Total size of the archive files opened by the successful handler (all volumes).
     UInt64 sourceSize = 0;
     HRESULT check() { return operation->stopped.load() ? E_ABORT : S_OK; }
@@ -207,7 +210,11 @@ Z7_COM7F_IMF(OpenCallback::GetStream(const wchar_t *name, IInStream **stream)) {
     NSString *candidate = [path.stringByDeletingLastPathComponent stringByAppendingPathComponent:component];
     // Only sibling files of the authorized archive are available to the handler.
     CMyComPtr<IInStream> owner;
-    if (OpenSource(candidate, *context, owner, nullptr) != S_OK) return S_FALSE;
+    if (OpenSource(candidate, *context, owner, nullptr) != S_OK) {
+        // RAR and spanned ZIP handlers name the next volume they need (ZF-83).
+        if (!context->missingVolume) context->missingVolume = component;
+        return S_FALSE;
+    }
     *stream = owner.Detach(); return context->check();
 }
 struct Archive {
@@ -216,29 +223,39 @@ struct Archive {
     NSString *format = nil;
     ~Archive() { if (handler) handler->Close(); }
 };
+/// The volume number of `name` when it is `<prefix><digits>` (three or more digits), or 0.
+unsigned VolumeNumber(NSString *name, NSString *prefix) {
+    if (name.length <= prefix.length + 2) return 0;
+    if ([name compare:prefix options:NSCaseInsensitiveSearch range:NSMakeRange(0, prefix.length)] != NSOrderedSame) return 0;
+    NSString *suffix = [name substringFromIndex:prefix.length];
+    if ([suffix rangeOfCharacterFromSet:NSCharacterSet.decimalDigitCharacterSet.invertedSet].location != NSNotFound) return 0;
+    return (unsigned)suffix.integerValue;
+}
 HRESULT Input(NSString *path, Context &ctx, CMyComPtr<IInStream> &result) {
     NSString *base = path.stringByDeletingPathExtension;
-    bool split = [path.pathExtension isEqualToString:@"001"] &&
-        ([@"7z" isEqualToString:base.pathExtension.lowercaseString] || [@"zip" isEqualToString:base.pathExtension.lowercaseString]);
+    NSString *number = path.pathExtension;
+    // `name.7z.NNN` / `name.zip.NNN` (three or more digits) are byte slices of one archive,
+    // read as one stream from volume 1 (ZF-83). The engine names a missing volume first.
+    bool split = number.length >= 3 && number.integerValue == 1
+        && [number rangeOfCharacterFromSet:NSCharacterSet.decimalDigitCharacterSet.invertedSet].location == NSNotFound
+        && ([@"7z" isEqualToString:base.pathExtension.lowercaseString] || [@"zip" isEqualToString:base.pathExtension.lowercaseString]);
     if (!split) return OpenSource(path, ctx, result, nullptr) == S_OK ? S_OK : E_FAIL;
     NSArray<NSString *> *siblings = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:path.stringByDeletingLastPathComponent error:nil];
     NSString *prefix = [base.lastPathComponent stringByAppendingString:@"."];
-    NSMutableArray<NSString *> *volumes = [NSMutableArray array];
+    std::vector<std::pair<unsigned, NSString *>> volumes;
     for (NSString *name in siblings) {
-        if (![name hasPrefix:prefix]) continue;
-        NSString *suffix = [name substringFromIndex:prefix.length];
-        if (suffix.length != 3 || [suffix rangeOfCharacterFromSet:NSCharacterSet.decimalDigitCharacterSet.invertedSet].location != NSNotFound) continue;
-        [volumes addObject:name];
+        unsigned index = VolumeNumber(name, prefix);
+        if (index > 0) volumes.push_back({index, name});
     }
-    [volumes sortUsingSelector:@selector(compare:)];
+    std::sort(volumes.begin(), volumes.end(), [](const auto &a, const auto &b) { return a.first < b.first; });
     VolumeStream *multi = new VolumeStream; result = multi;
-    unsigned index = 1;
-    for (NSString *name in volumes) {
-        if (name.pathExtension.intValue != index++) return E_FAIL;
+    unsigned expected = 1;
+    for (const auto &volume : volumes) {
+        if (volume.first != expected++) return E_FAIL;
         CMyComPtr<IInStream> stream;
         UInt64 size = 0;
-        NSString *volume = [path.stringByDeletingLastPathComponent stringByAppendingPathComponent:name];
-        if (OpenSource(volume, ctx, stream, &size) != S_OK) return E_FAIL;
+        NSString *file = [path.stringByDeletingLastPathComponent stringByAppendingPathComponent:volume.second];
+        if (OpenSource(file, ctx, stream, &size) != S_OK) return E_FAIL;
         multi->append(stream, size);
     }
     return multi->isEmpty() ? E_FAIL : S_OK;
@@ -247,7 +264,7 @@ HRESULT Open(NSString *path, Context &ctx, Archive &arc) {
     UInt32 count = 0; RINOK(GetNumberOfFormats(&count))
     // Try extension matches first, then probe remaining registered handlers.
     NSString *extension = path.pathExtension.lowercaseString;
-    if ([extension isEqualToString:@"001"]) extension = path.stringByDeletingPathExtension.pathExtension.lowercaseString;
+    if (extension.length >= 3 && extension.integerValue == 1) extension = path.stringByDeletingPathExtension.pathExtension.lowercaseString;
     std::vector<UInt32> order;
     for (int match = 1; match >= 0; --match) {
         for (UInt32 i = 0; i < count; ++i) {
@@ -266,6 +283,7 @@ HRESULT Open(NSString *path, Context &ctx, Archive &arc) {
         if (CreateObject(&cls, &IID_IInArchive, (void **)&handler) != S_OK) continue;
         CMyComPtr<IInStream> input;
         ctx.sourceSize = 0;
+        ctx.missingVolume = nil;
         RINOK(Input(path, ctx, input))
         OpenCallback *callback = new OpenCallback;
         CMyComPtr<IArchiveOpenCallback> owner = callback;
@@ -274,6 +292,12 @@ HRESULT Open(NSString *path, Context &ctx, Archive &arc) {
         HRESULT result = handler->Open(input, &scan, owner);
         if (ctx.passwordRequested && ctx.password && (result == S_FALSE || result == E_FAIL)) ctx.failure = 2;
         if (ctx.failure || result == E_ABORT) return E_ABORT;
+        if (result == S_OK && ctx.missingVolume) {
+            // The handler opened what it found, but the set is incomplete (ZF-83).
+            handler->Close();
+            ctx.failure = 9;
+            return E_FAIL;
+        }
         if (result == S_OK) {
             CPropVariant name; RINOK(GetHandlerProperty2(i, NArchive::NHandlerPropID::kName, &name))
             arc.handler = handler; arc.input = input;
@@ -775,9 +799,9 @@ Z7_COM7F_IMF(UpdateCallback::GetVolumeStream(UInt32, ISequentialOutStream **stre
 bool Finish(HRESULT result, Context &context, NSError **error, int itemResult = 0) {
     if (result == S_OK && !itemResult && !context.failure) return true;
     NSInteger code = context.operation->stopped.load() ? 4 : context.failure ?: 5;
-    if (error) *error = [NSError errorWithDomain:@"Zforge.SevenZip" code:code userInfo:@{
-        @"HRESULT": @((int32_t)result), @"itemResult": @(itemResult)
-    }];
+    NSMutableDictionary *info = [@{ @"HRESULT": @((int32_t)result), @"itemResult": @(itemResult) } mutableCopy];
+    if (context.missingVolume) info[@"missingVolume"] = context.missingVolume;
+    if (error) *error = [NSError errorWithDomain:@"Zforge.SevenZip" code:code userInfo:info];
     return false;
 }
 }
@@ -936,7 +960,8 @@ bool Finish(HRESULT result, Context &context, NSError **error, int itemResult = 
 }
 + (BOOL)writeAtPath:(NSString *)path format:(NSString *)format updatingPath:(NSString *)updatingPath
     sources:(NSArray<ZFSevenZipSource *> *)sources properties:(NSDictionary<NSString *, id> *)properties
-    excludingPaths:(NSArray<NSString *> *)excludingPaths password:(NSString *)password operation:(ZFSevenZipOperation *)operation error:(NSError **)error {
+    excludingPaths:(NSArray<NSString *> *)excludingPaths password:(NSString *)password
+    volumeSizes:(NSArray<NSNumber *> *)volumeSizes operation:(ZFSevenZipOperation *)operation error:(NSError **)error {
     Context ctx{operation, password};
     try {
         Archive old;
@@ -999,6 +1024,30 @@ bool Finish(HRESULT result, Context &context, NSError **error, int itemResult = 
                 }
                 if (!excluded && ![replaced containsObject:itemPath]) callback->kept.push_back(i);
             }
+        }
+        if (volumeSizes.count) {
+            // Split output (ZF-83): `path.001`, `path.002`… of the given sizes, the last size
+            // repeating. 7-Zip's multi-volume stream is seekable (the 7z writer goes back to
+            // its start header) and deletes every volume unless the write succeeds.
+            CMultiOutStream *volumes = new CMultiOutStream;
+            CMyComPtr<IOutStream> output = volumes;
+            volumes->Prefix = FString(path.fileSystemRepresentation);
+            volumes->Prefix.Add_Dot();
+            CRecordVector<UInt64> sizes;
+            for (NSNumber *size in volumeSizes) {
+                if (size.unsignedLongLongValue == 0) return Finish(E_INVALIDARG, ctx, error);
+                sizes.Add(size.unsignedLongLongValue);
+            }
+            volumes->Init(sizes);
+            volumes->NeedDelete = true;
+            HRESULT result = writer->UpdateItems(output, (UInt32)(callback->kept.size() + sources.count), owner);
+            if (result == S_OK && !callback->itemResult && !ctx.failure) {
+                unsigned count = 0;
+                result = volumes->FinalFlush_and_CloseFiles(count);
+                if (result == S_OK) volumes->NeedDelete = false;
+            }
+            output.Release();
+            return Finish(result, ctx, error, callback->itemResult);
         }
         COutFileStream *file = new COutFileStream;
         CMyComPtr<IOutStream> output = file;

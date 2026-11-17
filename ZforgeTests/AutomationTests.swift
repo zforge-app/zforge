@@ -179,6 +179,29 @@ struct AutomationTests {
         await service.shutdown()
     }
 
+    @Test("MCP compression with volume_size writes a split archive that lists and tests from any volume (ZF-83)")
+    func mcpSplitCompression() async throws {
+        let fixture = try AutomationFixture()
+        defer { fixture.remove() }
+        let source = fixture.root.appendingPathComponent("Big.bin")
+        try Data((0..<2_500_000).map { _ in UInt8.random(in: 0...255) }).write(to: source)
+        let service = AutomationOperations(access: TestAutomationAccess(root: fixture.root))
+        let archive = fixture.root.appendingPathComponent("Output.7z")
+        let compressed = await ZforgeMCPServer.call(name: "compress", arguments: ["sources": [.string(source.path)],
+            "destination": .string(archive.path), "format": .string("7z"), "volume_size": .int(1_000_000)], operations: service)
+        #expect(try await service.wait(jobID(compressed)).state == .succeeded)
+        let second = fixture.root.appendingPathComponent("Output.7z.002")
+        #expect(FileManager.default.fileExists(atPath: second.path))
+        #expect(try await service.listArchive(path: second.path).items.map(\.name) == ["Big.bin"])
+        let tested = await ZforgeMCPServer.call(name: "test_archive", arguments: ["archive": .string(second.path)], operations: service)
+        #expect(try await service.wait(jobID(tested)).state == .succeeded)
+        let refused = await ZforgeMCPServer.call(name: "compress", arguments: ["sources": [.string(source.path)],
+            "destination": .string(fixture.root.appendingPathComponent("Small.7z").path), "format": .string("7z"),
+            "volume_size": .int(999)], operations: service)
+        #expect(refused.isError == true)
+        await service.shutdown()
+    }
+
     @Test("Existing destinations and dangling symlinks are preserved")
     func refuseReplacement() async throws {
         let fixture = try AutomationFixture()

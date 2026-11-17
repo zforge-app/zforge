@@ -637,6 +637,24 @@ Cause: the offscreen sidebar starts at 144 pt with two-line rows until `SidebarS
 
 Correction (test only; scenario and the 28 pt assertion unchanged): the fixture's wait lays out the whole window between polls (`window.layoutIfNeeded()`, which updates constraints first, as the display cycle does), and the sidebar test waits until the rows exist, the table is 206 pt wide and neither the table nor any ancestor needs a constraint update or layout (`isLaidOut`). With the same `Task.yield()` injection the suite passed 50/50.
 
+### D-101 — Split archives lacked features of whole archives and mishandled their volumes (corrected 2026-11-17, ZF-83)
+
+Found while planning ZF-83 (user request, 2026-11-17: split archives should have the features of whole ones). CURRENT-STATE “Navigable formats” limits inline expansion and writing to non-multivolume ZIP/7z; besides that limit, the code mishandles split sets in ways no contract states:
+- Volumes other than the first (`x.7z.002`, `x.zip.002`, `x.z01`, `x.r00`) are plain files; `x.part2.rar` is recognized and opens on its own, read forward from part 2 (an incomplete listing, its own session).
+- `relatedVolumeURLs` sorts volumes by name (`part10` before `part2`) and misses `.z100`/`.r100` and later; the bridge's `.NNN` concatenation needs exactly three digits.
+- A WinZip-style `x.zip` with `x.z01` expands inline in List (the check reads only the extension) and accepts a drop, which is confirmed and then fails with “Multi-volume archives cannot be updated.”
+- Extraction names the folder `x.7z`, `x.zip` or `x.part1` (one extension stripped); selecting several parts of one RAR set extracts it once per part.
+- Get Info and the preview show the first volume's size; the fingerprint opened from `x.z01` omits `x.zip`, and a volume added after opening is not detected.
+- A split set stored inside an archive is entered with only the selected volume copied (`.001` or `.zip`), so its listing is truncated or fails; an inner `x.zip` is writable although its `.zNN` volumes were not copied.
+- Adding by address into a split root reports that “the archive that contains it” cannot be updated.
+- `rewriteArchive` compares a fingerprint of N volumes with one of the first file only and takes the format from the last extension (a `.zip.001` would be written as 7z), so writing a split set could not work as is.
+
+Evidence: `SplitArchiveBaselineTests` (temporary, not committed) ran the stage 1 behaviours on `main`: 12 issues — `.7z.002`, `.zip.003`, `.z01`, `.r00` not archives; `Backup.7z.001`/`.zip.001`/`.part1.rar` named `Backup.7z`/`Backup.zip`/`Backup.part1`; opening `.7z.002` failed as an unreadable archive and `.z01`, `.part2.rar`, `.r00` opened separate sessions; a volume added after opening went unnoticed. All pass after ZF-83 (`SplitArchiveTests`).
+
+Correction (app, ZF-83 stages 1–5): one set model shared by the app, the engine, the Finder extension and the intents; any volume opens, extracts and validates the set from its opening volume, once; numeric ordering and three-or-more-digit numbers; a missing volume is named; the fingerprint covers volumes added or removed; a split set inside an archive copies all its volumes; drops on read-only sets are refused before the confirmation; `.NNN` sets are written in volumes and swapped in under a journal; split archives can be created. Requirement text: CURRENT-STATE “Split archives” and the rows it changes; UI-UX-GUIDE “Split archives”.
+
+Changed test expectations (user request 2026-11-17, conflicting with the previous contract): `ArchiveIndexTests.archiveFilenameRecognition` now treats `Example.7z.002` as an archive (non-archive `Example.txt.002`/`Example.002` added instead); `ZforgeTests.inlineArchiveRecognition` now expects `backup.7z.001` (and `.zip.001`) to expand inline, `.7z.002` and `part1.rar` not; the Compress Custom… and profile-page snapshots were re-recorded for the new Split into volumes row (viewed before committing). Within ZF-83, the stage 1 and 2 assertions that `.NNN` sets were read-only were changed to “read-only unless `.NNN`” when stages 3–4 made them writable.
+
 ### D-100 — In Columns, nothing stayed selected after deleting the selected item (corrected 2026-11-17, ZF-82)
 
 Reported by the user on 2026-11-17: deleting a file with ⌘⌫ in Columns left no item selected, while Icons, List and Gallery select the item that followed it. The specification (UI-UX-GUIDE “List” hierarchy rule: when the active item ceases to exist during an update, the cursor takes its position; CURRENT-STATE “Update”) states the rule for every view, so Columns was wrong.

@@ -13,10 +13,12 @@ struct ArchiveIndexTests {
     }
     @Test("Archive filename recognition preserves multipart, Unicode, hidden and nonarchive boundaries")
     func archiveFilenameRecognition() {
-        for name in ["Example.zip", "Example.ZIP", "Example.7z.001", "Example.zip.001", "Résumé.tar.gz", "Archive name.xz", ".Hidden.zip"] {
+        // Every volume of a split archive is an archive since ZF-83 (user decision 2026-11-17,
+        // D-101): `Example.7z.002` moved from the second list to the first.
+        for name in ["Example.zip", "Example.ZIP", "Example.7z.001", "Example.zip.001", "Example.7z.002", "Résumé.tar.gz", "Archive name.xz", ".Hidden.zip"] {
             #expect(ArchiveFormatRegistry.recognizes(name))
         }
-        for name in ["Example.zip.txt", "Examplezip", ".zip", "zip", "Example.7z.002", "directory.zip/Readme.txt"] {
+        for name in ["Example.zip.txt", "Examplezip", ".zip", "zip", "Example.txt.002", "Example.002", "directory.zip/Readme.txt"] {
             #expect(!ArchiveFormatRegistry.recognizes(name))
         }
     }

@@ -45,6 +45,8 @@ nonisolated struct ArchivePreviewLimits: Sendable, Equatable {
     /// or the compressed block it is decoded from (the whole archive for compressed tar and
     /// single-file streams). Nil when unknown.
     static func measure(of item: BrowserItem) -> Int64? {
+        // A split archive inside an archive is measured by all of its volumes (ZF-83).
+        if let setMeasure = item.archiveSetMeasure { return setMeasure }
         if let block = item.solidBlock { return block.packedSize }
         return item.size
     }

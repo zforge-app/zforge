@@ -320,7 +320,10 @@
         "Zforge/Native/Zforge-Bridging-Header.h",
         "Zforge/SevenZipHelper.entitlements",
         "Vendor/*",
-        "Zforge/Services/ArchiveSessionClient.swift"
+        "Zforge/Services/ArchiveSessionClient.swift",
+        "Zforge/Services/ArchiveVolumeReplacement.swift",
+        "BuildSupport/SevenZip/*",
+        "Shared/ArchiveVolumeSet.swift"
       ],
       "tests": [
         "ZforgeUITests/FinderExtensionUITests/testFinderSubmenuOffersArchiveActionsAndExtractsInZforge",

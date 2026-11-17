@@ -4,6 +4,8 @@ include makefile.gcc
 # The app uses built-in codecs only. No external plugin registry or global new override.
 LOCAL_FLAGS =
 OBJS += $(O)/FileStreams.o
+# Split output of edited and created split archives (ZF-83).
+OBJS += $(O)/MultiOutStream.o
 
 .PHONY: zforge-static
 zforge-static: $(O)/libSevenZipCore.a

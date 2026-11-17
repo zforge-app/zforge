@@ -297,6 +297,17 @@ nonisolated struct BrowserItem: Identifiable, Hashable, Sendable {
     var archiveDirectoryContainsFiles = false
     /// Set for archive entries whose decoding starts at the beginning of a shared solid block.
     var solidBlock: ArchiveSolidBlock? = nil
+    /// For a volume of a split archive on disk (ZF-83): its place in the set. Any volume acts
+    /// on the whole set; only the volume that opens the set expands inline.
+    var archiveVolume: ArchiveVolumeName? = nil
+    /// For a split archive stored inside an archive (ZF-83 stage 2): the total size of its
+    /// volumes, which entering it copies, and their preview measure (sizes or solid blocks).
+    var archiveSetSize: Int64? = nil
+    var archiveSetMeasure: Int64? = nil
+
+    /// What entering an archive inside an archive copies: its entry, or every volume of a
+    /// split archive.
+    var innerArchiveCopySize: Int64? { archiveSetSize ?? size }
     /// Cached local resource identity. It is a context hint, never an access grant.
     var fileIdentity: Data? = nil
 
@@ -373,7 +384,21 @@ nonisolated extension BrowserItem {
     var canExpandInlineInList: Bool {
         if isContainer { return !isNetworkEntry }
         guard canNavigateAsArchive else { return false }
+        if let archiveVolume, !archiveVolume.opensSet { return false }
         return ArchiveFormatRegistry.supportsFastTreeListing(name)
+    }
+
+    /// Its size is calculated when shown: a folder's contents, or a split archive's volumes (ZF-83).
+    var hasComputedSize: Bool {
+        (isDirectory && !isSymbolicLink) || archiveVolume != nil
+    }
+
+    /// A local archive file that local items can be added to by a drop or Add to Archive:
+    /// a ZIP or 7z, whole or split in `.NNN` volumes (ZF-83 stage 3); not a spanned ZIP or RAR.
+    var acceptsArchiveAdditions: Bool {
+        guard isArchive, case .fileSystem = location else { return false }
+        if let archiveVolume, !archiveVolume.scheme.isNumbered { return false }
+        return ArchiveFormatRegistry.supportsUpdating(name)
     }
 
     /// Archives are browsed in place, on disk and inside other archives, at any depth
