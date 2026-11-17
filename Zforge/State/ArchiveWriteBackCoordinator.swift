@@ -15,7 +15,7 @@ enum ArchiveWriteBackFailureChoice: Sendable, Equatable {
 }
 
 /// The interface of write-backs: progress while the outer archive is rebuilt and the
-/// questions they can raise. Its window may already be closed, so it is app-level.
+/// questions they can raise. Its window may have closed or moved on, so it is app-level.
 @MainActor
 protocol ArchiveWriteBackPresenting: AnyObject {
     func showProgress(inner: String, outer: String, cancel: @escaping @MainActor () -> Void)
@@ -28,8 +28,8 @@ protocol ArchiveWriteBackPresenting: AnyObject {
     func password(outer: String, retry: Bool) async -> String?
 }
 
-/// Writes modified inner archives back into their outer archives when their last window
-/// closes (D-73): one at a time, in the order the engine releases them, which is from
+/// Writes modified archives inside archives back into the archives containing them when
+/// they close (D-98): one at a time, in the order the engine releases them, which is from
 /// the innermost archive up. Quitting waits for it.
 @MainActor
 final class ArchiveWriteBackCoordinator {
@@ -96,6 +96,8 @@ final class ArchiveWriteBackCoordinator {
         var password: String?
         var askedForPassword = false
         while true {
+            // The archive may have ended meanwhile: its entry was removed or replaced.
+            guard await engine.writeBackDescription(sessionID) != nil else { return }
             presenter.showProgress(inner: names.inner, outer: names.outer) { [weak self] in self?.current?.cancel() }
             let attempt = Task { [engine, replacing, password] in
                 try await engine.writeBack(sessionID, password: password, replacingChangedOuter: replacing)

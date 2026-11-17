@@ -376,15 +376,20 @@ nonisolated extension BrowserItem {
         return ArchiveFormatRegistry.supportsFastTreeListing(name)
     }
 
-    /// Only archives on disk are browsed in place. An archive inside an archive is an
-    /// ordinary file: opening it materializes it into its own window (D-73).
+    /// Archives are browsed in place, on disk and inside other archives, at any depth
+    /// (D-98). An archive inside an archive is opened from a copy of it, made when it is
+    /// entered: in Columns, only selecting one within the preview limit enters it.
     var canNavigateAsArchive: Bool {
-        guard isArchive, case .fileSystem = location else { return false }
-        return true
+        guard isArchive else { return false }
+        switch location {
+        case .fileSystem: return true
+        case .archive: return !isDirectory
+        case .recents, .computer, .network, .networkServer: return false
+        }
     }
 
-    /// An archive stored inside an archive, opened as a root archive in a new window.
-    var opensAsInnerArchive: Bool {
+    /// An archive stored inside an archive (D-98).
+    var isArchiveInsideArchive: Bool {
         guard isArchive, !isDirectory, case .archive = location else { return false }
         return true
     }

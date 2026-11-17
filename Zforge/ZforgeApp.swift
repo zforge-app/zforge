@@ -93,8 +93,7 @@ private struct BrowserWindowRoot: View {
             tabSourceWindowNumber: request.tabSourceWindowNumber,
             automationAccess: request.automationAccess,
             archiveSearch: request.archiveSearch,
-            finderRequest: request.finderRequest,
-            archiveSession: request.archiveSession
+            finderRequest: request.finderRequest
         )
             .id(request.id)
             // Requests go to open browser windows; with none, they open their own (ZF-78).
@@ -102,8 +101,7 @@ private struct BrowserWindowRoot: View {
             .onAppear {
                 // A file can arrive after SwiftUI computes the default scene value.
                 // In that case, use the first new window for the archive.
-                if !hasAppeared && request.initialURL == nil && request.archiveSearch == nil && request.finderRequest == nil
-                    && request.archiveSession == nil,
+                if !hasAppeared && request.initialURL == nil && request.archiveSearch == nil && request.finderRequest == nil,
                    let pending = appDelegate.takeNextArchiveRequest() {
                     appDelegate.releaseLaunchWindow(request.id)
                     request = pending

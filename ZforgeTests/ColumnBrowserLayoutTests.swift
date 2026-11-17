@@ -168,6 +168,58 @@ extension ColumnBrowserLayoutTests {
     }
 }
 
+extension ColumnBrowserLayoutTests {
+    /// The user's recording of 2026-11-17: moving through the files of an archive in Columns,
+    /// each preview left for the moment its file was read from the archive, the column beside
+    /// it widened into the space, and the preview then pushed it back. Where the column had
+    /// already opened a branch, the reserved slot was added to the widened column, so the
+    /// columns also scrolled sideways.
+    @Test("While an archive file's preview loads, the columns keep the layout it will have")
+    func loadingArchivePreviewKeepsTheLayout() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("ColumnPreviewLoad-\(UUID().uuidString)", isDirectory: true)
+        let payload = root.appendingPathComponent("Payload", isDirectory: true)
+        let shown = root.appendingPathComponent("Shown", isDirectory: true)
+        try FileManager.default.createDirectory(at: payload.appendingPathComponent("Folder"), withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: shown, withIntermediateDirectories: true)
+        for path in ["Folder/Deep.txt", "A.txt", "B.txt"] {
+            try Data("Preview of \(path)".utf8).write(to: payload.appendingPathComponent(path))
+        }
+        defer { try? FileManager.default.removeItem(at: root) }
+        try await NativeSevenZipArchiveEngine().createArchive(
+            from: ["Folder", "A.txt", "B.txt"].map { payload.appendingPathComponent($0) },
+            outputURL: shown.appendingPathComponent("Archive.zip"), format: .zip, progress: { _ in })
+        let engine = NativeSevenZipArchiveEngine()
+        defer { Task { await engine.closeAllSessions() } }
+        let fixture = try ColumnFixture(columnWidth: 260, contentWidth: 1_120, fileSystem: FileSystemService(), archives: engine)
+        defer { fixture.close() }
+        let state = fixture.state
+        await state.navigateToSidebar(shown, name: "Shown")
+        _ = try await fixture.settle { $0.rows.first == ["Archive.zip"] }
+        await fixture.activate("Archive.zip", in: state.location)
+        let archiveLocation = state.location
+        _ = try await fixture.settle { $0.columns.count == 2 && Set($0.rows[1]) == ["Folder", "A.txt", "B.txt"] }
+
+        // A.txt before the archive's column opened a branch, then B.txt and A.txt after Folder did:
+        // from a branch to a file, and from a file to a file.
+        for (name, opensFolderFirst) in [("A.txt", false), ("B.txt", true), ("A.txt", false)] {
+            if opensFolderFirst {
+                await fixture.activate("Folder", in: archiveLocation)
+                _ = try await fixture.settle { $0.columns.count == 3 && $0.rows[2] == ["Deep.txt"] }
+            }
+            let item = try #require(state.sortedColumnItems(at: archiveLocation).first { $0.name == name })
+            state.activateColumnItem(item, in: archiveLocation)
+            // The moment after the selection, before the archive is read, laid out at once.
+            let loading = try #require(fixture.layoutNow())
+            #expect(loading.preview == nil, "\(name)'s preview is still loading")
+            let loaded = try await fixture.settle { $0.preview != nil && $0.columns.count == 2 && $0.isScrolledToTrailingEdge }
+            #expect(abs(loading.columns[1].width - loaded.columns[1].width) <= 1,
+                    "Loading \(name): the archive's column measured \(loading.columns[1].width) pt, then \(loaded.columns[1].width) pt")
+            #expect(abs(loading.documentWidth - loaded.documentWidth) <= 1,
+                    "Loading \(name): the columns measured \(loading.documentWidth) pt, then \(loaded.documentWidth) pt; \(loading)")
+        }
+    }
+}
+
 /// A browser state plus the real column view hosted offscreen.
 @MainActor
 private final class ColumnFixture {

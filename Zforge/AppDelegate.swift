@@ -38,7 +38,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         Self.current = self
         launchDidFinish()
-        // Inner archives write back into their outer archives when their last window closes.
+        // Archives inside archives write back into the archives containing them when they close.
         ArchiveWriteBackCoordinator.shared.start()
         if !ProcessInfo.processInfo.arguments.contains("--ui-fixtures"),
            ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil,
@@ -55,9 +55,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    /// Quitting waits for inner archives to be written back (D-73): their windows close
-    /// first, innermost first, and the write-backs run with visible progress. An
-    /// extraction started from Finder is cancelled first (ZF-78).
+    /// Quitting waits for archives inside archives to be written back (D-98): the windows
+    /// close, releasing them innermost first, and the write-backs run with visible progress.
+    /// An extraction started from Finder is cancelled first (ZF-78).
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
         let coordinator = ArchiveWriteBackCoordinator.shared
         let extraction = ArchiveExtractionCoordinator.shared
