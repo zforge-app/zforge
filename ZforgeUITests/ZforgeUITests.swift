@@ -400,6 +400,8 @@ final class ZforgeUITests: XCTestCase {
                 XCTAssertTrue(popup.menuItems["Open"].waitForExistence(timeout: 2), "\(mode), selected: \(selected)")
                 XCTAssertEqual(popup.menuItems["Open"].isEnabled, selected, "\(mode), selected: \(selected)")
                 XCTAssertFalse(popup.menuItems["Open with"].exists, "A blank area must show the More menu, not an item's menu: \(mode)")
+                // As in Finder's blank-area menu, New Folder comes first (ZF-85).
+                XCTAssertEqual(popup.menuItems.element(boundBy: 0).title, "New Folder", "\(mode), selected: \(selected)")
                 if let expected {
                     XCTAssertEqual(popup.menuItems.allElementsBoundByIndex.map { "\($0.label):\($0.isEnabled)" }, expected, mode)
                 }

@@ -649,7 +649,7 @@ Pending: in-app check of the row and the computer level in the four modes (light
 - [x] “Write-back alerts” snapshots (D-89): IconServices placeholder captured; the test waits until the application icon renders. Reference unchanged.
 - [x] Requirements: AGENT-INTEGRATION-PLAN measurement gate; RNF-Q08 rule on clocks in tests.
 
-### ZF-86 — Window resize stutter at toolbar stage changes (open, 2026-11-18, D-110)
+### ZF-86 — Window resize stutter at toolbar stage changes (corrected 2026-11-18, D-110; Release measurement pending)
 
 User report with a recording (2026-11-18, in Portuguese): “Olha como está travando ao alterar a largura da janela quando os ícones da action bar mudam.” Blocks 0.1.0. Workload, criteria, baseline and results: D-110.
 - [x] Baseline measured; causes identified (width in the window's body; toolbar item replacement at stage switches).
@@ -657,6 +657,16 @@ User report with a recording (2026-11-18, in Portuguese): “Olha como está tra
 - [x] Approach chosen by the user after trying a Release build (2026-11-18): all stages' items stay in the toolbar and a stage hides the others; implemented; toolbar layout tests adapted to presented items (justified in D-110) and a new item-identity guard.
 - [x] Temporary measurement harness removed (kept outside the repository); workload in D-110.
 - [ ] Measure a Release build (the test target does not link in Release) and the 900 pt switch, still 78–139 ms in Debug.
+
+### ZF-85 — New Folder in the browser's context menus (2026-11-18, D-105)
+
+User request (2026-11-18, in Portuguese, while testing Columns): “I noticed we didn't add the feature of creating folders to Zforge's context menu, add it.” Placement decided from the contract and Finder (no open choice left): Finder's blank-area shortcut menu and its Action menu start with New Folder, and its item menus have none; Zforge's blank-area menu is by contract the `•••` menu, so New Folder goes first in that shared menu (`BrowserActionsMenu`), which also feeds the toolbar overflow. Creating folders inside archives does not exist in the contract, so New Folder is disabled there, as File ▸ New Folder is. The Finder extension's Zforge submenu is not concerned (Finder has its own New Folder).
+- [x] Failing tests first: `BrowserMenuParityTests.newFolderLeadsSharedMenus`, `.newFolderIsLocalized`, the changed `blankAreaMenuMatchesMoreMenu` (D-105) and `FolderWithSelectionFlowTests.contextMenuNewFolder` failed with New Folder missing; they pass with it.
+- [x] Implementation: `BrowserActionsMenu` adds New Folder (`folder.badge.plus`, existing “New Folder” String Catalog key, 21 languages) and a separator before Open; it calls `createNewFolder()` with `canModifyCurrentDirectory`, the File ▸ New Folder handler and enablement.
+- [x] Requirements: CURRENT-STATE §7 and §8, UI-UX-GUIDE (overflow and blank-area menu).
+- [x] Real right-click popup: `testBlankAreaUsesMoreMenuInEveryView` asserts New Folder is the first entry (offscreen run).
+- [ ] Real-window visual review of the menus (symbol, separator) in light/dark and a long language; New Folder chosen from a real right-click in a real folder.
+- [ ] Not done (outside this request): New Folder with Selection as an Option alternate or a multiple-selection entry in these menus, as Finder's Action menu offers.
 
 ### ZF-84 — Friends pre-release without notarization (planned 2026-11-18, D-102)
 
@@ -670,8 +680,8 @@ User decision (2026-11-18, in Portuguese): not yet in the Apple Developer Progra
 - [x] The 12 `offscreen.realOnly` UI tests in real mode: 12/12 passed on 2026-11-18 (second attempt; the first did not start, Automation Mode authentication timed out).
 - [x] Manual real-window pass of the candidate (2026-11-18, GPT 6.2 Sol with computer use; REGRESSION-COVERAGE): no blocker; two cosmetic defects D-103 and D-104; ZF-82 and the ZF-80 write-back panel not checked.
 - [x] D-103 and D-104 corrected (2026-11-18): tests first, full `Unit` plan 800/800, offscreen UI 19/19, warning gate clean; D-104 measured faster than the previous path. D-103 shows “—” for a missing date (display being confirmed by the user).
-- [ ] The 8 `realOnly` UI tests the D-103/D-104 change selects, in real mode (user authenticates Automation Mode).
-- [ ] **On hold (user, 2026-11-18): no publication and no 0.1.0 until a performance problem the user reported is solved.**
+- [x] The 12 `realOnly` UI tests in real mode on the final state (2026-11-18): 11 passed; the Finder submenu test failed for the D-67 environment cause (the user's `/Applications/Zforge.app` extension elected), see REGRESSION-COVERAGE.
+- [x] Hold for the window resize stutter (user, 2026-11-18) lifted: ZF-86 corrected and approved by the user the same day; no publication yet (the repository is still private).
 - [x] ZF-82 ⌘⌫ in Columns checked by the user in the real window (2026-11-18): all scenarios as expected.
 - Spun off: New Folder in Zforge's context menus (user request during this check, 2026-11-18) — separate thread, ZF-85.
 - [x] Candidate Release archive checked 2026-11-18 (REGRESSION-COVERAGE); build it again from the tagged commit and repeat the checks.
