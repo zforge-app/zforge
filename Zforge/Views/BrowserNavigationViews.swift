@@ -127,7 +127,6 @@ struct BrowserSidebar: View {
     @State private var dropFeedback = SidebarDropFeedback()
     @Bindable var browser: FileBrowserState
     @Bindable var sidebar: SidebarState
-    let windowWidth: CGFloat
     let restoreContentFocus: () -> Void
     let dragSession: BrowserFileDragSession
 
@@ -231,15 +230,16 @@ struct BrowserSidebar: View {
             }
         }
         .listStyle(.sidebar)
+        // The maximum follows the window width in AppKit (`SidebarSplitConstraintView`), so a
+        // resize does not re-evaluate the sidebar (D-110). SwiftUI gets no width-dependent limit.
         .navigationSplitViewColumnWidth(
             min: BrowserSidebarLayout.minimumWidth,
-            ideal: BrowserSidebarLayout.idealWidth,
-            max: BrowserSidebarLayout.maximumWidth(for: windowWidth)
+            ideal: BrowserSidebarLayout.idealWidth
         )
         .background {
             SidebarSplitConstraint(
                 minimumWidth: BrowserSidebarLayout.minimumWidth,
-                maximumWidth: BrowserSidebarLayout.maximumWidth(for: windowWidth)
+                minimumDetailWidth: BrowserSidebarLayout.minimumDetailWidth
             )
         }
         .accessibilityIdentifier("browser-sidebar")

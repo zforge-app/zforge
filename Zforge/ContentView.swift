@@ -1,8 +1,8 @@
 import AppKit
 import SwiftUI
 
-enum BrowserToolbarLayout {
-    enum Stage: Equatable {
+nonisolated enum BrowserToolbarLayout {
+    nonisolated enum Stage: Equatable, Sendable {
         case unifiedOverflow
         case compactWithActionsOverflow
         case compactWithArchiveAction
@@ -39,6 +39,23 @@ enum BrowserToolbarLayout {
     /// window keeps its title for the Window menu).
     static func hidesTitle(for windowWidth: CGFloat, searchFieldExpanded: Bool) -> Bool {
         searchFieldExpanded && stage(for: windowWidth, searchFieldExpanded: true) == .unifiedOverflow
+    }
+
+    /// All the toolbar takes from the window width: its stage with the search field closed and
+    /// open. The window keeps only this in its state, so resizing within a stage updates no view
+    /// (D-110: the raw width in the browser's body re-evaluated the whole window at every point).
+    nonisolated struct WidthClass: Equatable, Sendable {
+        let stage: Stage
+        let searchStage: Stage
+
+        init(windowWidth: CGFloat) {
+            stage = BrowserToolbarLayout.stage(for: windowWidth)
+            searchStage = BrowserToolbarLayout.stage(for: windowWidth, searchFieldExpanded: true)
+        }
+
+        func stage(searchFieldExpanded: Bool) -> Stage { searchFieldExpanded ? searchStage : stage }
+
+        func hidesTitle(searchFieldExpanded: Bool) -> Bool { searchFieldExpanded && searchStage == .unifiedOverflow }
     }
 }
 
@@ -94,6 +111,7 @@ struct ContentView: View {
     @State private var dragSession = BrowserFileDragSession()
     @State private var authorizationPanelPresented = false
     @State private var toastMessage: String?
+    @State private var toolbarWidthClass: BrowserToolbarLayout.WidthClass?
     @State private var toastDismissTask: Task<Void, Never>?
     @State private var focusRestoreTask: Task<Void, Never>?
     @State private var toolbarOverflowMenuPresented = false
@@ -114,19 +132,24 @@ struct ContentView: View {
     }
 
     var body: some View {
-        GeometryReader { geometry in
-            browserLayout(windowWidth: geometry.size.width)
-        }
-        .frame(minWidth: 640, minHeight: 460)
+        browserLayout(widthClass: toolbarWidthClass ?? .init(windowWidth: Self.defaultWidth))
+            .onGeometryChange(for: BrowserToolbarLayout.WidthClass.self) { proxy in
+                BrowserToolbarLayout.WidthClass(windowWidth: proxy.size.width)
+            } action: { widthClass in
+                toolbarWidthClass = widthClass
+            }
+            .frame(minWidth: 640, minHeight: 460)
     }
 
+    /// The width assumed until the first layout reports the window's.
+    private static let defaultWidth: CGFloat = 1_100
+
     @ViewBuilder
-    private func browserLayout(windowWidth: CGFloat) -> some View {
+    private func browserLayout(widthClass: BrowserToolbarLayout.WidthClass) -> some View {
         NavigationSplitView {
             BrowserSidebar(
                 browser: browser,
                 sidebar: sidebar,
-                windowWidth: windowWidth,
                 restoreContentFocus: restoreContentFocus,
                 dragSession: dragSession
             )
@@ -155,8 +178,8 @@ struct ContentView: View {
             .navigationTitle(browser.title)
             .toolbarTitleDisplayMode(.inline)
             .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
-            .toolbar { browserPrimaryToolbar(windowWidth: windowWidth) }
-            .toolbar(removing: BrowserToolbarLayout.hidesTitle(for: windowWidth, searchFieldExpanded: browser.isSearchPresented) ? .title : nil)
+            .toolbar { browserPrimaryToolbar(stage: widthClass.stage(searchFieldExpanded: browser.isSearchPresented)) }
+            .toolbar(removing: widthClass.hidesTitle(searchFieldExpanded: browser.isSearchPresented) ? .title : nil)
         }
         .environment(\.locale, browser.preferences.language.locale)
         .focusedSceneValue(\.fileBrowserState, browser)
@@ -388,144 +411,110 @@ struct ContentView: View {
         }
     }
 
+    /// Every stage's items stay in the toolbar and a stage only hides the others (D-110): replacing
+    /// the items made `NSToolbar` and SwiftUI rebuild the toolbar at each stage switch.
     @ToolbarContentBuilder
-    private func browserPrimaryToolbar(windowWidth: CGFloat) -> some ToolbarContent {
+    private func browserPrimaryToolbar(stage: BrowserToolbarLayout.Stage) -> some ToolbarContent {
+        let isCompact = stage == .compactWithActionsOverflow || stage == .compactWithArchiveAction
+        let showsSearch = stage != .unifiedOverflow || browser.isSearchPresented
         ToolbarSpacer(.fixed, placement: .primaryAction)
-        switch BrowserToolbarLayout.stage(for: windowWidth, searchFieldExpanded: browser.isSearchPresented) {
-        case .unifiedOverflow:
-            ToolbarItem(id: "toolbar-overflow-menu-unified", placement: .primaryAction) {
-                Button {
-                    showToolbarActionsMenu(for: .unifiedOverflow, tracksOverflowPresentation: true)
-                } label: {
-                    ToolbarOverflowIcon(isActive: toolbarOverflowMenuPresented)
-                }
-                .focusable(false)
-                .accessibilityIdentifier("toolbar-overflow-menu")
-                .accessibilityValue(toolbarOverflowMenuPresented ? "Expanded" : "Collapsed")
-                .help("More")
-                .accessibilityLabel("More")
-            }
-            // The search button lives in this menu; an active search keeps its field.
-            if browser.isSearchPresented {
-                browserSearchToolbarItem
-            }
-        case .compactWithActionsOverflow:
-            ToolbarItem(id: "view-mode-selector-compact-actions", placement: .primaryAction) {
-                ViewModeToolbarControl(
-                    selection: $browser.viewMode,
-                    usesCompactPresentation: true
-                )
-            }
-            ToolbarSpacer(.fixed, placement: .primaryAction)
-            ToolbarItem(id: "toolbar-overflow-menu-compact-actions", placement: .primaryAction) {
-                Button {
-                    showToolbarActionsMenu(for: .compactWithActionsOverflow, tracksOverflowPresentation: true)
-                } label: {
-                    ToolbarOverflowIcon(isActive: toolbarOverflowMenuPresented)
-                }
-                .focusable(false)
-                .accessibilityIdentifier("toolbar-overflow-menu")
-                .accessibilityValue(toolbarOverflowMenuPresented ? "Expanded" : "Collapsed")
-                .help("More")
-                .accessibilityLabel("More")
-            }
-            browserSearchToolbarItem
-        case .compactWithArchiveAction:
-            ToolbarItem(id: "view-mode-selector-compact-archive", placement: .primaryAction) {
-                ViewModeToolbarControl(
-                    selection: $browser.viewMode,
-                    usesCompactPresentation: true
-                )
-            }
-            ToolbarSpacer(.fixed, placement: .primaryAction)
-            ToolbarItem(id: "archive-contextual-action-compact", placement: .primaryAction) {
-                Button {
-                    performArchiveToolbarAction()
-                } label: {
-                    ArchiveOperationIcon(symbol: browser.archiveToolbarAction.symbol)
-                }
-                .disabled(!browser.archiveToolbarAction.isEnabled)
-                .focusable(false)
-                .accessibilityIdentifier("archive-contextual-action")
-                .help(browser.archiveToolbarAction.title)
-                .accessibilityLabel(browser.archiveToolbarAction.title)
-            }
-            ToolbarSpacer(.fixed, placement: .primaryAction)
-            ToolbarItem(id: "toolbar-overflow-menu-compact-archive", placement: .primaryAction) {
-                Button {
-                    showToolbarActionsMenu(for: .compactWithArchiveAction, tracksOverflowPresentation: true)
-                } label: {
-                    ToolbarOverflowIcon(isActive: toolbarOverflowMenuPresented)
-                }
-                .focusable(false)
-                .accessibilityIdentifier("toolbar-overflow-menu")
-                .accessibilityValue(toolbarOverflowMenuPresented ? "Expanded" : "Collapsed")
-                .help("More")
-                .accessibilityLabel("More")
-            }
-            browserSearchToolbarItem
-        case .expanded:
-            ToolbarItem(id: "view-mode-selector-expanded", placement: .primaryAction) {
-                ViewModeToolbarControl(
-                    selection: $browser.viewMode,
-                    usesCompactPresentation: false
-                )
-            }
-            ToolbarSpacer(.fixed, placement: .primaryAction)
-            ToolbarItemGroup(placement: .primaryAction) {
-                Button {
-                    performArchiveToolbarAction()
-                } label: {
-                    ArchiveOperationIcon(symbol: browser.archiveToolbarAction.symbol)
-                }
-                .disabled(!browser.archiveToolbarAction.isEnabled)
-                .focusable(false)
-                .accessibilityIdentifier("archive-contextual-action")
-                .help(browser.archiveToolbarAction.title)
-                .accessibilityLabel(browser.archiveToolbarAction.title)
-
-                Button {
-                    browser.shareItems()
-                } label: {
-                    ToolbarActionIcon(kind: .share)
-                }
-                .disabled(!canShareSelection)
-                .focusable(false)
-                .help("Share")
-                .accessibilityLabel("Share")
-
-                Button {
-                    browser.editTags()
-                } label: {
-                    ToolbarActionIcon(kind: .tag)
-                }
-                .disabled(!browser.canEditTags)
-                .focusable(false)
-                .help("Edit Tags")
-                .accessibilityLabel("Edit Tags")
-                .accessibilityIdentifier("edit-tags-action")
-
-                Button {
-                    showToolbarActionsMenu(for: .expanded)
-                } label: {
-                    ToolbarActionIcon(kind: .more)
-                }
-                .help("More")
-                .focusable(false)
-                .accessibilityLabel("More")
-                .accessibilityIdentifier("toolbar-more-menu")
-            }
-            browserSearchToolbarItem
+        ToolbarItem(id: "view-mode-selector-compact", placement: .primaryAction) {
+            ViewModeToolbarControl(selection: $browser.viewMode, usesCompactPresentation: true)
         }
+        .hidden(!isCompact)
+        ToolbarItem(id: "view-mode-selector-expanded", placement: .primaryAction) {
+            ViewModeToolbarControl(selection: $browser.viewMode, usesCompactPresentation: false)
+        }
+        .hidden(stage != .expanded)
+        ToolbarSpacer(.fixed, placement: .primaryAction)
+            .hidden(stage == .unifiedOverflow)
+        ToolbarItem(id: "archive-contextual-action-compact", placement: .primaryAction) {
+            Button {
+                performArchiveToolbarAction()
+            } label: {
+                ArchiveOperationIcon(symbol: browser.archiveToolbarAction.symbol)
+            }
+            .disabled(!browser.archiveToolbarAction.isEnabled)
+            .focusable(false)
+            .accessibilityIdentifier("archive-contextual-action")
+            .help(browser.archiveToolbarAction.title)
+            .accessibilityLabel(browser.archiveToolbarAction.title)
+        }
+        .hidden(stage != .compactWithArchiveAction)
+        ToolbarSpacer(.fixed, placement: .primaryAction)
+            .hidden(stage != .compactWithArchiveAction)
+        ToolbarItemGroup(placement: .primaryAction) {
+            Button {
+                performArchiveToolbarAction()
+            } label: {
+                ArchiveOperationIcon(symbol: browser.archiveToolbarAction.symbol)
+            }
+            .disabled(!browser.archiveToolbarAction.isEnabled)
+            .focusable(false)
+            .accessibilityIdentifier("archive-contextual-action")
+            .help(browser.archiveToolbarAction.title)
+            .accessibilityLabel(browser.archiveToolbarAction.title)
+
+            Button {
+                browser.shareItems()
+            } label: {
+                ToolbarActionIcon(kind: .share)
+            }
+            .disabled(!canShareSelection)
+            .focusable(false)
+            .help("Share")
+            .accessibilityLabel("Share")
+
+            Button {
+                browser.editTags()
+            } label: {
+                ToolbarActionIcon(kind: .tag)
+            }
+            .disabled(!browser.canEditTags)
+            .focusable(false)
+            .help("Edit Tags")
+            .accessibilityLabel("Edit Tags")
+            .accessibilityIdentifier("edit-tags-action")
+
+            Button {
+                showToolbarActionsMenu(for: .expanded)
+            } label: {
+                ToolbarActionIcon(kind: .more)
+            }
+            .help("More")
+            .focusable(false)
+            .accessibilityLabel("More")
+            .accessibilityIdentifier("toolbar-more-menu")
+        }
+        .hidden(stage != .expanded)
+        browserTrailingToolbar(stage: stage, showsSearch: showsSearch)
     }
 
-    /// After the action group, in its own capsule, as in Finder.
+    /// The double-chevron menu in its own capsule (the expanded stage has More in its group
+    /// instead), then the search item in its own capsule after a fixed space, as in Finder.
     @ToolbarContentBuilder
-    private var browserSearchToolbarItem: some ToolbarContent {
+    private func browserTrailingToolbar(stage: BrowserToolbarLayout.Stage, showsSearch: Bool) -> some ToolbarContent {
         ToolbarSpacer(.fixed, placement: .primaryAction)
+            .hidden(stage != .expanded)
+        ToolbarItem(id: "toolbar-overflow-menu", placement: .primaryAction) {
+            Button {
+                showToolbarActionsMenu(for: stage, tracksOverflowPresentation: true)
+            } label: {
+                ToolbarOverflowIcon(isActive: toolbarOverflowMenuPresented)
+            }
+            .focusable(false)
+            .accessibilityIdentifier("toolbar-overflow-menu")
+            .accessibilityValue(toolbarOverflowMenuPresented ? "Expanded" : "Collapsed")
+            .help("More")
+            .accessibilityLabel("More")
+        }
+        .hidden(stage == .expanded)
+        ToolbarSpacer(.fixed, placement: .primaryAction)
+            .hidden(stage == .expanded || !showsSearch)
         ToolbarItem(id: "toolbar-search", placement: .primaryAction) {
             BrowserToolbarSearchControl(state: browser, restoreContentFocus: restoreContentFocus)
         }
+        .hidden(!showsSearch)
     }
 
     private var canShareSelection: Bool {
