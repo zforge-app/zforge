@@ -67,6 +67,18 @@ To run the unit tests:
 xcodebuild test -project Zforge.xcodeproj -scheme Zforge -testPlan Unit
 ```
 
+## UI tests
+
+`Scripts/affected-tests.py --run` runs the unit tests and the UI tests your changes affect. UI tests take over the screen unless [zforge-xcuitest-sim](https://github.com/zforge-app/zforge-xcuitest-sim) is installed, which runs them offscreen and in parallel. Clone it next to this checkout (or set `ZFORGE_XCUISIM` to its path), and build it with the signing identity of the team you chose for the app:
+
+```bash
+git clone https://github.com/zforge-app/zforge-xcuitest-sim.git ../zforge-xcuitest-sim
+cd ../zforge-xcuitest-sim
+XCUISIM_SIGN_IDENTITY="Apple Development" Scripts/build-tools.sh
+```
+
+Build it again after updating it. Without it, the script says so and runs the UI tests on screen. Tests that leave the app, such as those using Finder or drag and drop, always do.
+
 ## Use it from an agent
 
 Zforge's executable doubles as an [MCP](https://modelcontextprotocol.io) server. In Settings ▸ Automation, choose **Copy MCP Configuration** and paste the result into your MCP client. The configuration points to the copy of Zforge you are running, so copy it again if you move the app.
