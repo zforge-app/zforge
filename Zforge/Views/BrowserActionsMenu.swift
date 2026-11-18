@@ -97,6 +97,13 @@ enum BrowserActionsMenu {
             menu.addItem(.separator())
         }
 
+        // Finder's Action menu and blank-area menu start with New Folder. It runs File ▸ New Folder
+        // (same destination, enablement, inline rename and Undo) and never targets the selection.
+        addItem("New Folder", systemImage: "folder.badge.plus", isEnabled: browser.canModifyCurrentDirectory) {
+            browser.createNewFolder()
+        }
+        menu.addItem(.separator())
+
         let selected = browser.selectedItems
         menu.addItem(ClosureMenuItem(title: AppLocalization.string("Open", locale: locale), action: .open,
                                      isEnabled: !selected.isEmpty) {

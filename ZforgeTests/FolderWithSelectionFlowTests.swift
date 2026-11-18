@@ -5,7 +5,8 @@ import Testing
 
 /// Per-mode parity of the New Folder with Selection command flow, previously
 /// repeated by XCUITest in every mode: availability, grouping, inline rename,
-/// opening the grouped folder, and the unchanged New Folder command afterwards.
+/// opening the grouped folder, and the unchanged New Folder command afterwards;
+/// also New Folder chosen from the shared blank-area/More menu (ZF-85).
 @Suite("New folder with selection flow", .serialized)
 @MainActor
 struct FolderWithSelectionFlowTests {
@@ -65,6 +66,39 @@ struct FolderWithSelectionFlowTests {
             #expect(state.renameDraft == "untitled folder", "The original New Folder command must still work in \(mode)")
             #expect(FileManager.default.fileExists(atPath: root.appendingPathComponent("untitled folder").path), "\(mode)")
             state.cancelRenaming()
+        }
+    }
+
+    @Test("Choosing New Folder in the blank-area and More menu creates an untitled folder in the current folder, edits its name, and Undo removes it",
+          arguments: BrowserViewMode.allCases)
+    func contextMenuNewFolder(mode: BrowserViewMode) async throws {
+        try await withFixture(mode: mode) { state, root in
+            let undoManager = UndoManager()
+            state.configureUndoManager(undoManager)
+            // A selected folder keeps its place: the new folder goes to the folder shown, not into the selection.
+            state.select(try item("Dropped", in: state))
+            #expect(state.canModifyCurrentDirectory, "File ▸ New Folder is enabled: \(mode)")
+            let overflow = BrowserActionsMenu.make(state: state, includesArchiveAction: true, includesShareAction: true, showToast: { _ in })
+            #expect(overflow.items.first { $0.title == "New Folder" }?.isEnabled == true, "overflow, \(mode)")
+            let menu = BrowserActionsMenu.make(state: state, showToast: { _ in })
+            let index = try #require(menu.items.firstIndex { $0.title == "New Folder" }, "\(mode): \(menu.items.map(\.title))")
+            #expect(index == 0, "\(mode)")
+            #expect(menu.items[index].isEnabled, "\(mode)")
+            menu.performActionForItem(at: index)
+            try await waitUntil("New Folder starts renaming in \(mode)") { state.renamingItemID != nil }
+            let created = root.appendingPathComponent("untitled folder")
+            #expect(state.renameDraft == "untitled folder", "\(mode)")
+            #expect(state.primarySelection?.name == "untitled folder", "\(mode)")
+            var isDirectory: ObjCBool = false
+            #expect(FileManager.default.fileExists(atPath: created.path, isDirectory: &isDirectory) && isDirectory.boolValue, "\(mode)")
+            #expect(try FileManager.default.contentsOfDirectory(atPath: root.appendingPathComponent("Dropped").path).isEmpty,
+                    "Nothing is created inside the selected folder in \(mode)")
+            state.cancelRenaming()
+            #expect(undoManager.undoActionName == "New Folder", "\(mode)")
+            undoManager.undo()
+            try await waitUntil("Undo removes the new folder in \(mode)") { !FileManager.default.fileExists(atPath: created.path) }
+            #expect(try FileManager.default.contentsOfDirectory(atPath: root.path).sorted() == ["Dropped", "Local.txt", "Sample.zip"],
+                    "\(mode)")
         }
     }
 
