@@ -25,7 +25,10 @@ struct BrowserMenuParityTests {
                 let more = fixture.moreMenu()
                 let blank = fixture.blankAreaMenu()
                 #expect(signature(blank) == signature(more), "\(context)")
-                let open = try #require(more.items.first, "\(context)")
+                // Finder's Action menu and blank-area menu start with New Folder (ZF-85, D-105).
+                #expect(more.items.first?.title == "New Folder", "\(context)")
+                #expect(more.items.dropFirst().first?.isSeparatorItem == true, "\(context)")
+                let open = try #require(more.items.dropFirst(2).first, "\(context)")
                 #expect(open.title == "Open", "\(context)")
                 #expect(open.isEnabled == (selection != .none), "\(context)")
                 #expect(!more.items.contains { $0.title == "Open with" }, "Only an item's menu offers Open with: \(context)")
@@ -38,6 +41,63 @@ struct BrowserMenuParityTests {
             }
         }
         #expect(reference.count == BrowserMenuFixture.Selection.allCases.count)
+    }
+
+    @Test("New Folder leads the More, blank-area and overflow menus with Finder's symbol, enabled where File ▸ New Folder is, and stays out of item menus")
+    func newFolderLeadsSharedMenus() async throws {
+        for mode in BrowserViewMode.allCases {
+            let fixture = try await BrowserMenuFixture(mode: mode)
+            defer { fixture.close() }
+            for selection in BrowserMenuFixture.Selection.allCases {
+                let target = try await fixture.select(selection)
+                let context = "\(mode), \(selection)"
+                // The fixture lists Recents, then an archive's contents: neither is a folder that can receive a
+                // new folder, so New Folder is disabled, like File ▸ New Folder. The enabled case in a real
+                // folder is covered by FolderWithSelectionFlowTests.contextMenuNewFolder.
+                if selection == .archiveEntry {
+                    guard case .archive = fixture.state.location else {
+                        Issue.record("Expected the archive's contents: \(context)"); continue
+                    }
+                } else {
+                    #expect(fixture.state.location == .recents, "\(context)")
+                }
+                let enabled = false
+                #expect(fixture.state.canModifyCurrentDirectory == enabled, "File ▸ New Folder enablement: \(context)")
+                for (name, menu) in [("More", fixture.moreMenu()), ("blank area", fixture.blankAreaMenu()),
+                                     ("overflow", fixture.overflowMenu())] {
+                    let titles = menu.items.map { $0.isSeparatorItem ? "—" : $0.title }
+                    let index = try #require(menu.items.firstIndex { $0.title == "New Folder" }, "\(name) menu, \(context): \(titles)")
+                    let entry = menu.items[index]
+                    #expect(menu.items.filter { $0.title == "New Folder" }.count == 1, "\(name) menu, \(context): \(titles)")
+                    #expect(entry.isEnabled == enabled, "\(name) menu, \(context)")
+                    #expect(!entry.isAlternate, "\(name) menu, \(context)")
+                    #expect(entry.image?.isTemplate == true, "\(name) menu, \(context)")
+                    #expect(entry.image?.accessibilityDescription == "New Folder", "\(name) menu, \(context)")
+                    let expectedImage = try #require(NSImage(systemSymbolName: "folder.badge.plus", accessibilityDescription: nil))
+                    #expect(entry.image?.size == expectedImage.size, "\(name) menu, \(context)")
+                    // New Folder heads the selection actions in its own group: nothing above it but the
+                    // overflow's own additions, a separator below it, then Open.
+                    #expect(index == 0 || menu.items[index - 1].isSeparatorItem, "\(name) menu, \(context): \(titles)")
+                    #expect(menu.items[index + 1].isSeparatorItem, "\(name) menu, \(context): \(titles)")
+                    #expect(menu.items[index + 2].title == "Open", "\(name) menu, \(context): \(titles)")
+                }
+                #expect(fixture.moreMenu().items.first?.title == "New Folder", "More menu, \(context)")
+                // Finder's item menus have no New Folder: the item's menu stays as it was.
+                if selection != .none {
+                    #expect(!fixture.itemMenu(for: target).items.contains { $0.title == "New Folder" }, "item menu, \(context)")
+                }
+            }
+        }
+    }
+
+    @Test("New Folder uses the app language in the shared menus")
+    func newFolderIsLocalized() async throws {
+        let fixture = try await BrowserMenuFixture(mode: .icons)
+        defer { fixture.close() }
+        fixture.state.preferences.language = .portugueseBrazil
+        let entry = try #require(fixture.blankAreaMenu().items.first)
+        #expect(entry.title == "Nova Pasta")
+        #expect(entry.title == AppLocalization.string("New Folder", locale: fixture.state.preferences.language.locale))
     }
 
     @Test("A selected archive offers the same archive actions in the More menu and its context menu, without Compress")

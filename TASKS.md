@@ -649,6 +649,16 @@ Pending: in-app check of the row and the computer level in the four modes (light
 - [x] “Write-back alerts” snapshots (D-89): IconServices placeholder captured; the test waits until the application icon renders. Reference unchanged.
 - [x] Requirements: AGENT-INTEGRATION-PLAN measurement gate; RNF-Q08 rule on clocks in tests.
 
+### ZF-85 — New Folder in the browser's context menus (2026-11-18, D-105)
+
+User request (2026-11-18, in Portuguese, while testing Columns): “I noticed we didn't add the feature of creating folders to Zforge's context menu, add it.” Placement decided from the contract and Finder (no open choice left): Finder's blank-area shortcut menu and its Action menu start with New Folder, and its item menus have none; Zforge's blank-area menu is by contract the `•••` menu, so New Folder goes first in that shared menu (`BrowserActionsMenu`), which also feeds the toolbar overflow. Creating folders inside archives does not exist in the contract, so New Folder is disabled there, as File ▸ New Folder is. The Finder extension's Zforge submenu is not concerned (Finder has its own New Folder).
+- [x] Failing tests first: `BrowserMenuParityTests.newFolderLeadsSharedMenus`, `.newFolderIsLocalized`, the changed `blankAreaMenuMatchesMoreMenu` (D-105) and `FolderWithSelectionFlowTests.contextMenuNewFolder` failed with New Folder missing; they pass with it.
+- [x] Implementation: `BrowserActionsMenu` adds New Folder (`folder.badge.plus`, existing “New Folder” String Catalog key, 21 languages) and a separator before Open; it calls `createNewFolder()` with `canModifyCurrentDirectory`, the File ▸ New Folder handler and enablement.
+- [x] Requirements: CURRENT-STATE §7 and §8, UI-UX-GUIDE (overflow and blank-area menu).
+- [x] Real right-click popup: `testBlankAreaUsesMoreMenuInEveryView` asserts New Folder is the first entry (offscreen run).
+- [ ] Real-window visual review of the menus (symbol, separator) in light/dark and a long language; New Folder chosen from a real right-click in a real folder.
+- [ ] Not done (outside this request): New Folder with Selection as an Option alternate or a multiple-selection entry in these menus, as Finder's Action menu offers.
+
 ### ZF-83 — Split archives with the features of whole archives (implemented 2026-11-17, D-101; real-window review pending)
 
 User request (2026-11-17, in Portuguese): “let's handle split archives and give them the same features we give whole ones.” Contract and stages: OPEN-REQUIREMENTS “Split archives with the features of whole archives (ZF-83, D-101)”. Defects found while planning: D-101. User decisions (2026-11-17): every volume stays visible and acts on the whole set; WinZip-style `.zip` + `.zNN` sets stay read-only; creating split archives is the last stage; RAR fixtures are made with RARLAB's `rar`, installed temporarily.

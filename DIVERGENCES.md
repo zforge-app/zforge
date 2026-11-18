@@ -637,6 +637,12 @@ Cause: the offscreen sidebar starts at 144 pt with two-line rows until `SidebarS
 
 Correction (test only; scenario and the 28 pt assertion unchanged): the fixture's wait lays out the whole window between polls (`window.layoutIfNeeded()`, which updates constraints first, as the display cycle does), and the sidebar test waits until the rows exist, the table is 206 pt wide and neither the table nor any ancestor needs a constraint update or layout (`isLaidOut`). With the same `Task.yield()` injection the suite passed 50/50.
 
+### D-105 — The browser's context menus had no New Folder (corrected 2026-11-18, ZF-85)
+
+Reported by the user on 2026-11-18 while testing Columns: Zforge's context menu had no way to create a folder; only File ▸ New Folder (`⇧⌘N`) did. Finder's blank-area shortcut menu and its Action menu both begin with New Folder, so the shared `•••`/blank-area menu now does too.
+
+Changed test expectation (user request 2026-11-18, conflicting with the previous contract): `BrowserMenuParityTests.blankAreaMenuMatchesMoreMenu` required the More menu's first entry to be Open; it now requires New Folder, a separator, then Open, still with the More and blank-area menus identical for every selection and mode. Requirement text: CURRENT-STATE §7 and §8, UI-UX-GUIDE (overflow and blank-area menu). Pending: real-window visual review.
+
 ### D-101 — Split archives lacked features of whole archives and mishandled their volumes (corrected 2026-11-17, ZF-83)
 
 Found while planning ZF-83 (user request, 2026-11-17: split archives should have the features of whole ones). CURRENT-STATE “Navigable formats” limits inline expansion and writing to non-multivolume ZIP/7z; besides that limit, the code mishandles split sets in ways no contract states:
