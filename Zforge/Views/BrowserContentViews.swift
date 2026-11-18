@@ -357,10 +357,12 @@ struct BrowserItemNameView: View {
 }
 
 extension BrowserItem {
-    var displayKind: String {
-        if isDirectory { return AppLocalization.string("Folder") }
-        if isArchive { return AppLocalization.string("Archive") }
-        return contentType?.localizedDescription ?? AppLocalization.string("Document")
+    /// The Kind shown for this item, in List's Kind column and in the preview (D-104: one rule).
+    nonisolated func displayKind(locale: Locale?) -> String {
+        if isDirectory { return AppLocalization.string("Folder", locale: locale) }
+        if archiveVolume != nil { return AppLocalization.string("Split archive", locale: locale) }
+        if isArchive { return AppLocalization.string("Archive", locale: locale) }
+        return contentType?.localizedDescription ?? AppLocalization.string("Document", locale: locale)
     }
 }
 

@@ -649,6 +649,15 @@ Pending: in-app check of the row and the computer level in the four modes (light
 - [x] “Write-back alerts” snapshots (D-89): IconServices placeholder captured; the test waits until the application icon renders. Reference unchanged.
 - [x] Requirements: AGENT-INTEGRATION-PLAN measurement gate; RNF-Q08 rule on clocks in tests.
 
+### ZF-86 — Window resize stutter at toolbar stage changes (corrected 2026-11-18, D-110; Release measurement pending)
+
+User report with a recording (2026-11-18, in Portuguese): “Olha como está travando ao alterar a largura da janela quando os ícones da action bar mudam.” Blocks 0.1.0. Workload, criteria, baseline and results: D-110.
+- [x] Baseline measured; causes identified (width in the window's body; toolbar item replacement at stage switches).
+- [x] Step 1: width out of the body (`WidthClass`, sidebar maximum in AppKit). Steps without a switch about 45–55 % faster in median; switches unchanged.
+- [x] Approach chosen by the user after trying a Release build (2026-11-18): all stages' items stay in the toolbar and a stage hides the others; implemented; toolbar layout tests adapted to presented items (justified in D-110) and a new item-identity guard.
+- [x] Temporary measurement harness removed (kept outside the repository); workload in D-110.
+- [ ] Measure a Release build (the test target does not link in Release) and the 900 pt switch, still 78–139 ms in Debug.
+
 ### ZF-85 — New Folder in the browser's context menus (2026-11-18, D-105)
 
 User request (2026-11-18, in Portuguese, while testing Columns): “I noticed we didn't add the feature of creating folders to Zforge's context menu, add it.” Placement decided from the contract and Finder (no open choice left): Finder's blank-area shortcut menu and its Action menu start with New Folder, and its item menus have none; Zforge's blank-area menu is by contract the `•••` menu, so New Folder goes first in that shared menu (`BrowserActionsMenu`), which also feeds the toolbar overflow. Creating folders inside archives does not exist in the contract, so New Folder is disabled there, as File ▸ New Folder is. The Finder extension's Zforge submenu is not concerned (Finder has its own New Folder).
@@ -658,6 +667,31 @@ User request (2026-11-18, in Portuguese, while testing Columns): “I noticed we
 - [x] Real right-click popup: `testBlankAreaUsesMoreMenuInEveryView` asserts New Folder is the first entry (offscreen run).
 - [ ] Real-window visual review of the menus (symbol, separator) in light/dark and a long language; New Folder chosen from a real right-click in a real folder.
 - [ ] Not done (outside this request): New Folder with Selection as an Option alternate or a multiple-selection entry in these menus, as Finder's Action menu offers.
+
+### ZF-84 — Friends pre-release without notarization (planned 2026-11-18, D-102)
+
+User decision (2026-11-18, in Portuguese): not yet in the Apple Developer Program; publish a pre-release for a few friends to test. Contract: PRODUCT-REQUIREMENTS “Model distribution” (friends pre-release); accepted deviation D-102.
+- [x] Channel (user decision, 2026-11-18): the user will make the repository public when it is ready; the pre-release is a GitHub pre-release of that public repository, whose tag is the corresponding source.
+- [ ] Before making the repository public: review the history once more. Scan of 2026-11-18: no tracked file contains a local home path, no secret-like assignment, no blob over 20 MB; commit authors include a personal email besides GitHub noreply addresses (the user considers it already public).
+- [ ] Decide where testers report problems (GitHub issues once public).
+- [x] Version (user decision, 2026-11-18): `0.1.0`, tag `v0.1.0-beta.1`. `MARKETING_VERSION` 0.0.1 → 0.1.0 and `CURRENT_PROJECT_VERSION` 26 → 27 for the app and the Finder extension (test targets unchanged).
+- [x] 2026-11-18: `Scripts/update-7zip.py --status` (vendored 26.06 = upstream 26.06), `--verify` OK, `Scripts/update-notices.py --check` OK, `Scripts/affected-tests.py --check` (31 UI tests, 24 rules, 0 problems).
+- [x] 2026-11-18, staged state: `Scripts/check-warnings.py` no warnings; full `Unit` plan 797/797; offscreen part of `UI-Full` 18/19 (ZF-73 intermittent failure). Results in REGRESSION-COVERAGE.
+- [x] The 12 `offscreen.realOnly` UI tests in real mode: 12/12 passed on 2026-11-18 (second attempt; the first did not start, Automation Mode authentication timed out).
+- [x] Manual real-window pass of the candidate (2026-11-18, GPT 6.2 Sol with computer use; REGRESSION-COVERAGE): no blocker; two cosmetic defects D-103 and D-104; ZF-82 and the ZF-80 write-back panel not checked.
+- [x] D-103 and D-104 corrected (2026-11-18): tests first, full `Unit` plan 800/800, offscreen UI 19/19, warning gate clean; D-104 measured faster than the previous path. D-103 shows “—” for a missing date (display being confirmed by the user).
+- [x] The 12 `realOnly` UI tests in real mode on the final state (2026-11-18): 11 passed; the Finder submenu test failed for the D-67 environment cause (the user's `/Applications/Zforge.app` extension elected), see REGRESSION-COVERAGE.
+- [x] Hold for the window resize stutter (user, 2026-11-18) lifted: ZF-86 corrected and approved by the user the same day; no publication yet (the repository is still private).
+- [x] ZF-82 ⌘⌫ in Columns checked by the user in the real window (2026-11-18): all scenarios as expected.
+- Spun off: New Folder in Zforge's context menus (user request during this check, 2026-11-18) — separate thread, ZF-85.
+- [x] Candidate Release archive checked 2026-11-18 (REGRESSION-COVERAGE); build it again from the tagged commit and repeat the checks.
+- [ ] Final Release archive of the `Zforge` scheme from the tag, signed with Apple Development; check `codesign --verify --deep --strict`, the entitlements of the app and of the Finder extension (no `get-task-allow`, no `temporary-exception` keys, which the Debug build carries), `arm64`, the version, the embedded extension and Acknowledgments.
+- [ ] Package with `ditto -c -k --keepParent` (keeps the signature) and record the SHA-256.
+- [ ] Install test on another Mac from a browser download (quarantine): Open Anyway, Home grant, Finder extension, open/extract/compress, Shortcuts, MCP after approval.
+- [x] README “Install a pre-release” section and version note (2026-11-18).
+- [ ] Annotated tag on the exact commit; release notes as required by PRODUCT-REQUIREMENTS.
+- [ ] Record the published version in CURRENT-STATE.
+- [ ] Before the first Developer ID build: test whether pre-release grants survive the change of designated requirement (D-102).
 
 ### ZF-83 — Split archives with the features of whole archives (implemented 2026-11-17, D-101; real-window review pending)
 
@@ -678,7 +712,7 @@ User request (2026-11-17, in Portuguese): after deleting a file with ⌘⌫ in C
 - [x] Reproduced offscreen first: `ColumnDeletionSelectionTests` failed in 7 of its 8 scenarios (empty selection after the deletion).
 - [x] Fix: `refreshColumnsAfterRemovingLocalItems(_:movesCursorFromRemovedItems:)` records the focused item's column and position before the removal and, after the refresh, selects the item now at that position (`activateColumnItem`, no history entry); an emptied column leaves its folder selected in the previous column. Turned on by Move to Trash, Delete Immediately and an open folder found gone on reload; moves, grouping, duplication and their Undo keep their own selection (the first version applied it to every caller and broke two New Folder with Selection tests in Columns, caught by the full `Unit` plan).
 - [x] Requirements: UI-UX-GUIDE “Column view”, CURRENT-STATE “Update” and “Columns”.
-- [ ] Real-window check of ⌘⌫ in Columns (the Trash path itself is not run by unit tests, which do not move files to the user's Trash).
+- [x] Real-window check of ⌘⌫ in Columns: done by the user on the 0.1.0 (27) Release candidate, 2026-11-18 (ZF-84) — every scenario as expected (REGRESSION-COVERAGE “Friends pre-release 0.1.0”).
 
 ### ZF-81 — Columns preview slot held while an archive file's preview loads (2026-11-17, D-99)
 
@@ -769,6 +803,7 @@ Requested: adopt the recommended way to keep 7-Zip current (vendored sources, an
 `ZforgeUITests.testCompactToolbarMenusOpenFromTheirToolbarButtons` fails intermittently offscreen at `ZforgeUITests.swift:952`: right after the overflow button's click, its value still reads “Collapsed”. Every occurrence ran in the same lane right after `testBlankAreaUsesMoreMenuInEveryView`, the pair whose earlier shared-preferences cause was corrected by ZF-54 (D-63).
 
 - Occurrences: `zf66-full-1` (2026-11-09, ZF-66); the ZF-67 run of 2026-11-10; `affected-20261110-111216` (2026-11-10, ZF-72 merge validation, branch `0108594`). None of these changes touched the test or the browser toolbar.
+- Occurrence of 2026-11-18 (ZF-84 release validation, `affected-20261118-143321`, `ZforgeUITests.swift:1119` after the file grew): same “Collapsed” value, but in a lane where it followed `SettingsUITests.testListColumnsReorderByDragging`, so the pairing with `testBlankAreaUsesMoreMenuInEveryView` is not required.
 - Passes: alone and as that pair on the same build (ZF-67 re-run); 18/18 offscreen set of 2026-11-10 (`affected-20261110-100133`). No real-mode failure recorded.
 - [ ] Reproduce deterministically (for example, run the pair repeatedly in one lane and capture the app's toolbar state and the event timeline at the click), and decide whether the click reaches the button before it is ready (app or test synchronization) or the offscreen tool delivers it differently (tool limit). Do not retry or lengthen timeouts to hide it.
 - [ ] Fix the cause with a failing case first, then record the result here and in REGRESSION-COVERAGE.

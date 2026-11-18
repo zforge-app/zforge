@@ -322,6 +322,7 @@ nonisolated struct BrowserItem: Identifiable, Hashable, Sendable {
 
     var kindSortKey: String {
         if isDirectory { return "folder" }
+        if archiveVolume != nil { return "archive.split" }
         if isArchive { return "archive" }
         return contentType?.identifier ?? URL(fileURLWithPath: name).pathExtension.lowercased()
     }

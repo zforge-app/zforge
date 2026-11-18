@@ -19,6 +19,15 @@ nonisolated enum ArchiveVolumeScheme: String, Sendable, Hashable, Codable {
 
     /// Whether the volumes are byte slices of one archive that the engine reads as one stream.
     var isNumbered: Bool { self == .sevenZipNumbered || self == .zipNumbered }
+
+    /// The extension of a whole archive of the set's format, whose icon every volume shows (D-104).
+    var formatExtension: String {
+        switch self {
+        case .sevenZipNumbered: "7z"
+        case .zipNumbered, .zipSpanned: "zip"
+        case .rarParts, .rarLegacy: "rar"
+        }
+    }
 }
 
 /// What a file name says about its place in a split archive.

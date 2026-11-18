@@ -125,6 +125,30 @@ final class FileIconCache {
     }
     private var archiveFolderIcons: [ArchiveFolderKey: NSImage] = [:]
     private var localFolderIcons: [ArchiveFolderKey: NSImage] = [:]
+    private var volumeIcons: [ArchiveVolumeScheme: NSImage] = [:]
+
+    /// Every volume of a split archive shows the icon of a whole archive of its format, which
+    /// the system cannot give for `.002`, `.z01` or `.r00` (D-104). One lookup per format: the
+    /// set's opening volume when it carries the format's extension (`name.zip` of a spanned set,
+    /// `.rar` sets, whose type may be undeclared and only claimed by Zforge's document types),
+    /// otherwise the format's declared type.
+    private func volumeIcon(for volume: ArchiveVolumeName, at url: URL) -> NSImage {
+        if let cached = volumeIcons[volume.scheme] { return cached }
+        let format = volume.scheme.formatExtension
+        let opening = url.deletingLastPathComponent().appendingPathComponent(volume.openingName)
+        if opening.pathExtension.lowercased() == format, FileManager.default.fileExists(atPath: opening.path) {
+            let icon = NSWorkspace.shared.icon(forFile: opening.path)
+            volumeIcons[volume.scheme] = icon
+            return icon
+        }
+        if let type = UTType(filenameExtension: format), !type.isDynamic {
+            let icon = NSWorkspace.shared.icon(for: type)
+            volumeIcons[volume.scheme] = icon
+            return icon
+        }
+        // An undeclared format without its opening volume: the volume's own icon, not cached.
+        return NSWorkspace.shared.icon(forFile: url.path)
+    }
 
     private func localDirectoryIcon(hasContents: Bool, isOpen: Bool = false) -> NSImage {
         let key = ArchiveFolderKey(scale: .large, containsFiles: hasContents, isExpanded: isOpen)
@@ -151,6 +175,9 @@ final class FileIconCache {
     func icon(for item: BrowserItem) -> NSImage {
         guard let url = item.localURL else {
             return NSImage(named: NSImage.folderName) ?? NSImage()
+        }
+        if let volume = item.archiveVolume, !item.isDirectory {
+            return volumeIcon(for: volume, at: url)
         }
 
         let base = icon(

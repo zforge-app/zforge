@@ -1,3 +1,4 @@
+import AppKit
 import Foundation
 import Testing
 @testable import Zforge
@@ -853,6 +854,64 @@ struct SplitArchiveTests {
         let outer = folder.appendingPathComponent("Outer.zip")
         try await NativeSevenZipArchiveEngine().createArchive(from: [sets], outputURL: outer, format: .zip, progress: { _ in })
         return (outer, folder)
+    }
+
+    // MARK: Volume presentation (D-104)
+
+    @Test("Every volume's Kind is “Split archive” in List and in the preview; whole archives stay “Archive”")
+    func volumeKind() async throws {
+        let english = Locale(identifier: "en_US")
+        let items = try await FileSystemService().items(in: Self.fixtures, showHidden: false)
+        func item(_ name: String) throws -> BrowserItem { try #require(items.first { $0.name == name }, "\(name)") }
+        for name in Self.all.flatMap(\.volumes) {
+            let volume = try item(name)
+            #expect(volume.displayKind(locale: english) == "Split archive", "List Kind: \(name)")
+            #expect(BrowserSelectionSummary(items: [volume], locale: english).subtitle.hasPrefix("Split archive · "),
+                    "Preview Kind: \(name)")
+        }
+        for name in ["sample.zip", "nested.7z"] {
+            #expect(try item(name).displayKind(locale: english) == "Archive", "\(name)")
+        }
+        // Sorting by Kind keeps the volumes together, apart from whole archives.
+        let volumeKeys = Set(try Self.all.flatMap(\.volumes).map { try item($0).kindSortKey })
+        #expect(volumeKeys.count == 1)
+        #expect(try volumeKeys.first != item("sample.zip").kindSortKey)
+    }
+
+    @Test("Every volume of a set shows the icon of a whole archive of its format")
+    @MainActor
+    func volumeIcons() async throws {
+        func pixels(_ image: NSImage) throws -> Data {
+            let bitmap = try #require(NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: 64, pixelsHigh: 64,
+                bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
+                colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0))
+            NSGraphicsContext.saveGraphicsState()
+            NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: bitmap)
+            image.draw(in: NSRect(x: 0, y: 0, width: 64, height: 64))
+            NSGraphicsContext.restoreGraphicsState()
+            return try #require(bitmap.tiffRepresentation)
+        }
+        // Whole archives of each format, in a folder of their own so that no set claims them.
+        let folder = FileManager.default.temporaryDirectory.appendingPathComponent("ZforgeVolumeIcons-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        for (source, whole) in [("nested.7z", "whole.7z"), ("sample.zip", "whole.zip"), ("parts.part1.rar", "whole.rar")] {
+            try FileManager.default.copyItem(at: Self.fixtures.appendingPathComponent(source),
+                                             to: folder.appendingPathComponent(whole))
+        }
+        let wholes = try await FileSystemService().items(in: folder, showHidden: false)
+        let volumes = try await FileSystemService().items(in: Self.fixtures, showHidden: false)
+        func icon(_ name: String, in items: [BrowserItem]) throws -> Data {
+            try pixels(FileIconCache.shared.icon(for: try #require(items.first { $0.name == name }, "\(name)")))
+        }
+        let expected: [(SplitSet, String)] = [(Self.sevenZip, "whole.7z"), (Self.zipNumbered, "whole.zip"),
+            (Self.zipSpanned, "whole.zip"), (Self.rarParts, "whole.rar"), (Self.rarLegacy, "whole.rar")]
+        for (set, whole) in expected {
+            let wholeIcon = try icon(whole, in: wholes)
+            for name in set.volumes {
+                #expect(try icon(name, in: volumes) == wholeIcon, "\(name) vs \(whole)")
+            }
+        }
     }
 
     private func allFiles(engine: NativeSevenZipArchiveEngine, address: ArchiveAddress, prefix: String = "") async throws -> [String: BrowserItem] {
