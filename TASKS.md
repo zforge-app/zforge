@@ -659,14 +659,15 @@ User report (2026-11-18, in Portuguese): connecting to an SMB server opened Find
 - [x] Tests: `NetworkLevelTests` (sheet flow, address parsing, share matching, network row); requirements synchronized.
 - [x] User run in the app (2026-11-18): the Debug build of this branch, against the user's SMB server, with the steps to eject the share with the new ⏏, reconnect through the Remote sheet and Cancel during the system sign-in dialog; the user confirmed (“perfeito”). Not confirmed separately: the share-selection dialog, a Network-level server, dark mode and a long language.
 
-### ZF-86 — Window resize stutter at toolbar stage changes (corrected 2026-11-18, D-110; Release measurement pending)
+### ZF-86 — Window resize stutter at toolbar stage changes (corrected 2026-11-18, D-110; stage switches above the 50 ms target)
 
 User report with a recording (2026-11-18, in Portuguese): “Olha como está travando ao alterar a largura da janela quando os ícones da action bar mudam.” Blocks 0.1.0. Workload, criteria, baseline and results: D-110.
 - [x] Baseline measured; causes identified (width in the window's body; toolbar item replacement at stage switches).
 - [x] Step 1: width out of the body (`WidthClass`, sidebar maximum in AppKit). Steps without a switch about 45–55 % faster in median; switches unchanged.
 - [x] Approach chosen by the user after trying a Release build (2026-11-18): all stages' items stay in the toolbar and a stage hides the others; implemented; toolbar layout tests adapted to presented items (justified in D-110) and a new item-identity guard.
 - [x] Temporary measurement harness removed (kept outside the repository); workload in D-110.
-- [ ] Measure a Release build (the test target does not link in Release) and the 900 pt switch, still 78–139 ms in Debug.
+- [x] Release measurement: waived by the user (2026-11-18) — the target is meant to hold in the Debug workload already; the test target does not link in Release.
+- [ ] Bring every stage switch under 50 ms in the D-110 Debug workload: 900 pt is 78–139 ms, 678 pt 42–88 ms, 840 pt 34–58 ms. Does not block 0.1.0; the user asked to record it and improve it later (2026-11-18). Remaining cost: `NSToolbarView` layout (glass tiling) and the content's layout.
 
 ### ZF-85 — New Folder in the browser's context menus (2026-11-18, D-105)
 
@@ -815,6 +816,7 @@ Requested: adopt the recommended way to keep 7-Zip current (vendored sources, an
 
 - Occurrences: `zf66-full-1` (2026-11-09, ZF-66); the ZF-67 run of 2026-11-10; `affected-20261110-111216` (2026-11-10, ZF-72 merge validation, branch `0108594`). None of these changes touched the test or the browser toolbar.
 - Occurrence of 2026-11-18 (ZF-84 release validation, `affected-20261118-143321`, `ZforgeUITests.swift:1119` after the file grew): same “Collapsed” value, but in a lane where it followed `SettingsUITests.testListColumnsReorderByDragging`, so the pairing with `testBlankAreaUsesMoreMenuInEveryView` is not required.
+- Occurrence of 2026-11-18 (ZF-84, final `main` with ZF-87, `affected-20261118-204341`, `ZforgeUITests.swift:1121`): “Collapsed” again, again in the lane right after `SettingsUITests.testListColumnsReorderByDragging` (the second recorded occurrence right after that test). Run alone right after (`affected-20261118-204925`): passed.
 - Passes: alone and as that pair on the same build (ZF-67 re-run); 18/18 offscreen set of 2026-11-10 (`affected-20261110-100133`). No real-mode failure recorded.
 - [ ] Reproduce deterministically (for example, run the pair repeatedly in one lane and capture the app's toolbar state and the event timeline at the click), and decide whether the click reaches the button before it is ready (app or test synchronization) or the offscreen tool delivers it differently (tool limit). Do not retry or lengthen timeouts to hide it.
 - [ ] Fix the cause with a failing case first, then record the result here and in REGRESSION-COVERAGE.
