@@ -649,6 +649,16 @@ Pending: in-app check of the row and the computer level in the four modes (light
 - [x] “Write-back alerts” snapshots (D-89): IconServices placeholder captured; the test waits until the application icon renders. Reference unchanged.
 - [x] Requirements: AGENT-INTEGRATION-PLAN measurement gate; RNF-Q08 rule on clocks in tests.
 
+### ZF-87 — Connect to servers inside Zforge and eject shares from Shared (2026-11-18, D-111)
+
+User report (2026-11-18, in Portuguese): connecting to an SMB server opened Finder instead of Zforge, the Remote sheet stayed open, Cancel left the share connected, and Shared had no eject button.
+- [x] Sandbox check: sandboxed probe against the user's SMB server; NetFS may mount under `/Volumes` when no mount path is passed.
+- [x] Mount with NetFS (`NetFSNetworkServerMounter`) for the Remote sheet and the Network level; no Finder window.
+- [x] Remote sheet: “Connecting…” progress, closes and opens the share on success, failures in the sheet, Cancel/Escape cancels the mount, bare server names connect over SMB.
+- [x] Inline ⏏ on Shared rows (one `volumeRow(_:)` for Locations and Shared).
+- [x] Tests: `NetworkLevelTests` (sheet flow, address parsing, share matching, network row); requirements synchronized.
+- [x] User run in the app (2026-11-18): the Debug build of this branch, against the user's SMB server, with the steps to eject the share with the new ⏏, reconnect through the Remote sheet and Cancel during the system sign-in dialog; the user confirmed (“perfeito”). Not confirmed separately: the share-selection dialog, a Network-level server, dark mode and a long language.
+
 ### ZF-86 — Window resize stutter at toolbar stage changes (corrected 2026-11-18, D-110; Release measurement pending)
 
 User report with a recording (2026-11-18, in Portuguese): “Olha como está travando ao alterar a largura da janela quando os ícones da action bar mudam.” Blocks 0.1.0. Workload, criteria, baseline and results: D-110.
@@ -692,6 +702,7 @@ User decision (2026-11-18, in Portuguese): not yet in the Apple Developer Progra
 - [ ] Annotated tag on the exact commit; release notes as required by PRODUCT-REQUIREMENTS.
 - [ ] Record the published version in CURRENT-STATE.
 - [ ] Before the first Developer ID build: test whether pre-release grants survive the change of designated requirement (D-102).
+
 
 ### ZF-83 — Split archives with the features of whole archives (implemented 2026-11-17, D-101; real-window review pending)
 

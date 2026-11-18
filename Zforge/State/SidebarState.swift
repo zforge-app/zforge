@@ -33,9 +33,6 @@ final class SidebarState {
     var volumes: [SidebarVolume] = []
     /// Follows the system computer name; re-read on refresh and app activation.
     private(set) var computer = SidebarComputer.current()
-    var isConnecting = false
-    var serverAddress = "smb://"
-    var serverError: String?
 
     var pinnedFolders = PinnedFolderStore.shared
 
@@ -93,21 +90,6 @@ final class SidebarState {
     func refreshComputer() {
         let current = SidebarComputer.current()
         if current != computer { computer = current }
-    }
-
-    func connectToServer() async -> URL? {
-        serverError = nil
-        guard let url = URL(string: serverAddress), ["smb", "afp", "nfs"].contains(url.scheme?.lowercased() ?? "") else {
-            serverError = AppLocalization.string("Use an smb://, afp://, or nfs:// address.")
-            return nil
-        }
-        isConnecting = true
-        let opened = NSWorkspace.shared.open(url)
-        if !opened { serverError = AppLocalization.string("The server could not be opened.") }
-        try? await Task.sleep(for: .seconds(1))
-        await refresh()
-        isConnecting = false
-        return networkVolumes.first?.url
     }
 
     private func destination(_ name: String.LocalizationValue, _ url: URL, _ icon: String) -> SidebarDestination {
