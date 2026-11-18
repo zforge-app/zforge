@@ -457,7 +457,7 @@ private struct BrowserListRow: View {
             item.formattedDate(item.extendedMetadata.lastOpenedDate, locale: locale)
         case .dateAdded: item.formattedDate(item.extendedMetadata.dateAdded, locale: locale)
         case .size: item.formattedSize(locale: locale)
-        case .kind: item.displayKind
+        case .kind: item.displayKind(locale: locale)
         case .lastModifiedBy, .sharedBy: "—"
         case .version: item.extendedMetadata.version ?? "—"
         case .comments: item.extendedMetadata.comments ?? "—"
