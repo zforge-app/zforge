@@ -649,6 +649,16 @@ Pending: in-app check of the row and the computer level in the four modes (light
 - [x] “Write-back alerts” snapshots (D-89): IconServices placeholder captured; the test waits until the application icon renders. Reference unchanged.
 - [x] Requirements: AGENT-INTEGRATION-PLAN measurement gate; RNF-Q08 rule on clocks in tests.
 
+### ZF-87 — Connect to servers inside Zforge and eject shares from Shared (2026-11-18, D-111)
+
+User report (2026-11-18, in Portuguese): connecting to an SMB server opened Finder instead of Zforge, the Remote sheet stayed open, Cancel left the share connected, and Shared had no eject button.
+- [x] Sandbox check: sandboxed probe against the user's SMB server; NetFS may mount under `/Volumes` when no mount path is passed.
+- [x] Mount with NetFS (`NetFSNetworkServerMounter`) for the Remote sheet and the Network level; no Finder window.
+- [x] Remote sheet: “Connecting…” progress, closes and opens the share on success, failures in the sheet, Cancel/Escape cancels the mount, bare server names connect over SMB.
+- [x] Inline ⏏ on Shared rows (one `volumeRow(_:)` for Locations and Shared).
+- [x] Tests: `NetworkLevelTests` (sheet flow, address parsing, share matching, network row); requirements synchronized.
+- [ ] User run in the app: fresh mount through the sheet, Cancel during the system sign-in dialog, share selection for an address without a share, ejecting a share with the new ⏏ button.
+
 ### ZF-83 — Split archives with the features of whole archives (implemented 2026-11-17, D-101; real-window review pending)
 
 User request (2026-11-17, in Portuguese): “let's handle split archives and give them the same features we give whole ones.” Contract and stages: OPEN-REQUIREMENTS “Split archives with the features of whole archives (ZF-83, D-101)”. Defects found while planning: D-101. User decisions (2026-11-17): every volume stays visible and acts on the whole set; WinZip-style `.zip` + `.zNN` sets stay read-only; creating split archives is the last stage; RAR fixtures are made with RARLAB's `rar`, installed temporarily.

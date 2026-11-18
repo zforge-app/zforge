@@ -242,9 +242,8 @@ struct ContentView: View {
             browser.close()
         }
         .sheet(isPresented: serverSheetBinding, onDismiss: restoreContentFocus) {
-            ServerConnectionSheet(sidebar: sidebar) { url in
-                Task { await browser.navigateToSidebar(url, name: url.lastPathComponent) }
-            }
+            ServerConnectionSheet(browser: browser)
+                .environment(\.locale, browser.preferences.language.locale)
         }
         .sheet(item: Binding(get: { browser.tagEditingRequest }, set: { browser.tagEditingRequest = $0 }), onDismiss: restoreContentFocus) { request in
             FinderTagEditor(request: request, browser: browser)
@@ -648,7 +647,8 @@ struct ContentView: View {
     private var serverSheetBinding: Binding<Bool> {
         Binding(
             get: { browser.showingServerConnection },
-            set: { browser.showingServerConnection = $0 }
+            // Any other dismissal (Escape) cancels a pending connection like the Cancel button.
+            set: { if !$0 { browser.cancelServerConnection() } else { browser.showingServerConnection = true } }
         )
     }
 

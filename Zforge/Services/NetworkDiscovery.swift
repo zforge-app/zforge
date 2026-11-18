@@ -1,5 +1,6 @@
 import AppKit
 import Foundation
+import NetFS
 import Network
 import UniformTypeIdentifiers
 import os
@@ -58,8 +59,10 @@ nonisolated protocol NetworkServerMounting: Sendable {
     func mount(_ url: URL) async throws -> URL
 }
 
-nonisolated enum NetworkServerMountError: Error {
+nonisolated enum NetworkServerMountError: Error, Equatable {
     case couldNotOpen
+    /// NetFS refused the mount: a POSIX error (positive) or an `OSStatus` (negative).
+    case failed(status: Int32)
 }
 
 // MARK: - Network level contents
@@ -247,44 +250,165 @@ private nonisolated final class BonjourBrowseSession: @unchecked Sendable {
 
 // MARK: - Mounting
 
-/// Mounts through the system's connect flow, the same one as the Shared ▸ Remote sheet:
-/// `NSWorkspace.open` hands the address to the system, which authenticates, lets the
-/// user pick a share and mounts it. Zforge then waits for the network volume's mount
-/// notification; the wait ends when the requesting task is cancelled.
-nonisolated struct WorkspaceNetworkServerMounter: NetworkServerMounting {
+/// Mounts with NetFS inside Zforge, so connecting never opens a Finder window. The system's
+/// NetAuth agent shows its own sign-in and share-selection dialogs. With no mount path,
+/// NetAuthSysAgent lets a sandboxed caller mount under `/Volumes`, as Finder does; a custom
+/// mount path outside the app container would need Full Disk Access. Cancelling the requesting
+/// task cancels the pending mount request and closes those dialogs.
+nonisolated struct NetFSNetworkServerMounter: NetworkServerMounting {
     func mount(_ url: URL) async throws -> URL {
-        if let mounted = Self.mountedShare(of: url) { return mounted }
-        let (mounts, continuation) = AsyncStream.makeStream(of: URL.self)
-        let center = NSWorkspace.shared.notificationCenter
-        let observer = center.addObserver(forName: NSWorkspace.didMountNotification, object: nil, queue: nil) { note in
-            if let volume = note.userInfo?[NSWorkspace.volumeURLUserInfoKey] as? URL { continuation.yield(volume) }
+        if let mounted = MountedNetworkShares.share(of: url) { return mounted }
+        let request = NetFSMountRequest(url: url)
+        let outcome = await withTaskCancellationHandler {
+            await withCheckedContinuation { continuation in request.start(continuation) }
+        } onCancel: {
+            request.cancel()
         }
-        defer {
-            center.removeObserver(observer)
-            continuation.finish()
+        switch outcome {
+        case let .mounted(paths):
+            guard let path = paths.first else { throw NetworkServerMountError.couldNotOpen }
+            return MountedNetworkShares.location(in: URL(fileURLWithPath: path, isDirectory: true), for: url)
+        case .alreadyMounted:
+            // The share is mounted under another address of the server (e.g. Bonjour name vs IP).
+            guard let mounted = MountedNetworkShares.share(of: url) else { throw NetworkServerMountError.couldNotOpen }
+            return mounted
+        case .cancelled:
+            throw CancellationError()
+        case let .failed(status):
+            throw NetworkServerMountError.failed(status: status)
         }
-        guard await MainActor.run(body: { NSWorkspace.shared.open(url) }) else {
-            throw NetworkServerMountError.couldNotOpen
-        }
-        for await volume in mounts where Self.isNetworkVolume(volume) {
-            return volume
-        }
-        throw CancellationError()
+    }
+}
+
+/// One `NetFSMountURLAsync` request. NetFS never calls the completion block of a cancelled request,
+/// so `cancel()` resumes the waiting task itself; whichever of the two finishes first wins.
+private nonisolated final class NetFSMountRequest: @unchecked Sendable {
+    enum Outcome: Sendable {
+        case mounted([String])
+        case alreadyMounted
+        case cancelled
+        case failed(Int32)
     }
 
-    /// A share of this server that is already mounted, matched by the remount address's host.
-    private static func mountedShare(of url: URL) -> URL? {
-        guard let host = url.host(percentEncoded: false)?.lowercased() else { return nil }
+    /// `userCanceledErr`: the user closed the system sign-in or share dialog.
+    private static let userCancelled: Int32 = -128
+    private static let queue = DispatchQueue(label: "io.libor.Zforge.network-mount")
+
+    private let url: URL
+    private let lock = NSLock()
+    private var requestID: AsyncRequestID?
+    private var isCancelled = false
+    private var continuation: CheckedContinuation<Outcome, Never>?
+
+    init(url: URL) { self.url = url }
+
+    func start(_ continuation: CheckedContinuation<Outcome, Never>) {
+        lock.lock()
+        guard !isCancelled else {
+            lock.unlock()
+            continuation.resume(returning: .cancelled)
+            return
+        }
+        self.continuation = continuation
+        lock.unlock()
+
+        let openOptions = NSMutableDictionary()
+        openOptions[kNAUIOptionKey] = kNAUIOptionAllowUI
+        var id: AsyncRequestID?
+        let status = NetFSMountURLAsync(url as CFURL, nil, nil, nil, openOptions, nil, &id, Self.queue) { [self] status, _, mountpoints in
+            finish(Self.outcome(status: status, mountpoints: mountpoints))
+        }
+        guard status == 0 else {
+            finish(Self.outcome(status: status, mountpoints: nil))
+            return
+        }
+        lock.lock()
+        requestID = id
+        let cancelNow = isCancelled
+        lock.unlock()
+        if cancelNow, let id { _ = NetFSMountURLCancel(id) }
+    }
+
+    func cancel() {
+        lock.lock()
+        isCancelled = true
+        let id = requestID
+        lock.unlock()
+        if let id { _ = NetFSMountURLCancel(id) }
+        finish(.cancelled)
+    }
+
+    private func finish(_ outcome: Outcome) {
+        lock.lock()
+        let continuation = continuation
+        self.continuation = nil
+        lock.unlock()
+        continuation?.resume(returning: outcome)
+    }
+
+    private static func outcome(status: Int32, mountpoints: CFArray?) -> Outcome {
+        switch status {
+        case 0: .mounted((mountpoints as? [String]) ?? [])
+        case EEXIST: .alreadyMounted
+        case userCancelled, ECANCELED: .cancelled
+        default: .failed(status)
+        }
+    }
+}
+
+/// Finds mounted network shares by the address they were mounted from (`volumeURLForRemounting`).
+nonisolated enum MountedNetworkShares {
+    /// The mounted share of `url`'s server: the same host and, when the address names a share, that
+    /// share (hosts and share names compare case-insensitively). An address without a share matches
+    /// any mounted share of the host.
+    static func share(of url: URL) -> URL? {
         let volumes = FileManager.default.mountedVolumeURLs(
             includingResourceValuesForKeys: [.volumeURLForRemountingKey], options: [.skipHiddenVolumes]
         ) ?? []
-        return volumes.first { volume in
-            let remount = try? volume.resourceValues(forKeys: [.volumeURLForRemountingKey]).volumeURLForRemounting
-            return remount?.host(percentEncoded: false)?.lowercased() == host
-        }
+        return volumes.lazy.compactMap { volume -> URL? in
+            guard let remount = try? volume.resourceValues(forKeys: [.volumeURLForRemountingKey]).volumeURLForRemounting,
+                  matches(remount, address: url) else { return nil }
+            return location(in: volume, for: url)
+        }.first
     }
 
-    private static func isNetworkVolume(_ url: URL) -> Bool {
-        (try? url.resourceValues(forKeys: [.volumeIsLocalKey]))?.volumeIsLocal == false
+    static func matches(_ remount: URL, address: URL) -> Bool {
+        guard let host = address.host(percentEncoded: false)?.lowercased(), !host.isEmpty,
+              remount.host(percentEncoded: false)?.lowercased() == host else { return false }
+        guard let share = shareName(of: address) else { return true }
+        return shareName(of: remount)?.lowercased() == share.lowercased()
+    }
+
+    /// The folder to open in a mounted share: the share root, or the folder below it that the
+    /// address names (`smb://server/share/Projects`) when it exists.
+    static func location(in mountPoint: URL, for address: URL) -> URL {
+        let components = pathComponents(of: address).dropFirst()
+        guard !components.isEmpty else { return mountPoint }
+        let folder = components.reduce(mountPoint) { $0.appendingPathComponent($1, isDirectory: true) }
+        var isDirectory: ObjCBool = false
+        return FileManager.default.fileExists(atPath: folder.path, isDirectory: &isDirectory) && isDirectory.boolValue
+            ? folder : mountPoint
+    }
+
+    private static func shareName(of url: URL) -> String? { pathComponents(of: url).first }
+
+    private static func pathComponents(of url: URL) -> [String] {
+        url.path(percentEncoded: false).split(separator: "/").map(String.init)
+    }
+}
+
+/// Parses what the user typed in the Remote sheet, as Finder's Connect to Server does: an
+/// `smb://`, `afp://` or `nfs://` address with a server, or a bare server name or IP address
+/// (optionally followed by a share path), which connects over SMB.
+nonisolated enum ServerAddress {
+    static let schemes: Set<String> = ["smb", "afp", "nfs"]
+
+    static func url(from text: String) -> URL? {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+        let address = trimmed.contains("://") ? trimmed : "smb://\(trimmed)"
+        guard let url = URL(string: address), let scheme = url.scheme?.lowercased(), schemes.contains(scheme),
+              let host = url.host(percentEncoded: false), !host.isEmpty else { return nil }
+        return url
     }
 }

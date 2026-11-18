@@ -347,6 +347,190 @@ struct NetworkLevelTests {
         #expect(state.showingServerConnection, "Go ▸ Remote uses the same entry point")
     }
 
+    // MARK: Remote sheet (user report, 2026-11-18: Finder opened instead of Zforge, the sheet stayed)
+
+    private func waitForMountRequest(_ fixture: Fixture) async {
+        for _ in 0..<1_000 {
+            if await !fixture.mounter.requests.isEmpty { return }
+            await Task.yield()
+        }
+    }
+
+    @Test("Connect mounts the typed address in Zforge, closes the sheet and opens the share in the window")
+    func remoteSheetConnectsAndOpensShare() async throws {
+        let fixture = try fixture()
+        defer { fixture.tearDown() }
+        let state = fixture.state
+        await state.navigateToComputer()
+        state.showServerConnection()
+        state.serverAddress = "smb://192.168.0.13/Media"
+
+        await state.connectToServer()
+        #expect(await fixture.mounter.requests == [URL(string: "smb://192.168.0.13/Media")!])
+        #expect(!state.showingServerConnection, "The sheet closes once the share is mounted")
+        #expect(!state.isConnectingToServer)
+        #expect(state.serverConnectionError == nil)
+        #expect(state.location == .fileSystem(fixture.share), "The window, not Finder, opens the mounted share")
+        #expect(state.items.map(\.name) == ["Movies"])
+    }
+
+    @Test("The sheet shows that it is connecting while the system signs in and mounts")
+    func remoteSheetShowsProgress() async throws {
+        let fixture = try fixture(mountResult: .pending)
+        defer { fixture.tearDown() }
+        let state = fixture.state
+        await state.navigateToComputer()
+        state.showServerConnection()
+        state.serverAddress = "smb://192.168.0.13"
+
+        let connecting = Task { await state.connectToServer() }
+        await waitForMountRequest(fixture)
+        #expect(state.isConnectingToServer)
+        #expect(state.showingServerConnection, "The sheet stays open while connecting")
+        await state.connectToServer()
+        #expect(await fixture.mounter.requests.count == 1, "Connect is ignored while a connection is pending")
+
+        state.cancelServerConnection()
+        await connecting.value
+    }
+
+    @Test("Cancel while connecting cancels the mount, closes the sheet and keeps the location")
+    func remoteSheetCancelCancelsMount() async throws {
+        let fixture = try fixture(mountResult: .pending)
+        defer { fixture.tearDown() }
+        let state = fixture.state
+        await state.navigateToComputer()
+        state.showServerConnection()
+        state.serverAddress = "smb://192.168.0.13"
+
+        let connecting = Task { await state.connectToServer() }
+        await waitForMountRequest(fixture)
+        state.cancelServerConnection()
+        #expect(!state.showingServerConnection, "Cancel closes the sheet at once")
+        #expect(!state.isConnectingToServer)
+        await connecting.value
+        #expect(await fixture.mounter.cancellations == 1, "The pending mount request is cancelled")
+        #expect(state.location == .computer, "A cancelled connection never navigates")
+        #expect(!state.showingServerConnection)
+        #expect(state.serverConnectionError == nil)
+        #expect(state.error == nil)
+    }
+
+    @Test("Closing the system sign-in dialog keeps the sheet open, without an error, ready to connect again")
+    func remoteSheetSystemDialogCancelled() async throws {
+        let fixture = try fixture(mountResult: .cancelledBySystem)
+        defer { fixture.tearDown() }
+        let state = fixture.state
+        await state.navigateToComputer()
+        state.showServerConnection()
+        state.serverAddress = "smb://192.168.0.13"
+
+        await state.connectToServer()
+        #expect(state.showingServerConnection)
+        #expect(!state.isConnectingToServer)
+        #expect(state.serverConnectionError == nil)
+        #expect(state.location == .computer)
+    }
+
+    @Test("A failed connection keeps the sheet open with the failure, and connecting again clears it")
+    func remoteSheetFailure() async throws {
+        let fixture = try fixture(mountResult: .failure)
+        defer { fixture.tearDown() }
+        let state = fixture.state
+        await state.navigateToComputer()
+        state.showServerConnection()
+        state.serverAddress = "smb://192.168.0.13"
+
+        await state.connectToServer()
+        #expect(state.showingServerConnection)
+        #expect(!state.isConnectingToServer)
+        #expect(state.serverConnectionError == "The server could not be opened.")
+        #expect(state.error == nil, "The failure is shown in the sheet, not as a window alert")
+        #expect(state.location == .computer)
+
+        state.serverAddress = "ftp://192.168.0.13"
+        await state.connectToServer()
+        #expect(state.serverConnectionError == "Use an smb://, afp://, or nfs:// address.")
+        #expect(await fixture.mounter.requests.count == 1, "An unsupported address is not sent to the system")
+    }
+
+    @Test("Closing the window while the sheet connects cancels the mount")
+    func closingWindowCancelsSheetConnection() async throws {
+        let fixture = try fixture(mountResult: .pending)
+        defer { fixture.tearDown() }
+        let state = fixture.state
+        state.showServerConnection()
+        state.serverAddress = "smb://192.168.0.13"
+
+        let connecting = Task { await state.connectToServer() }
+        await waitForMountRequest(fixture)
+        state.close()
+        await connecting.value
+        #expect(await fixture.mounter.cancellations == 1)
+    }
+
+    @Test("Typed addresses: smb, afp and nfs with a server; a bare server or IP connects over SMB",
+          arguments: [
+              ("smb://192.168.0.13", "smb://192.168.0.13"),
+              ("  SMB://Studio-NAS.local/Media  ", "SMB://Studio-NAS.local/Media"),
+              ("afp://nas.local", "afp://nas.local"),
+              ("nfs://nas.local/export", "nfs://nas.local/export"),
+              ("192.168.0.13", "smb://192.168.0.13"),
+              ("nas.local/Media", "smb://nas.local/Media"),
+              ("smb://user@192.168.0.13/D", "smb://user@192.168.0.13/D")
+          ])
+    func typedAddresses(_ typed: String, _ expected: String) {
+        #expect(ServerAddress.url(from: typed)?.absoluteString == expected)
+    }
+
+    @Test("Addresses without a server or with another scheme are rejected",
+          arguments: ["", "   ", "smb://", "ftp://nas.local", "http://nas.local/share", "afp:///Media"])
+    func rejectedAddresses(_ typed: String) {
+        #expect(ServerAddress.url(from: typed) == nil)
+    }
+
+    @Test("A mounted share matches its server's host and, when the address names one, its share")
+    func mountedShareMatching() throws {
+        let remount = try #require(URL(string: "smb://smb-d@192.168.0.13/D"))
+        #expect(MountedNetworkShares.matches(remount, address: try #require(URL(string: "smb://192.168.0.13"))))
+        #expect(MountedNetworkShares.matches(remount, address: try #require(URL(string: "smb://192.168.0.13/d"))),
+                "Share names compare case-insensitively")
+        #expect(MountedNetworkShares.matches(remount, address: try #require(URL(string: "smb://192.168.0.13/D/Projects"))))
+        #expect(!MountedNetworkShares.matches(remount, address: try #require(URL(string: "smb://192.168.0.13/Media"))),
+                "Another share of the same server is not the mounted one")
+        #expect(!MountedNetworkShares.matches(remount, address: try #require(URL(string: "smb://192.168.0.14/D"))))
+        let bonjour = try #require(URL(string: "smb://Studio%20NAS._smb._tcp.local/Media"))
+        #expect(MountedNetworkShares.matches(bonjour, address: try #require(URL(string: "smb://studio%20nas._smb._tcp.local"))))
+    }
+
+    @Test("An address naming a folder inside the share opens that folder when it exists, else the share")
+    func mountedShareLocation() throws {
+        let fixture = try fixture()
+        defer { fixture.tearDown() }
+        let share = fixture.share
+        #expect(MountedNetworkShares.location(in: share, for: try #require(URL(string: "smb://nas/Media")))
+                .standardizedFileURL == share.standardizedFileURL)
+        #expect(MountedNetworkShares.location(in: share, for: try #require(URL(string: "smb://nas/Media/Movies")))
+                .standardizedFileURL == share.appendingPathComponent("Movies").standardizedFileURL)
+        #expect(MountedNetworkShares.location(in: share, for: try #require(URL(string: "smb://nas/Media/Missing")))
+                .standardizedFileURL == share.standardizedFileURL)
+    }
+
+    @Test("Shared network volumes use the network symbol and are ejectable like other external volumes")
+    func networkVolumeSidebarRow() {
+        let share = SidebarVolume(url: URL(fileURLWithPath: "/Volumes/192.168.0.13"), name: "D", kind: .network,
+                                  isEjectable: SidebarVolume.isEjectable(isRootFileSystem: false, isEjectable: false,
+                                                                         isRemovable: false, isLocal: false,
+                                                                         isInternal: nil),
+                                  isRemovable: false)
+        #expect(share.sidebarSymbol == "network")
+        #expect(share.isEjectable, "A mounted share shows the inline eject button and can be disconnected")
+        #expect(SidebarVolume(url: URL(fileURLWithPath: "/Volumes/Ventoy"), name: "Ventoy", kind: .removable,
+                              isEjectable: true, isRemovable: true).sidebarSymbol == "externaldrive")
+        #expect(SidebarVolume(url: URL(fileURLWithPath: "/"), name: "Macintosh HD", kind: .internalDisk,
+                              isEjectable: false, isRemovable: false).sidebarSymbol == "internaldrive")
+    }
+
     // MARK: Entry points without a sidebar item (user request, 2026-11-09)
 
     @Test("Go ▸ Network from a folder opens Computer › Network; Back and Forward keep working and Up returns to the computer")
@@ -429,6 +613,8 @@ private actor StubNetworkMounter: NetworkServerMounting {
     enum Result: Sendable {
         case mounted(URL)
         case failure
+        /// The user closed the system's sign-in or share dialog.
+        case cancelledBySystem
         /// Waits until the requesting task is cancelled.
         case pending
     }
@@ -446,6 +632,8 @@ private actor StubNetworkMounter: NetworkServerMounting {
             return share
         case .failure:
             throw NetworkServerMountError.couldNotOpen
+        case .cancelledBySystem:
+            throw CancellationError()
         case .pending:
             do {
                 try await Task.sleep(for: .seconds(3_600))

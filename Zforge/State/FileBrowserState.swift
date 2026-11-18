@@ -182,7 +182,9 @@ final class FileBrowserState {
     @ObservationIgnored private let networkMounter: any NetworkServerMounting
     /// Runs while the path shows the Network level; cancelled when it leaves the path or the window closes.
     @ObservationIgnored private var networkDiscoveryTask: Task<Void, Never>?
-    @ObservationIgnored private var networkConnectionTask: Task<Void, Never>?
+    @ObservationIgnored private var networkConnectionTask: Task<ServerMountOutcome, Never>?
+    /// The Remote sheet's pending mount; cancelled by the sheet's Cancel or by closing the window.
+    @ObservationIgnored private var serverConnectionTask: Task<ServerMountOutcome, Never>?
     @ObservationIgnored private var networkServers: [NetworkServer] = []
     @ObservationIgnored private var volumeObservers: [NSObjectProtocol] = []
     @ObservationIgnored private let monitor = DirectoryMonitor()
@@ -377,6 +379,12 @@ final class FileBrowserState {
     var archiveOperationDescription = "Working with archive…"
     var showingGoToFolder = false
     var showingServerConnection = false
+    /// The Remote sheet's address; it keeps the last address typed in this window.
+    var serverAddress = "smb://"
+    /// The Remote sheet is waiting for the system to sign in and mount.
+    private(set) var isConnectingToServer = false
+    /// The Remote sheet's error, shown below the address.
+    var serverConnectionError: String?
     var renamingItemURL: URL?
     var renameDraft = ""
     var renameInProgress = false
@@ -949,7 +957,7 @@ final class FileBrowserState {
         self.searchDebounce = searchDebounce ?? { try await Task.sleep(for: FileBrowserState.searchDebounceInterval) }
         self.volumes = volumes ?? VolumeCatalogService()
         self.networkBrowser = networkBrowser ?? BonjourNetworkServerBrowser()
-        self.networkMounter = networkMounter ?? WorkspaceNetworkServerMounter()
+        self.networkMounter = networkMounter ?? NetFSNetworkServerMounter()
         self.viewMode = preferences.viewMode
         self.fileSystem = fileSystem
         self.fileOperations = fileOperations
@@ -1576,27 +1584,94 @@ final class FileBrowserState {
         updatePreview()
     }
 
-    /// Opening a server of the Network level connects through the system's flow (the same as
-    /// Shared ▸ Remote) and, once its share is mounted, opens the share. A newer request, leaving
-    /// the Network level or closing the window cancels the wait without navigating.
+    /// Opening a server of the Network level mounts it inside Zforge (the same flow as the Remote
+    /// sheet) and opens the mounted share. A newer request, leaving the Network level or closing
+    /// the window cancels the mount without navigating.
     private func openNetworkServer(_ url: URL) async {
-        networkConnectionTask?.cancel()
-        let task = Task { [weak self, networkMounter] in
+        switch await mountServer(url, in: \.networkConnectionTask) {
+        case let .mounted(share):
+            await openMountedShare(share)
+        case .failed:
+            error = .unavailable(
+                AppLocalization.string("The server could not be opened.", locale: preferences.language.locale)
+            )
+        case .dismissed, .cancelled:
+            break
+        }
+    }
+
+    /// Connects to the address typed in the Remote sheet (Network ▸ Add Remote, Go ▸ Remote). The
+    /// sheet stays open while the system signs in and mounts; once the share is mounted the sheet
+    /// closes and the window opens the share. Failures are shown in the sheet; closing a system
+    /// dialog keeps the sheet open without an error.
+    func connectToServer() async {
+        guard !isConnectingToServer else { return }
+        let locale = preferences.language.locale
+        serverConnectionError = nil
+        guard let url = ServerAddress.url(from: serverAddress) else {
+            serverConnectionError = AppLocalization.string("Use an smb://, afp://, or nfs:// address.", locale: locale)
+            return
+        }
+        isConnectingToServer = true
+        switch await mountServer(url, in: \.serverConnectionTask) {
+        case let .mounted(share):
+            isConnectingToServer = false
+            showingServerConnection = false
+            await openMountedShare(share)
+        case .failed:
+            isConnectingToServer = false
+            serverConnectionError = AppLocalization.string("The server could not be opened.", locale: locale)
+        case .dismissed:
+            isConnectingToServer = false
+        case .cancelled:
+            // `cancelServerConnection()` or closing the window already reset the sheet, which may
+            // have started a newer connection since.
+            break
+        }
+    }
+
+    /// Cancel in the Remote sheet (and its Escape key): cancels a pending mount, which also closes
+    /// the system's sign-in dialog, and closes the sheet. A share mounted before is not touched.
+    func cancelServerConnection() {
+        serverConnectionTask?.cancel()
+        serverConnectionTask = nil
+        isConnectingToServer = false
+        serverConnectionError = nil
+        showingServerConnection = false
+    }
+
+    private enum ServerMountOutcome: Sendable {
+        case mounted(URL)
+        case failed
+        /// The user closed the system's sign-in or share dialog.
+        case dismissed
+        /// Zforge cancelled or replaced the request (Cancel, a newer request, leaving the level, closing).
+        case cancelled
+    }
+
+    /// Mounts `url` through `networkMounter` in a task stored in `slot`, replacing (cancelling) the
+    /// slot's previous request. A request cancelled or replaced while it waits reports `.cancelled`.
+    private func mountServer(
+        _ url: URL, in slot: ReferenceWritableKeyPath<FileBrowserState, Task<ServerMountOutcome, Never>?>
+    ) async -> ServerMountOutcome {
+        self[keyPath: slot]?.cancel()
+        let task = Task { [networkMounter] () -> ServerMountOutcome in
             do {
-                let share = try await networkMounter.mount(url)
-                guard let self, !Task.isCancelled, !self.isClosed else { return }
-                self.networkConnectionTask = nil
-                await self.navigateToSidebar(share, name: FileManager.default.displayName(atPath: share.path))
+                return .mounted(try await networkMounter.mount(url))
             } catch {
-                guard let self, !Task.isCancelled, !(error is CancellationError) else { return }
-                self.networkConnectionTask = nil
-                self.error = .unavailable(
-                    AppLocalization.string("The server could not be opened.", locale: self.preferences.language.locale)
-                )
+                if Task.isCancelled { return .cancelled }
+                return error is CancellationError ? .dismissed : .failed
             }
         }
-        networkConnectionTask = task
-        await task.value
+        self[keyPath: slot] = task
+        let outcome = await task.value
+        guard self[keyPath: slot] == task, !task.isCancelled, !isClosed else { return .cancelled }
+        self[keyPath: slot] = nil
+        return outcome
+    }
+
+    private func openMountedShare(_ share: URL) async {
+        await navigateToSidebar(share, name: FileManager.default.displayName(atPath: share.path))
     }
 
     func navigateToDownloads() async {
@@ -4819,6 +4894,8 @@ final class FileBrowserState {
         columnActivationTask = nil
         pendingColumnExpansionItemID = nil
         synchronizeNetworkDiscovery()
+        serverConnectionTask?.cancel()
+        serverConnectionTask = nil
         let archives = self.archives
         let grants = self.grants
         // Inner archives are released innermost first, after any adjustment in progress, so

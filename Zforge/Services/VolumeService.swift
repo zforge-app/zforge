@@ -23,6 +23,16 @@ struct SidebarVolume: Identifiable, Hashable, Sendable {
 
     var id: URL { url }
 
+    /// The sidebar row symbol: a network globe for shares, an external drive for removable and
+    /// ejectable media, an internal drive otherwise.
+    var sidebarSymbol: String {
+        switch kind {
+        case .network: "network"
+        case .removable: "externaldrive"
+        case .internalDisk: "internaldrive"
+        }
+    }
+
     /// Resource keys that `isEjectable(_:)` reads.
     nonisolated static let ejectabilityKeys: Set<URLResourceKey> = [
         .volumeIsLocalKey,

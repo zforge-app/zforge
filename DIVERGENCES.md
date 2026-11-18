@@ -637,6 +637,16 @@ Cause: the offscreen sidebar starts at 144 pt with two-line rows until `SidebarS
 
 Correction (test only; scenario and the 28 pt assertion unchanged): the fixture's wait lays out the whole window between polls (`window.layoutIfNeeded()`, which updates constraints first, as the display cycle does), and the sidebar test waits until the rows exist, the table is 206 pt wide and neither the table nor any ancestor needs a constraint update or layout (`isLaidOut`). With the same `Task.yield()` injection the suite passed 50/50.
 
+### D-111 — Connecting to a server opened Finder, the Remote sheet stayed open, and Shared had no eject button (corrected 2026-11-18, ZF-87)
+
+Reported by the user on 2026-11-18 (in Portuguese), with screenshots of the Remote sheet over the Network level and of Shared ▸ D: after connecting to an SMB server, Finder opened the share instead of Zforge; the Remote sheet stayed open, and pressing its Cancel left the share connected; Shared rows had no ⏏ button to disconnect.
+
+Cause: the sheet called `NSWorkspace.open(smb://…)`, which hands the address to Finder (Finder mounts and opens a window for the share), then slept 1 s and returned the first mounted network volume. Authentication takes longer than that, so it returned nothing and the sheet stayed; Cancel only closed it, because the system mount was no longer Zforge's to cancel. The Network level's servers went through the same `NSWorkspace.open` (CURRENT-STATE recorded the Finder window as a sandbox limit). The Shared section built its rows without `isEjectable`, although network volumes are ejectable under the shared policy and their context menu already offered Eject; CURRENT-STATE recorded “Shared network volumes do not show the inline button yet”.
+
+The recorded sandbox limit was wrong: a sandboxed probe (2026-11-18) showed NetAuthSysAgent allowing a sandboxed caller that passes no mount path to mount under `/Volumes` (“Process … is sandboxed and no path was supplied; allowing NetFS to mount under /Volumes”); only a custom mount path outside the app container needs Full Disk Access.
+
+Correction (app): `NetFSNetworkServerMounter` mounts with `NetFSMountURLAsync` (system UI allowed, no mount path) for both the Remote sheet and the Network level, cancels with `NetFSMountURLCancel`, and maps `EEXIST` to the already mounted share. The sheet's state moved to `FileBrowserState` (`serverAddress`, `isConnectingToServer`, `serverConnectionError`, `connectToServer()`, `cancelServerConnection()`): it shows “Connecting…”, closes and opens the share once mounted, keeps failures in the sheet, and Cancel/Escape cancels the pending mount. Locations and Shared build volume rows through one `volumeRow(_:)`, so mounted shares get the inline ⏏. Requirement texts: CURRENT-STATE “Network level” and “Inline eject button”, UI-UX-GUIDE Network paragraph, OPEN-REQUIREMENTS “Network level gaps”. No existing test expectation changed.
+
 ### D-101 — Split archives lacked features of whole archives and mishandled their volumes (corrected 2026-11-17, ZF-83)
 
 Found while planning ZF-83 (user request, 2026-11-17: split archives should have the features of whole ones). CURRENT-STATE “Navigable formats” limits inline expansion and writing to non-multivolume ZIP/7z; besides that limit, the code mishandles split sets in ways no contract states:

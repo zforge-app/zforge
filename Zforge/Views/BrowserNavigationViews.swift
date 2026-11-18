@@ -178,9 +178,7 @@ struct BrowserSidebar: View {
                         .contextMenu { locationMenu(sidebar.userHome.name, sidebar.userHome.url, kind: .home) }
                 }
                 ForEach(sidebar.localVolumes.filter(isVisible)) { volume in
-                    destinationRow(volume.name, volume.url, volume.kind == .removable ? "externaldrive" : "internaldrive",
-                                   isEjectable: volume.isEjectable)
-                        .contextMenu { locationMenu(volume) }
+                    volumeRow(volume)
                 }
                 // Network is not a sidebar item (user request, 2026-11-09): it stays in the computer
                 // level and Go ▸ Network.
@@ -199,8 +197,7 @@ struct BrowserSidebar: View {
             if !sharedVolumes.isEmpty {
                 Section("Shared") {
                     ForEach(sharedVolumes) { volume in
-                        destinationRow(volume.name, volume.url, "network")
-                            .contextMenu { locationMenu(volume) }
+                        volumeRow(volume)
                     }
                 }
                 .environment(\.sidebarIconTint, .neutral)
@@ -277,6 +274,13 @@ struct BrowserSidebar: View {
                               canEject: Bool = false) -> SidebarItemMenuContent {
         SidebarItemMenuContent(menu: sidebarMenuActions.locationMenu(
             name: name, url: url, kind: kind, canEject: canEject))
+    }
+
+    /// A mounted volume's row, the same in Locations and Shared: its symbol, the inline eject button
+    /// when the volume is ejectable (network shares included) and the Locations context menu.
+    private func volumeRow(_ volume: SidebarVolume) -> some View {
+        destinationRow(volume.name, volume.url, volume.sidebarSymbol, isEjectable: volume.isEjectable)
+            .contextMenu { locationMenu(volume) }
     }
 
     private func destinationRow(_ name: String, _ url: URL, _ icon: String, canInsert: Bool = false, nextFavorite: URL? = nil,
@@ -558,10 +562,12 @@ private struct SidebarFavoriteDropDelegate: DropDelegate {
     }
 }
 
+/// The Remote sheet (Network ▸ Add Remote, Go ▸ Remote). Connect mounts inside Zforge: the
+/// system's own sign-in and share dialogs appear over it, the sheet shows that it is connecting,
+/// and once the share is mounted it closes and the window opens the share (never Finder).
+/// Cancel cancels a pending connection and closes the sheet.
 struct ServerConnectionSheet: View {
-    @Environment(\.dismiss) private var dismiss
-    @Bindable var sidebar: SidebarState
-    let didMount: (URL) -> Void
+    @Bindable var browser: FileBrowserState
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -569,18 +575,28 @@ struct ServerConnectionSheet: View {
                 .font(.title2.weight(.semibold))
             Text("Enter an SMB, AFP, or NFS address.")
                 .foregroundStyle(.secondary)
-            TextField("smb://server/share", text: $sidebar.serverAddress)
+            TextField("smb://server/share", text: $browser.serverAddress)
                 .textFieldStyle(.roundedBorder)
-                .onSubmit { connect() }
-            if let error = sidebar.serverError {
+                .disabled(browser.isConnectingToServer)
+                .onSubmit(connect)
+                .accessibilityIdentifier("server-connection-address")
+            if let error = browser.serverConnectionError {
                 Text(error).foregroundStyle(.red).font(.caption)
+                    .accessibilityIdentifier("server-connection-error")
             }
-            HStack {
+            HStack(spacing: 8) {
+                if browser.isConnectingToServer {
+                    ProgressView().controlSize(.small)
+                    Text("Connecting…").foregroundStyle(.secondary)
+                        .accessibilityIdentifier("server-connection-progress")
+                }
                 Spacer()
-                Button("Cancel", role: .cancel) { dismiss() }
-                Button("Connect") { connect() }
+                Button("Cancel", role: .cancel, action: browser.cancelServerConnection)
+                    .keyboardShortcut(.cancelAction)
+                Button("Connect", action: connect)
                     .buttonStyle(.borderedProminent)
-                    .disabled(sidebar.isConnecting)
+                    .keyboardShortcut(.defaultAction)
+                    .disabled(browser.isConnectingToServer)
             }
         }
         .padding(24)
@@ -588,11 +604,6 @@ struct ServerConnectionSheet: View {
     }
 
     private func connect() {
-        Task {
-            if let url = await sidebar.connectToServer() {
-                didMount(url)
-                dismiss()
-            }
-        }
+        Task { await browser.connectToServer() }
     }
 }
