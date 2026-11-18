@@ -657,7 +657,7 @@ User report (2026-11-18, in Portuguese): connecting to an SMB server opened Find
 - [x] Remote sheet: “Connecting…” progress, closes and opens the share on success, failures in the sheet, Cancel/Escape cancels the mount, bare server names connect over SMB.
 - [x] Inline ⏏ on Shared rows (one `volumeRow(_:)` for Locations and Shared).
 - [x] Tests: `NetworkLevelTests` (sheet flow, address parsing, share matching, network row); requirements synchronized.
-- [ ] User run in the app: fresh mount through the sheet, Cancel during the system sign-in dialog, share selection for an address without a share, ejecting a share with the new ⏏ button.
+- [x] User run in the app (2026-11-18): the Debug build of this branch, against the user's SMB server, with the steps to eject the share with the new ⏏, reconnect through the Remote sheet and Cancel during the system sign-in dialog; the user confirmed (“perfeito”). Not confirmed separately: the share-selection dialog, a Network-level server, dark mode and a long language.
 
 ### ZF-83 — Split archives with the features of whole archives (implemented 2026-11-17, D-101; real-window review pending)
 
