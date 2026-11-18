@@ -696,8 +696,10 @@ User decision (2026-11-18, in Portuguese): not yet in the Apple Developer Progra
 - [x] ZF-82 ⌘⌫ in Columns checked by the user in the real window (2026-11-18): all scenarios as expected.
 - Spun off: New Folder in Zforge's context menus (user request during this check, 2026-11-18) — separate thread, ZF-85.
 - [x] Candidate Release archive checked 2026-11-18 (REGRESSION-COVERAGE); build it again from the tagged commit and repeat the checks.
-- [ ] Final Release archive of the `Zforge` scheme from the tag, signed with Apple Development; check `codesign --verify --deep --strict`, the entitlements of the app and of the Finder extension (no `get-task-allow`, no `temporary-exception` keys, which the Debug build carries), `arm64`, the version, the embedded extension and Acknowledgments.
-- [ ] Package with `ditto -c -k --keepParent` (keeps the signature) and record the SHA-256.
+- [x] Local annotated tag `v0.1.0-beta.1` on `c078ffa` (2026-11-18; `main` with ZF-85, ZF-86 and ZF-87); not pushed.
+- [x] Final Release archive of the `Zforge` scheme from a clean checkout of the tag, signed with Apple Development (2026-11-18): `codesign --verify --deep --strict` valid, entitlements as expected for the app and the Finder extension, `arm64`, 0.1.0 (27), Acknowledgments bundled (REGRESSION-COVERAGE).
+- [x] Packaged with `ditto -c -k --keepParent`: `Zforge-0.1.0-beta.1.zip`, 9,534,037 bytes, SHA-256 `c3fa25709a57d03b8d32b93950c8387fec35f7e0b6ae0cc2a3f302b0e45fef40`; the unzipped copy satisfies its designated requirement. Kept outside the repository with the `.xcarchive` (dSYMs) and the release notes.
+- [ ] Push `main` and the tag, then publish the GitHub pre-release with the zip and the notes, once the repository is public.
 - [ ] Install test on another Mac from a browser download (quarantine): Open Anyway, Home grant, Finder extension, open/extract/compress, Shortcuts, MCP after approval.
 - [x] README “Install a pre-release” section and version note (2026-11-18).
 - [ ] Annotated tag on the exact commit; release notes as required by PRODUCT-REQUIREMENTS.
