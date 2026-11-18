@@ -11,17 +11,18 @@ import Testing
 @MainActor
 struct BrowserWindowLayoutTests {
     @Test("Each toolbar stage presents its controls in the real window", arguments: [
-        (650.0, ["toolbar-overflow-menu-unified"], false),
-        (720.0, ["view-mode-selector-compact-actions", "toolbar-overflow-menu-compact-actions", "toolbar-search"], false),
-        (860.0, ["view-mode-selector-compact-archive", "archive-contextual-action-compact",
-                 "toolbar-overflow-menu-compact-archive", "toolbar-search"], false),
+        (650.0, ["toolbar-overflow-menu"], false),
+        (720.0, ["view-mode-selector-compact", "toolbar-overflow-menu", "toolbar-search"], false),
+        (860.0, ["view-mode-selector-compact", "archive-contextual-action-compact",
+                 "toolbar-overflow-menu", "toolbar-search"], false),
         (1_100.0, ["view-mode-selector-expanded", "toolbar-search"], true)
     ])
     func toolbarStages(width: Double, primaryItemIDs: [String], showsSegmentedSelector: Bool) async throws {
         let host = try await BrowserWindowHost(width: CGFloat(width))
         defer { host.close() }
 
-        let items = host.window.toolbar?.items ?? []
+        // Every stage keeps all the items and hides those it does not present (D-110).
+        let items = (host.window.toolbar?.items ?? []).filter { !$0.isHidden }
         let namedItems = items.map(\.itemIdentifier.rawValue).filter { identifier in
             UUID(uuidString: identifier) == nil && !identifier.hasPrefix("com.apple.")
                 && identifier != NSToolbarItem.Identifier.space.rawValue
@@ -43,11 +44,41 @@ struct BrowserWindowLayoutTests {
         }
     }
 
+    /// D-110: replacing the toolbar's items at a stage switch made `NSToolbar` and SwiftUI rebuild
+    /// the toolbar, which stalled live resizing for 100–550 ms. A switch only hides and shows items.
+    @Test("Resizing across every stage keeps the same toolbar items, only hidden or shown")
+    func stageSwitchesKeepToolbarItems() async throws {
+        let host = try await BrowserWindowHost(width: 1_100)
+        defer { host.close() }
+        let original = host.window.toolbar?.items ?? []
+        let presented: [Double: [String]] = [
+            650: ["toolbar-overflow-menu"],
+            720: ["view-mode-selector-compact", "toolbar-overflow-menu", "toolbar-search"],
+            860: ["view-mode-selector-compact", "archive-contextual-action-compact", "toolbar-overflow-menu", "toolbar-search"],
+            1_100: ["view-mode-selector-expanded", "toolbar-search"]
+        ]
+        func named(_ items: [NSToolbarItem]) -> [String] {
+            items.filter { !$0.isHidden }.map(\.itemIdentifier.rawValue).filter { identifier in
+                UUID(uuidString: identifier) == nil && !identifier.hasPrefix("com.apple.")
+                    && identifier != NSToolbarItem.Identifier.space.rawValue
+            }
+        }
+        for width in [860.0, 720, 650, 720, 860, 1_100] {
+            host.window.setContentSize(NSSize(width: width, height: 600))
+            try await host.waitUntil { named(host.window.toolbar?.items ?? []) == presented[width] }
+            let items = host.window.toolbar?.items ?? []
+            #expect(items.count == original.count, "Toolbar items at \(width) points")
+            #expect(zip(items, original).allSatisfy { $0 === $1 }, "Toolbar item instances replaced at \(width) points")
+        }
+    }
+
     @Test("Below 678 points the search field appears in the toolbar only while a search is in use")
     func unifiedStageSearchField() async throws {
         let host = try await BrowserWindowHost(width: 650)
         defer { host.close() }
-        func identifiers() -> [String] { (host.window.toolbar?.items ?? []).map(\.itemIdentifier.rawValue) }
+        func identifiers() -> [String] {
+            (host.window.toolbar?.items ?? []).filter { !$0.isHidden }.map(\.itemIdentifier.rawValue)
+        }
         #expect(!identifiers().contains("toolbar-search"))
         host.state.beginSearch()
         try await host.waitUntil { identifiers().last == "toolbar-search" }

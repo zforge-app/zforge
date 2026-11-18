@@ -768,10 +768,7 @@ nonisolated struct BrowserSelectionSummary {
     }
 
     private func kind(_ item: BrowserItem) -> String {
-        if item.isDirectory { return AppLocalization.string("Folder", locale: locale) }
-        if item.archiveVolume != nil { return AppLocalization.string("Split archive", locale: locale) }
-        if item.isArchive { return AppLocalization.string("Archive", locale: locale) }
-        return item.contentType?.localizedDescription ?? AppLocalization.string("Document", locale: locale)
+        item.displayKind(locale: locale)
     }
 
     private func formattedSize(for item: BrowserItem) -> String {

@@ -16,7 +16,7 @@
 Zforge aims to bring 7-Zip File Manager capabilities to Mac, with the twist of treating them like simple folders. You browse an archive the way you browse a folder: look inside, preview a file, drag a copy out, all without unpacking the archive first. An archive inside another archive is just one more level to open. All in a native SwiftUI application.
 
 > [!NOTE]
-> Zforge is in active development (version 0.0.1). There is no public build yet, so for now the only way to run it is to [build it from source](#build-from-source).
+> Zforge is in active development (version 0.1.0). Test builds are published as [pre-releases](#install-a-pre-release); you can also [build it from source](#build-from-source).
 
 ## What you get
 
@@ -46,6 +46,16 @@ The app runs in the App Sandbox, so it can reach only the files and folders you 
 
 - A Mac with Apple Silicon
 - macOS 26 or later
+
+## Install a pre-release
+
+Pre-releases are on the [Releases](https://github.com/zforge-app/zforge/releases) page. They are not notarized yet, so macOS blocks their first launch:
+
+1. Download the `.zip`, compare `shasum -a 256` of it with the release notes, unzip it and move Zforge to Applications.
+2. Open Zforge. When macOS says it cannot verify the app, click Done.
+3. In System Settings ▸ Privacy & Security, click **Open Anyway** next to Zforge and confirm.
+
+Repeat this for each new pre-release. When a notarized build replaces them, you may have to grant folder access again.
 
 ## Build from source
 

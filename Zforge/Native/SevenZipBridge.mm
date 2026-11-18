@@ -71,6 +71,8 @@ NSNumber *Number(const CPropVariant &p) {
 NSDate *Date(const CPropVariant &p) {
     if (p.vt != VT_FILETIME) return nil;
     uint64_t ticks = ((uint64_t)p.filetime.dwHighDateTime << 32) | p.filetime.dwLowDateTime;
+    // A zero FILETIME is unset (7-Zip's own UI shows it empty), not 1601-01-01 (D-103).
+    if (ticks == 0) return nil;
     return [NSDate dateWithTimeIntervalSince1970:(double)ticks / 10000000.0 - 11644473600.0];
 }
 CPropVariant Property(IInArchive *arc, UInt32 index, PROPID key) {
