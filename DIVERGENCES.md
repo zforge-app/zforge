@@ -689,7 +689,7 @@ PRODUCT-REQUIREMENTS “Model distribution” requires the site distribution to 
 - The Apple Development designated requirement names the leaf certificate's common name. A later Developer ID build has another designated requirement, so app-scope bookmarks, the sandbox container's access check and privacy grants may ask again or stop resolving for pre-release testers. Not tested; to be checked before the first Developer ID build.
 - The common name of this identity is the Apple Account email, visible to anyone with `codesign -dv`.
 - No provisioning profile is embedded and every entitlement is a `com.apple.security.*` key, so the signature should launch on other Macs once approved. Not yet verified on another Mac.
-- The repository was not publicly reachable on 2026-11-18 (`https://github.com/zforge-app/zforge` answered 404). The user will make it public before the pre-release, which is published as a GitHub pre-release whose tag is the corresponding source (LGPL 2.1).
+- The repository was not publicly reachable on 2026-11-18 (`https://github.com/zforge-app/zforge` answered 404). The pre-release is a GitHub pre-release whose tag is the corresponding source (LGPL 2.1). `v0.1.0-beta.1` was published on 2026-11-18 at the user's request while the repository was still private; the user will make it public later, and until then only people with access to the repository can download the build or its source.
 
 Resolution: none until the Developer ID build (signed, notarized, stapled) replaces the pre-release; then this deviation closes.
 
