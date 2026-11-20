@@ -656,9 +656,9 @@ User request (2026-11-20, in Portuguese): “precisamos fazer um novo release”
 - [x] `Scripts/update-7zip.py --status` (vendored 26.06 = upstream 26.06), `--verify` OK, `Scripts/update-notices.py --check` OK, `Scripts/affected-tests.py --check` (32 UI tests, 24 rules, 0 problems).
 - [x] Full `Unit` plan 831/831 and the offscreen part of `UI-Full` 20/20 on the release state (2026-11-20).
 - [x] The 12 `offscreen.realOnly` UI tests in the real mode (announced to the user): 12/12 passed on the second invocation; the first ran no test (shell quoting of the filters). UI-Full 32/32.
-- [ ] `main` fast-forwarded to the release branch; annotated tag `v0.1.0-beta.2`.
-- [ ] Release archive from a clean checkout of the tag; signature, entitlements, version and architecture checks; zip and SHA-256.
-- [ ] `main` and the tag pushed; GitHub pre-release “Zforge 0.1.0 beta 2” published with the zip, verified by downloading it back.
+- [x] `main` fast-forwarded to the release branch (`3803416`); annotated tag `v0.1.0-beta.2` on it (2026-11-20).
+- [x] Release archive from a clean clone of the tag, no warnings: signature, designated requirement, entitlements, 0.1.0 (28), `arm64` checked; `Zforge-0.1.0-beta.2.zip`, 9,550,877 bytes, SHA-256 `03b260b0075ef745519812bd9bf3f0ec0bfbe5d676411e370089c5788b1a1528`. Kept outside the repository with the `.xcarchive` and the release notes, beside beta 1.
+- [x] `main` and the tag pushed (user request, 2026-11-20); GitHub pre-release “Zforge 0.1.0 beta 2” published: https://github.com/zforge-app/zforge/releases/tag/v0.1.0-beta.2, marked pre-release and not latest, notes as beta 1's with a “What's new since beta 1” section; the uploaded zip downloaded back through the API has the same SHA-256.
 - [ ] Not repeated from ZF-84: the manual real-window pass by an agent; the user checked ZF-88 and ZF-90 in the real window on Debug builds.
 
 ### ZF-90 — Sidebar divider over Columns rows; drops a folder cannot take (2026-11-19, D-114, D-115)
