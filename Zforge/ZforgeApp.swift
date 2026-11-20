@@ -148,7 +148,7 @@ private struct BrowserCommands: Commands {
             }
             .keyboardShortcut("n", modifiers: .command)
 
-            Button("New tab") {
+            Button("New Tab") {
                 openWindow(
                     id: "browser",
                     value: BrowserWindowRequest(
@@ -181,7 +181,7 @@ private struct BrowserCommands: Commands {
             }
             .disabled(browser?.canOpenSelection != true)
 
-            Menu(AppLocalization.string("Open with", locale: browser?.preferences.language.locale)) {
+            Menu(AppLocalization.string("Open With", locale: browser?.preferences.language.locale)) {
                 if let browser {
                     ForEach(browser.applicationsForOpening(browser.selectedItems), id: \.self) { application in
                         Button(FileManager.default.displayName(atPath: application.path)) {
@@ -196,7 +196,7 @@ private struct BrowserCommands: Commands {
             }
             .disabled(browser?.canOpenSelectionWithApplication != true)
             .modifierKeyAlternate(.option) {
-                Menu(AppLocalization.string("Always open with", locale: browser?.preferences.language.locale)) {
+                Menu(AppLocalization.string("Always Open With", locale: browser?.preferences.language.locale)) {
                     if let browser {
                         ForEach(browser.applicationsForOpening(browser.selectedItems), id: \.self) { application in
                             Button(FileManager.default.displayName(atPath: application.path)) {

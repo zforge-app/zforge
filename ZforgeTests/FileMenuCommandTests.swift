@@ -9,20 +9,84 @@ import Testing
 @Suite("File menu commands", .serialized)
 @MainActor
 struct FileMenuCommandTests {
-    @Test("File Open is unique and immediately precedes Open with in the native File menu")
+    @Test("File Open is unique and immediately precedes Open With in the native File menu")
     func openPrecedesOpenWith() async throws {
         let items = try await fileMenuItems()
         let open = AppLocalization.string("Open")
-        let openWith = AppLocalization.string("Open with")
+        let openWith = AppLocalization.string("Open With")
         let titles = items.map(\.title)
         #expect(titles.filter { $0 == open }.count == 1, "Unique File Open, entries: \(titles)")
-        #expect(titles.filter { $0 == openWith }.count == 1, "Unique File Open with, entries: \(titles)")
+        #expect(titles.filter { $0 == openWith }.count == 1, "Unique File Open With, entries: \(titles)")
         let openIndex = try #require(titles.firstIndex(of: open))
         let openWithIndex = try #require(titles.firstIndex(of: openWith))
-        #expect(openIndex + 1 == openWithIndex, "File Open must immediately precede Open with, entries: \(titles)")
+        #expect(openIndex + 1 == openWithIndex, "File Open must immediately precede Open With, entries: \(titles)")
         #expect(!items[openIndex].isAlternate)
         #expect(!items[openWithIndex].isAlternate)
-        #expect(items[openWithIndex].submenu != nil, "Open with must present a submenu of applications")
+        #expect(items[openWithIndex].submenu != nil, "Open With must present a submenu of applications")
+    }
+
+    @Test("File menu titles follow macOS title case: New Tab, Open With, Always Open With (D-116)")
+    func fileMenuTitlesUseTitleCase() async throws {
+        let titles = try await fileMenuItems().map(\.title)
+        for key: String.LocalizationValue in ["New Tab", "Open With", "Always Open With"] {
+            let title = AppLocalization.string(key)
+            #expect(titles.contains(title), "Missing \(title) in the File menu: \(titles)")
+        }
+        for lowercase in ["New tab", "Open with", "Always open with"] {
+            #expect(!titles.contains(lowercase), "\(lowercase) breaks title case: \(titles)")
+        }
+    }
+
+    /// The translations the lowercase keys had (D-116 renamed the keys, keeping every language).
+    nonisolated static let titleCaseTranslations: [String: [String: String]] = [
+        "New Tab": [
+            "bn": "নতুন ট্যাব", "cs": "Nový panel", "da": "Ny fane", "de": "Neuer Tab", "en": "New Tab",
+            "es": "Nueva pestaña", "fr": "Nouvel onglet", "hi": "नया टैब", "it": "Nuovo pannello", "ja": "新規タブ",
+            "ko": "새로운 탭", "nl": "Nieuw tabblad", "pl": "Nowa karta", "pt-BR": "Nova aba", "ru": "Новая вкладка",
+            "sv": "Ny flik", "th": "แท็บใหม่", "tr": "Yeni sekme", "uk": "Нова вкладка", "zh-Hans": "新建标签页",
+            "zh-Hant": "新建分頁"
+        ],
+        "Open With": [
+            "bn": "এটি দিয়ে খুলুন", "cs": "Otevřít v aplikaci", "da": "Åbn med", "de": "Öffnen mit", "en": "Open With",
+            "es": "Abrir con", "fr": "Ouvrir avec", "hi": "इससे खोलें", "it": "Apri con", "ja": "このアプリケーションで開く",
+            "ko": "다음으로 열기", "nl": "Open met", "pl": "Otwórz w aplikacji", "pt-BR": "Abrir com",
+            "ru": "Открыть в программе", "sv": "Öppna med", "th": "เปิดด้วย", "tr": "Birlikte Aç",
+            "uk": "Відкрити у програмі", "zh-Hans": "打开方式", "zh-Hant": "打開方式"
+        ],
+        "Always Open With": [
+            "bn": "সবসময় এটি দিয়ে খুলুন", "cs": "Vždy otvírat v aplikaci", "da": "Åbn altid med", "de": "Immer öffnen mit",
+            "en": "Always Open With", "es": "Abrir siempre con", "fr": "Toujours ouvrir avec", "hi": "हमेशा इससे खोलें",
+            "it": "Apri sempre con", "ja": "常にこのアプリケーションで開く", "ko": "항상 다음으로 열기", "nl": "Open altijd met",
+            "pl": "Zawsze otwieraj w aplikacji", "pt-BR": "Sempre abrir com", "ru": "Всегда открывать в программе",
+            "sv": "Öppna alltid med", "th": "เปิดด้วยเสมอ", "tr": "Her zaman şununla aç", "uk": "Завжди відкривати у програмі",
+            "zh-Hans": "始终打开方式", "zh-Hant": "始終打開方式"
+        ],
+        "Copy Pathname": [
+            "bn": "পথের নাম কপি করুন", "cs": "Zkopírovat cestu", "da": "Kopier sti", "de": "Pfadname kopieren",
+            "en": "Copy Pathname", "es": "Copiar ruta", "fr": "Copier le chemin d’accès", "hi": "पथनाम कॉपी करें",
+            "it": "Copia percorso", "ja": "パス名をコピー", "ko": "경로 이름 복사", "nl": "Kopieer padnaam", "pl": "Kopiuj ścieżkę",
+            "pt-BR": "Copiar caminho", "ru": "Скопировать путь", "sv": "Kopiera sökväg", "th": "คัดลอกชื่อเส้นทาง",
+            "tr": "Yol adını kopyala", "uk": "Копіювати шлях", "zh-Hans": "拷贝路径名称", "zh-Hant": "拷貝路徑名稱"
+        ],
+        "Restore Defaults": [
+            "bn": "ডিফল্ট ফিরিয়ে আনুন", "cs": "Obnovit výchozí nastavení", "da": "Gendan standardindstillinger",
+            "de": "Standardeinstellungen wiederherstellen", "en": "Restore Defaults", "es": "Restaurar valores por omisión",
+            "fr": "Rétablir les réglages par défaut", "hi": "डिफ़ॉल्ट बहाल करें", "it": "Ripristina le impostazioni di default",
+            "ja": "デフォルトに戻す", "ko": "기본값 복원", "nl": "Herstel standaardinstellingen", "pl": "Przywróć ustawienia domyślne",
+            "pt-BR": "Restaurar padrão", "ru": "Восстановить значения по умолчанию", "sv": "Återställ standardinställningar",
+            "th": "คืนค่าเริ่มต้น", "tr": "Saptanmışları geri yükle", "uk": "Відновити типові параметри",
+            "zh-Hans": "恢复默认值", "zh-Hant": "恢復預設值"
+        ]
+    ]
+
+    @Test("The title-case menu keys keep every translation", arguments: Array(titleCaseTranslations.keys).sorted())
+    func titleCaseKeysKeepTranslations(key: String) throws {
+        let expected = try #require(Self.titleCaseTranslations[key])
+        #expect(expected.count == 21)
+        for (identifier, translation) in expected {
+            let value = AppLocalization.string(String.LocalizationValue(key), locale: Locale(identifier: identifier), bundle: Bundle(for: AppDelegate.self))
+            #expect(value == translation, "\(key) in \(identifier)")
+        }
     }
 
     @Test("Option replaces New Folder with New Folder with Selection without Control in its visibility condition")
@@ -48,20 +112,20 @@ struct FileMenuCommandTests {
         #expect(titles.filter { $0 == alternate.title }.count == 1)
     }
 
-    @Test("Option replaces Open with with Always open with")
+    @Test("Option replaces Open With with Always Open With")
     func alwaysOpenWithIsTheOptionAlternate() async throws {
         let items = try await fileMenuItems()
         let titles = items.map(\.title)
-        let index = try #require(titles.firstIndex(of: AppLocalization.string("Open with")))
+        let index = try #require(titles.firstIndex(of: AppLocalization.string("Open With")))
         try #require(items.indices.contains(index + 1))
         let alternate = items[index + 1]
-        #expect(alternate.title == AppLocalization.string("Always open with"))
+        #expect(alternate.title == AppLocalization.string("Always Open With"))
         #expect(alternate.isAlternate)
         #expect(alternate.keyEquivalent == items[index].keyEquivalent)
         #expect(alternate.keyEquivalentModifierMask == items[index].keyEquivalentModifierMask.union(.option))
     }
 
-    @Test("Open and Open with track empty, single, multiple, and folder selections", arguments: BrowserViewMode.allCases)
+    @Test("Open and Open With track empty, single, multiple, and folder selections", arguments: BrowserViewMode.allCases)
     func availabilityTracksSelection(mode: BrowserViewMode) async throws {
         try await withFixture(mode: mode) { state, _ in
             #expect(state.selection.isEmpty, "Empty selection: \(mode)")
@@ -250,7 +314,7 @@ struct FileMenuLocalizationTests {
     func portugueseTitles() {
         let locale = AppLanguagePreference.portugueseBrazil.locale
         #expect(AppLocalization.string("Open", locale: locale, bundle: applicationBundle) == "Abrir")
-        #expect(AppLocalization.string("Open with", locale: locale, bundle: applicationBundle) == "Abrir com")
+        #expect(AppLocalization.string("Open With", locale: locale, bundle: applicationBundle) == "Abrir com")
         #expect(AppLocalization.string("New Folder with Selection", locale: locale, bundle: applicationBundle)
                 == "Nova Pasta com Seleção")
         #expect(AppLocalization.string("Keyboard Shortcuts", locale: locale, bundle: applicationBundle) == "Atalhos de Teclado")

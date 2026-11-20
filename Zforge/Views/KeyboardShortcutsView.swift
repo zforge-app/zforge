@@ -249,7 +249,7 @@ enum KeyboardShortcutCatalog {
         section("files", "Files and Items", "doc.on.doc", [
             ("Undo", "⌘Z"),
             ("New Zforge Window", "⌘N"),
-            ("New tab", "⌘T"),
+            ("New Tab", "⌘T"),
             ("New Folder", "⇧⌘N"),
             ("New Folder with Selection", "⌃⌥⌘N"),
             ("Duplicate", "⌘D"),

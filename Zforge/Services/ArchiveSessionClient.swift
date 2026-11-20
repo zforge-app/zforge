@@ -96,6 +96,13 @@ nonisolated final class ArchiveSessionClient: ArchiveServing, @unchecked Sendabl
         try await run { try await self.engine.materialize(item: item, purpose: purpose, automaticLimit: automaticLimit) }
     }
 
+    func materialize(item: BrowserItem, purpose: ArchiveMaterializationPurpose, automaticLimit: Int64?,
+                     password: String?) async throws -> URL {
+        try await run {
+            try await self.engine.materialize(item: item, purpose: purpose, automaticLimit: automaticLimit, password: password)
+        }
+    }
+
     func createArchive(from sourceURLs: [URL], outputURL: URL, options: CompressionOptions, password: String?,
                        progress: @escaping ArchiveProgressHandler) async throws {
         try await run {

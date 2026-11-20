@@ -1145,13 +1145,23 @@ private struct ArchivePasswordSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Bindable var state: FileBrowserState
     @State private var password = ""
+    /// The last explanation shown, kept while the sheet closes after its operation ends.
+    @State private var retainedPrompt = ""
+
+    private var currentPrompt: String? {
+        state.passwordOperation?.prompt(locale: state.preferences.language.locale)
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             Label("Encrypted Archive", systemImage: "lock.fill")
                 .font(.title2.weight(.semibold))
-            Text("Enter the password to browse this archive. It stays in memory only for this window.")
+            Text(verbatim: currentPrompt ?? retainedPrompt)
                 .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+                .onChange(of: currentPrompt, initial: true) { _, prompt in
+                    if let prompt { retainedPrompt = prompt }
+                }
             SecureField("Password", text: $password)
                 .textFieldStyle(.roundedBorder)
                 .onSubmit { submit() }

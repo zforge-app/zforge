@@ -56,17 +56,90 @@ final class FileBrowserState {
         case extractArchive(BrowserItem)
         case validateArchive(BrowserItem)
         case extractItems([BrowserItem], destinationURL: URL)
+        /// Items of an archive whose names are visible but whose contents are encrypted (D-116).
+        case readItems(ArchiveItemRead)
 
         var sessionID: UUID? {
             let item: BrowserItem?
             switch self {
             case let .openInnerArchive(value, _), let .extractArchive(value), let .validateArchive(value): item = value
             case let .extractItems(values, _): item = values.first
+            case let .readItems(read): item = read.items.first
             case .openFile, .expandInline: item = nil
             }
             guard let item,
                   case let .archive(address) = item.location else { return nil }
             return address.sessionID
+        }
+
+        /// The password sheet's explanation, naming what the password is for and whether the
+        /// window keeps it (D-116).
+        func prompt(locale: Locale?) -> String {
+            switch self {
+            case .openFile, .openInnerArchive, .expandInline:
+                return AppLocalization.string(
+                    "Enter the password to browse this archive. It stays in memory only for this window.", locale: locale
+                )
+            case let .extractArchive(item):
+                return AppLocalization.string("Enter the password to extract “\(item.name)”.", locale: locale)
+            case let .validateArchive(item):
+                return AppLocalization.string("Enter the password to validate “\(item.name)”.", locale: locale)
+            case let .extractItems(items, _):
+                if items.count == 1, let name = items.first?.name {
+                    return AppLocalization.string(
+                        "Enter the password to extract “\(name)”. It stays in memory only for this window.", locale: locale
+                    )
+                }
+                return AppLocalization.string(
+                    "Enter the password to extract the selected items. It stays in memory only for this window.", locale: locale
+                )
+            case let .readItems(read):
+                return read.prompt(locale: locale)
+            }
+        }
+    }
+
+    /// An explicit read of archive items whose contents are encrypted, run again with the
+    /// password the sheet asks for (D-116).
+    enum ArchiveItemRead {
+        case open(BrowserItem)
+        case openWith([BrowserItem], application: URL, always: Bool)
+        case quickLook([BrowserItem], slideshow: Bool)
+        case preview([BrowserItem])
+        case share([BrowserItem])
+
+        var items: [BrowserItem] {
+            switch self {
+            case let .open(item): [item]
+            case let .openWith(items, _, _), let .quickLook(items, _), let .preview(items), let .share(items): items
+            }
+        }
+
+        func prompt(locale: Locale?) -> String {
+            let name = items.count == 1 ? items.first?.name : nil
+            switch self {
+            case .open, .openWith:
+                if let name {
+                    return AppLocalization.string("Enter the password to open “\(name)”. It stays in memory only for this window.", locale: locale)
+                }
+                return AppLocalization.string(
+                    "Enter the password to open the selected items. It stays in memory only for this window.", locale: locale
+                )
+            case .quickLook, .preview:
+                if let name {
+                    return AppLocalization.string("Enter the password to preview “\(name)”. It stays in memory only for this window.", locale: locale)
+                }
+                return AppLocalization.string(
+                    "Enter the password to preview the selected items. It stays in memory only for this window.", locale: locale
+                )
+            case .share:
+                if let name {
+                    return AppLocalization.string("Enter the password to share “\(name)”. It stays in memory only for this window.", locale: locale)
+                }
+                return AppLocalization.string(
+                    "Enter the password to share the selected items. It stays in memory only for this window.", locale: locale
+                )
+            }
         }
     }
 
@@ -338,6 +411,8 @@ final class FileBrowserState {
     var previewRequiresManualLoad = false
     var previewURLs: [BrowserItemID: URL] = [:]
     var previewItemsRequiringManualLoad: Set<BrowserItemID> = []
+    /// Items waiting for Load Preview because their contents are encrypted (D-116).
+    private(set) var encryptedPreviewItemIDs: Set<BrowserItemID> = []
     /// Selected items whose preview is being read from their archive, so the views can keep
     /// its place while it loads.
     private(set) var previewLoadingItemIDs: Set<BrowserItemID> = []
@@ -794,11 +869,11 @@ final class FileBrowserState {
     }
     /// File ▸ Open availability.
     var canOpenSelection: Bool { !selectedItems.isEmpty && !archiveOperationInProgress }
-    /// File ▸ Open with availability; containers are opened by Zforge itself.
+    /// File ▸ Open With availability; containers are opened by Zforge itself.
     var canOpenSelectionWithApplication: Bool {
         !selectedItems.isEmpty && !selectedItems.contains(where: \.isContainer)
     }
-    /// File ▸ Always open with availability; the association is saved per local file.
+    /// File ▸ Always Open With availability; the association is saved per local file.
     var canAlwaysOpenSelectionWithApplication: Bool {
         hasLocalSelection && !selectedItems.contains(where: \.isContainer)
     }
@@ -1923,6 +1998,17 @@ final class FileBrowserState {
         }
     }
 
+    /// Why the selected archive item waits for Load Preview, in the app's language (D-116).
+    func manualPreviewExplanation(for item: BrowserItem) -> String {
+        if encryptedPreviewItemIDs.contains(item.id) {
+            return AppLocalization.string(
+                "The contents of this item are encrypted. Load Preview asks for the password.", locale: preferences.language.locale
+            )
+        }
+        let reason = preferences.archivePreviewLimits.manualPreviewReason(of: item, on: archiveVolumeKind(of: item))
+        return ArchivePreviewLimits.manualPreviewExplanation(reason, locale: preferences.language.locale)
+    }
+
     /// The volume kind of the archive holding an item inside an archive.
     func archiveVolumeKind(of item: BrowserItem) -> ArchiveVolumeKind {
         guard case let .archive(address) = item.location else { return .internalDisk }
@@ -2302,7 +2388,31 @@ final class FileBrowserState {
                 destination: destinationURL,
                 password: password
             )
+        case let .readItems(read):
+            passwordOperation = nil
+            switch read {
+            case let .open(item): await openExternally(item, password: password)
+            case let .openWith(items, application, always): openWith(items, application: application, always: always, password: password)
+            case let .quickLook(_, slideshow): openQuickLook(slideshow: slideshow, password: password)
+            case .preview: updatePreview(manual: true, password: password)
+            case .share: shareItems(password: password)
+            }
         }
+    }
+
+    /// Asks for the password of archive items whose contents are encrypted, as extraction
+    /// does, instead of reporting an error (D-116). Returns whether `error` was handled.
+    private func requestItemPassword(after error: Error, for read: ArchiveItemRead) -> Bool {
+        switch error as? ArchiveEngineError {
+        case .passwordRequired?:
+            passwordError = nil
+        case .invalidPassword?:
+            passwordError = AppLocalization.string("Incorrect password. Try again.", locale: preferences.language.locale)
+        default:
+            return false
+        }
+        passwordOperation = .readItems(read)
+        return true
     }
 
     func confirmLargeOperation() async {
@@ -2796,6 +2906,17 @@ final class FileBrowserState {
                 archiveOperationInProgress = false
                 archiveProgress = nil
                 return nil
+            } catch where Self.isCancellation(error) {
+                // Cancel (the progress overlay's, or a conflict's) stops the batch without an
+                // alert or a result message (D-116); what was extracted so far is shown.
+                let reached = pendingArchiveExtractionItems.prefix(pendingArchiveExtractionIndex + 1)
+                    .compactMap(\.localURL).map(extractionDestination(for:))
+                pendingArchiveExtractionItems.removeAll()
+                pendingArchiveExtractionIndex = 0
+                archiveOperationInProgress = false
+                archiveProgress = nil
+                await refreshAfterArchiveExtraction(to: reached)
+                return nil
             } catch {
                 self.error = mapError(error)
                 archiveOperationInProgress = false
@@ -2852,6 +2973,11 @@ final class FileBrowserState {
             } catch ArchiveEngineError.invalidPassword {
                 passwordOperation = .validateArchive(item)
                 passwordError = AppLocalization.string("Incorrect password. Try again.", locale: preferences.language.locale)
+                return nil
+            } catch where Self.isCancellation(error) {
+                // Cancel stops the batch without an alert or a result message (D-116).
+                pendingValidationItems.removeAll()
+                pendingValidationIndex = 0
                 return nil
             } catch {
                 self.error = mapError(error)
@@ -4660,7 +4786,8 @@ final class FileBrowserState {
             limits: preferences.archivePreviewLimits, volume: archiveVolumeKind(of: item))
     }
 
-    func updatePreview(manual: Bool = false) {
+    /// `password`: typed in the sheet for items whose contents are encrypted (D-116).
+    func updatePreview(manual: Bool = false, password: String? = nil) {
         previewGeneration &+= 1
         let generation = previewGeneration
         previewTask?.cancel()
@@ -4669,6 +4796,7 @@ final class FileBrowserState {
         previewRequiresManualLoad = false
         previewURLs.removeAll()
         previewItemsRequiringManualLoad.removeAll()
+        encryptedPreviewItemIDs.removeAll()
         if !previewLoadingItemIDs.isEmpty { previewLoadingItemIDs.removeAll() }
         guard previewVisible || viewMode == .gallery else { return }
         let previewableItems = selectedItems.filter { !$0.usesStaticIconPreview }
@@ -4710,12 +4838,29 @@ final class FileBrowserState {
                 guard isPreviewRequestCurrent(itemID: item.id, generation: generation) else { continue }
                 do {
                     // The limits were applied above, with the solid-block measure.
-                    let url = try await archives.materialize(item: item, purpose: .preview, automaticLimit: nil)
+                    let url = try await archives.materialize(item: item, purpose: .preview, automaticLimit: nil, password: password)
                     guard isPreviewRequestCurrent(itemID: item.id, generation: generation) else { continue }
                     previewURLs[item.id] = url
                     synchronizePrimaryPreviewState()
                 } catch BrowserError.previewTooLarge {
                     guard isPreviewRequestCurrent(itemID: item.id, generation: generation) else { continue }
+                    previewItemsRequiringManualLoad.insert(item.id)
+                    synchronizePrimaryPreviewState()
+                } catch let error as ArchiveEngineError where error == .passwordRequired || error == .invalidPassword {
+                    // Encrypted contents: an automatic preview waits for Load Preview, which
+                    // asks for the password (D-116); a manual one asks now.
+                    guard isPreviewRequestCurrent(itemID: item.id, generation: generation) else { continue }
+                    encryptedPreviewItemIDs.insert(item.id)
+                    if manual {
+                        // The items not read yet keep Load Preview until the password arrives.
+                        for pending in itemsToMaterialize where previewURLs[pending.id] == nil {
+                            previewItemsRequiringManualLoad.insert(pending.id)
+                            previewLoadingItemIDs.remove(pending.id)
+                        }
+                        synchronizePrimaryPreviewState()
+                        _ = requestItemPassword(after: error, for: .preview(itemsToMaterialize))
+                        break
+                    }
                     previewItemsRequiringManualLoad.insert(item.id)
                     synchronizePrimaryPreviewState()
                 } catch {
@@ -4729,7 +4874,7 @@ final class FileBrowserState {
         }
     }
 
-    func openQuickLook(slideshow: Bool = false) {
+    func openQuickLook(slideshow: Bool = false, password: String? = nil) {
         Task {
             let chosenItems = previewItems.filter { !$0.isContainer }
             let selectionSnapshot = selection
@@ -4757,7 +4902,8 @@ final class FileBrowserState {
                             try await archives.materialize(
                                 item: item,
                                 purpose: .preview,
-                                automaticLimit: nil
+                                automaticLimit: nil,
+                                password: password
                             )
                         )
                     }
@@ -4768,12 +4914,14 @@ final class FileBrowserState {
             } catch ArchiveEngineError.cancelled {
             } catch is CancellationError {
             } catch {
-                self.error = mapError(error)
+                if !requestItemPassword(after: error, for: .quickLook(chosenItems, slideshow: slideshow)) {
+                    self.error = mapError(error)
+                }
             }
         }
     }
 
-    func shareItems() {
+    func shareItems(password: String? = nil) {
         let chosenItems = selectedItems
         Task {
             do {
@@ -4782,7 +4930,9 @@ final class FileBrowserState {
                     if let localURL = item.localURL {
                         urls.append(localURL)
                     } else {
-                        urls.append(try await archives.materialize(item: item, purpose: .openExternally, automaticLimit: nil))
+                        urls.append(try await archives.materialize(
+                            item: item, purpose: .openExternally, automaticLimit: nil, password: password
+                        ))
                     }
                 }
                 guard !urls.isEmpty else { return }
@@ -4792,7 +4942,9 @@ final class FileBrowserState {
                     preferredEdge: .minY
                 )
             } catch {
-                self.error = mapError(error)
+                if !requestItemPassword(after: error, for: .share(chosenItems.filter { !$0.isContainer })) {
+                    self.error = mapError(error)
+                }
             }
         }
     }
@@ -4814,7 +4966,7 @@ final class FileBrowserState {
         }
     }
 
-    func openWith(_ items: [BrowserItem], application: URL, always: Bool = false) {
+    func openWith(_ items: [BrowserItem], application: URL, always: Bool = false, password: String? = nil) {
         guard !items.isEmpty, items.allSatisfy({ !$0.isContainer }) else { return }
         Task {
             do {
@@ -4833,7 +4985,8 @@ final class FileBrowserState {
                         urls.append(try await archives.materialize(
                             item: item,
                             purpose: .openExternally,
-                            automaticLimit: nil
+                            automaticLimit: nil,
+                            password: password
                         ))
                     }
                 }
@@ -4847,7 +5000,9 @@ final class FileBrowserState {
                     }
                 }
             } catch {
-                self.error = mapError(error)
+                if !requestItemPassword(after: error, for: .openWith(items, application: application, always: always)) {
+                    self.error = mapError(error)
+                }
             }
         }
     }
@@ -4935,7 +5090,7 @@ final class FileBrowserState {
         }
     }
 
-    private func openExternally(_ item: BrowserItem) async {
+    private func openExternally(_ item: BrowserItem, password: String? = nil) async {
         if case .archive = item.location,
            let size = item.size,
            size > 1_073_741_824,
@@ -4960,11 +5115,13 @@ final class FileBrowserState {
                 return
             case let .fileSystem(local): url = local
             case .archive:
-                url = try await archives.materialize(item: item, purpose: .openExternally, automaticLimit: nil)
+                url = try await archives.materialize(item: item, purpose: .openExternally, automaticLimit: nil, password: password)
             }
             NSWorkspace.shared.open(url)
         } catch {
-            self.error = mapError(error)
+            if !requestItemPassword(after: error, for: .open(item)) {
+                self.error = mapError(error)
+            }
         }
     }
 
@@ -5650,6 +5807,11 @@ final class FileBrowserState {
                 continuation.resume(returning: (object as? NSURL).map { $0 as URL })
             }
         }
+    }
+
+    /// The user cancelled: the engine's `cancelled` (Cancel, a conflict's Cancel) or a task's.
+    nonisolated static func isCancellation(_ error: Error) -> Bool {
+        error as? ArchiveEngineError == .cancelled || error is CancellationError
     }
 
     private func mapError(_ error: Error) -> BrowserError {

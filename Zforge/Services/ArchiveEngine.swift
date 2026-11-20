@@ -115,6 +115,14 @@ nonisolated protocol ArchiveServing: Sendable {
         purpose: ArchiveMaterializationPurpose,
         automaticLimit: Int64?
     ) async throws -> URL
+    /// Reads the item with `password`, typed for an archive whose names are visible but whose
+    /// contents are encrypted (D-116); the session keeps it once the item reads with it.
+    func materialize(
+        item: BrowserItem,
+        purpose: ArchiveMaterializationPurpose,
+        automaticLimit: Int64?,
+        password: String?
+    ) async throws -> URL
     func createArchive(
         from sourceURLs: [URL],
         outputURL: URL,
@@ -169,6 +177,11 @@ nonisolated protocol ArchiveServing: Sendable {
 }
 
 extension ArchiveServing {
+    func materialize(
+        item: BrowserItem, purpose: ArchiveMaterializationPurpose, automaticLimit: Int64?, password: String?
+    ) async throws -> URL {
+        try await materialize(item: item, purpose: purpose, automaticLimit: automaticLimit)
+    }
     func exportPromisedItem(_ item: BrowserItem, to url: URL, password: String?, progress: @escaping ArchiveProgressHandler) async throws {
         try await exportItem(item, to: url, password: password, progress: progress)
     }
@@ -743,6 +756,15 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
         purpose: ArchiveMaterializationPurpose,
         automaticLimit: Int64?
     ) async throws -> URL {
+        try await materialize(item: item, purpose: purpose, automaticLimit: automaticLimit, password: nil)
+    }
+
+    func materialize(
+        item: BrowserItem,
+        purpose: ArchiveMaterializationPurpose,
+        automaticLimit: Int64?,
+        password: String?
+    ) async throws -> URL {
         guard case let .archive(address) = item.location,
               let session = sessions[address.sessionID],
               let archive = session.archives[address.archiveID] else {
@@ -783,7 +805,7 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
         let paths = archive.isRawStream ? [] : [address.internalPath]
 
         do {
-            try await nativeBackend.extract(at: archive.fileURL, password: session.password,
+            try await nativeBackend.extract(at: archive.fileURL, password: password ?? session.password,
                 paths: paths, destination: purposeDirectory,
                 outputFile: outputURL, byteLimit: UInt64(hardLimit),
                 lastIndex: lastNativeIndex(in: archive, selecting: paths), cancellationScope: session.readScope,
@@ -825,6 +847,8 @@ actor NativeSevenZipArchiveEngine: ArchiveServing {
             throw ArchiveEngineError.cancelled
         }
         currentSession.materialized[cacheKey] = outputURL
+        // A password typed for the item's contents serves the window's later reads (D-116).
+        if let password { currentSession.password = password }
         sessions[address.sessionID] = currentSession
         return outputURL
     }

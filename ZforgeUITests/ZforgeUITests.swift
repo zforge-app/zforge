@@ -199,7 +199,7 @@ final class ZforgeUITests: XCTestCase {
         XCTAssertTrue(restored.waitForExistence(timeout: 5), "Relaunch must restore list")
     }
 
-    /// Real File menu presentation and the Open with submenu in List. Order
+    /// Real File menu presentation and the Open With submenu in List. Order
     /// and alternates of the native menu are characterized by `FileMenuCommandTests`,
     /// which also covers availability for every mode.
     @MainActor
@@ -232,7 +232,7 @@ final class ZforgeUITests: XCTestCase {
                 dy: area.minY - window.frame.minY + area.height * 0.8
             )).click()
             let emptyMenu = openFileMenu(in: app)
-            assertOpenPrecedesOpenWith(in: emptyMenu, open: "Open", openWith: "Open with", context: mode)
+            assertOpenPrecedesOpenWith(in: emptyMenu, open: "Open", openWith: "Open With", context: mode)
             XCTAssertFalse(emptyMenu.menuItems["Open"].isEnabled, "Empty selection: \(mode)")
             assertOpenWithAvailability(in: emptyMenu, app: app, enabled: false, context: "Empty selection: \(mode)")
             app.typeKey(.escape, modifierFlags: [])
@@ -247,10 +247,10 @@ final class ZforgeUITests: XCTestCase {
             let multipleMenu = openFileMenu(in: app)
             XCTAssertTrue(multipleMenu.menuItems["Open"].isEnabled, "Multiple selection: \(mode)")
             assertOpenWithAvailability(in: multipleMenu, app: app, enabled: true, context: "Multiple selection: \(mode)")
-            assertOpenPrecedesOpenWith(in: multipleMenu, open: "Open", openWith: "Open with", context: mode)
+            assertOpenPrecedesOpenWith(in: multipleMenu, open: "Open", openWith: "Open With", context: mode)
             _ = openFileMenu(in: app)
             let capture = XCTAttachment(screenshot: app.screenshot())
-            capture.name = "File menu Open with multiple selection: \(mode)"
+            capture.name = "File menu Open With multiple selection: \(mode)"
             capture.lifetime = .keepAlways
             add(capture)
             app.typeKey(.escape, modifierFlags: [])
@@ -333,8 +333,8 @@ final class ZforgeUITests: XCTestCase {
     @MainActor
     private func assertOpenWithAvailability(in menu: XCUIElement, app: XCUIApplication, enabled: Bool, context: String) {
         // SwiftUI disables the submenu's actions, while its parent remains enabled in AX.
-        menu.menuItems["Open with"].click()
-        let other = menu.menuItems["Open with"].menus.firstMatch.menuItems["Other…"].firstMatch
+        menu.menuItems["Open With"].click()
+        let other = menu.menuItems["Open With"].menus.firstMatch.menuItems["Other…"].firstMatch
         XCTAssertTrue(other.waitForExistence(timeout: 2), context)
         XCTAssertEqual(other.isEnabled, enabled, context)
         app.typeKey(.leftArrow, modifierFlags: [])
@@ -348,13 +348,13 @@ final class ZforgeUITests: XCTestCase {
         // the order check independent of dynamically populated submenus.
         let entries = menu.children(matching: .menuItem).allElementsBoundByAccessibilityElement.map(\.title)
         XCTAssertEqual(entries.filter { $0 == open }.count, 1, "Unique File Open: \(context), entries: \(entries)")
-        XCTAssertEqual(entries.filter { $0 == openWith }.count, 1, "Unique File Open with: \(context)")
+        XCTAssertEqual(entries.filter { $0 == openWith }.count, 1, "Unique File Open With: \(context)")
         guard let openIndex = entries.firstIndex(of: open),
               let openWithIndex = entries.firstIndex(of: openWith) else {
-            XCTFail("Missing File Open or Open with: \(context)")
+            XCTFail("Missing File Open or Open With: \(context)")
             return
         }
-        XCTAssertEqual(openIndex + 1, openWithIndex, "File Open must immediately precede Open with: \(context)")
+        XCTAssertEqual(openIndex + 1, openWithIndex, "File Open must immediately precede Open With: \(context)")
     }
 
     @MainActor
@@ -399,7 +399,7 @@ final class ZforgeUITests: XCTestCase {
                 blank.rightClick()
                 XCTAssertTrue(popup.menuItems["Open"].waitForExistence(timeout: 2), "\(mode), selected: \(selected)")
                 XCTAssertEqual(popup.menuItems["Open"].isEnabled, selected, "\(mode), selected: \(selected)")
-                XCTAssertFalse(popup.menuItems["Open with"].exists, "A blank area must show the More menu, not an item's menu: \(mode)")
+                XCTAssertFalse(popup.menuItems["Open With"].exists, "A blank area must show the More menu, not an item's menu: \(mode)")
                 // As in Finder's blank-area menu, New Folder comes first (ZF-85).
                 XCTAssertEqual(popup.menuItems.element(boundBy: 0).title, "New Folder", "\(mode), selected: \(selected)")
                 if let expected {
@@ -411,7 +411,7 @@ final class ZforgeUITests: XCTestCase {
             // the selected item must keep the selection the toolbar acts on.
             XCTAssertTrue(editTags.isEnabled, mode)
             file.rightClick()
-            XCTAssertTrue(popup.menuItems["Open with"].waitForExistence(timeout: 2), mode)
+            XCTAssertTrue(popup.menuItems["Open With"].waitForExistence(timeout: 2), mode)
             XCTAssertTrue(popup.menuItems["Edit Tags"].exists, mode)
             XCTAssertEqual(app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "quick-tag-")).count, 7, mode)
             app.typeKey(.escape, modifierFlags: [])

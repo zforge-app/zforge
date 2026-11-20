@@ -682,7 +682,12 @@ Z7_COM7F_IMF(ExtractCallback::SetOperationResult(Int32 result)) {
     file = nullptr; output.Release();
     if (result != NArchive::NExtract::NOperationResult::kOK) {
         itemResult = result;
-        if (result == NArchive::NExtract::NOperationResult::kWrongPassword) context->failure = 2;
+        // Formats without a password check (7z AES) report a wrong password as a data or CRC
+        // error in the encrypted item; 7-Zip's own UI reads it as “Wrong password?” (D-116).
+        bool encryptedDataError = context->passwordRequested && context->password
+            && (result == NArchive::NExtract::NOperationResult::kDataError
+                || result == NArchive::NExtract::NOperationResult::kCRCError);
+        if (result == NArchive::NExtract::NOperationResult::kWrongPassword || encryptedDataError) context->failure = 2;
         return E_FAIL;
     }
     // Every requested entry is written: stop decompressing the rest of the stream.

@@ -637,7 +637,7 @@ Cause: the offscreen sidebar starts at 144 pt with two-line rows until `SidebarS
 
 Correction (test only; scenario and the 28 pt assertion unchanged): the fixture's wait lays out the whole window between polls (`window.layoutIfNeeded()`, which updates constraints first, as the display cycle does), and the sidebar test waits until the rows exist, the table is 206 pt wide and neither the table nor any ancestor needs a constraint update or layout (`isLaidOut`). With the same `Task.yield()` injection the suite passed 50/50.
 
-### D-116 — Wording and behavior gaps found while writing the wiki (open, 2026-11-20)
+### D-116 — Wording and behavior gaps found while writing the wiki (corrected 2026-11-20, ZF-92, except Validate with several archives and folder-access review, which await decisions)
 
 Found by static reading of the code while the English GitHub wiki was drafted (2026-11-20); nothing below was changed or run in the app. Items marked *confirmed* were checked in the source; the others are readings of the code that still need a reproduction.
 
@@ -653,6 +653,17 @@ Found by static reading of the code while the English GitHub wiki was drafted (2
 - Leftover file: `Zforge/SevenZipHelper.entitlements` is not referenced by any target in `project.pbxproj`.
 
 The wiki documents the current behavior and avoids the inaccurate wording. Each item needs a decision (fix, or accept and record) and, for fixes, a test that fails first.
+
+Correction (ZF-92, user request 2026-11-20, in Portuguese: fix items 1–5, 7, 8 and 10, reproduce item 6 and propose a behavior, propose a design for item 9; each fix with a test that fails first):
+- **Menu titles:** New Tab, Open With, Always Open With, and two more of the same kind found by a catalog search — Copy Pathname (item menu, Option) and Restore Defaults (List header menu). The catalog keys were renamed in place with every translation kept (`FileMenuCommandTests` “The title-case menu keys keep every translation” pins all 21 values). Changed test expectations, justified by this requested change: the English literals “Open with” in `BrowserMenuParityTests` (2) and `ZforgeUITests` (5) and the keys in `FileMenuCommandTests` now read “Open With”/“Always Open With”; scenarios and checks are unchanged. Not changed: translations that do not use title case in their language (pt-BR “Abrir com”, “Nova aba”; tr “Yeni sekme”), which other pt-BR/tr menu titles do use — left as they were, as the user asked to keep the translations.
+- **Preview placeholder:** `ArchivePreviewLimits.manualPreviewReason` says why an item waits for Load Preview, and the text names the limit in force (“This item is larger than the 512 MB preview limit set in Settings.”), or volume settings off, solid archives off, unknown size, or encrypted contents.
+- **Password sheet:** `PasswordOperation.prompt(locale:)` names the action (browse, extract “Name”, validate “Name”, extract items, open/preview/share items) and keeps “It stays in memory only for this window.” only where the session keeps the password.
+- **Settings footer:** names a double click, Open With and a Dock drop for types that open with Zforge, and says an archive of another app's type always opens; CURRENT-STATE “Archives opened from Finder” synchronized. Snapshot references re-recorded for this approved text change (4, viewed).
+- **Extraction folder name:** `ArchiveNaming.baseName` strips `.tar.<compression>` for every compression in `ArchiveFormatRegistry.streamCompressionExtensions`, the same set that builds `commonExtensions` (no second list); shorthands (`.tgz`, `.tbz`, `.tbz2`, `.txz`, `.tzst`) are single suffixes.
+- **Encrypted contents:** confirmed with ZIP AES and 7z fixtures created by the engine. Open, Open With, Quick Look, Share and Load Preview now ask in the password sheet and run again with the password (`materialize(…password:)`; the session keeps a password that reads the item); the automatic preview waits for Load Preview instead of showing an alert. Found while fixing it: 7z AES has no password check, so a wrong password came back as a data error (“The archive is empty or unsupported.”); the bridge now reports a data or CRC error in an item it asked a password for as an incorrect password, as 7-Zip's UI does — this also applies to extraction and validation.
+- **Cancelling a batch:** confirmed (“The operation was cancelled.” as an error alert); extraction and validation now stop without an alert or result message, and extraction refreshes what was written. Not changed: a folder that Extract to “Name” created and the cancel left empty stays (the Finder Extract flow removes it).
+- **Leftover file:** `Zforge/SevenZipHelper.entitlements` removed with its `ui-impact.json` entry: no target, build setting or script referenced it, and the built app carried neither the file nor its `com.apple.security.inherit` entitlement.
+- **Open:** Validate with several archives (reproduced; OPEN-REQUIREMENTS OR-26) and reviewing/revoking folder access (OPEN-REQUIREMENTS OR-27) await the user's decisions.
 
 ### D-115 — Dropping a folder on itself showed an error (corrected 2026-11-19, ZF-90)
 

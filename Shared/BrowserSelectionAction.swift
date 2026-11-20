@@ -61,15 +61,17 @@ nonisolated enum BrowserSelectionActionPolicy {
 nonisolated enum ArchiveNaming {
     /// The archive name without its format suffix, including compound tar suffixes and the
     /// volume suffix of a split archive (`Backup.7z.001`, `Backup.part2.rar`, `Backup.z01` → `Backup`).
+    /// A compressed tar (`Backup.tar.zst`) loses both suffixes, for every single-stream
+    /// compression `ArchiveFormatRegistry` recognizes; the shorthands (`.tgz`, `.tzst`…) are
+    /// single suffixes.
     static func baseName(_ name: String) -> String {
         if let volume = ArchiveVolumeName.parse(name) { return volume.stem }
-        let lowercased = name.lowercased()
-        for suffix in [".tar.gz", ".tar.bz2", ".tar.xz", ".tgz", ".tbz2", ".txz"] {
-            if lowercased.hasSuffix(suffix) {
-                return String(name.dropLast(suffix.count))
-            }
+        let stem = (name as NSString).deletingPathExtension
+        let compression = (name as NSString).pathExtension.lowercased()
+        if ArchiveFormatRegistry.streamCompressionExtensions.contains(compression), stem.lowercased().hasSuffix(".tar") {
+            return String(stem.dropLast(".tar".count))
         }
-        return URL(fileURLWithPath: name).deletingPathExtension().lastPathComponent
+        return stem
     }
 
     /// The folder name used by Extract to "Name"; `fallback` replaces names that cannot name a folder.
@@ -80,11 +82,16 @@ nonisolated enum ArchiveNaming {
 }
 
 nonisolated enum ArchiveFormatRegistry {
-    static let commonExtensions: Set<String> = [
-        "7z", "zip", "rar", "tar", "tgz", "tbz", "tbz2", "txz", "tzst",
-        "gz", "gzip", "bz2", "bzip2", "xz", "zst", "lzma", "cab", "arj",
-        "lzh", "lha", "cpio", "xar", "wim", "swm", "iso"
-    ]
+    /// Single-stream compressions: a file with one of these suffixes holds one compressed
+    /// file, a tar when the name ends in `.tar.<suffix>`.
+    static let streamCompressionExtensions: Set<String> = ["gz", "gzip", "bz2", "bzip2", "xz", "zst", "lzma"]
+
+    /// Single-suffix shorthands of a compressed tar.
+    static let compressedTarShorthandExtensions: Set<String> = ["tgz", "tbz", "tbz2", "txz", "tzst"]
+
+    static let commonExtensions: Set<String> = streamCompressionExtensions
+        .union(compressedTarShorthandExtensions)
+        .union(["7z", "zip", "rar", "tar", "cab", "arj", "lzh", "lha", "cpio", "xar", "wim", "swm", "iso"])
 
     /// Archive names, including every volume of a split archive (ZF-83): any volume opens,
     /// extracts and validates the whole set.

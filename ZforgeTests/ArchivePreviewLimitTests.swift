@@ -72,6 +72,46 @@ struct ArchivePreviewLimitTests {
         #expect(noSolid.allowsAutomaticPreview(of: local, on: .network))
     }
 
+    @Test("Preview not loaded says why, with the limit set in Settings, in the app's language (D-116)")
+    func manualPreviewExplanation() {
+        let mb: Int64 = 1_000_000
+        var limits = ArchivePreviewLimits.defaults
+        #expect(limits.manualPreviewReason(of: item(size: 1_000), on: .internalDisk) == nil)
+        #expect(limits.manualPreviewReason(of: item(size: 600 * mb), on: .internalDisk) == .overLimit(512 * mb, readsMoreThanItem: false))
+        #expect(limits.manualPreviewReason(of: item(size: 1_000, block: 600 * mb), on: .internalDisk)
+            == .overLimit(512 * mb, readsMoreThanItem: true))
+        #expect(limits.manualPreviewReason(of: item(size: nil), on: .internalDisk) == .unknownSize)
+        #expect(limits.manualPreviewReason(of: item(size: 1_000), on: .removable) == .previewsOff(.removable))
+        #expect(limits.manualPreviewReason(of: item(size: 1_000), on: .network) == .previewsOff(.network))
+        limits.previewsOnRemovableVolumes = true
+        #expect(limits.manualPreviewReason(of: item(size: 40 * mb), on: .removable) == .overLimit(32 * mb, readsMoreThanItem: false))
+        limits.previewsSolidArchives = false
+        #expect(limits.manualPreviewReason(of: item(size: 1_000, block: 2_000), on: .internalDisk) == .solidArchivesOff)
+        // The reason exists exactly when the automatic preview is refused.
+        for volume in [ArchiveVolumeKind.internalDisk, .removable, .network] {
+            for candidate in [item(size: 1_000), item(size: 600 * mb), item(size: nil), item(size: 1_000, block: 2_000),
+                              item(size: 1_000, solid: true)] {
+                #expect((limits.manualPreviewReason(of: candidate, on: volume) == nil)
+                    == limits.allowsAutomaticPreview(of: candidate, on: volume), "\(volume) \(candidate.size as Int64?)")
+            }
+        }
+
+        let english = Locale(identifier: "en")
+        func text(_ reason: ArchiveManualPreviewReason, _ locale: Locale = english) -> String {
+            ArchivePreviewLimits.manualPreviewExplanation(reason, locale: locale)
+        }
+        #expect(text(.overLimit(512 * mb, readsMoreThanItem: false)) == "This item is larger than the 512 MB preview limit set in Settings.")
+        #expect(text(.overLimit(64 * mb, readsMoreThanItem: false)) == "This item is larger than the 64 MB preview limit set in Settings.")
+        #expect(text(.overLimit(512 * mb, readsMoreThanItem: true))
+            == "Previewing this item reads more than the 512 MB preview limit set in Settings.")
+        #expect(text(.previewsOff(.removable)) == "Previews of items in archives on removable drives are off in Settings.")
+        #expect(text(.previewsOff(.network)) == "Previews of items in archives on network volumes are off in Settings.")
+        #expect(text(.solidArchivesOff) == "Previews of items in solid archives are off in Settings.")
+        #expect(text(.unknownSize) == "The size of this item is unknown, so it is not previewed automatically.")
+        let brazilian = text(.overLimit(512 * mb, readsMoreThanItem: false), Locale(identifier: "pt-BR"))
+        #expect(brazilian != text(.overLimit(512 * mb, readsMoreThanItem: false)) && brazilian.contains("512"), "\(brazilian)")
+    }
+
     @Test("Preview preferences have their defaults, clamp their ranges and persist")
     @MainActor
     func preferences() throws {

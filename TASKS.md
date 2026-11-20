@@ -649,6 +649,23 @@ Pending: in-app check of the row and the computer level in the four modes (light
 - [x] “Write-back alerts” snapshots (D-89): IconServices placeholder captured; the test waits until the application icon renders. Reference unchanged.
 - [x] Requirements: AGENT-INTEGRATION-PLAN measurement gate; RNF-Q08 rule on clocks in tests.
 
+### ZF-92 — Fix the wording and behavior gaps found while writing the wiki (2026-11-20, D-116)
+
+User request (2026-11-20, in Portuguese): fix the D-116 items, with a test that fails first for each fix; reproduce Validate stopping at the first failure and propose a behavior; propose a design for reviewing and revoking folder access; update the wiki only after the merge into `main`. Results in REGRESSION-COVERAGE “Wiki review findings — ZF-92”.
+- [x] Menu titles in title case: New Tab, Open With, Always Open With, Copy Pathname, Restore Defaults (catalog keys renamed, 21 translations kept).
+- [x] Load Preview placeholder says why, with the preview limit set in Settings (`ArchiveManualPreviewReason`).
+- [x] Password sheet names the action (browse, extract, validate, open, preview, share).
+- [x] Settings ▸ General footer: Open With and a Dock drop follow the choice for types that open with Zforge; CURRENT-STATE synchronized.
+- [x] `ArchiveNaming.baseName` strips every `.tar.<compression>` the format registry recognizes (`Backup.tar.zst` → `Backup`).
+- [x] Content-only encryption: Open, Open With, Quick Look, Share and Load Preview ask for the password; 7z AES wrong passwords reported as incorrect passwords.
+- [x] Cancelling a batch extraction or validation is not an error.
+- [x] `Zforge/SevenZipHelper.entitlements` removed (unused).
+- [ ] Validate with several archives — reproduced; behavior awaits the user's decision (OR-26).
+- [ ] Review and revoke folder access — design proposed; awaits the user's decision (OR-27).
+- [ ] The 31 selected UI tests (20 offscreen, 11 real): blocked on 2026-11-20 by a locked session; the full Unit plan passed except 4 `TagCatalogTests` that fail the same way on `main` (REGRESSION-COVERAGE).
+- [ ] Real-window look of the password sheet's new texts and of the preview placeholder in a long language (offscreen evidence only).
+- [ ] Wiki pages updated after the merge into `main`.
+
 ### ZF-91 — Friends pre-release 0.1.0 beta 2 (2026-11-20, D-102)
 
 User request (2026-11-20, in Portuguese): “precisamos fazer um novo release”. Version chosen by the user: `0.1.0`, build 28, tag `v0.1.0-beta.2`; same channel and accepted deviation as ZF-84 (D-102). New since beta 1: the toolbar search field at rest and the toolbar following the sidebar's room (ZF-88, D-112, D-113), the 400 pt content minimum, and safer browser drags (ZF-90, D-114, D-115).
