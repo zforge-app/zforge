@@ -1014,6 +1014,37 @@ final class ZforgeUITests: XCTestCase {
         XCTAssertLessThanOrEqual(childColumn.frame.maxX, window.frame.maxX)
     }
 
+    /// ZF-89 (user recording 2026-11-19): in Columns the sidebar divider's hit area reaches over the
+    /// first column's rows, and a press there with the resize pointer dragged the file under it.
+    /// Offscreen tests cover the drag source's refusal (`dividerPressStartsNoItemDrag`); only real
+    /// events prove the split view then tracks the gesture and resizes the sidebar.
+    @MainActor
+    func testSidebarDividerOverColumnsRowResizesWithoutDraggingTheFile() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-fixtures", "--ui-window-width", "1100", "--ui-view-mode", "columns",
+            "-appLanguagePreference", "english"]
+        launchWithBrowserWindow(app)
+        let window = app.windows.matching(NSPredicate(format: "identifier BEGINSWITH %@", "browser-")).firstMatch
+        let row = window.descendants(matching: .any)["browser-item-Welcome.txt"].firstMatch
+        XCTAssertTrue(row.waitForExistence(timeout: 5), app.debugDescription)
+        let sidebar = window.descendants(matching: .any)["browser-sidebar"].firstMatch
+        XCTAssertTrue(sidebar.waitForExistence(timeout: 2))
+        let sidebarWidth = sidebar.frame.width
+        let edge = sidebar.frame.maxX
+        XCTAssertLessThanOrEqual(row.frame.minX, edge + 2, "The first column's row starts at the divider")
+
+        // Press on the divider at the row's height, where the pointer shows the resize cursor.
+        let origin = window.coordinate(withNormalizedOffset: .zero)
+        let divider = origin.withOffset(CGVector(dx: edge - window.frame.minX, dy: row.frame.midY - window.frame.minY))
+        divider.click(forDuration: 0.1, thenDragTo: divider.withOffset(CGVector(dx: 60, dy: 0)))
+
+        let resized = NSPredicate { _, _ in abs(sidebar.frame.width - (sidebarWidth + 60)) <= 4 }
+        XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: resized, object: nil)], timeout: 5),
+                       .completed, "The sidebar follows the divider: \(sidebarWidth) → \(sidebar.frame.width)")
+        XCTAssertTrue(row.exists, "The file stays where it was")
+        XCTAssertFalse(app.dialogs.firstMatch.exists || app.sheets.firstMatch.exists, "No transfer started")
+    }
+
     /// Real drags on the List header: the divider resizes without starting the
     /// header's column-reorder drag, and the header body still reorders. Width limits
     /// and scaling are covered offscreen by `BrowserResizeGeometry` and preference tests.

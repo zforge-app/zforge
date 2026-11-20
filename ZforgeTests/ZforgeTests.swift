@@ -65,11 +65,11 @@ struct ZforgeTests {
         #expect(resolved.subtitle == "Folder · 8 bytes")
     }
 
-    @Test("Sidebar maximum width always reserves 360 points for content")
+    @Test("Sidebar maximum width always reserves 400 points for content")
     func sidebarMaximumWidth() {
-        #expect(BrowserSidebarLayout.maximumWidth(for: 640) == 280)
-        #expect(BrowserSidebarLayout.maximumWidth(for: 900) == 540)
-        #expect(BrowserSidebarLayout.maximumWidth(for: 1_100) == 740)
+        #expect(BrowserSidebarLayout.maximumWidth(for: 640) == 240)
+        #expect(BrowserSidebarLayout.maximumWidth(for: 900) == 500)
+        #expect(BrowserSidebarLayout.maximumWidth(for: 1_100) == 700)
     }
 
     @Test("Hidden items remain distinguishable while preserving selected legibility")

@@ -437,7 +437,8 @@ private struct BrowserListRow: View {
                         : (index.isMultiple(of: 2) ? .clear : Color.primary.opacity(0.06))
                 )
         }
-        .browserDraggable(item: entry.item, state: state)
+        .browserDraggable(item: entry.item, state: state, imageShape: BrowserDragImageShape(
+            cornerRadius: usesEdgeToEdgeBackground ? 0 : BrowserMetrics.rowCornerRadius * scale))
         .browserArchiveContext(entry.item, isSelected: { state.selection.contains(entry.item.id) })
         .browserDirectoryDropTarget(
             state: state,

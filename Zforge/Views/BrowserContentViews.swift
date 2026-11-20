@@ -378,9 +378,20 @@ struct BrowserFileDropDelegate: DropDelegate {
         if info.hasItemsConforming(to: [ArchiveDragPolicy.type]) { return destinationURL != nil || archiveAddress != nil || archiveDestinationURL.flatMap({ state.archiveAddress(for: $0) }) != nil }
         return (destinationURL != nil || archiveDestinationURL != nil || archiveAddress != nil)
             && info.hasItemsConforming(to: [UTType.fileURL.identifier])
+            && !refusesLocalDrag
+    }
+
+    /// A folder dragged in Zforge onto itself or one of its own folders (ZF-89).
+    private var refusesLocalDrag: Bool {
+        guard let destinationURL else { return false }
+        return BrowserLocalDrag.refuses(destinationURL, operation: transferOperation)
     }
 
     func dropUpdated(info: DropInfo) -> DropProposal? {
+        if refusesLocalDrag, !info.hasItemsConforming(to: [ArchiveDragPolicy.type]) {
+            onTargetedChange(false)
+            return DropProposal(operation: .cancel)
+        }
         if info.hasItemsConforming(to: [ArchiveDragPolicy.type]) {
             let operation = ArchiveDragPolicy.operation(option: NSEvent.modifierFlags.contains(.option), insideArchive: destinationURL == nil)
             return DropProposal(operation: operation == .move ? .move : .copy)
@@ -479,12 +490,13 @@ nonisolated struct BrowserDraggedFile: Transferable {
 
 
 extension View {
-    func browserDraggable(item: BrowserItem, state: FileBrowserState) -> some View {
+    func browserDraggable(item: BrowserItem, state: FileBrowserState,
+                          imageShape: BrowserDragImageShape = .fullCell) -> some View {
         Group {
             if item.localURL != nil {
-                background { ArchiveDragSource(state: state, item: item).accessibilityHidden(true) }
+                background { ArchiveDragSource(state: state, item: item, imageShape: imageShape).accessibilityHidden(true) }
             } else if case .archive = item.location {
-                background { ArchiveDragSource(state: state, item: item).accessibilityHidden(true) }
+                background { ArchiveDragSource(state: state, item: item, imageShape: imageShape).accessibilityHidden(true) }
             } else { self }
         }
         .accessibilityElement(children: .contain)

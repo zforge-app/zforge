@@ -5,7 +5,9 @@ import UniformTypeIdentifiers
 nonisolated enum BrowserSidebarLayout {
     static let minimumWidth: CGFloat = 180
     static let idealWidth: CGFloat = 220
-    static let minimumDetailWidth: CGFloat = 360
+    /// The content keeps at least 400 pt: the toolbar above it then holds the navigation group, the
+    /// title and the smallest stage (ZF-88, user request 2026-11-19; it was 360 pt).
+    static let minimumDetailWidth: CGFloat = 400
 
     static func maximumWidth(for windowWidth: CGFloat) -> CGFloat {
         max(minimumWidth, windowWidth - minimumDetailWidth)
@@ -500,7 +502,16 @@ private struct SidebarRowDropDelegate: DropDelegate {
     let owner: String
     let dragSession: BrowserFileDragSession
 
-    func validateDrop(info: DropInfo) -> Bool { info.hasItemsConforming(to: [UTType.fileURL.identifier, ArchiveDragPolicy.type]) }
+    func validateDrop(info: DropInfo) -> Bool {
+        guard info.hasItemsConforming(to: [UTType.fileURL.identifier, ArchiveDragPolicy.type]) else { return false }
+        // A folder dragged in Zforge onto its own sidebar row, or a row inside it (ZF-89).
+        if !info.hasItemsConforming(to: [ArchiveDragPolicy.type]), case let .folder(destination) = target(info),
+           BrowserLocalDrag.refuses(destination,
+                                    operation: BrowserFileDropOperationResolver.operation(forNativeFlags: NSEvent.modifierFlags)) {
+            return false
+        }
+        return true
+    }
     private func target(_ info: DropInfo) -> SidebarDropFeedback.Target {
         if info.hasItemsConforming(to: [ArchiveDragPolicy.type]) { return .folder(url) }
         return SidebarDropFeedback.rowTarget(url: url, canInsert: canInsert, nextFavorite: nextFavorite,

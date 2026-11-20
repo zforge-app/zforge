@@ -596,29 +596,74 @@ struct BrowserSearchPresentationTests {
         await state.applySearchText()
 
         ZforgeSnapshot.assert(
-            HStack { BrowserToolbarSearchControl(state: state) }.padding(8).background(.background),
+            HStack { BrowserToolbarSearchField(state: state) }.padding(8).background(.background),
             size: CGSize(width: 240, height: 40), appearance: appearance.appearance, named: "field-\(appearance.name)")
         ZforgeSnapshot.assert(
             BrowserSearchScopeBar(state: state).environment(\.locale, Locale(identifier: "en")),
             size: CGSize(width: 520, height: 36), appearance: appearance.appearance, named: "scope-bar-\(appearance.name)")
     }
 
-    @Test("The field expands with a snappy animation, and instantly with Reduce Motion")
-    func expansionAnimationHonorsReduceMotion() {
-        #expect(BrowserToolbarSearchControl.expansionAnimation(reduceMotion: true) == nil)
-        #expect(BrowserToolbarSearchControl.expansionAnimation(reduceMotion: false) == .snappy(duration: 0.22))
+    @Test("The field at rest, empty with its placeholder, in light and dark", arguments: ZforgeSnapshot.appearances)
+    func restSnapshots(appearance: (name: String, appearance: NSAppearance.Name)) async throws {
+        let suite = "ZforgeTestSuite.SearchRestSnapshot-\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removeTestSuite(named: suite) }
+        let state = browser(defaults)
+        defer { state.close() }
+        #expect(!state.isSearchPresented)
+
+        ZforgeSnapshot.assert(
+            HStack { BrowserToolbarSearchField(state: state) }.padding(8).background(.background),
+            size: CGSize(width: 240, height: 40), appearance: appearance.appearance, named: "field-rest-\(appearance.name)")
+        #expect(state.searchFieldFocusRequest == 0, "Showing the field at rest requests no focus")
     }
 
-    @Test("The overflow menu offers Search only when the toolbar has no room for it", arguments: [
-        (650.0, true), (720.0, false), (860.0, false), (1_100.0, false)
+    @Test("The search item is a field at rest only while it fits beside every control of the expanded stage", arguments: [
+        // (window width, sidebar trailing edge or nil when collapsed, field)
+        (1_100.0, 180.0 as Double?, true), (1_049.0, 180.0, true), (1_048.0, 180.0, false),
+        (1_100.0, 231.0, true), (1_100.0, 232.0, false), (1_169.0, 300.0, true), (1_168.0, 300.0, false),
+        (957.0, nil, true), (956.0, nil, false), (899.0, nil, false), (1_100.0, 40.0, true)
     ])
-    func overflowSearch(width: Double, offersSearch: Bool) async throws {
+    func fieldAtRestRoom(width: Double, sidebarEdge: Double?, showsField: Bool) {
+        #expect(BrowserToolbarLayout.searchFieldFitsAtRest(
+            windowWidth: CGFloat(width), sidebarTrailingEdge: sidebarEdge.map { CGFloat($0) }) == showsField,
+                "\(width) pt, sidebar edge \(String(describing: sidebarEdge))")
+    }
+
+    @Test("Activating the field at rest selects the scope like Find, without requesting the focus")
+    func activatingFieldAtRest() async throws {
+        let suite = "ZforgeTestSuite.SearchActivate-\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removeTestSuite(named: suite) }
+        let state = browser(defaults)
+        defer { state.close() }
+        await state.start()
+        #expect(state.location == .recents)
+
+        state.activateSearchField()
+        #expect(state.isSearchPresented)
+        #expect(state.searchScope == .thisMac, "Recents only offers This Mac")
+        #expect(state.searchFieldFocusRequest == 0, "The field already took the focus itself")
+
+        state.dismissSearchFieldIfIdle()
+        #expect(!state.isSearchPresented)
+        state.beginSearch()
+        #expect(state.isSearchPresented && state.searchFieldFocusRequest == 1, "Find still requests the focus")
+    }
+
+    /// ZF-88: the smallest stage keeps the search button while it fits, so the menu offers Search
+    /// only with a sidebar near its maximum (290 pt in a 650 pt window).
+    @Test("The overflow menu offers Search only when the toolbar has no room for it", arguments: [
+        (650.0, 290.0, true), (650.0, 180.0, false), (720.0, 180.0, false), (860.0, 180.0, false), (1_100.0, 180.0, false)
+    ])
+    func overflowSearch(width: Double, sidebarEdge: Double, offersSearch: Bool) async throws {
         let suite = "ZforgeTestSuite.SearchOverflow-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))
         defer { defaults.removeTestSuite(named: suite) }
         let state = browser(defaults)
         defer { state.close() }
-        let contents = BrowserToolbarLayout.stage(for: CGFloat(width)).overflowMenuContents
+        let widthClass = BrowserToolbarLayout.WidthClass(windowWidth: CGFloat(width), sidebarTrailingEdge: CGFloat(sidebarEdge))
+        let contents = widthClass.overflowMenuContents(for: widthClass.stage)
         #expect(contents.includesSearchAction == offersSearch)
         let menu = BrowserActionsMenu.make(state: state, includesSearchAction: contents.includesSearchAction,
                                            showToast: { _ in })

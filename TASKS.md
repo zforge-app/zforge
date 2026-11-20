@@ -649,6 +649,29 @@ Pending: in-app check of the row and the computer level in the four modes (light
 - [x] “Write-back alerts” snapshots (D-89): IconServices placeholder captured; the test waits until the application icon renders. Reference unchanged.
 - [x] Requirements: AGENT-INTEGRATION-PLAN measurement gate; RNF-Q08 rule on clocks in tests.
 
+### ZF-90 — Sidebar divider over Columns rows; drops a folder cannot take (2026-11-19, D-114, D-115)
+
+User report (2026-11-19, in Portuguese, recording and screenshot): pressing the sidebar divider over a Columns row dragged the file; dropping a folder on itself showed an error. Numbering note: ZF-89 is the line counter in the parallel `feat/zforge-code-line-counter` worktree.
+- [x] Item drags refuse presses the window routes to the split view's divider; offscreen unit test (four modes) and offscreen UI test, both shown failing without the correction.
+- [x] Finder's drop refusals (item on itself, folder into its own folders, move into its own folder) while hovering and on drop, silently; unit tests reproduced the error first.
+- [x] Drag images clipped to the item's own shape in all four modes (user screenshot: grey strips beside a Columns row).
+- [ ] Real drag-and-drop check in the window (the user's).
+
+### ZF-88 — Toolbar search field at rest in wide windows (2026-11-19)
+
+User request (2026-11-19, in Portuguese): the magnifying glass should expand into a text field when there is room to spare; it was always only the icon. Contract: CURRENT-STATE and UI-UX-GUIDE “Toolbar search” (field at rest).
+- [x] From 1,050 pt (the open field keeps the expanded stage) the search item is the field at rest; below, the button. No focus taken on appearing; click, Tab, its magnifying glass, ⌘F and Find put it in use; Escape and clicking away return it to rest.
+- [x] No transition at the window's first layout (the assumed 1,100 pt width), so narrower windows open with the button.
+- [x] Tests: thresholds, activation, rest snapshots (light/dark), real-window offscreen width/focus and click/Escape cases; the ⌘F UI test moved to 960 pt, the widest width that still shows the button (justified in REGRESSION-COVERAGE).
+- [ ] Real-window visual review (four modes, light/dark, a long language, VoiceOver, Reduce Motion, resizing across 1,050 pt).
+- [x] Follow-up to the user's recording (2026-11-19): button and field as separate toolbar items, no SwiftUI transition, magnifying glass inset 10 pt; overlap/structure test; snapshots re-recorded.
+- [ ] Clean full `Unit` run: it stopped twice in `IconPreviewServiceTests` under high load, and the unchanged sources stopped the same way.
+- [ ] D-112, NSToolbar's 0.2 s appear animation at stage switches: waiting on the user's choice.
+- [x] Second follow-up (user recording and screenshots, 2026-11-19): the field at rest only where it fits beside every control, and every stage following the toolbar's room (window minus sidebar) so `NSToolbar`'s own overflow menu never appears (D-113); sweep tests across sidebar widths.
+- [x] Real-window diagnosis (2026-11-19): the restored sidebar's width was never reported; fixed and verified by scripted resizing of the real window; content minimum raised to 400 pt (user request); focus fixes found by the tests.
+- [ ] The user's check in the real window (resizing and dragging the sidebar).
+- [x] Runs: Unit 820/820, 9 offscreen UI tests and 2 of 3 real UI tests passed. The real Finder question test failed twice because a WhatsApp window covering the screen interrupted XCTest (that flow has no toolbar). It still needs a clean real run.
+
 ### ZF-87 — Connect to servers inside Zforge and eject shares from Shared (2026-11-18, D-111)
 
 User report (2026-11-18, in Portuguese): connecting to an SMB server opened Finder instead of Zforge, the Remote sheet stayed open, Cancel left the share connected, and Shared had no eject button.

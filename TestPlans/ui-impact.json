@@ -33,6 +33,7 @@
       "ZforgeUITests/ZforgeUITests/testArchiveOpenedFromFinderAsksAndExtractsWithoutWindow": "launched by LaunchServices with the archive as its launch event; the folder panel runs out of process"
     },
     "durations": {
+      "ZforgeUITests/ZforgeUITests/testSidebarDividerOverColumnsRowResizesWithoutDraggingTheFile": 15,
       "ZforgeUITests/ZforgeUITests/testBlankAreaUsesMoreMenuInEveryView": 81,
       "ZforgeUITests/ZforgeUITests/testNewFolderWithSelectionMenuAndShortcutInListMode": 57,
       "ZforgeUITests/LocalizationUITests/testLanguageSelectionUpdatesOpenMenuAndPersists": 41,
@@ -126,6 +127,7 @@
         "Zforge/ZforgeApp.swift",
         "Zforge/AppDelegate.swift",
         "Zforge/Views/BrowserWindowSupport.swift",
+        "Zforge/Views/BrowserSidebarObserver.swift",
         "Zforge/ContentView.swift",
         "Zforge/State/FileBrowserState.swift",
         "Zforge/Models/FinderArchiveOpening.swift",
@@ -307,7 +309,8 @@
         "ZforgeUITests/ZforgeUITests/testArchiveInternalCopyConfirmationKeepsHistoryAndAncestorColumns",
         "ZforgeUITests/ZforgeUITests/testArchivePromisesPublishIntoFinderBeforeRemovingOriginal",
         "ZforgeUITests/ZforgeUITests/testLocalDragsOptionCopyAndConfirmAdditionToArchive",
-        "ZforgeUITests/ZforgeUITests/testNewFolderWithSelectionMenuAndShortcutInListMode"
+        "ZforgeUITests/ZforgeUITests/testNewFolderWithSelectionMenuAndShortcutInListMode",
+        "ZforgeUITests/ZforgeUITests/testSidebarDividerOverColumnsRowResizesWithoutDraggingTheFile"
       ]
     },
     {
