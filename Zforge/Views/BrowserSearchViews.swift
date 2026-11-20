@@ -1,54 +1,66 @@
 import AppKit
 import SwiftUI
 
-/// The toolbar's trailing search item, in its own capsule as in Finder: a
-/// magnifying glass that expands into a search field.
-struct BrowserToolbarSearchControl: View {
-    static let fieldWidth: CGFloat = 200
-
+/// The toolbar's trailing search button, in its own capsule as in Finder: a magnifying
+/// glass that opens the search field (`BrowserToolbarSearchField`).
+///
+/// The button and the field are two toolbar items, and the toolbar shows one of them
+/// (ZF-88): `NSToolbar` measures a SwiftUI item when it is presented, so a single item
+/// that changed from the button to the 200 pt field kept the button's width and drew the
+/// field over its neighbours. Switching items is instant, as Finder switches its search.
+struct BrowserToolbarSearchButton: View {
     @Bindable var state: FileBrowserState
-    var restoreContentFocus: () -> Void = {}
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        ZStack {
-            if state.isSearchPresented {
-                field
-                    .transition(.opacity.combined(with: .scale(scale: 0.9, anchor: .trailing)))
-            } else {
-                Button {
-                    state.beginSearch()
-                } label: {
-                    Image(systemName: "magnifyingglass")
-                        .font(.system(size: 15, weight: .regular))
-                        .frame(width: 25, height: 18)
-                        .accessibilityHidden(true)
-                }
-                .focusable(false)
-                .help("Search")
-                .accessibilityLabel("Search")
-                .accessibilityIdentifier("toolbar-search")
-                .transition(.opacity)
-            }
+        Button {
+            state.beginSearch()
+        } label: {
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 15, weight: .regular))
+                .frame(width: 25, height: 18)
+                .accessibilityHidden(true)
         }
-        .animation(Self.expansionAnimation(reduceMotion: reduceMotion), value: state.isSearchPresented)
+        .focusable(false)
+        .help("Search")
+        .accessibilityLabel("Search")
+        .accessibilityIdentifier("toolbar-search")
     }
+}
 
-    /// The field expands and collapses with a short snappy animation, instantly with Reduce Motion.
-    static func expansionAnimation(reduceMotion: Bool) -> Animation? {
-        reduceMotion ? nil : .snappy(duration: 0.22)
-    }
+/// The toolbar's search field: shown while a search is in use and, with room to spare,
+/// at rest without the keyboard focus (ZF-88).
+struct BrowserToolbarSearchField: View {
+    static let fieldWidth: CGFloat = 200
+    /// The field's width when the toolbar has no room for the full one: only a sidebar dragged
+    /// near its maximum while a search is open (ZF-88).
+    static let compactFieldWidth: CGFloat = 140
+    /// The magnifying glass's inset from the capsule's leading edge, as in Finder's field.
+    static let leadingInset: CGFloat = 10
+    static let trailingInset: CGFloat = 8
+
+    @Bindable var state: FileBrowserState
+    var isCompact = false
+    var restoreContentFocus: () -> Void = {}
+
+    var body: some View { field }
 
     private var field: some View {
-        HStack(spacing: 5) {
+        HStack(spacing: 6) {
             Image(systemName: "magnifyingglass")
                 .foregroundStyle(.secondary)
+                .contentShape(Rectangle())
+                .onTapGesture { state.beginSearch() }
                 .accessibilityHidden(true)
             ToolbarSearchTextField(
                 text: state.searchText,
                 placeholder: AppLocalization.string("Search", locale: state.preferences.language.locale),
                 focusRequest: state.searchFieldFocusRequest,
-                onTextChange: { state.updateSearchText($0) },
+                // A field opened for a search takes the focus; a field shown at rest leaves it alone.
+                focusesOnAppear: state.isSearchPresented,
+                onTextChange: { text in
+                    state.activateSearchField()
+                    state.updateSearchText(text)
+                },
                 onSubmit: { state.submitSearch() },
                 onCancel: {
                     Task {
@@ -58,7 +70,12 @@ struct BrowserToolbarSearchControl: View {
                 },
                 onFocusChange: { focused in
                     state.searchFieldHasFocus = focused
-                    if !focused { state.dismissSearchFieldIfIdle() }
+                    if focused {
+                        // Clicking into the field shown at rest puts it in use, as ⌘F does.
+                        state.activateSearchField()
+                    } else {
+                        state.dismissSearchFieldIfIdle()
+                    }
                 }
             )
             if !state.searchText.isEmpty {
@@ -76,9 +93,9 @@ struct BrowserToolbarSearchControl: View {
                 .accessibilityIdentifier("toolbar-search-clear")
             }
         }
-        .padding(.horizontal, 4)
-        .frame(width: Self.fieldWidth, height: 22)
-        .onDisappear { state.searchFieldHasFocus = false }
+        .padding(.leading, Self.leadingInset)
+        .padding(.trailing, Self.trailingInset)
+        .frame(width: isCompact ? Self.compactFieldWidth : Self.fieldWidth, height: 22)
     }
 }
 
@@ -92,8 +109,10 @@ struct BrowserToolbarSearchControl: View {
 struct ToolbarSearchTextField: NSViewRepresentable {
     let text: String
     let placeholder: String
-    /// A new value moves the keyboard focus into the field; the field also takes it when it appears.
+    /// A new value moves the keyboard focus into the field.
     let focusRequest: Int
+    /// Whether the field takes the keyboard focus when it appears.
+    let focusesOnAppear: Bool
     let onTextChange: (String) -> Void
     let onSubmit: () -> Void
     let onCancel: () -> Void
@@ -119,7 +138,7 @@ struct ToolbarSearchTextField: NSViewRepresentable {
         field.setAccessibilityIdentifier("toolbar-search-field")
         field.stringValue = text
         context.coordinator.focusRequest = focusRequest
-        field.requestFocus()
+        if focusesOnAppear { field.requestFocus() }
         return field
     }
 
@@ -170,22 +189,83 @@ struct ToolbarSearchTextField: NSViewRepresentable {
 final class ToolbarSearchNSTextField: NSTextField {
     var onFocusChange: (Bool) -> Void = { _ in }
     private var focusesInWindow = false
+    /// The field's editing ended and the blur is reported at the next turn of the run loop.
+    private var pendingBlur = false
+    /// The field took the keyboard focus and has not reported losing it.
+    private var hasFocus = false
+    /// The field left its window after its editing ended: `NSToolbar` is moving its capsule.
+    private var isRelocating = false
     /// The responder that had the keyboard focus before the field, normally the browser content.
     private weak var previousResponder: NSResponder?
 
-    /// Takes the keyboard focus now, or as soon as the toolbar puts the field in a window.
+    /// Takes the keyboard focus now, or as soon as the toolbar shows the field. ⌘F can ask while
+    /// the field's toolbar item is still hidden, just before the toolbar shows it (ZF-88: the
+    /// search then opened without the focus), so a request that cannot be met is kept and met
+    /// when the field is shown or on one of the next turns of the run loop.
     func requestFocus() {
-        guard let window else {
-            focusesInWindow = true
+        guard let window, !isHiddenOrHasHiddenAncestor else {
+            keepFocusRequest()
             return
         }
-        focusesInWindow = false
-        if currentEditor() == nil { window.makeFirstResponder(self) }
+        guard currentEditor() == nil else {
+            focusesInWindow = false
+            return
+        }
+        if window.makeFirstResponder(self), currentEditor() != nil {
+            focusesInWindow = false
+        } else {
+            keepFocusRequest()
+        }
+    }
+
+    private var focusRetries = 0
+
+    private func keepFocusRequest() {
+        if !focusesInWindow { focusRetries = 0 }
+        focusesInWindow = true
+        guard focusRetries < 10 else { return }
+        focusRetries += 1
+        DispatchQueue.main.async { [weak self] in
+            guard let self, self.focusesInWindow, self.window != nil else { return }
+            self.requestFocus()
+        }
+    }
+
+    override func viewDidUnhide() {
+        super.viewDidUnhide()
+        if focusesInWindow { requestFocus() }
+    }
+
+    /// When a stage switch re-tiles the toolbar, `NSToolbar` removes the glass capsule around the
+    /// field and adds it back in the same layout pass; removing it ends the field's editing (ZF-88:
+    /// an empty search then closed right after ⌘F). An editing that ends because the field leaves
+    /// its window and comes back keeps the keyboard focus; any other blur is reported.
+    override func viewWillMove(toWindow newWindow: NSWindow?) {
+        // SwiftUI can also take the field out of its window while it edits without ending the
+        // editing first (the toolbar item's content is re-hosted): that is a move as well.
+        if newWindow == nil, !isRelocating, pendingBlur || hasFocus {
+            isRelocating = true
+            DispatchQueue.main.async { [weak self] in
+                guard let self, self.isRelocating, self.window == nil else { return }
+                self.isRelocating = false
+                self.pendingBlur = false
+                self.hasFocus = false
+                self.onFocusChange(false)
+            }
+        }
+        super.viewWillMove(toWindow: newWindow)
     }
 
     override func viewDidMoveToWindow() {
         super.viewDidMoveToWindow()
-        if focusesInWindow, window != nil { requestFocus() }
+        guard let window else { return }
+        if isRelocating {
+            isRelocating = false
+            pendingBlur = false
+            if currentEditor() == nil { window.makeFirstResponder(self) }
+        } else if focusesInWindow {
+            requestFocus()
+        }
     }
 
     /// Escape gives the keyboard focus back to where it was before the field took it. SwiftUI
@@ -204,13 +284,25 @@ final class ToolbarSearchNSTextField: NSTextField {
             previousResponder = current
         }
         let became = super.becomeFirstResponder()
-        if became { onFocusChange(true) }
+        if became {
+            hasFocus = true
+            onFocusChange(true)
+        }
         return became
     }
 
     override func textDidEndEditing(_ notification: Notification) {
         super.textDidEndEditing(notification)
-        onFocusChange(false)
+        pendingBlur = true
+        DispatchQueue.main.async { [weak self] in
+            guard let self, self.pendingBlur else { return }
+            self.pendingBlur = false
+            self.isRelocating = false
+            // The field may have taken the focus again meanwhile (⌘F right after a re-tiling).
+            guard self.currentEditor() == nil else { return }
+            self.hasFocus = false
+            self.onFocusChange(false)
+        }
     }
 }
 

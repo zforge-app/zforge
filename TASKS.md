@@ -649,6 +649,41 @@ Pending: in-app check of the row and the computer level in the four modes (light
 - [x] “Write-back alerts” snapshots (D-89): IconServices placeholder captured; the test waits until the application icon renders. Reference unchanged.
 - [x] Requirements: AGENT-INTEGRATION-PLAN measurement gate; RNF-Q08 rule on clocks in tests.
 
+### ZF-91 — Friends pre-release 0.1.0 beta 2 (2026-11-20, D-102)
+
+User request (2026-11-20, in Portuguese): “precisamos fazer um novo release”. Version chosen by the user: `0.1.0`, build 28, tag `v0.1.0-beta.2`; same channel and accepted deviation as ZF-84 (D-102). New since beta 1: the toolbar search field at rest and the toolbar following the sidebar's room (ZF-88, D-112, D-113), the 400 pt content minimum, and safer browser drags (ZF-90, D-114, D-115).
+- [x] `feat/expand-search-field` merged into `release/v0.1.0-beta.2` (from `main` `ebf4e9e`); `CURRENT_PROJECT_VERSION` 27 → 28 for the app and the Finder extension (`MARKETING_VERSION` stays 0.1.0; test targets unchanged).
+- [x] `Scripts/update-7zip.py --status` (vendored 26.06 = upstream 26.06), `--verify` OK, `Scripts/update-notices.py --check` OK, `Scripts/affected-tests.py --check` (32 UI tests, 24 rules, 0 problems).
+- [x] Full `Unit` plan 831/831 and the offscreen part of `UI-Full` 20/20 on the release state (2026-11-20).
+- [x] The 12 `offscreen.realOnly` UI tests in the real mode (announced to the user): 12/12 passed on the second invocation; the first ran no test (shell quoting of the filters). UI-Full 32/32.
+- [x] `main` fast-forwarded to the release branch (`3803416`); annotated tag `v0.1.0-beta.2` on it (2026-11-20).
+- [x] Release archive from a clean clone of the tag, no warnings: signature, designated requirement, entitlements, 0.1.0 (28), `arm64` checked; `Zforge-0.1.0-beta.2.zip`, 9,550,877 bytes, SHA-256 `03b260b0075ef745519812bd9bf3f0ec0bfbe5d676411e370089c5788b1a1528`. Kept outside the repository with the `.xcarchive` and the release notes, beside beta 1.
+- [x] `main` and the tag pushed (user request, 2026-11-20); GitHub pre-release “Zforge 0.1.0 beta 2” published: https://github.com/zforge-app/zforge/releases/tag/v0.1.0-beta.2, marked pre-release and not latest, notes as beta 1's with a “What's new since beta 1” section; the uploaded zip downloaded back through the API has the same SHA-256.
+- [ ] Not repeated from ZF-84: the manual real-window pass by an agent; the user checked ZF-88 and ZF-90 in the real window on Debug builds.
+
+### ZF-90 — Sidebar divider over Columns rows; drops a folder cannot take (2026-11-19, D-114, D-115)
+
+User report (2026-11-19, in Portuguese, recording and screenshot): pressing the sidebar divider over a Columns row dragged the file; dropping a folder on itself showed an error. Numbering note: ZF-89 is the line counter in the parallel `feat/zforge-code-line-counter` worktree.
+- [x] Item drags refuse presses the window routes to the split view's divider; offscreen unit test (four modes) and offscreen UI test, both shown failing without the correction.
+- [x] Finder's drop refusals (item on itself, folder into its own folders, move into its own folder) while hovering and on drop, silently; unit tests reproduced the error first.
+- [x] Drag images clipped to the item's own shape in all four modes (user screenshot: grey strips beside a Columns row).
+- [x] Real drag-and-drop check in the window, by the user (2026-11-19/20): after the divider and drop corrections “Ótimo, mais um ajuste” (the drag image), and after the drag image correction “perfeito, commita”.
+
+### ZF-88 — Toolbar search field at rest in wide windows (2026-11-19)
+
+User request (2026-11-19, in Portuguese): the magnifying glass should expand into a text field when there is room to spare; it was always only the icon. Contract: CURRENT-STATE and UI-UX-GUIDE “Toolbar search” (field at rest).
+- [x] From 1,050 pt (the open field keeps the expanded stage) the search item is the field at rest; below, the button. No focus taken on appearing; click, Tab, its magnifying glass, ⌘F and Find put it in use; Escape and clicking away return it to rest.
+- [x] No transition at the window's first layout (the assumed 1,100 pt width), so narrower windows open with the button.
+- [x] Tests: thresholds, activation, rest snapshots (light/dark), real-window offscreen width/focus and click/Escape cases; the ⌘F UI test moved to 960 pt, the widest width that still shows the button (justified in REGRESSION-COVERAGE).
+- [ ] Real-window visual review (four modes, light/dark, a long language, VoiceOver, Reduce Motion, resizing across 1,050 pt).
+- [x] Follow-up to the user's recording (2026-11-19): button and field as separate toolbar items, no SwiftUI transition, magnifying glass inset 10 pt; overlap/structure test; snapshots re-recorded.
+- [x] Clean full `Unit` run: it first stopped twice in `IconPreviewServiceTests` under high load (the unchanged sources stopped the same way); the final state passed 831/831 (REGRESSION-COVERAGE).
+- [ ] D-112, NSToolbar's 0.2 s appear animation at stage switches: waiting on the user's choice.
+- [x] Second follow-up (user recording and screenshots, 2026-11-19): the field at rest only where it fits beside every control, and every stage following the toolbar's room (window minus sidebar) so `NSToolbar`'s own overflow menu never appears (D-113); sweep tests across sidebar widths.
+- [x] Real-window diagnosis (2026-11-19): the restored sidebar's width was never reported; fixed and verified by scripted resizing of the real window; content minimum raised to 400 pt (user request); focus fixes found by the tests.
+- [x] The user's check in the real window (resizing and dragging the sidebar), 2026-11-19: “OK, isso resolveu os problemas da toolbar”.
+- [x] Runs: Unit 820/820, 9 offscreen UI tests and 2 of 3 real UI tests passed. The real Finder question test failed twice because a WhatsApp window covering the screen interrupted XCTest (that flow has no toolbar). It still needs a clean real run.
+
 ### ZF-87 — Connect to servers inside Zforge and eject shares from Shared (2026-11-18, D-111)
 
 User report (2026-11-18, in Portuguese): connecting to an SMB server opened Finder instead of Zforge, the Remote sheet stayed open, Cancel left the share connected, and Shared had no eject button.

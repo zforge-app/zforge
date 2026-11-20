@@ -33,6 +33,20 @@ final class ArchiveDragPromise: NSFilePromiseProvider {
     }
 }
 
+/// The local files a drag started in Zforge carries, so drop targets can refuse their own
+/// folders while the drag hovers instead of failing after the drop (ZF-89).
+@MainActor
+enum BrowserLocalDrag {
+    private(set) static var sourceURLs: [URL] = []
+
+    static func begin(_ urls: [URL]) { sourceURLs = urls }
+    static func end() { sourceURLs = [] }
+
+    static func refuses(_ destination: URL, operation: BrowserFileTransferOperation) -> Bool {
+        !sourceURLs.isEmpty && BrowserDropDestinationPolicy.refuses(destination, for: sourceURLs, operation: operation)
+    }
+}
+
 @MainActor
 final class ArchiveDragTransfer {
     static var active: [String: ArchiveDragTransfer] = [:]
@@ -182,15 +196,34 @@ final class ArchivePromiseDelegate: NSObject, NSFilePromiseProviderDelegate {
     func operationQueue(for filePromiseProvider: NSFilePromiseProvider) -> OperationQueue { .main }
 }
 
+/// The part of an item's cell its drag image shows: the cell inset horizontally, with rounded
+/// corners. Everything outside it is transparent, so the image carries the selection's shape and
+/// not the column or window background around it (ZF-90).
+nonisolated struct BrowserDragImageShape: Equatable, Sendable {
+    /// A rounded rectangle in the cell's own coordinates (origin at the top left, as in SwiftUI).
+    nonisolated struct Region: Equatable, Sendable {
+        var rect: CGRect
+        var cornerRadius: CGFloat
+    }
+
+    var horizontalInset: CGFloat = 0
+    var cornerRadius: CGFloat = 0
+    /// When set, the image shows only these parts of the cell (Icons: the icon's tile and the
+    /// name's capsule), instead of the inset cell.
+    var regions: [Region] = []
+    static let fullCell = BrowserDragImageShape()
+}
+
 struct ArchiveDragSource: NSViewRepresentable {
     let state: FileBrowserState
     let item: BrowserItem
+    var imageShape = BrowserDragImageShape.fullCell
     func makeNSView(context: Context) -> ArchiveDragSourceView {
-        let view = ArchiveDragSourceView(); view.state = state; view.item = item
+        let view = ArchiveDragSourceView(); view.state = state; view.item = item; view.imageShape = imageShape
         return view
     }
     func updateNSView(_ view: ArchiveDragSourceView, context: Context) {
-        view.state = state; view.item = item
+        view.state = state; view.item = item; view.imageShape = imageShape
     }
     static func dismantleNSView(_ view: ArchiveDragSourceView, coordinator: ()) { view.stopMonitoring() }
 }
@@ -198,6 +231,7 @@ struct ArchiveDragSource: NSViewRepresentable {
 final class ArchiveDragSourceView: NSView, NSDraggingSource {
     weak var state: FileBrowserState?
     var item: BrowserItem?
+    var imageShape = BrowserDragImageShape.fullCell
     private var origin: NSPoint?
     private var transfer: ArchiveDragTransfer?
     private var localDrag = false
@@ -243,12 +277,56 @@ final class ArchiveDragSourceView: NSView, NSDraggingSource {
         guard let state else { return false }
         let local = convert(locationInWindow, from: nil)
         guard bounds.intersection(visibleRect).contains(local),
-              !BrowserForegroundArea.contains(locationInWindow, in: window) else { return false }
+              !BrowserForegroundArea.contains(locationInWindow, in: window),
+              !Self.isSplitViewDivider(at: locationInWindow, in: window) else { return false }
         if state.viewMode == .list, let item,
            let entry = state.flattenedList().first(where: { $0.id == item.id }),
            local.x < CGFloat(entry.depth * 20 + 24) * state.preferences.scale + 8 { return false }
         return true
     }
+    /// Whether the window gives a press at this point to a split view: its divider, whose hit area
+    /// (and resize pointer) reaches over the first pixels of Columns' first column (ZF-89: pressing
+    /// there to resize the sidebar dragged the file under the pointer instead).
+    static func isSplitViewDivider(at locationInWindow: NSPoint, in window: NSWindow?) -> Bool {
+        guard let frameView = window?.contentView?.superview ?? window?.contentView else { return false }
+        return frameView.hitTest(frameView.convert(locationInWindow, from: nil)) is NSSplitView
+    }
+
+    /// The visible part of this item's cell as rendered in the window, in `host` coordinates,
+    /// with everything outside `imageShape` transparent; nil while the cell is not visible.
+    func dragImage(in host: NSView) -> (frame: NSRect, image: NSImage)? {
+        let frame = convert(bounds.intersection(visibleRect), to: host)
+        guard !frame.isEmpty, let bitmap = host.bitmapImageRepForCachingDisplay(in: frame) else { return nil }
+        host.cacheDisplay(in: frame, to: bitmap)
+        // A rect in this view's coordinates, in the image's own coordinates (origin at the bottom left).
+        func imageRect(_ rect: NSRect) -> NSRect {
+            let shape = convert(rect, to: host)
+            return NSRect(x: shape.minX - frame.minX,
+                          y: host.isFlipped ? frame.maxY - shape.maxY : shape.minY - frame.minY,
+                          width: shape.width, height: shape.height)
+        }
+        let path = NSBezierPath()
+        if imageShape.regions.isEmpty {
+            let rect = imageRect(bounds.insetBy(dx: imageShape.horizontalInset, dy: 0))
+            path.append(NSBezierPath(roundedRect: rect, xRadius: imageShape.cornerRadius, yRadius: imageShape.cornerRadius))
+        } else {
+            for region in imageShape.regions {
+                // Region rects use SwiftUI's top-left origin.
+                let flipped = isFlipped ? region.rect
+                    : NSRect(x: region.rect.minX, y: bounds.height - region.rect.maxY,
+                             width: region.rect.width, height: region.rect.height)
+                path.append(NSBezierPath(roundedRect: imageRect(flipped), xRadius: region.cornerRadius,
+                                         yRadius: region.cornerRadius))
+            }
+        }
+        let image = NSImage(size: frame.size, flipped: false) { rect in
+            path.addClip()
+            bitmap.draw(in: rect)
+            return true
+        }
+        return (frame, image)
+    }
+
     private func begin(_ event: NSEvent) -> Bool {
         guard let state, let item, !state.archiveOperationInProgress else { return false }
         let items: [BrowserItem]
@@ -290,13 +368,12 @@ final class ArchiveDragSourceView: NSView, NSDraggingSource {
             // Capture the same rendered cell used by the local drag source.
             // All frames belong to the NSView that starts the native session.
             let source = Self.sources.allObjects.first { $0.item?.id == item.id && $0.window === self.window } ?? self
-            let visibleFrame = source.convert(source.bounds.intersection(source.visibleRect), to: host)
-            let frame = visibleFrame.isEmpty ? self.convert(self.bounds, to: host) : visibleFrame
+            let frame: NSRect
             let image: NSImage
-            if !visibleFrame.isEmpty, let bitmap = host.bitmapImageRepForCachingDisplay(in: frame) {
-                host.cacheDisplay(in: frame, to: bitmap)
-                image = NSImage(size: frame.size); image.addRepresentation(bitmap)
+            if let snapshot = source.dragImage(in: host) {
+                (frame, image) = snapshot
             } else {
+                frame = self.convert(self.bounds, to: host)
                 // Offscreen selected entries still get a named preview at the
                 // pickup position; an unset frame would animate from (0, 0).
                 let scale = state.preferences.scale
@@ -310,6 +387,7 @@ final class ArchiveDragSourceView: NSView, NSDraggingSource {
             dragging.setDraggingFrame(frame, contents: image)
             return dragging
         }
+        if localDrag { BrowserLocalDrag.begin(items.compactMap(\.localURL)) }
         let session = host.beginDraggingSession(with: draggingItems, event: event, source: self)
         session.draggingFormation = state.viewMode.archiveDragFormation
         return true
@@ -323,6 +401,7 @@ final class ArchiveDragSourceView: NSView, NSDraggingSource {
         return transfer.externalOperationMask(option: moving)
     }
     func draggingSession(_ session: NSDraggingSession, endedAt screenPoint: NSPoint, operation: NSDragOperation) {
+        if localDrag { BrowserLocalDrag.end() }
         transfer?.ended(operation)
         transfer = nil
     }
