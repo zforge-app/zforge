@@ -637,6 +637,23 @@ Cause: the offscreen sidebar starts at 144 pt with two-line rows until `SidebarS
 
 Correction (test only; scenario and the 28 pt assertion unchanged): the fixture's wait lays out the whole window between polls (`window.layoutIfNeeded()`, which updates constraints first, as the display cycle does), and the sidebar test waits until the rows exist, the table is 206 pt wide and neither the table nor any ancestor needs a constraint update or layout (`isLaidOut`). With the same `Task.yield()` injection the suite passed 50/50.
 
+### D-116 — Wording and behavior gaps found while writing the wiki (open, 2026-11-20)
+
+Found by static reading of the code while the English GitHub wiki was drafted (2026-11-20); nothing below was changed or run in the app. Items marked *confirmed* were checked in the source; the others are readings of the code that still need a reproduction.
+
+- *Confirmed.* Menu labels break macOS title case: “New tab” (`Zforge/ZforgeApp.swift:151`, `Zforge/Views/KeyboardShortcutsView.swift:252`), “Open with” and “Always open with” (`Zforge/ZforgeApp.swift:184`, `:199`; `Zforge/Views/BrowserNativeItemMenu.swift:156`). macOS uses New Tab, Open With and Always Open With.
+- *Confirmed.* The Load Preview placeholder still says “This archive item is larger than 10 MB.” (`Zforge/Views/PreviewView.swift:547`), although the limit is set in Settings and defaults to 512 MB.
+- *Confirmed.* The password sheet says “Enter the password to browse this archive.” (`Zforge/ContentView.swift:1025`) also when it asks for a password to extract or validate.
+- *Confirmed.* The footer of Settings ▸ General ▸ Archives Opened from Finder says “Open With always opens.” (`Zforge/Views/FinderArchiveOpeningSettingsSection.swift:17`, repeated in CURRENT-STATE “Archives opened from Finder”), but for a type that already opens with Zforge, Open With and a Dock drop follow the setting like a double click, as the same CURRENT-STATE section's “When it applies” describes.
+- *Confirmed.* `ArchiveNaming.baseName` (`Shared/BrowserSelectionAction.swift:67`) strips `.tar.gz`, `.tar.bz2`, `.tar.xz`, `.tgz`, `.tbz2` and `.txz` but not `.tar.zst`, so Extract to “Name” and the Finder Extract flow name the folder of `Backup.tar.zst` `Backup.tar`.
+- To reproduce: with several archives selected, Validate stops at the first failure and does not test the rest (`FileBrowserState.processNextArchiveValidation`); CURRENT-STATE only says they are processed in sequence.
+- To reproduce: in an archive whose names are visible but whose contents are encrypted, opening, previewing or sharing an item shows “A password is required to open this archive.” instead of the password sheet; only extraction, validation and inline expansion ask.
+- To reproduce: cancelling a batch extraction from the progress overlay may show “The operation was cancelled.” as an error alert (`processNextArchiveExtraction` turns `ArchiveEngineError.cancelled` into a generic failure).
+- Missing control: folder access granted while browsing cannot be reviewed or revoked in the app (only automation folders have **Remove**); removing a sidebar favorite keeps its grant.
+- Leftover file: `Zforge/SevenZipHelper.entitlements` is not referenced by any target in `project.pbxproj`.
+
+The wiki documents the current behavior and avoids the inaccurate wording. Each item needs a decision (fix, or accept and record) and, for fixes, a test that fails first.
+
 ### D-111 — Connecting to a server opened Finder, the Remote sheet stayed open, and Shared had no eject button (corrected 2026-11-18, ZF-87)
 
 Reported by the user on 2026-11-18 (in Portuguese), with screenshots of the Remote sheet over the Network level and of Shared ▸ D: after connecting to an SMB server, Finder opened the share instead of Zforge; the Remote sheet stayed open, and pressing its Cancel left the share connected; Shared rows had no ⏏ button to disconnect.
