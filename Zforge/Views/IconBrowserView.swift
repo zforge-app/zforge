@@ -41,7 +41,6 @@ struct IconBrowserView: View {
                                         Task { await state.openFromDoubleClick(item, modifiers: modifiers) }
                                     }
                                 )
-                                .browserDraggable(item: item, state: state)
                                 .browserDirectoryDropTarget(
                                     state: state,
                                     item: item,
@@ -90,6 +89,17 @@ private struct BrowserIconCell: View {
     let scale: CGFloat
     let contentFocus: FocusState<BrowserFocusTarget?>.Binding
     @State private var isPreviewLoaded = false
+    /// The icon's tile and the name's capsule in the cell: the drag image shows only them (ZF-90).
+    @State private var tileFrame: CGRect = .zero
+    @State private var nameFrame: CGRect = .zero
+    private nonisolated static let cellSpace = "browser-icon-cell"
+
+    private var dragImageShape: BrowserDragImageShape {
+        BrowserDragImageShape(regions: [
+            .init(rect: tileFrame, cornerRadius: 8 * scale),
+            .init(rect: nameFrame, cornerRadius: 5 * scale)
+        ].filter { !$0.rect.isEmpty })
+    }
 
     var body: some View {
         VStack(spacing: 8 * scale) {
@@ -106,6 +116,7 @@ private struct BrowserIconCell: View {
                     RoundedRectangle(cornerRadius: 8 * scale)
                         .fill(isSelected ? Color.primary.opacity(0.12) : .clear)
                 }
+                .onGeometryChange(for: CGRect.self) { $0.frame(in: .named(Self.cellSpace)) } action: { tileFrame = $0 }
 
             BrowserItemNameView(
                 state: state,
@@ -126,12 +137,15 @@ private struct BrowserIconCell: View {
                     RoundedRectangle(cornerRadius: 5 * scale)
                         .fill(isSelected ? BrowserMetrics.selectionColor : .clear)
                 }
+                .onGeometryChange(for: CGRect.self) { $0.frame(in: .named(Self.cellSpace)) } action: { nameFrame = $0 }
         }
         .frame(maxWidth: .infinity, minHeight: 90 * scale)
         .padding(8 * scale)
+        .coordinateSpace(.named(Self.cellSpace))
         .contentShape(Rectangle())
         .accessibilityElement(children: state.renamingItemID == item.id ? .contain : .combine)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
         .browserArchiveContext(item, isSelected: { state.selection.contains(item.id) })
+        .browserDraggable(item: item, state: state, imageShape: dragImageShape)
     }
 }

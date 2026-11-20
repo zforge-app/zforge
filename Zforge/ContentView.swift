@@ -22,40 +22,127 @@ nonisolated enum BrowserToolbarLayout {
     /// How much more toolbar width the expanded search field takes than its button.
     static let expandedSearchExtraWidth: CGFloat = 150
 
-    /// The stage for a window width. While the search field is expanded the stage is chosen
-    /// as if the window were narrower by the field's extra width, so controls move into the
+    /// The sidebar's trailing edge the stage widths below were set for: its 180 pt minimum.
+    static let referenceSidebarTrailingEdge: CGFloat = 180
+    /// Where the toolbar's leading items start with the sidebar collapsed: after the traffic lights.
+    static let collapsedSidebarToolbarInset: CGFloat = 88
+
+    /// The window width that leaves the toolbar the same room with the reference sidebar.
+    ///
+    /// The toolbar's room runs from the sidebar's trailing edge (with the sidebar collapsed, from
+    /// the traffic lights) to the window's trailing edge, so a wider sidebar leaves less of it
+    /// (ZF-88 follow-up, user screenshots 2026-11-19): with stages that followed the window width
+    /// alone, a sidebar a few dozen points wider than its minimum made `NSToolbar` move the search
+    /// button, More or the search field into its own overflow menu.
+    static func referenceWindowWidth(windowWidth: CGFloat, sidebarTrailingEdge: CGFloat?) -> CGFloat {
+        windowWidth - max(sidebarTrailingEdge ?? 0, collapsedSidebarToolbarInset) + referenceSidebarTrailingEdge
+    }
+
+    /// The stage for a window width and sidebar. While the search field is expanded the stage is
+    /// chosen as if the window were narrower by the field's extra width, so controls move into the
     /// toolbar menu first: `NSToolbar` would otherwise move the field itself into its own
-    /// overflow menu, where it cannot be typed into.
-    static func stage(for windowWidth: CGFloat, searchFieldExpanded: Bool = false) -> Stage {
-        let width = searchFieldExpanded ? windowWidth - expandedSearchExtraWidth : windowWidth
+    /// overflow menu, where it cannot be typed into. Widths are those of a window with the
+    /// reference sidebar (`referenceWindowWidth`).
+    static func stage(for windowWidth: CGFloat, sidebarTrailingEdge: CGFloat? = referenceSidebarTrailingEdge,
+                      searchFieldExpanded: Bool = false) -> Stage {
+        let reference = referenceWindowWidth(windowWidth: windowWidth, sidebarTrailingEdge: sidebarTrailingEdge)
+        let width = searchFieldExpanded ? reference - expandedSearchExtraWidth : reference
         if width < 678 { return .unifiedOverflow }
         if width < 840 { return .compactWithActionsOverflow }
         if width < 900 { return .compactWithArchiveAction }
         return .expanded
     }
 
+    /// The width (with the reference sidebar) from which the expanded stage also fits the search
+    /// field at rest instead of its button (ZF-88). Measured on macOS 27 in the real browser
+    /// window: 869 pt of toolbar room hold the navigation group, `NSToolbar`'s minimum of 160 pt
+    /// for the title (longer titles are truncated to it) and its 12 pt spacing, the view selector,
+    /// the action group and the 200 pt field. With less room `NSToolbar` compresses the field and
+    /// then moves items into its own overflow menu.
+    static let searchFieldAtRestMinimumWidth: CGFloat = 1_049
+
+    /// With room to spare the search item is a field at rest instead of the magnifying-glass
+    /// button, as in Finder (ZF-88): only while the field fits beside every control of the
+    /// expanded stage, so it never pushes a control into a menu; the button returns as soon as
+    /// it does not.
+    static func searchFieldFitsAtRest(windowWidth: CGFloat, sidebarTrailingEdge: CGFloat?) -> Bool {
+        referenceWindowWidth(windowWidth: windowWidth, sidebarTrailingEdge: sidebarTrailingEdge)
+            >= searchFieldAtRestMinimumWidth
+    }
+
+    /// The width (with the reference sidebar) below which the open search field only fits at its
+    /// compact width in the smallest stage (416 pt of room measured on macOS 27 for 200 pt): only a
+    /// sidebar dragged near its maximum leaves so little room.
+    static let fullSearchFieldMinimumWidth: CGFloat = 596
+
+    /// The width (with the reference sidebar) from which the smallest stage keeps the search button
+    /// beside the double-chevron menu instead of moving it into that menu (ZF-88).
+    /// 418 pt of room measured on macOS 27 (the button went into `NSToolbar`'s overflow at 416 pt).
+    static let searchButtonInSmallestStageMinimumWidth: CGFloat = 598
+
     /// In the smallest stage the expanded field only fits without the toolbar title, so the
     /// title leaves the toolbar while the field is open (the field shows the query; the
     /// window keeps its title for the Window menu).
-    static func hidesTitle(for windowWidth: CGFloat, searchFieldExpanded: Bool) -> Bool {
-        searchFieldExpanded && stage(for: windowWidth, searchFieldExpanded: true) == .unifiedOverflow
+    static func hidesTitle(for windowWidth: CGFloat, sidebarTrailingEdge: CGFloat? = referenceSidebarTrailingEdge,
+                           searchFieldExpanded: Bool) -> Bool {
+        searchFieldExpanded
+            && stage(for: windowWidth, sidebarTrailingEdge: sidebarTrailingEdge, searchFieldExpanded: true) == .unifiedOverflow
     }
 
-    /// All the toolbar takes from the window width: its stage with the search field closed and
-    /// open. The window keeps only this in its state, so resizing within a stage updates no view
-    /// (D-110: the raw width in the browser's body re-evaluated the whole window at every point).
+    /// All the toolbar takes from the window and sidebar widths: its stage with the search field
+    /// closed and open, whether the field fits at rest, the search button in the smallest stage and
+    /// the compact field for a sidebar near its maximum. The window keeps only this in its observed state, so resizing
+    /// within a stage updates no view (D-110: the raw width in the browser's body re-evaluated the
+    /// whole window at every point).
     nonisolated struct WidthClass: Equatable, Sendable {
         let stage: Stage
         let searchStage: Stage
+        /// Whether the search item is a field even while no search is in use (ZF-88).
+        let showsSearchFieldAtRest: Bool
+        /// Whether the open search field takes its compact width (a sidebar near its maximum).
+        let usesCompactSearchField: Bool
+        /// Whether the search button stays in the toolbar in the smallest stage (ZF-88).
+        let keepsSearchButtonInSmallestStage: Bool
 
-        init(windowWidth: CGFloat) {
-            stage = BrowserToolbarLayout.stage(for: windowWidth)
-            searchStage = BrowserToolbarLayout.stage(for: windowWidth, searchFieldExpanded: true)
+        init(windowWidth: CGFloat, sidebarTrailingEdge: CGFloat? = BrowserToolbarLayout.referenceSidebarTrailingEdge) {
+            stage = BrowserToolbarLayout.stage(for: windowWidth, sidebarTrailingEdge: sidebarTrailingEdge)
+            searchStage = BrowserToolbarLayout.stage(for: windowWidth, sidebarTrailingEdge: sidebarTrailingEdge,
+                                                     searchFieldExpanded: true)
+            showsSearchFieldAtRest = BrowserToolbarLayout.searchFieldFitsAtRest(
+                windowWidth: windowWidth, sidebarTrailingEdge: sidebarTrailingEdge)
+            let reference = BrowserToolbarLayout.referenceWindowWidth(
+                windowWidth: windowWidth, sidebarTrailingEdge: sidebarTrailingEdge)
+            usesCompactSearchField = reference < BrowserToolbarLayout.fullSearchFieldMinimumWidth
+            keepsSearchButtonInSmallestStage = reference >= BrowserToolbarLayout.searchButtonInSmallestStageMinimumWidth
         }
 
         func stage(searchFieldExpanded: Bool) -> Stage { searchFieldExpanded ? searchStage : stage }
 
         func hidesTitle(searchFieldExpanded: Bool) -> Bool { searchFieldExpanded && searchStage == .unifiedOverflow }
+    }
+}
+
+/// The inputs of the browser toolbar's `WidthClass`: not observed by SwiftUI (ZF-88).
+final class BrowserToolbarMetrics {
+    var windowWidth: CGFloat = 1_100
+    /// The sidebar's trailing edge from SwiftUI's geometry, used until AppKit can tell.
+    var sidebarMaxX: CGFloat = BrowserToolbarLayout.referenceSidebarTrailingEdge
+    weak var sidebarObserver: BrowserSidebarObserverView?
+
+    /// Nil while the sidebar is collapsed: the toolbar then starts after the traffic lights.
+    @MainActor var sidebarTrailingEdge: CGFloat? {
+        if let edge = sidebarObserver?.sidebarTrailingEdge() { return edge }
+        return sidebarMaxX
+    }
+}
+
+extension BrowserToolbarLayout.WidthClass {
+    /// The toolbar menu's additions for a stage: Search only while the toolbar has no room for
+    /// the search button (ZF-88).
+    func overflowMenuContents(for stage: BrowserToolbarLayout.Stage) -> BrowserToolbarLayout.OverflowMenuContents {
+        var contents = stage.overflowMenuContents
+        if keepsSearchButtonInSmallestStage { contents.includesSearchAction = false }
+        return contents
     }
 }
 
@@ -112,6 +199,9 @@ struct ContentView: View {
     @State private var authorizationPanelPresented = false
     @State private var toastMessage: String?
     @State private var toolbarWidthClass: BrowserToolbarLayout.WidthClass?
+    /// The latest window width and sidebar edge, kept outside SwiftUI's observation so they
+    /// update no view; only a change of `toolbarWidthClass` does (D-110, ZF-88).
+    @State private var toolbarMetrics = BrowserToolbarMetrics()
     @State private var toastDismissTask: Task<Void, Never>?
     @State private var focusRestoreTask: Task<Void, Never>?
     @State private var toolbarOverflowMenuPresented = false
@@ -133,16 +223,23 @@ struct ContentView: View {
 
     var body: some View {
         browserLayout(widthClass: toolbarWidthClass ?? .init(windowWidth: Self.defaultWidth))
-            .onGeometryChange(for: BrowserToolbarLayout.WidthClass.self) { proxy in
-                BrowserToolbarLayout.WidthClass(windowWidth: proxy.size.width)
-            } action: { widthClass in
-                toolbarWidthClass = widthClass
+            .onGeometryChange(for: CGFloat.self) { proxy in
+                proxy.size.width
+            } action: { width in
+                toolbarMetrics.windowWidth = width
+                updateToolbarWidthClass()
             }
             .frame(minWidth: 640, minHeight: 460)
     }
 
     /// The width assumed until the first layout reports the window's.
     private static let defaultWidth: CGFloat = 1_100
+
+    private func updateToolbarWidthClass() {
+        let widthClass = BrowserToolbarLayout.WidthClass(
+            windowWidth: toolbarMetrics.windowWidth, sidebarTrailingEdge: toolbarMetrics.sidebarTrailingEdge)
+        if toolbarWidthClass != widthClass { toolbarWidthClass = widthClass }
+    }
 
     @ViewBuilder
     private func browserLayout(widthClass: BrowserToolbarLayout.WidthClass) -> some View {
@@ -155,6 +252,17 @@ struct ContentView: View {
             )
             .toolbar(removing: .sidebarToggle)
             .toolbar { browserNavigationToolbar }
+            // The sidebar's trailing edge bounds the toolbar's room (ZF-88). SwiftUI reports it in the
+            // window's first layout, before the window shows, so a sidebar restored wider than its
+            // minimum never shows the stage of a narrower one.
+            .onGeometryChange(for: CGFloat.self) { proxy in proxy.frame(in: .global).maxX } action: { maxX in
+                toolbarMetrics.sidebarMaxX = maxX
+                updateToolbarWidthClass()
+            }
+            .background {
+                BrowserSidebarObserver(metrics: toolbarMetrics) { updateToolbarWidthClass() }
+                    .frame(width: 0, height: 0)
+            }
         } detail: {
             VStack(spacing: 0) {
                 if browser.fileSearch != nil && browser.location == .recents {
@@ -178,7 +286,12 @@ struct ContentView: View {
             .navigationTitle(browser.title)
             .toolbarTitleDisplayMode(.inline)
             .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
-            .toolbar { browserPrimaryToolbar(stage: widthClass.stage(searchFieldExpanded: browser.isSearchPresented)) }
+            .toolbar {
+                browserPrimaryToolbar(stage: widthClass.stage(searchFieldExpanded: browser.isSearchPresented),
+                                      showsSearchFieldAtRest: widthClass.showsSearchFieldAtRest,
+                                      isCompactSearchField: widthClass.usesCompactSearchField,
+                                      keepsSearchButton: widthClass.keepsSearchButtonInSmallestStage)
+            }
             .toolbar(removing: widthClass.hidesTitle(searchFieldExpanded: browser.isSearchPresented) ? .title : nil)
         }
         .environment(\.locale, browser.preferences.language.locale)
@@ -413,9 +526,13 @@ struct ContentView: View {
     /// Every stage's items stay in the toolbar and a stage only hides the others (D-110): replacing
     /// the items made `NSToolbar` and SwiftUI rebuild the toolbar at each stage switch.
     @ToolbarContentBuilder
-    private func browserPrimaryToolbar(stage: BrowserToolbarLayout.Stage) -> some ToolbarContent {
+    private func browserPrimaryToolbar(stage: BrowserToolbarLayout.Stage,
+                                       showsSearchFieldAtRest: Bool,
+                                       isCompactSearchField: Bool,
+                                       keepsSearchButton: Bool) -> some ToolbarContent {
         let isCompact = stage == .compactWithActionsOverflow || stage == .compactWithArchiveAction
-        let showsSearch = stage != .unifiedOverflow || browser.isSearchPresented
+        // The smallest stage keeps the search button while it fits beside the double-chevron menu (ZF-88).
+        let showsSearch = stage != .unifiedOverflow || browser.isSearchPresented || keepsSearchButton
         ToolbarSpacer(.fixed, placement: .primaryAction)
         ToolbarItem(id: "view-mode-selector-compact", placement: .primaryAction) {
             ViewModeToolbarControl(selection: $browser.viewMode, usesCompactPresentation: true)
@@ -486,13 +603,16 @@ struct ContentView: View {
             .accessibilityIdentifier("toolbar-more-menu")
         }
         .hidden(stage != .expanded)
-        browserTrailingToolbar(stage: stage, showsSearch: showsSearch)
+        browserTrailingToolbar(stage: stage, showsSearch: showsSearch, showsSearchFieldAtRest: showsSearchFieldAtRest,
+                               isCompactSearchField: isCompactSearchField)
     }
 
     /// The double-chevron menu in its own capsule (the expanded stage has More in its group
     /// instead), then the search item in its own capsule after a fixed space, as in Finder.
     @ToolbarContentBuilder
-    private func browserTrailingToolbar(stage: BrowserToolbarLayout.Stage, showsSearch: Bool) -> some ToolbarContent {
+    private func browserTrailingToolbar(stage: BrowserToolbarLayout.Stage, showsSearch: Bool,
+                                        showsSearchFieldAtRest: Bool,
+                                        isCompactSearchField: Bool = false) -> some ToolbarContent {
         ToolbarSpacer(.fixed, placement: .primaryAction)
             .hidden(stage != .expanded)
         ToolbarItem(id: "toolbar-overflow-menu", placement: .primaryAction) {
@@ -510,10 +630,18 @@ struct ContentView: View {
         .hidden(stage == .expanded)
         ToolbarSpacer(.fixed, placement: .primaryAction)
             .hidden(stage == .expanded || !showsSearch)
+        // The button and the field are separate items, one shown at a time (ZF-88): see
+        // `BrowserToolbarSearchButton`.
+        let showsField = browser.isSearchPresented || showsSearchFieldAtRest
         ToolbarItem(id: "toolbar-search", placement: .primaryAction) {
-            BrowserToolbarSearchControl(state: browser, restoreContentFocus: restoreContentFocus)
+            BrowserToolbarSearchButton(state: browser)
         }
-        .hidden(!showsSearch)
+        .hidden(!showsSearch || showsField)
+        ToolbarItem(id: "toolbar-search-field-item", placement: .primaryAction) {
+            BrowserToolbarSearchField(state: browser, isCompact: isCompactSearchField,
+                                      restoreContentFocus: restoreContentFocus)
+        }
+        .hidden(!showsField)
     }
 
     private var canShareSelection: Bool {
@@ -535,7 +663,7 @@ struct ContentView: View {
         for stage: BrowserToolbarLayout.Stage,
         tracksOverflowPresentation: Bool = false
     ) {
-        let contents = stage.overflowMenuContents
+        let contents = (toolbarWidthClass ?? .init(windowWidth: Self.defaultWidth)).overflowMenuContents(for: stage)
         guard let event = NSApp.currentEvent,
               let contentView = event.window?.contentView else { return }
 
@@ -1046,3 +1174,4 @@ private struct ArchivePasswordSheet: View {
         Task { await state.submitPassword(password) }
     }
 }
+

@@ -388,7 +388,11 @@ private struct FinderColumn: View {
                                     }
                                 }
                             )
-                            .browserDraggable(item: item, state: state)
+                            // The drag image is the row's rounded background, without the column
+                            // around it (ZF-90).
+                            .browserDraggable(item: item, state: state, imageShape: BrowserDragImageShape(
+                                horizontalInset: BrowserMetrics.horizontalInset * scale,
+                                cornerRadius: BrowserMetrics.rowCornerRadius * scale))
                             .browserDirectoryDropTarget(
                                 state: state,
                                 item: item,

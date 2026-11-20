@@ -63,7 +63,9 @@ struct GalleryBrowserView: View {
                                             Task { await state.openFromDoubleClick(item, modifiers: modifiers) }
                                         }
                                     )
-                                    .browserDraggable(item: item, state: state)
+                                    // The tile's rounded shape, without the strip's background (ZF-90).
+                                    .browserDraggable(item: item, state: state, imageShape: BrowserDragImageShape(
+                                        cornerRadius: 8 * scale))
                                     .browserDirectoryDropTarget(
                                         state: state,
                                         item: item,

@@ -9,10 +9,13 @@ final class BrowserSearchUITests: XCTestCase {
         continueAfterFailure = false
     }
 
+    /// 960 pt: the widest stage where the search item is still the magnifying-glass button.
+    /// From 1,050 pt the field is shown at rest (ZF-88), covered offscreen by
+    /// `BrowserWindowLayoutTests.searchFieldAtRestFollowsWidth`.
     @MainActor
     func testCommandFFocusesToolbarSearchAndEscapeCollapsesIt() throws {
         let app = XCUIApplication()
-        app.launchArguments = ["--ui-fixtures", "--ui-window-width", "1100", "-appLanguagePreference", "english",
+        app.launchArguments = ["--ui-fixtures", "--ui-window-width", "960", "-appLanguagePreference", "english",
                                "-ApplePersistenceIgnoreState", "YES", "-NSQuitAlwaysKeepsWindows", "NO"]
         app.launch(); app.activate()
         let browser = app.windows.matching(NSPredicate(format: "identifier BEGINSWITH %@", "browser-")).firstMatch

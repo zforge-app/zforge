@@ -426,6 +426,82 @@ struct FileOperationServiceTests {
         )
     }
 
+    /// ZF-89 (user report 2026-11-19): dropping a folder on itself showed ““dev” couldn’t be moved
+    /// to “dev”.” Like Finder, a drop of a folder on itself or into one of its own folders, or a move
+    /// into the folder an item is already in, does nothing and reports no error.
+    @Test("Dropping a folder on itself, inside itself, or moving it into its own folder does nothing and shows no error",
+          arguments: [BrowserFileTransferOperation.automatic, .move, .copy])
+    @MainActor
+    func dropIntoItselfIsIgnored(operation: BrowserFileTransferOperation) async throws {
+        let root = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let folder = root.appendingPathComponent("dev", isDirectory: true)
+        let inner = folder.appendingPathComponent("zforge", isDirectory: true)
+        try FileManager.default.createDirectory(at: inner, withIntermediateDirectories: true)
+        try Data("Zforge".utf8).write(to: folder.appendingPathComponent("Notes.txt"))
+
+        let suiteName = "ZforgeTestSuite.ZforgeDropItselfTest-\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suiteName))
+        defer { defaults.removeTestSuite(named: suiteName) }
+        let state = FileBrowserState(
+            preferences: FileBrowserPreferences(defaults: defaults),
+            fileSystem: FileSystemService(),
+            fileOperations: FileOperationService(),
+            grants: UIFixtureAccessGrantStore(),
+            archives: UIFixtureArchiveEngine()
+        )
+        defer { state.close() }
+        await state.navigateToSidebar(root, name: root.lastPathComponent)
+        let dragged = try #require(state.items.first { $0.localURL?.standardizedFileURL == folder.standardizedFileURL })
+
+        var destinations = [folder, inner]
+        // Moving into the folder it is already in is a no-op too; a copy there duplicates, as in Finder.
+        if operation != .copy { destinations.append(root) }
+        for destination in destinations {
+            // The dropped URLs load asynchronously, so the drop is refused once they are known (a drag
+            // started in Zforge is refused while it hovers, see `localDragRefusesItsOwnFolders`).
+            state.performDrop(providers: [try #require(state.itemProvider(for: dragged))], to: destination,
+                              operation: operation)
+            // Give a refused drop the same chance to fail visibly as a real transfer would have.
+            for _ in 0..<20 { try await Task.sleep(for: .milliseconds(10)) }
+            #expect(state.error == nil, "No error after dropping dev on \(destination.lastPathComponent): \(String(describing: state.error))")
+        }
+        let contents = try FileManager.default.contentsOfDirectory(atPath: folder.path).sorted()
+        #expect(contents == ["Notes.txt", "zforge"], "dev is unchanged")
+        #expect(try FileManager.default.contentsOfDirectory(atPath: inner.path).isEmpty)
+        #expect(try FileManager.default.contentsOfDirectory(atPath: root.path).sorted() == ["dev"])
+    }
+
+    @Test("A drag started in Zforge is refused over its own folders while it hovers")
+    @MainActor
+    func localDragRefusesItsOwnFolders() {
+        let dev = URL(fileURLWithPath: "/a/dev", isDirectory: true)
+        BrowserLocalDrag.begin([dev])
+        #expect(BrowserLocalDrag.refuses(dev, operation: .automatic))
+        #expect(BrowserLocalDrag.refuses(dev.appendingPathComponent("zforge"), operation: .copy))
+        #expect(!BrowserLocalDrag.refuses(URL(fileURLWithPath: "/b"), operation: .move))
+        BrowserLocalDrag.end()
+        #expect(!BrowserLocalDrag.refuses(dev, operation: .automatic), "No drag in progress: nothing is refused")
+    }
+
+    @Test("Only a folder itself and its own contents are refused as drop destinations", arguments: [
+        ("/a/dev", "/a/dev", BrowserFileTransferOperation.move, true),
+        ("/a/dev", "/a/dev/zforge", .move, true),
+        ("/a/dev", "/a/dev/zforge", .copy, true),
+        ("/a/dev", "/a/devtools", .move, false),
+        ("/a/dev", "/a", .move, true),
+        ("/a/dev", "/a", .automatic, true),
+        ("/a/dev", "/a", .copy, false),
+        ("/a/dev", "/b", .move, false),
+        ("/a/dev", "/a/dev/zforge", .alias, false),
+        ("/a/dev", "/a/dev", .alias, true)
+    ])
+    func dropDestinationPolicy(source: String, destination: String, operation: BrowserFileTransferOperation, refused: Bool) {
+        #expect(BrowserDropDestinationPolicy.refuses(URL(fileURLWithPath: destination),
+                                                    for: [URL(fileURLWithPath: source)], operation: operation) == refused,
+                "\(source) → \(destination) (\(operation))")
+    }
+
     @Test("Localizes the default folder name in the requested locale")
     func localizedDefaultFolderName() throws {
         let appBundle = try #require(Self.applicationBundle)

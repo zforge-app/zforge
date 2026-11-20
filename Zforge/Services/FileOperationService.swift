@@ -8,6 +8,28 @@ nonisolated enum BrowserFileTransferOperation: Equatable, Sendable {
     case alias
 }
 
+/// Drop destinations Zforge refuses without an error, as Finder does (ZF-89): an item dropped on
+/// itself, a folder copied or moved into one of its own folders, and a move into the folder an item
+/// is already in (a no-op; a copy there duplicates it, as in Finder). An alias may go anywhere but
+/// onto the item itself.
+nonisolated enum BrowserDropDestinationPolicy {
+    static func refuses(_ destination: URL, for sources: [URL], operation: BrowserFileTransferOperation) -> Bool {
+        let target = components(destination)
+        return sources.contains { source in
+            let item = components(source)
+            if target == item { return true }
+            if operation == .alias { return false }
+            if target.count > item.count, Array(target.prefix(item.count)) == item { return true }
+            let moves = operation == .move || operation == .automatic
+            return moves && Array(item.dropLast()) == target
+        }
+    }
+
+    private static func components(_ url: URL) -> [String] {
+        url.standardizedFileURL.resolvingSymlinksInPath().pathComponents
+    }
+}
+
 nonisolated struct BrowserExactFileMove: Equatable, Sendable {
     let sourceURL: URL
     let destinationURL: URL

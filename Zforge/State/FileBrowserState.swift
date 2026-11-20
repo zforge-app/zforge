@@ -267,7 +267,8 @@ final class FileBrowserState {
             }
         }
     }
-    /// Whether the toolbar shows the expanded search field instead of its button.
+    /// Whether the toolbar search field is in use (opened, focused or showing a query). Wide
+    /// windows also show the field at rest, without this (ZF-88).
     var isSearchPresented = false
     private(set) var searchText = ""
     private(set) var searchScope: BrowserSearchScope = .currentFolder
@@ -1251,11 +1252,19 @@ final class FileBrowserState {
 
     /// Expands the toolbar field and focuses it: the search button, ⌘F and Find.
     func beginSearch() {
-        if !isSearchPresented, fileSearch == nil {
+        activateSearchField()
+        focusSearchField()
+    }
+
+    /// Puts the toolbar field in use without moving the focus: the field shown at rest in a
+    /// wide window took the focus itself (a click or Tab), or received text while navigation
+    /// had ended the previous search under its focus.
+    func activateSearchField() {
+        guard !isSearchPresented else { return }
+        if fileSearch == nil {
             searchScope = BrowserFileSearch.supportsCurrentFolder(location) ? .currentFolder : .thisMac
         }
         isSearchPresented = true
-        focusSearchField()
     }
 
     /// Moves the keyboard focus into the expanded toolbar field, for example after Clear Search.
@@ -3923,9 +3932,13 @@ final class FileBrowserState {
     ) -> Bool {
         guard !providers.isEmpty else { return false }
         let destination = destination.standardizedFileURL
+        // A folder dragged in Zforge onto itself or one of its own folders does nothing (ZF-89).
+        if BrowserLocalDrag.refuses(destination, operation: operation) { return false }
 
         let collector = BrowserDroppedFileURLCollector(count: providers.count) { [weak self] urls, failures in
             guard let self else { return }
+            // The same refusal for drags from other apps, whose files are known only now: no error.
+            if failures == 0, BrowserDropDestinationPolicy.refuses(destination, for: urls, operation: operation) { return }
             guard failures == 0, !urls.isEmpty else {
                 self.error = .unavailable(
                     AppLocalization.string(
