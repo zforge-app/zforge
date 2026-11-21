@@ -1,0 +1,373 @@
+{
+  "language": "th",
+  "folder": "เอกสาร",
+  "archive": "2025 รูปถ่าย.7z",
+  "pictures": {
+    "dark": "/private/tmp/claude-501/-Users-felipe-Documents-dev-zforge-zforge-website/26022c00-e39e-4cb5-8795-d91d6b09d55a/scratchpad/out/th/finder-escuro.png",
+    "light": "/private/tmp/claude-501/-Users-felipe-Documents-dev-zforge-zforge-website/26022c00-e39e-4cb5-8795-d91d6b09d55a/scratchpad/out/th/finder-claro.png"
+  },
+  "issues": [],
+  "extension": "/Users/felipe/Library/Developer/Xcode/DerivedData/Zforge-aypaaijyqjscmicojcwcskhbgqsp/Build/Products/Debug/Zforge.app/Contents/PlugIns/ZforgeFinderExtension.appex",
+  "submenu": [
+    "เปิด",
+    "คลายไฟล์ที่นี่",
+    "คลายไปยัง “2025 รูปถ่าย”",
+    "คลายไฟล์…",
+    "ตรวจสอบ",
+    "เพิ่มไปยังไฟล์บีบอัด…"
+  ],
+  "untranslatedSubmenu": [],
+  "finder": {
+    "cmdOpen:": "เปิด",
+    "cmdMoveToTrash:": "ย้ายไปยังถังขยะ",
+    "cmdShowStaticInfo:": "ขอรายละเอียด",
+    "cmdRename:": "เปลี่ยนชื่อ",
+    "cmdArchive:": "บีบอัด “2025 รูปถ่าย.7z”",
+    "cmdDuplicate:": "ทำสำเนา",
+    "cmdMakeAlias:": "สร้างนามแฝง",
+    "cmdQuickLook:": "ดูแบบรวดเร็ว",
+    "copy:": "คัดลอก",
+    "cmdShare:": "แชร์…"
+  },
+  "framePoints": [
+    312,
+    396,
+    477,
+    425
+  ],
+  "menuItems": [
+    {
+      "level": 0,
+      "identifier": "_noOpAction:",
+      "title": "",
+      "x": 338,
+      "y": 221,
+      "width": 227,
+      "height": 33
+    },
+    {
+      "level": 0,
+      "identifier": "cmdOpen:",
+      "title": "เปิด",
+      "x": 338,
+      "y": 254,
+      "width": 227,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdOpenWith:",
+      "title": "เปิดด้วย",
+      "x": 338,
+      "y": 278,
+      "width": 227,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdAlwaysOpenWith:",
+      "title": "เปิดเสมอด้วย",
+      "x": 338,
+      "y": 278,
+      "width": 227,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 302,
+      "width": 227,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "cmdMoveToTrash:",
+      "title": "ย้ายไปยังถังขยะ",
+      "x": 338,
+      "y": 313,
+      "width": 227,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 337,
+      "width": 227,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 337,
+      "width": 227,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 348,
+      "width": 227,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdShowStaticInfo:",
+      "title": "ขอรายละเอียด",
+      "x": 338,
+      "y": 348,
+      "width": 227,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdShowInspector:",
+      "title": "แสดงตัวตรวจสอบ",
+      "x": 338,
+      "y": 348,
+      "width": 227,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdRename:",
+      "title": "เปลี่ยนชื่อ",
+      "x": 338,
+      "y": 372,
+      "width": 227,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdArchive:",
+      "title": "บีบอัด “2025 รูปถ่าย.7z”",
+      "x": 338,
+      "y": 396,
+      "width": 227,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdArchiveWithOptions:",
+      "title": "บีบอัด “2025 รูปถ่าย.7z”",
+      "x": 338,
+      "y": 396,
+      "width": 227,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdDuplicate:",
+      "title": "ทำสำเนา",
+      "x": 338,
+      "y": 420,
+      "width": 227,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdDuplicateExactly:",
+      "title": "ทำสำเนาเหมือนทุกอย่าง",
+      "x": 338,
+      "y": 420,
+      "width": 227,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdMakeAlias:",
+      "title": "สร้างนามแฝง",
+      "x": 338,
+      "y": 444,
+      "width": 227,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdQuickLook:",
+      "title": "ดูแบบรวดเร็ว",
+      "x": 338,
+      "y": 468,
+      "width": 227,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdSlideshow:",
+      "title": "แสดงสไลด์โชว์ “2025 รูปถ่าย.7z”",
+      "x": 338,
+      "y": 468,
+      "width": 227,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "copy:",
+      "title": "คัดลอก",
+      "x": 338,
+      "y": 492,
+      "width": 227,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdCopyAsPathname:",
+      "title": "คัดลอก “2025 รูปถ่าย.7z” เป็นชื่อเส้นทาง",
+      "x": 338,
+      "y": 492,
+      "width": 227,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 516,
+      "width": 227,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "cmdShare:",
+      "title": "แชร์…",
+      "x": 338,
+      "y": 527,
+      "width": 227,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 551,
+      "width": 227,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "cmdSetLabel:",
+      "title": "แท็ก",
+      "x": 338,
+      "y": 562,
+      "width": 227,
+      "height": 49
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 611,
+      "width": 227,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 611,
+      "width": 227,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "การทำงานด่วน",
+      "x": 338,
+      "y": 622,
+      "width": 227,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "executePlugInCommand:",
+      "title": "Zforge",
+      "x": 338,
+      "y": 646,
+      "width": 227,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 646,
+      "width": 227,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "",
+      "title": "",
+      "x": 560,
+      "y": 641,
+      "width": 201,
+      "height": 154
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "เปิด",
+      "x": 560,
+      "y": 646,
+      "width": 201,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "คลายไฟล์ที่นี่",
+      "x": 560,
+      "y": 670,
+      "width": 201,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "คลายไปยัง “2025 รูปถ่าย”",
+      "x": 560,
+      "y": 694,
+      "width": 201,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "คลายไฟล์…",
+      "x": 560,
+      "y": 718,
+      "width": 201,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "ตรวจสอบ",
+      "x": 560,
+      "y": 742,
+      "width": 201,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "เพิ่มไปยังไฟล์บีบอัด…",
+      "x": 560,
+      "y": 766,
+      "width": 201,
+      "height": 24
+    }
+  ]
+}

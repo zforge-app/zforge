@@ -1,0 +1,373 @@
+{
+  "language": "cs",
+  "folder": "Dokumenty",
+  "archive": "Fotky-2025.7z",
+  "pictures": {
+    "dark": "/private/tmp/claude-501/-Users-felipe-Documents-dev-zforge-zforge-website/26022c00-e39e-4cb5-8795-d91d6b09d55a/scratchpad/out/cs/finder-escuro.png",
+    "light": "/private/tmp/claude-501/-Users-felipe-Documents-dev-zforge-zforge-website/26022c00-e39e-4cb5-8795-d91d6b09d55a/scratchpad/out/cs/finder-claro.png"
+  },
+  "issues": [],
+  "extension": "/Users/felipe/Library/Developer/Xcode/DerivedData/Zforge-aypaaijyqjscmicojcwcskhbgqsp/Build/Products/Debug/Zforge.app/Contents/PlugIns/ZforgeFinderExtension.appex",
+  "submenu": [
+    "Otevřít",
+    "Rozbalit sem",
+    "Rozbalit do „Fotky-2025“",
+    "Rozbalit…",
+    "Ověřit",
+    "Přidat do archivu…"
+  ],
+  "untranslatedSubmenu": [],
+  "finder": {
+    "cmdOpen:": "Otevřít",
+    "cmdMoveToTrash:": "Přesunout do koše",
+    "cmdShowStaticInfo:": "Informace",
+    "cmdRename:": "Přejmenovat",
+    "cmdArchive:": "Komprimovat „Fotky-2025.7z“",
+    "cmdDuplicate:": "Duplikovat",
+    "cmdMakeAlias:": "Vytvořit zástupce",
+    "cmdQuickLook:": "Rychlý náhled",
+    "copy:": "Zkopírovat",
+    "cmdShare:": "Sdílet…"
+  },
+  "framePoints": [
+    312,
+    396,
+    529,
+    425
+  ],
+  "menuItems": [
+    {
+      "level": 0,
+      "identifier": "_noOpAction:",
+      "title": "",
+      "x": 338,
+      "y": 221,
+      "width": 271,
+      "height": 33
+    },
+    {
+      "level": 0,
+      "identifier": "cmdOpen:",
+      "title": "Otevřít",
+      "x": 338,
+      "y": 254,
+      "width": 271,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdOpenWith:",
+      "title": "Otevřít v aplikaci",
+      "x": 338,
+      "y": 278,
+      "width": 271,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdAlwaysOpenWith:",
+      "title": "Vždy otvírat v aplikaci",
+      "x": 338,
+      "y": 278,
+      "width": 271,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 302,
+      "width": 271,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "cmdMoveToTrash:",
+      "title": "Přesunout do koše",
+      "x": 338,
+      "y": 313,
+      "width": 271,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 337,
+      "width": 271,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 337,
+      "width": 271,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 348,
+      "width": 271,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdShowStaticInfo:",
+      "title": "Informace",
+      "x": 338,
+      "y": 348,
+      "width": 271,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdShowInspector:",
+      "title": "Inspektor",
+      "x": 338,
+      "y": 348,
+      "width": 271,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdRename:",
+      "title": "Přejmenovat",
+      "x": 338,
+      "y": 372,
+      "width": 271,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdArchive:",
+      "title": "Komprimovat „Fotky-2025.7z“",
+      "x": 338,
+      "y": 396,
+      "width": 271,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdArchiveWithOptions:",
+      "title": "Komprimovat „Fotky-2025.7z“",
+      "x": 338,
+      "y": 396,
+      "width": 271,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdDuplicate:",
+      "title": "Duplikovat",
+      "x": 338,
+      "y": 420,
+      "width": 271,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdDuplicateExactly:",
+      "title": "Duplikovat přesně",
+      "x": 338,
+      "y": 420,
+      "width": 271,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdMakeAlias:",
+      "title": "Vytvořit zástupce",
+      "x": 338,
+      "y": 444,
+      "width": 271,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdQuickLook:",
+      "title": "Rychlý náhled",
+      "x": 338,
+      "y": 468,
+      "width": 271,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdSlideshow:",
+      "title": "Prezentace „Fotky-2025.7z“",
+      "x": 338,
+      "y": 468,
+      "width": 271,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "copy:",
+      "title": "Zkopírovat",
+      "x": 338,
+      "y": 492,
+      "width": 271,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdCopyAsPathname:",
+      "title": "Zkopírovat „Fotky-2025.7z“ jako cestu",
+      "x": 338,
+      "y": 492,
+      "width": 271,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 516,
+      "width": 271,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "cmdShare:",
+      "title": "Sdílet…",
+      "x": 338,
+      "y": 527,
+      "width": 271,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 551,
+      "width": 271,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "cmdSetLabel:",
+      "title": "Značky",
+      "x": 338,
+      "y": 562,
+      "width": 271,
+      "height": 49
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 611,
+      "width": 271,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 611,
+      "width": 271,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "Rychlé akce",
+      "x": 338,
+      "y": 622,
+      "width": 271,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "executePlugInCommand:",
+      "title": "Zforge",
+      "x": 338,
+      "y": 646,
+      "width": 271,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 646,
+      "width": 271,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "",
+      "title": "",
+      "x": 604,
+      "y": 641,
+      "width": 209,
+      "height": 154
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "Otevřít",
+      "x": 604,
+      "y": 646,
+      "width": 209,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "Rozbalit sem",
+      "x": 604,
+      "y": 670,
+      "width": 209,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "Rozbalit do „Fotky-2025“",
+      "x": 604,
+      "y": 694,
+      "width": 209,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "Rozbalit…",
+      "x": 604,
+      "y": 718,
+      "width": 209,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "Ověřit",
+      "x": 604,
+      "y": 742,
+      "width": 209,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "Přidat do archivu…",
+      "x": 604,
+      "y": 766,
+      "width": 209,
+      "height": 24
+    }
+  ]
+}

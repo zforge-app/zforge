@@ -1,0 +1,373 @@
+{
+  "language": "fr",
+  "folder": "Documents",
+  "archive": "Photos-2025.7z",
+  "pictures": {
+    "dark": "/private/tmp/claude-501/-Users-felipe-Documents-dev-zforge-zforge-website/26022c00-e39e-4cb5-8795-d91d6b09d55a/scratchpad/out/fr/finder-escuro.png",
+    "light": "/private/tmp/claude-501/-Users-felipe-Documents-dev-zforge-zforge-website/26022c00-e39e-4cb5-8795-d91d6b09d55a/scratchpad/out/fr/finder-claro.png"
+  },
+  "issues": [],
+  "extension": "/Users/felipe/Library/Developer/Xcode/DerivedData/Zforge-aypaaijyqjscmicojcwcskhbgqsp/Build/Products/Debug/Zforge.app/Contents/PlugIns/ZforgeFinderExtension.appex",
+  "submenu": [
+    "Ouvrir",
+    "Extraire ici",
+    "Extraire vers « Photos-2025 »",
+    "Extraire…",
+    "Vérifier",
+    "Ajouter à l’archive…"
+  ],
+  "untranslatedSubmenu": [],
+  "finder": {
+    "cmdOpen:": "Ouvrir",
+    "cmdMoveToTrash:": "Placer dans la corbeille",
+    "cmdShowStaticInfo:": "Lire les informations",
+    "cmdRename:": "Renommer",
+    "cmdArchive:": "Compresser « Photos-2025.7z »",
+    "cmdDuplicate:": "Dupliquer",
+    "cmdMakeAlias:": "Créer un alias",
+    "cmdQuickLook:": "Coup d’œil",
+    "copy:": "Copier",
+    "cmdShare:": "Partager…"
+  },
+  "framePoints": [
+    654,
+    396,
+    574,
+    425
+  ],
+  "menuItems": [
+    {
+      "level": 0,
+      "identifier": "_noOpAction:",
+      "title": "",
+      "x": 680,
+      "y": 221,
+      "width": 287,
+      "height": 33
+    },
+    {
+      "level": 0,
+      "identifier": "cmdOpen:",
+      "title": "Ouvrir",
+      "x": 680,
+      "y": 254,
+      "width": 287,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdOpenWith:",
+      "title": "Ouvrir avec",
+      "x": 680,
+      "y": 278,
+      "width": 287,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdAlwaysOpenWith:",
+      "title": "Toujours ouvrir avec",
+      "x": 680,
+      "y": 278,
+      "width": 287,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 680,
+      "y": 302,
+      "width": 287,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "cmdMoveToTrash:",
+      "title": "Placer dans la corbeille",
+      "x": 680,
+      "y": 313,
+      "width": 287,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 680,
+      "y": 337,
+      "width": 287,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 680,
+      "y": 337,
+      "width": 287,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 680,
+      "y": 348,
+      "width": 287,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdShowStaticInfo:",
+      "title": "Lire les informations",
+      "x": 680,
+      "y": 348,
+      "width": 287,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdShowInspector:",
+      "title": "Afficher l’inspecteur",
+      "x": 680,
+      "y": 348,
+      "width": 287,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdRename:",
+      "title": "Renommer",
+      "x": 680,
+      "y": 372,
+      "width": 287,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdArchive:",
+      "title": "Compresser « Photos-2025.7z »",
+      "x": 680,
+      "y": 396,
+      "width": 287,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdArchiveWithOptions:",
+      "title": "Compresser « Photos-2025.7z »",
+      "x": 680,
+      "y": 396,
+      "width": 287,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdDuplicate:",
+      "title": "Dupliquer",
+      "x": 680,
+      "y": 420,
+      "width": 287,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdDuplicateExactly:",
+      "title": "Dupliquer exactement",
+      "x": 680,
+      "y": 420,
+      "width": 287,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdMakeAlias:",
+      "title": "Créer un alias",
+      "x": 680,
+      "y": 444,
+      "width": 287,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdQuickLook:",
+      "title": "Coup d’œil",
+      "x": 680,
+      "y": 468,
+      "width": 287,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdSlideshow:",
+      "title": "Diaporama « Photos-2025.7z »",
+      "x": 680,
+      "y": 468,
+      "width": 287,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "copy:",
+      "title": "Copier",
+      "x": 680,
+      "y": 492,
+      "width": 287,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdCopyAsPathname:",
+      "title": "Copier « Photos-2025.7z » en tant que nom de chemin",
+      "x": 680,
+      "y": 492,
+      "width": 287,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 680,
+      "y": 516,
+      "width": 287,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "cmdShare:",
+      "title": "Partager…",
+      "x": 680,
+      "y": 527,
+      "width": 287,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 680,
+      "y": 551,
+      "width": 287,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "cmdSetLabel:",
+      "title": "Tags",
+      "x": 680,
+      "y": 562,
+      "width": 287,
+      "height": 49
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 680,
+      "y": 611,
+      "width": 287,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 680,
+      "y": 611,
+      "width": 287,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "Actions rapides",
+      "x": 680,
+      "y": 622,
+      "width": 287,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "executePlugInCommand:",
+      "title": "Zforge",
+      "x": 680,
+      "y": 646,
+      "width": 287,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 680,
+      "y": 646,
+      "width": 287,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "",
+      "title": "",
+      "x": 962,
+      "y": 641,
+      "width": 238,
+      "height": 154
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "Ouvrir",
+      "x": 962,
+      "y": 646,
+      "width": 238,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "Extraire ici",
+      "x": 962,
+      "y": 670,
+      "width": 238,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "Extraire vers « Photos-2025 »",
+      "x": 962,
+      "y": 694,
+      "width": 238,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "Extraire…",
+      "x": 962,
+      "y": 718,
+      "width": 238,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "Vérifier",
+      "x": 962,
+      "y": 742,
+      "width": 238,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "Ajouter à l’archive…",
+      "x": 962,
+      "y": 766,
+      "width": 238,
+      "height": 24
+    }
+  ]
+}

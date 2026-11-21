@@ -1,0 +1,373 @@
+{
+  "language": "sv",
+  "folder": "Dokument",
+  "archive": "Foton-2025.7z",
+  "pictures": {
+    "dark": "/private/tmp/claude-501/-Users-felipe-Documents-dev-zforge-zforge-website/26022c00-e39e-4cb5-8795-d91d6b09d55a/scratchpad/out/sv/finder-escuro.png",
+    "light": "/private/tmp/claude-501/-Users-felipe-Documents-dev-zforge-zforge-website/26022c00-e39e-4cb5-8795-d91d6b09d55a/scratchpad/out/sv/finder-claro.png"
+  },
+  "issues": [],
+  "extension": "/Users/felipe/Library/Developer/Xcode/DerivedData/Zforge-aypaaijyqjscmicojcwcskhbgqsp/Build/Products/Debug/Zforge.app/Contents/PlugIns/ZforgeFinderExtension.appex",
+  "submenu": [
+    "Öppna",
+    "Packa upp här",
+    "Packa upp till ”Foton-2025”",
+    "Packa upp…",
+    "Kontrollera",
+    "Lägg till i arkiv…"
+  ],
+  "untranslatedSubmenu": [],
+  "finder": {
+    "cmdOpen:": "Öppna",
+    "cmdMoveToTrash:": "Flytta till papperskorgen",
+    "cmdShowStaticInfo:": "Visa info",
+    "cmdRename:": "Byt namn",
+    "cmdArchive:": "Komprimera ”Foton-2025.7z”",
+    "cmdDuplicate:": "Duplicera",
+    "cmdMakeAlias:": "Skapa alias",
+    "cmdQuickLook:": "Överblicka",
+    "copy:": "Kopiera",
+    "cmdShare:": "Dela…"
+  },
+  "framePoints": [
+    654,
+    396,
+    539,
+    425
+  ],
+  "menuItems": [
+    {
+      "level": 0,
+      "identifier": "_noOpAction:",
+      "title": "",
+      "x": 680,
+      "y": 221,
+      "width": 267,
+      "height": 33
+    },
+    {
+      "level": 0,
+      "identifier": "cmdOpen:",
+      "title": "Öppna",
+      "x": 680,
+      "y": 254,
+      "width": 267,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdOpenWith:",
+      "title": "Öppna med",
+      "x": 680,
+      "y": 278,
+      "width": 267,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdAlwaysOpenWith:",
+      "title": "Öppna alltid med",
+      "x": 680,
+      "y": 278,
+      "width": 267,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 680,
+      "y": 302,
+      "width": 267,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "cmdMoveToTrash:",
+      "title": "Flytta till papperskorgen",
+      "x": 680,
+      "y": 313,
+      "width": 267,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 680,
+      "y": 337,
+      "width": 267,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 680,
+      "y": 337,
+      "width": 267,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 680,
+      "y": 348,
+      "width": 267,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdShowStaticInfo:",
+      "title": "Visa info",
+      "x": 680,
+      "y": 348,
+      "width": 267,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdShowInspector:",
+      "title": "Visa granskare",
+      "x": 680,
+      "y": 348,
+      "width": 267,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdRename:",
+      "title": "Byt namn",
+      "x": 680,
+      "y": 372,
+      "width": 267,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdArchive:",
+      "title": "Komprimera ”Foton-2025.7z”",
+      "x": 680,
+      "y": 396,
+      "width": 267,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdArchiveWithOptions:",
+      "title": "Komprimera ”Foton-2025.7z”",
+      "x": 680,
+      "y": 396,
+      "width": 267,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdDuplicate:",
+      "title": "Duplicera",
+      "x": 680,
+      "y": 420,
+      "width": 267,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdDuplicateExactly:",
+      "title": "Duplicera exakt",
+      "x": 680,
+      "y": 420,
+      "width": 267,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdMakeAlias:",
+      "title": "Skapa alias",
+      "x": 680,
+      "y": 444,
+      "width": 267,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdQuickLook:",
+      "title": "Överblicka",
+      "x": 680,
+      "y": 468,
+      "width": 267,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdSlideshow:",
+      "title": "Visa ”Foton-2025.7z” som bildspel",
+      "x": 680,
+      "y": 468,
+      "width": 267,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "copy:",
+      "title": "Kopiera",
+      "x": 680,
+      "y": 492,
+      "width": 267,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdCopyAsPathname:",
+      "title": "Kopiera ”Foton-2025.7z” som sökvägsnamn",
+      "x": 680,
+      "y": 492,
+      "width": 267,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 680,
+      "y": 516,
+      "width": 267,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "cmdShare:",
+      "title": "Dela…",
+      "x": 680,
+      "y": 527,
+      "width": 267,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 680,
+      "y": 551,
+      "width": 267,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "cmdSetLabel:",
+      "title": "Taggar",
+      "x": 680,
+      "y": 562,
+      "width": 267,
+      "height": 49
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 680,
+      "y": 611,
+      "width": 267,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 680,
+      "y": 611,
+      "width": 267,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "Snabbåtgärder",
+      "x": 680,
+      "y": 622,
+      "width": 267,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "executePlugInCommand:",
+      "title": "Zforge",
+      "x": 680,
+      "y": 646,
+      "width": 267,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 680,
+      "y": 646,
+      "width": 267,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "",
+      "title": "",
+      "x": 942,
+      "y": 641,
+      "width": 223,
+      "height": 154
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "Öppna",
+      "x": 942,
+      "y": 646,
+      "width": 223,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "Packa upp här",
+      "x": 942,
+      "y": 670,
+      "width": 223,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "Packa upp till ”Foton-2025”",
+      "x": 942,
+      "y": 694,
+      "width": 223,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "Packa upp…",
+      "x": 942,
+      "y": 718,
+      "width": 223,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "Kontrollera",
+      "x": 942,
+      "y": 742,
+      "width": 223,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "Lägg till i arkiv…",
+      "x": 942,
+      "y": 766,
+      "width": 223,
+      "height": 24
+    }
+  ]
+}

@@ -1,0 +1,373 @@
+{
+  "language": "ko",
+  "folder": "문서",
+  "archive": "2025년 사진.7z",
+  "pictures": {
+    "dark": "/private/tmp/claude-501/-Users-felipe-Documents-dev-zforge-zforge-website/26022c00-e39e-4cb5-8795-d91d6b09d55a/scratchpad/out/ko/finder-escuro.png",
+    "light": "/private/tmp/claude-501/-Users-felipe-Documents-dev-zforge-zforge-website/26022c00-e39e-4cb5-8795-d91d6b09d55a/scratchpad/out/ko/finder-claro.png"
+  },
+  "issues": [],
+  "extension": "/Users/felipe/Library/Developer/Xcode/DerivedData/Zforge-aypaaijyqjscmicojcwcskhbgqsp/Build/Products/Debug/Zforge.app/Contents/PlugIns/ZforgeFinderExtension.appex",
+  "submenu": [
+    "열기",
+    "여기에 압축 풀기",
+    "“2025년 사진”에 압축 풀기",
+    "압축 풀기…",
+    "검증",
+    "압축 파일에 추가…"
+  ],
+  "untranslatedSubmenu": [],
+  "finder": {
+    "cmdOpen:": "열기",
+    "cmdMoveToTrash:": "휴지통으로 이동",
+    "cmdShowStaticInfo:": "정보 가져오기",
+    "cmdRename:": "이름 변경",
+    "cmdArchive:": "‘2025년 사진.7z’ 압축",
+    "cmdDuplicate:": "복제",
+    "cmdMakeAlias:": "가상본 만들기",
+    "cmdQuickLook:": "훑어보기",
+    "copy:": "복사",
+    "cmdShare:": "공유…"
+  },
+  "framePoints": [
+    312,
+    396,
+    464,
+    425
+  ],
+  "menuItems": [
+    {
+      "level": 0,
+      "identifier": "_noOpAction:",
+      "title": "",
+      "x": 338,
+      "y": 221,
+      "width": 216,
+      "height": 33
+    },
+    {
+      "level": 0,
+      "identifier": "cmdOpen:",
+      "title": "열기",
+      "x": 338,
+      "y": 254,
+      "width": 216,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdOpenWith:",
+      "title": "다음으로 열기",
+      "x": 338,
+      "y": 278,
+      "width": 216,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdAlwaysOpenWith:",
+      "title": "항상 선택한 응용 프로그램으로 열기",
+      "x": 338,
+      "y": 278,
+      "width": 216,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 302,
+      "width": 216,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "cmdMoveToTrash:",
+      "title": "휴지통으로 이동",
+      "x": 338,
+      "y": 313,
+      "width": 216,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 337,
+      "width": 216,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 337,
+      "width": 216,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 348,
+      "width": 216,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdShowStaticInfo:",
+      "title": "정보 가져오기",
+      "x": 338,
+      "y": 348,
+      "width": 216,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdShowInspector:",
+      "title": "인스펙터 보기",
+      "x": 338,
+      "y": 348,
+      "width": 216,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdRename:",
+      "title": "이름 변경",
+      "x": 338,
+      "y": 372,
+      "width": 216,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdArchive:",
+      "title": "‘2025년 사진.7z’ 압축",
+      "x": 338,
+      "y": 396,
+      "width": 216,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdArchiveWithOptions:",
+      "title": "‘2025년 사진.7z’ 압축",
+      "x": 338,
+      "y": 396,
+      "width": 216,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdDuplicate:",
+      "title": "복제",
+      "x": 338,
+      "y": 420,
+      "width": 216,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdDuplicateExactly:",
+      "title": "똑같이 복제",
+      "x": 338,
+      "y": 420,
+      "width": 216,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdMakeAlias:",
+      "title": "가상본 만들기",
+      "x": 338,
+      "y": 444,
+      "width": 216,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdQuickLook:",
+      "title": "훑어보기",
+      "x": 338,
+      "y": 468,
+      "width": 216,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdSlideshow:",
+      "title": "‘2025년 사진.7z’ 슬라이드쇼",
+      "x": 338,
+      "y": 468,
+      "width": 216,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "copy:",
+      "title": "복사",
+      "x": 338,
+      "y": 492,
+      "width": 216,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdCopyAsPathname:",
+      "title": "‘2025년 사진.7z’의 경로 이름을 복사",
+      "x": 338,
+      "y": 492,
+      "width": 216,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 516,
+      "width": 216,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "cmdShare:",
+      "title": "공유…",
+      "x": 338,
+      "y": 527,
+      "width": 216,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 551,
+      "width": 216,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "cmdSetLabel:",
+      "title": "태그",
+      "x": 338,
+      "y": 562,
+      "width": 216,
+      "height": 49
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 611,
+      "width": 216,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 611,
+      "width": 216,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "빠른 동작",
+      "x": 338,
+      "y": 622,
+      "width": 216,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "executePlugInCommand:",
+      "title": "Zforge",
+      "x": 338,
+      "y": 646,
+      "width": 216,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 646,
+      "width": 216,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "",
+      "title": "",
+      "x": 549,
+      "y": 641,
+      "width": 199,
+      "height": 154
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "열기",
+      "x": 549,
+      "y": 646,
+      "width": 199,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "여기에 압축 풀기",
+      "x": 549,
+      "y": 670,
+      "width": 199,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "“2025년 사진”에 압축 풀기",
+      "x": 549,
+      "y": 694,
+      "width": 199,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "압축 풀기…",
+      "x": 549,
+      "y": 718,
+      "width": 199,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "검증",
+      "x": 549,
+      "y": 742,
+      "width": 199,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "압축 파일에 추가…",
+      "x": 549,
+      "y": 766,
+      "width": 199,
+      "height": 24
+    }
+  ]
+}

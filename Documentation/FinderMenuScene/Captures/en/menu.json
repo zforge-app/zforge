@@ -1,0 +1,373 @@
+{
+  "language": "en",
+  "folder": "Documents",
+  "archive": "2025 Photos.7z",
+  "pictures": {
+    "dark": "/private/tmp/claude-501/-Users-felipe-Documents-dev-zforge-zforge-website/26022c00-e39e-4cb5-8795-d91d6b09d55a/scratchpad/out/en/finder-escuro.png",
+    "light": "/private/tmp/claude-501/-Users-felipe-Documents-dev-zforge-zforge-website/26022c00-e39e-4cb5-8795-d91d6b09d55a/scratchpad/out/en/finder-claro.png"
+  },
+  "issues": [],
+  "extension": "/Users/felipe/Library/Developer/Xcode/DerivedData/Zforge-aypaaijyqjscmicojcwcskhbgqsp/Build/Products/Debug/Zforge.app/Contents/PlugIns/ZforgeFinderExtension.appex",
+  "submenu": [
+    "Open",
+    "Extract Here",
+    "Extract to \"2025 Photos\"",
+    "Extract…",
+    "Validate",
+    "Add to Archive…"
+  ],
+  "untranslatedSubmenu": [],
+  "finder": {
+    "cmdOpen:": "Open",
+    "cmdMoveToTrash:": "Move to Trash",
+    "cmdShowStaticInfo:": "Get Info",
+    "cmdRename:": "Rename",
+    "cmdArchive:": "Compress “2025 Photos.7z”",
+    "cmdDuplicate:": "Duplicate",
+    "cmdMakeAlias:": "Make Alias",
+    "cmdQuickLook:": "Quick Look",
+    "copy:": "Copy",
+    "cmdShare:": "Share…"
+  },
+  "framePoints": [
+    312,
+    396,
+    516,
+    425
+  ],
+  "menuItems": [
+    {
+      "level": 0,
+      "identifier": "_noOpAction:",
+      "title": "",
+      "x": 338,
+      "y": 221,
+      "width": 260,
+      "height": 33
+    },
+    {
+      "level": 0,
+      "identifier": "cmdOpen:",
+      "title": "Open",
+      "x": 338,
+      "y": 254,
+      "width": 260,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdOpenWith:",
+      "title": "Open With",
+      "x": 338,
+      "y": 278,
+      "width": 260,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdAlwaysOpenWith:",
+      "title": "Always Open With",
+      "x": 338,
+      "y": 278,
+      "width": 260,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 302,
+      "width": 260,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "cmdMoveToTrash:",
+      "title": "Move to Trash",
+      "x": 338,
+      "y": 313,
+      "width": 260,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 337,
+      "width": 260,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 337,
+      "width": 260,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 348,
+      "width": 260,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdShowStaticInfo:",
+      "title": "Get Info",
+      "x": 338,
+      "y": 348,
+      "width": 260,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdShowInspector:",
+      "title": "Show Inspector",
+      "x": 338,
+      "y": 348,
+      "width": 260,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdRename:",
+      "title": "Rename",
+      "x": 338,
+      "y": 372,
+      "width": 260,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdArchive:",
+      "title": "Compress “2025 Photos.7z”",
+      "x": 338,
+      "y": 396,
+      "width": 260,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdArchiveWithOptions:",
+      "title": "Compress “2025 Photos.7z”",
+      "x": 338,
+      "y": 396,
+      "width": 260,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdDuplicate:",
+      "title": "Duplicate",
+      "x": 338,
+      "y": 420,
+      "width": 260,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdDuplicateExactly:",
+      "title": "Duplicate Exactly",
+      "x": 338,
+      "y": 420,
+      "width": 260,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdMakeAlias:",
+      "title": "Make Alias",
+      "x": 338,
+      "y": 444,
+      "width": 260,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdQuickLook:",
+      "title": "Quick Look",
+      "x": 338,
+      "y": 468,
+      "width": 260,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdSlideshow:",
+      "title": "Slideshow “2025 Photos.7z”",
+      "x": 338,
+      "y": 468,
+      "width": 260,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "copy:",
+      "title": "Copy",
+      "x": 338,
+      "y": 492,
+      "width": 260,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdCopyAsPathname:",
+      "title": "Copy “2025 Photos.7z” as Pathname",
+      "x": 338,
+      "y": 492,
+      "width": 260,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 516,
+      "width": 260,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "cmdShare:",
+      "title": "Share…",
+      "x": 338,
+      "y": 527,
+      "width": 260,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 551,
+      "width": 260,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "cmdSetLabel:",
+      "title": "Tags",
+      "x": 338,
+      "y": 562,
+      "width": 260,
+      "height": 49
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 611,
+      "width": 260,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 611,
+      "width": 260,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "Quick Actions",
+      "x": 338,
+      "y": 622,
+      "width": 260,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "executePlugInCommand:",
+      "title": "Zforge",
+      "x": 338,
+      "y": 646,
+      "width": 260,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 646,
+      "width": 260,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "",
+      "title": "",
+      "x": 593,
+      "y": 641,
+      "width": 207,
+      "height": 154
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "Open",
+      "x": 593,
+      "y": 646,
+      "width": 207,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "Extract Here",
+      "x": 593,
+      "y": 670,
+      "width": 207,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "Extract to \"2025 Photos\"",
+      "x": 593,
+      "y": 694,
+      "width": 207,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "Extract…",
+      "x": 593,
+      "y": 718,
+      "width": 207,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "Validate",
+      "x": 593,
+      "y": 742,
+      "width": 207,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "Add to Archive…",
+      "x": 593,
+      "y": 766,
+      "width": 207,
+      "height": 24
+    }
+  ]
+}

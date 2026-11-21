@@ -1,0 +1,373 @@
+{
+  "language": "hi",
+  "folder": "दस्तावेज़",
+  "archive": "2025 की फ़ोटो.7z",
+  "pictures": {
+    "dark": "/private/tmp/claude-501/-Users-felipe-Documents-dev-zforge-zforge-website/26022c00-e39e-4cb5-8795-d91d6b09d55a/scratchpad/out/hi/finder-escuro.png",
+    "light": "/private/tmp/claude-501/-Users-felipe-Documents-dev-zforge-zforge-website/26022c00-e39e-4cb5-8795-d91d6b09d55a/scratchpad/out/hi/finder-claro.png"
+  },
+  "issues": [],
+  "extension": "/Users/felipe/Library/Developer/Xcode/DerivedData/Zforge-aypaaijyqjscmicojcwcskhbgqsp/Build/Products/Debug/Zforge.app/Contents/PlugIns/ZforgeFinderExtension.appex",
+  "submenu": [
+    "खोलें",
+    "यहीं एक्सट्रैक्ट करें",
+    "“2025 की फ़ोटो” में एक्सट्रैक्ट करें",
+    "एक्सट्रैक्ट करें…",
+    "सत्यापित करें",
+    "आर्काइव में जोड़ें…"
+  ],
+  "untranslatedSubmenu": [],
+  "finder": {
+    "cmdOpen:": "खोलें",
+    "cmdMoveToTrash:": "रद्दी में मूव करें",
+    "cmdShowStaticInfo:": "जानकारी प्राप्त करें",
+    "cmdRename:": "नाम बदलें",
+    "cmdArchive:": "“2025 की फ़ोटो.7z” कंप्रेस करें",
+    "cmdDuplicate:": "नक़ल बनाएँ",
+    "cmdMakeAlias:": "एलियस बनाएँ",
+    "cmdQuickLook:": "झलक देखें",
+    "copy:": "कॉपी करें",
+    "cmdShare:": "शेयर करें…"
+  },
+  "framePoints": [
+    312,
+    396,
+    521,
+    425
+  ],
+  "menuItems": [
+    {
+      "level": 0,
+      "identifier": "_noOpAction:",
+      "title": "",
+      "x": 338,
+      "y": 221,
+      "width": 247,
+      "height": 33
+    },
+    {
+      "level": 0,
+      "identifier": "cmdOpen:",
+      "title": "खोलें",
+      "x": 338,
+      "y": 254,
+      "width": 247,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdOpenWith:",
+      "title": "इसमें खोलें",
+      "x": 338,
+      "y": 278,
+      "width": 247,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdAlwaysOpenWith:",
+      "title": "हमेशा इसमें खोलें",
+      "x": 338,
+      "y": 278,
+      "width": 247,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 302,
+      "width": 247,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "cmdMoveToTrash:",
+      "title": "रद्दी में मूव करें",
+      "x": 338,
+      "y": 313,
+      "width": 247,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 337,
+      "width": 247,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 337,
+      "width": 247,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 348,
+      "width": 247,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdShowStaticInfo:",
+      "title": "जानकारी प्राप्त करें",
+      "x": 338,
+      "y": 348,
+      "width": 247,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdShowInspector:",
+      "title": "इंस्पेक्टर दिखाएँ",
+      "x": 338,
+      "y": 348,
+      "width": 247,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdRename:",
+      "title": "नाम बदलें",
+      "x": 338,
+      "y": 372,
+      "width": 247,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdArchive:",
+      "title": "“2025 की फ़ोटो.7z” कंप्रेस करें",
+      "x": 338,
+      "y": 396,
+      "width": 247,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdArchiveWithOptions:",
+      "title": "“2025 की फ़ोटो.7z” कंप्रेस करें",
+      "x": 338,
+      "y": 396,
+      "width": 247,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdDuplicate:",
+      "title": "नक़ल बनाएँ",
+      "x": 338,
+      "y": 420,
+      "width": 247,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdDuplicateExactly:",
+      "title": "बिलकुल नक़ल",
+      "x": 338,
+      "y": 420,
+      "width": 247,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdMakeAlias:",
+      "title": "एलियस बनाएँ",
+      "x": 338,
+      "y": 444,
+      "width": 247,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdQuickLook:",
+      "title": "झलक देखें",
+      "x": 338,
+      "y": 468,
+      "width": 247,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdSlideshow:",
+      "title": "“2025 की फ़ोटो.7z” स्लाइड शो करें",
+      "x": 338,
+      "y": 468,
+      "width": 247,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "copy:",
+      "title": "कॉपी करें",
+      "x": 338,
+      "y": 492,
+      "width": 247,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdCopyAsPathname:",
+      "title": "पाथ नाम के रूप में “2025 की फ़ोटो.7z” कॉपी करें",
+      "x": 338,
+      "y": 492,
+      "width": 247,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 516,
+      "width": 247,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "cmdShare:",
+      "title": "शेयर करें…",
+      "x": 338,
+      "y": 527,
+      "width": 247,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 551,
+      "width": 247,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "cmdSetLabel:",
+      "title": "टैग",
+      "x": 338,
+      "y": 562,
+      "width": 247,
+      "height": 49
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 611,
+      "width": 247,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 611,
+      "width": 247,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "त्वरित क्रिया मेन्यू",
+      "x": 338,
+      "y": 622,
+      "width": 247,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "executePlugInCommand:",
+      "title": "Zforge",
+      "x": 338,
+      "y": 646,
+      "width": 247,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 646,
+      "width": 247,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "",
+      "title": "",
+      "x": 580,
+      "y": 641,
+      "width": 225,
+      "height": 154
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "खोलें",
+      "x": 580,
+      "y": 646,
+      "width": 225,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "यहीं एक्सट्रैक्ट करें",
+      "x": 580,
+      "y": 670,
+      "width": 225,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "“2025 की फ़ोटो” में एक्सट्रैक्ट करें",
+      "x": 580,
+      "y": 694,
+      "width": 225,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "एक्सट्रैक्ट करें…",
+      "x": 580,
+      "y": 718,
+      "width": 225,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "सत्यापित करें",
+      "x": 580,
+      "y": 742,
+      "width": 225,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "आर्काइव में जोड़ें…",
+      "x": 580,
+      "y": 766,
+      "width": 225,
+      "height": 24
+    }
+  ]
+}

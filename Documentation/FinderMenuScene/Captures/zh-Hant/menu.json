@@ -1,0 +1,373 @@
+{
+  "language": "zh-Hant",
+  "folder": "文件",
+  "archive": "2025年照片.7z",
+  "pictures": {
+    "dark": "/private/tmp/claude-501/-Users-felipe-Documents-dev-zforge-zforge-website/26022c00-e39e-4cb5-8795-d91d6b09d55a/scratchpad/zh-hant-capture/zh-Hant/finder-dark.png",
+    "light": "/private/tmp/claude-501/-Users-felipe-Documents-dev-zforge-zforge-website/26022c00-e39e-4cb5-8795-d91d6b09d55a/scratchpad/zh-hant-capture/zh-Hant/finder-light.png"
+  },
+  "issues": [],
+  "extension": "/Users/felipe/Library/Developer/Xcode/DerivedData/Zforge-dktqdywclbipppgsyxlqmqmzcbmk/Build/Products/Debug/Zforge.app/Contents/PlugIns/ZforgeFinderExtension.appex",
+  "submenu": [
+    "打開",
+    "解壓縮到此處",
+    "解壓縮到「2025年照片」",
+    "解壓縮…",
+    "驗證",
+    "加入壓縮檔案…"
+  ],
+  "untranslatedSubmenu": [],
+  "finder": {
+    "cmdOpen:": "打開",
+    "cmdMoveToTrash:": "丟到垃圾桶",
+    "cmdShowStaticInfo:": "取得資訊",
+    "cmdRename:": "重新命名",
+    "cmdArchive:": "壓縮「2025年照片.7z」",
+    "cmdDuplicate:": "複製",
+    "cmdMakeAlias:": "製作替身",
+    "cmdQuickLook:": "快速查看",
+    "copy:": "拷貝",
+    "cmdShare:": "分享⋯"
+  },
+  "framePoints": [
+    312,
+    396,
+    467,
+    425
+  ],
+  "menuItems": [
+    {
+      "level": 0,
+      "identifier": "_noOpAction:",
+      "title": "",
+      "x": 338,
+      "y": 221,
+      "width": 222,
+      "height": 33
+    },
+    {
+      "level": 0,
+      "identifier": "cmdOpen:",
+      "title": "打開",
+      "x": 338,
+      "y": 254,
+      "width": 222,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdOpenWith:",
+      "title": "打開檔案的應用程式",
+      "x": 338,
+      "y": 278,
+      "width": 222,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdAlwaysOpenWith:",
+      "title": "每次都用此應用程式來打開",
+      "x": 338,
+      "y": 278,
+      "width": 222,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 302,
+      "width": 222,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "cmdMoveToTrash:",
+      "title": "丟到垃圾桶",
+      "x": 338,
+      "y": 313,
+      "width": 222,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 337,
+      "width": 222,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 337,
+      "width": 222,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 348,
+      "width": 222,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdShowStaticInfo:",
+      "title": "取得資訊",
+      "x": 338,
+      "y": 348,
+      "width": 222,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdShowInspector:",
+      "title": "顯示檢閱器",
+      "x": 338,
+      "y": 348,
+      "width": 222,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdRename:",
+      "title": "重新命名",
+      "x": 338,
+      "y": 372,
+      "width": 222,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdArchive:",
+      "title": "壓縮「2025年照片.7z」",
+      "x": 338,
+      "y": 396,
+      "width": 222,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdArchiveWithOptions:",
+      "title": "壓縮「2025年照片.7z」",
+      "x": 338,
+      "y": 396,
+      "width": 222,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdDuplicate:",
+      "title": "複製",
+      "x": 338,
+      "y": 420,
+      "width": 222,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdDuplicateExactly:",
+      "title": "複製完全符合的項目",
+      "x": 338,
+      "y": 420,
+      "width": 222,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdMakeAlias:",
+      "title": "製作替身",
+      "x": 338,
+      "y": 444,
+      "width": 222,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdQuickLook:",
+      "title": "快速查看",
+      "x": 338,
+      "y": 468,
+      "width": 222,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdSlideshow:",
+      "title": "「2025年照片.7z」的幻燈片秀",
+      "x": 338,
+      "y": 468,
+      "width": 222,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "copy:",
+      "title": "拷貝",
+      "x": 338,
+      "y": 492,
+      "width": 222,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdCopyAsPathname:",
+      "title": "拷貝「2025年照片.7z」作為路徑名稱",
+      "x": 338,
+      "y": 492,
+      "width": 222,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 516,
+      "width": 222,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "cmdShare:",
+      "title": "分享⋯",
+      "x": 338,
+      "y": 527,
+      "width": 222,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 551,
+      "width": 222,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "cmdSetLabel:",
+      "title": "標籤",
+      "x": 338,
+      "y": 562,
+      "width": 222,
+      "height": 49
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 611,
+      "width": 222,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 611,
+      "width": 222,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "快速動作",
+      "x": 338,
+      "y": 622,
+      "width": 222,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "executePlugInCommand:",
+      "title": "Zforge",
+      "x": 338,
+      "y": 646,
+      "width": 222,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 646,
+      "width": 222,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "",
+      "title": "",
+      "x": 555,
+      "y": 641,
+      "width": 196,
+      "height": 154
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "打開",
+      "x": 555,
+      "y": 646,
+      "width": 196,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "解壓縮到此處",
+      "x": 555,
+      "y": 670,
+      "width": 196,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "解壓縮到「2025年照片」",
+      "x": 555,
+      "y": 694,
+      "width": 196,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "解壓縮…",
+      "x": 555,
+      "y": 718,
+      "width": 196,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "驗證",
+      "x": 555,
+      "y": 742,
+      "width": 196,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "加入壓縮檔案…",
+      "x": 555,
+      "y": 766,
+      "width": 196,
+      "height": 24
+    }
+  ]
+}

@@ -1,0 +1,373 @@
+{
+  "language": "pl",
+  "folder": "Dokumenty",
+  "archive": "Album-2025.7z",
+  "pictures": {
+    "dark": "/private/tmp/claude-501/-Users-felipe-Documents-dev-zforge-zforge-website/26022c00-e39e-4cb5-8795-d91d6b09d55a/scratchpad/out/pl/finder-escuro.png",
+    "light": "/private/tmp/claude-501/-Users-felipe-Documents-dev-zforge-zforge-website/26022c00-e39e-4cb5-8795-d91d6b09d55a/scratchpad/out/pl/finder-claro.png"
+  },
+  "issues": [],
+  "extension": "/Users/felipe/Library/Developer/Xcode/DerivedData/Zforge-aypaaijyqjscmicojcwcskhbgqsp/Build/Products/Debug/Zforge.app/Contents/PlugIns/ZforgeFinderExtension.appex",
+  "submenu": [
+    "Otwórz",
+    "Rozpakuj tutaj",
+    "Rozpakuj do „Album-2025”",
+    "Rozpakuj…",
+    "Sprawdź",
+    "Dodaj do archiwum…"
+  ],
+  "untranslatedSubmenu": [],
+  "finder": {
+    "cmdOpen:": "Otwórz",
+    "cmdMoveToTrash:": "Przenieś do Kosza",
+    "cmdShowStaticInfo:": "Informacje",
+    "cmdRename:": "Zmień nazwę",
+    "cmdArchive:": "Kompresuj „Album-2025.7z”",
+    "cmdDuplicate:": "Powiel",
+    "cmdMakeAlias:": "Utwórz alias",
+    "cmdQuickLook:": "Szybki przegląd",
+    "copy:": "Kopiuj",
+    "cmdShare:": "Udostępnij…"
+  },
+  "framePoints": [
+    312,
+    396,
+    530,
+    425
+  ],
+  "menuItems": [
+    {
+      "level": 0,
+      "identifier": "_noOpAction:",
+      "title": "",
+      "x": 338,
+      "y": 221,
+      "width": 261,
+      "height": 33
+    },
+    {
+      "level": 0,
+      "identifier": "cmdOpen:",
+      "title": "Otwórz",
+      "x": 338,
+      "y": 254,
+      "width": 261,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdOpenWith:",
+      "title": "Otwórz w aplikacji",
+      "x": 338,
+      "y": 278,
+      "width": 261,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdAlwaysOpenWith:",
+      "title": "Zawsze otwieraj w aplikacji",
+      "x": 338,
+      "y": 278,
+      "width": 261,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 302,
+      "width": 261,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "cmdMoveToTrash:",
+      "title": "Przenieś do Kosza",
+      "x": 338,
+      "y": 313,
+      "width": 261,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 337,
+      "width": 261,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 337,
+      "width": 261,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 348,
+      "width": 261,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdShowStaticInfo:",
+      "title": "Informacje",
+      "x": 338,
+      "y": 348,
+      "width": 261,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdShowInspector:",
+      "title": "Pokaż Inspektora",
+      "x": 338,
+      "y": 348,
+      "width": 261,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdRename:",
+      "title": "Zmień nazwę",
+      "x": 338,
+      "y": 372,
+      "width": 261,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdArchive:",
+      "title": "Kompresuj „Album-2025.7z”",
+      "x": 338,
+      "y": 396,
+      "width": 261,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdArchiveWithOptions:",
+      "title": "Kompresuj „Album-2025.7z”",
+      "x": 338,
+      "y": 396,
+      "width": 261,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdDuplicate:",
+      "title": "Powiel",
+      "x": 338,
+      "y": 420,
+      "width": 261,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdDuplicateExactly:",
+      "title": "Powiel dokładnie",
+      "x": 338,
+      "y": 420,
+      "width": 261,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdMakeAlias:",
+      "title": "Utwórz alias",
+      "x": 338,
+      "y": 444,
+      "width": 261,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdQuickLook:",
+      "title": "Szybki przegląd",
+      "x": 338,
+      "y": 468,
+      "width": 261,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdSlideshow:",
+      "title": "Pokaz slajdów „Album-2025.7z”",
+      "x": 338,
+      "y": 468,
+      "width": 261,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "copy:",
+      "title": "Kopiuj",
+      "x": 338,
+      "y": 492,
+      "width": 261,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdCopyAsPathname:",
+      "title": "Kopiuj „Album-2025.7z” jako nazwę ścieżki",
+      "x": 338,
+      "y": 492,
+      "width": 261,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 516,
+      "width": 261,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "cmdShare:",
+      "title": "Udostępnij…",
+      "x": 338,
+      "y": 527,
+      "width": 261,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 551,
+      "width": 261,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "cmdSetLabel:",
+      "title": "Tagi",
+      "x": 338,
+      "y": 562,
+      "width": 261,
+      "height": 49
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 611,
+      "width": 261,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 611,
+      "width": 261,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "Szybkie czynności",
+      "x": 338,
+      "y": 622,
+      "width": 261,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "executePlugInCommand:",
+      "title": "Zforge",
+      "x": 338,
+      "y": 646,
+      "width": 261,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 646,
+      "width": 261,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "",
+      "title": "",
+      "x": 594,
+      "y": 641,
+      "width": 220,
+      "height": 154
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "Otwórz",
+      "x": 594,
+      "y": 646,
+      "width": 220,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "Rozpakuj tutaj",
+      "x": 594,
+      "y": 670,
+      "width": 220,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "Rozpakuj do „Album-2025”",
+      "x": 594,
+      "y": 694,
+      "width": 220,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "Rozpakuj…",
+      "x": 594,
+      "y": 718,
+      "width": 220,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "Sprawdź",
+      "x": 594,
+      "y": 742,
+      "width": 220,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "Dodaj do archiwum…",
+      "x": 594,
+      "y": 766,
+      "width": 220,
+      "height": 24
+    }
+  ]
+}

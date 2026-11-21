@@ -34,6 +34,10 @@ The user's local checkouts are grouped under `~/Documents/dev/zforge`: the appli
 
 In each interaction, consult the affected requirements and update your contracts when there is new information. Changes in activity status and divergences must be reflected in the corresponding tracking documents in the same interaction.
 
+## Website captures
+
+- [FinderMenuScene/README.md](FinderMenuScene/README.md) — the Finder shortcut-menu scene of the website's feature gallery: fixture folder, capture script and raw captures. The app scenes are captured by [`../Scripts/website-captures/capture_app.py`](../Scripts/website-captures/capture_app.py), which shares the fixture generator and GUI-scripting helpers with it.
+
 ## Implementation Comparisons
 
 - [Benchmarks/7zip-linking.md](Benchmarks/7zip-linking.md) — comparison performed of official CLI, static and dynamic integration, with reproducible scripts and individual measurements.

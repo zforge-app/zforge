@@ -1,0 +1,373 @@
+{
+  "language": "ru",
+  "folder": "Документы",
+  "archive": "Альбом-2025.7z",
+  "pictures": {
+    "dark": "/private/tmp/claude-501/-Users-felipe-Documents-dev-zforge-zforge-website/26022c00-e39e-4cb5-8795-d91d6b09d55a/scratchpad/out/ru/finder-escuro.png",
+    "light": "/private/tmp/claude-501/-Users-felipe-Documents-dev-zforge-zforge-website/26022c00-e39e-4cb5-8795-d91d6b09d55a/scratchpad/out/ru/finder-claro.png"
+  },
+  "issues": [],
+  "extension": "/Users/felipe/Library/Developer/Xcode/DerivedData/Zforge-aypaaijyqjscmicojcwcskhbgqsp/Build/Products/Debug/Zforge.app/Contents/PlugIns/ZforgeFinderExtension.appex",
+  "submenu": [
+    "Открыть",
+    "Распаковать здесь",
+    "Распаковать в «Альбом-2025»",
+    "Распаковать…",
+    "Проверить",
+    "Добавить в архив…"
+  ],
+  "untranslatedSubmenu": [],
+  "finder": {
+    "cmdOpen:": "Открыть",
+    "cmdMoveToTrash:": "Переместить в Корзину",
+    "cmdShowStaticInfo:": "Свойства",
+    "cmdRename:": "Переименовать",
+    "cmdArchive:": "Сжать файл «Альбом-2025.7z»",
+    "cmdDuplicate:": "Дублировать",
+    "cmdMakeAlias:": "Создать псевдоним",
+    "cmdQuickLook:": "Быстрый просмотр",
+    "copy:": "Скопировать",
+    "cmdShare:": "Поделиться…"
+  },
+  "framePoints": [
+    312,
+    396,
+    587,
+    425
+  ],
+  "menuItems": [
+    {
+      "level": 0,
+      "identifier": "_noOpAction:",
+      "title": "",
+      "x": 338,
+      "y": 221,
+      "width": 287,
+      "height": 33
+    },
+    {
+      "level": 0,
+      "identifier": "cmdOpen:",
+      "title": "Открыть",
+      "x": 338,
+      "y": 254,
+      "width": 287,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdOpenWith:",
+      "title": "Открыть в приложении",
+      "x": 338,
+      "y": 278,
+      "width": 287,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdAlwaysOpenWith:",
+      "title": "Всегда открывать в приложении",
+      "x": 338,
+      "y": 278,
+      "width": 287,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 302,
+      "width": 287,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "cmdMoveToTrash:",
+      "title": "Переместить в Корзину",
+      "x": 338,
+      "y": 313,
+      "width": 287,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 337,
+      "width": 287,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 337,
+      "width": 287,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 348,
+      "width": 287,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdShowStaticInfo:",
+      "title": "Свойства",
+      "x": 338,
+      "y": 348,
+      "width": 287,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdShowInspector:",
+      "title": "Показать инспектор",
+      "x": 338,
+      "y": 348,
+      "width": 287,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdRename:",
+      "title": "Переименовать",
+      "x": 338,
+      "y": 372,
+      "width": 287,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdArchive:",
+      "title": "Сжать файл «Альбом-2025.7z»",
+      "x": 338,
+      "y": 396,
+      "width": 287,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdArchiveWithOptions:",
+      "title": "Сжать файл «Альбом-2025.7z»",
+      "x": 338,
+      "y": 396,
+      "width": 287,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdDuplicate:",
+      "title": "Дублировать",
+      "x": 338,
+      "y": 420,
+      "width": 287,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdDuplicateExactly:",
+      "title": "Дублировать полностью",
+      "x": 338,
+      "y": 420,
+      "width": 287,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdMakeAlias:",
+      "title": "Создать псевдоним",
+      "x": 338,
+      "y": 444,
+      "width": 287,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdQuickLook:",
+      "title": "Быстрый просмотр",
+      "x": 338,
+      "y": 468,
+      "width": 287,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdSlideshow:",
+      "title": "Слайд‑шоу «Альбом-2025.7z»",
+      "x": 338,
+      "y": 468,
+      "width": 287,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "copy:",
+      "title": "Скопировать",
+      "x": 338,
+      "y": 492,
+      "width": 287,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdCopyAsPathname:",
+      "title": "Скопировать путь до «Альбом-2025.7z»",
+      "x": 338,
+      "y": 492,
+      "width": 287,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 516,
+      "width": 287,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "cmdShare:",
+      "title": "Поделиться…",
+      "x": 338,
+      "y": 527,
+      "width": 287,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 551,
+      "width": 287,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "cmdSetLabel:",
+      "title": "Теги",
+      "x": 338,
+      "y": 562,
+      "width": 287,
+      "height": 49
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 611,
+      "width": 287,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 611,
+      "width": 287,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "Быстрые действия",
+      "x": 338,
+      "y": 622,
+      "width": 287,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "executePlugInCommand:",
+      "title": "Zforge",
+      "x": 338,
+      "y": 646,
+      "width": 287,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 646,
+      "width": 287,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "",
+      "title": "",
+      "x": 620,
+      "y": 641,
+      "width": 251,
+      "height": 154
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "Открыть",
+      "x": 620,
+      "y": 646,
+      "width": 251,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "Распаковать здесь",
+      "x": 620,
+      "y": 670,
+      "width": 251,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "Распаковать в «Альбом-2025»",
+      "x": 620,
+      "y": 694,
+      "width": 251,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "Распаковать…",
+      "x": 620,
+      "y": 718,
+      "width": 251,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "Проверить",
+      "x": 620,
+      "y": 742,
+      "width": 251,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "Добавить в архив…",
+      "x": 620,
+      "y": 766,
+      "width": 251,
+      "height": 24
+    }
+  ]
+}

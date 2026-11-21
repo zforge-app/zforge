@@ -1,0 +1,373 @@
+{
+  "language": "da",
+  "folder": "Dokumenter",
+  "archive": "Billeder-2025.7z",
+  "pictures": {
+    "dark": "/private/tmp/claude-501/-Users-felipe-Documents-dev-zforge-zforge-website/26022c00-e39e-4cb5-8795-d91d6b09d55a/scratchpad/out/da/finder-escuro.png",
+    "light": "/private/tmp/claude-501/-Users-felipe-Documents-dev-zforge-zforge-website/26022c00-e39e-4cb5-8795-d91d6b09d55a/scratchpad/out/da/finder-claro.png"
+  },
+  "issues": [],
+  "extension": "/Users/felipe/Library/Developer/Xcode/DerivedData/Zforge-aypaaijyqjscmicojcwcskhbgqsp/Build/Products/Debug/Zforge.app/Contents/PlugIns/ZforgeFinderExtension.appex",
+  "submenu": [
+    "Åbn",
+    "Pak ud her",
+    "Pak ud til “Billeder-2025”",
+    "Pak ud…",
+    "Valider",
+    "Føj til arkiv…"
+  ],
+  "untranslatedSubmenu": [],
+  "finder": {
+    "cmdOpen:": "Åbn",
+    "cmdMoveToTrash:": "Flyt til papirkurv",
+    "cmdShowStaticInfo:": "Vis info",
+    "cmdRename:": "Omdøb",
+    "cmdArchive:": "Komprimer “Billeder-2025.7z”",
+    "cmdDuplicate:": "Dubler",
+    "cmdMakeAlias:": "Opret henvisning",
+    "cmdQuickLook:": "Vis",
+    "copy:": "Kopier",
+    "cmdShare:": "Del…"
+  },
+  "framePoints": [
+    312,
+    396,
+    527,
+    425
+  ],
+  "menuItems": [
+    {
+      "level": 0,
+      "identifier": "_noOpAction:",
+      "title": "",
+      "x": 338,
+      "y": 221,
+      "width": 270,
+      "height": 33
+    },
+    {
+      "level": 0,
+      "identifier": "cmdOpen:",
+      "title": "Åbn",
+      "x": 338,
+      "y": 254,
+      "width": 270,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdOpenWith:",
+      "title": "Åbn i",
+      "x": 338,
+      "y": 278,
+      "width": 270,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdAlwaysOpenWith:",
+      "title": "Åbn altid i",
+      "x": 338,
+      "y": 278,
+      "width": 270,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 302,
+      "width": 270,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "cmdMoveToTrash:",
+      "title": "Flyt til papirkurv",
+      "x": 338,
+      "y": 313,
+      "width": 270,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 337,
+      "width": 270,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 337,
+      "width": 270,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 348,
+      "width": 270,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdShowStaticInfo:",
+      "title": "Vis info",
+      "x": 338,
+      "y": 348,
+      "width": 270,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdShowInspector:",
+      "title": "Vis oplysninger",
+      "x": 338,
+      "y": 348,
+      "width": 270,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdRename:",
+      "title": "Omdøb",
+      "x": 338,
+      "y": 372,
+      "width": 270,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdArchive:",
+      "title": "Komprimer “Billeder-2025.7z”",
+      "x": 338,
+      "y": 396,
+      "width": 270,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdArchiveWithOptions:",
+      "title": "Komprimer “Billeder-2025.7z”",
+      "x": 338,
+      "y": 396,
+      "width": 270,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdDuplicate:",
+      "title": "Dubler",
+      "x": 338,
+      "y": 420,
+      "width": 270,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdDuplicateExactly:",
+      "title": "Dubler præcist",
+      "x": 338,
+      "y": 420,
+      "width": 270,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdMakeAlias:",
+      "title": "Opret henvisning",
+      "x": 338,
+      "y": 444,
+      "width": 270,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdQuickLook:",
+      "title": "Vis",
+      "x": 338,
+      "y": 468,
+      "width": 270,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdSlideshow:",
+      "title": "Lysbilledshow “Billeder-2025.7z”",
+      "x": 338,
+      "y": 468,
+      "width": 270,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "copy:",
+      "title": "Kopier",
+      "x": 338,
+      "y": 492,
+      "width": 270,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "cmdCopyAsPathname:",
+      "title": "Kopier “Billeder-2025.7z” som stinavn",
+      "x": 338,
+      "y": 492,
+      "width": 270,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 516,
+      "width": 270,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "cmdShare:",
+      "title": "Del…",
+      "x": 338,
+      "y": 527,
+      "width": 270,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 551,
+      "width": 270,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "cmdSetLabel:",
+      "title": "Mærker",
+      "x": 338,
+      "y": 562,
+      "width": 270,
+      "height": 49
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 611,
+      "width": 270,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 611,
+      "width": 270,
+      "height": 11
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "Hurtige kommandoer",
+      "x": 338,
+      "y": 622,
+      "width": 270,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "executePlugInCommand:",
+      "title": "Zforge",
+      "x": 338,
+      "y": 646,
+      "width": 270,
+      "height": 24
+    },
+    {
+      "level": 0,
+      "identifier": "",
+      "title": "",
+      "x": 338,
+      "y": 646,
+      "width": 270,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "",
+      "title": "",
+      "x": 603,
+      "y": 641,
+      "width": 208,
+      "height": 154
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "Åbn",
+      "x": 603,
+      "y": 646,
+      "width": 208,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "Pak ud her",
+      "x": 603,
+      "y": 670,
+      "width": 208,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "Pak ud til “Billeder-2025”",
+      "x": 603,
+      "y": 694,
+      "width": 208,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "Pak ud…",
+      "x": 603,
+      "y": 718,
+      "width": 208,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "Valider",
+      "x": 603,
+      "y": 742,
+      "width": 208,
+      "height": 24
+    },
+    {
+      "level": 1,
+      "identifier": "executePlugInCommand:",
+      "title": "Føj til arkiv…",
+      "x": 603,
+      "y": 766,
+      "width": 208,
+      "height": 24
+    }
+  ]
+}
