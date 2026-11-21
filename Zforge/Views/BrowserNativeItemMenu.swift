@@ -153,7 +153,7 @@ enum BrowserNativeContextMenu {
             })
         }
         func applications(always: Bool) {
-            let title: String.LocalizationValue = always ? "Always open with" : "Open with"
+            let title: String.LocalizationValue = always ? "Always Open With" : "Open With"
             let entry = NSMenuItem(title: AppLocalization.string(title, locale: locale), action: nil, keyEquivalent: "")
             entry.image = NSImage(systemSymbolName: "arrow.up.right.square", accessibilityDescription: entry.title)
             entry.isEnabled = !items.isEmpty && !items.contains { $0.isContainer || (always && $0.localURL == nil) }
@@ -187,7 +187,7 @@ enum BrowserNativeContextMenu {
         menu.addItem(.separator())
         add("Share", "square.and.arrow.up", enabled: items.contains { !$0.isContainer }) { selectTargets(); state.shareItems() }
         add("Copy", "doc.on.doc", enabled: items.allSatisfy { $0.localURL != nil }) { selectTargets(); state.copySelectionToPasteboard() }
-        add("Copy pathname", "document.on.clipboard", enabled: items.allSatisfy { $0.localURL != nil }, alternate: true) {
+        add("Copy Pathname", "document.on.clipboard", enabled: items.allSatisfy { $0.localURL != nil }, alternate: true) {
             selectTargets(); state.copySelectionPathnamesToPasteboard()
         }
         menu.addItem(.separator())

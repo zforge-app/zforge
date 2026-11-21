@@ -2,7 +2,7 @@
 
 ## Local agent setup
 
-1. Open Zforge Settings and scroll to **Automation**.
+1. Open Zforge Settings and choose the **Automation** pane.
 2. Folder authorization is requested contextually when an action first needs it. You may also preauthorize scopes with **Allow Folder…** in Settings. There are no default automation grants, and ordinary browser grants do not enable automation.
 3. Choose **Copy MCP Configuration** and paste the JSON into a local client that supports MCP stdio. The command points to this installation's executable; copy it again if the app is moved.
 4. Connect, call `get_capabilities`, and use its `authorized_folders`, limits and instructions to select valid targets.
@@ -29,7 +29,7 @@ The bundled executable runs its MCP mode without opening browser windows. No Nod
 | `get_capabilities` | None | Authorized folders, formats, limits and connection instructions. |
 | `list_directory` | `path` | Sorted direct children; optional `show_hidden`, `offset`, `limit`. |
 | `list_archive` | `path` | Sorted direct archive children; optional relative `internal_path`, `password`, `offset`, `limit`. |
-| `compress` | `sources`, `destination`, `format` (`zip` or `7z`) | Starts a job into a new archive. |
+| `compress` | `sources`, `destination`, `format` (`zip` or `7z`) | Starts a job into a new archive; optional `volume_size` (bytes, at least 1,000,000) splits it into `destination.001`, `destination.002`… |
 | `extract` | `archive`, `destination` | Starts a job into a new folder; optional `password`. |
 | `test_archive` | `archive` | Starts an integrity job; optional `password`. |
 | `operation_status` | `operation_id` | State, available progress, output path and failure code. |
@@ -45,7 +45,7 @@ Pages contain at most 200 items (default 100); listings over 10,000 direct child
 
 ## Siri, Shortcuts and Spotlight
 
-The app publishes four App Intents actions in the Mac Shortcuts editor:
+The app publishes four App Intents actions in the Mac Shortcuts editor on every supported macOS version (macOS 27 adds **Open Archive** and **Search Archives**, below):
 
 - **Compress Files**: input files, destination folder, archive name and ZIP/7z format; returns the created archive file.
 - **Extract Archive**: archive, destination folder, new folder name and optional password; returns the extracted folder.
@@ -58,7 +58,7 @@ On native macOS, automatic App Shortcuts phrases are [unsupported](../SwiftUI/co
 
 The initial generic AppShortcutsProvider was removed after actual Mac discovery investigation. A registration update from the general Apple sample produced a native refresh error; it does not enable unsupported Mac App Shortcuts. Build 2 was installed at `/Applications/Zforge.app`; all four actions then appeared in the Mac editor, where the earlier build search returned no actions. This Mac has 104 historical registered copies; none were removed or globally reset.
 
-Conversational references such as “the first two files from this list” remain a pending requirement, including ordering, window identity, explicit targets and confirmation. The app does not publish indexed file entities or onscreen entity associations; the macOS 27 action below uses on-demand archive entities. The Xcode 27 SDK's Files schema has no compression or extraction action; do not assign an unrelated schema to those intents. Reading a screen or documentation does not grant executable access to that content.
+Conversational references such as “the first two files from this list” remain a pending requirement, including ordering, window identity, explicit targets and confirmation. The app does not publish onscreen entity associations. It indexes archive entities (names and locations only, never contents) for the archives directly inside allowed automation folders in its own Spotlight index (`ZforgeAuthorizedArchives`, `Zforge/Automation/ArchiveSpotlightIndex.swift`), rebuilt from the live grants; the macOS 27 actions below use these archive entities. The Xcode 27 SDK's Files schema has no compression or extraction action; do not assign an unrelated schema to those intents. Reading a screen or documentation does not grant executable access to that content.
 
 Availability also depends on OS, registration/indexing, language and Siri configuration. Extracted metadata, direct intent execution, editor discovery, saved-shortcut execution and actual Siri invocation are separate evidence; see REGRESSION-COVERAGE.
 
@@ -80,6 +80,10 @@ For developers, `BuildSupport/Automation/mcp-smoke.py --executable <bundle execu
 ### Redundant folder grants
 
 The automation list keeps usable covering parents instead of redundant descendants. Authorizing Downloads after a subfolder replaces the subfolder entry; authorizing a child of an already allowed parent adds nothing. Re-adding a parent cleans usable redundant entries from earlier versions. Physical boundaries govern coverage: a symlink leading outside the parent keeps its independent permission. Unknown/unavailable bookmarks are retained conservatively. Failed authorization preserves the previous list, and active operations keep their existing leases. Removing the consolidated parent blocks future access to its covered descendants; old child grants are not restored automatically. This shared policy applies to Settings, MCP and Shortcuts.
+
+### In-app archive search on macOS 27
+
+**Search Archives** (`SearchZforgeArchivesIntent`, macOS 27) opens a browser window titled `Search: “term”` listing the direct, visible archives in allowed automation folders whose names contain the term (at most 100 results, 10,000 inspected candidates); no results show **No Archives Found**. It creates no grants and accepts no paths. Details and evidence: [CURRENT-STATE](CURRENT-STATE.md#siri-in-app-archive-search--2026-10-13).
 
 ### Direct archive opening on macOS 27
 

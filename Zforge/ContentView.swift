@@ -391,6 +391,15 @@ struct ContentView: View {
         .sheet(isPresented: passwordSheetBinding, onDismiss: restoreContentFocus) {
             ArchivePasswordSheet(state: browser)
         }
+        .sheet(
+            item: Binding(get: { browser.archiveValidationReport }, set: { browser.archiveValidationReport = $0 }),
+            onDismiss: restoreContentFocus
+        ) { report in
+            ArchiveValidationReportSheet(report: report, locale: browser.preferences.language.locale) {
+                browser.archiveValidationReport = nil
+            }
+            .environment(\.locale, browser.preferences.language.locale)
+        }
         .sheet(isPresented: permanentDeletionBinding, onDismiss: restoreContentFocus) {
             if let request = browser.pendingPermanentDeletion {
                 PermanentDeletionConfirmationSheet(
@@ -757,7 +766,7 @@ struct ContentView: View {
     private var passwordSheetBinding: Binding<Bool> {
         Binding(
             get: { browser.passwordOperation != nil },
-            set: { if !$0 { browser.passwordOperation = nil; browser.passwordError = nil } }
+            set: { if !$0 { browser.cancelPasswordEntry() } }
         )
     }
 
@@ -1145,13 +1154,23 @@ private struct ArchivePasswordSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Bindable var state: FileBrowserState
     @State private var password = ""
+    /// The last explanation shown, kept while the sheet closes after its operation ends.
+    @State private var retainedPrompt = ""
+
+    private var currentPrompt: String? {
+        state.passwordOperation?.prompt(locale: state.preferences.language.locale)
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             Label("Encrypted Archive", systemImage: "lock.fill")
                 .font(.title2.weight(.semibold))
-            Text("Enter the password to browse this archive. It stays in memory only for this window.")
+            Text(verbatim: currentPrompt ?? retainedPrompt)
                 .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+                .onChange(of: currentPrompt, initial: true) { _, prompt in
+                    if let prompt { retainedPrompt = prompt }
+                }
             SecureField("Password", text: $password)
                 .textFieldStyle(.roundedBorder)
                 .onSubmit { submit() }

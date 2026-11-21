@@ -31,7 +31,7 @@ struct BrowserMenuParityTests {
                 let open = try #require(more.items.dropFirst(2).first, "\(context)")
                 #expect(open.title == "Open", "\(context)")
                 #expect(open.isEnabled == (selection != .none), "\(context)")
-                #expect(!more.items.contains { $0.title == "Open with" }, "Only an item's menu offers Open with: \(context)")
+                #expect(!more.items.contains { $0.title == "Open With" }, "Only an item's menu offers Open With: \(context)")
                 // The menus read the selection, never the view mode.
                 if let expected = reference[selection.rawValue] {
                     #expect(signature(more) == expected, "\(context)")
@@ -162,7 +162,7 @@ struct BrowserMenuParityTests {
         #expect(!fixture.itemMenu(for: file).items.contains { $0.title == "Remove from Archive…" })
     }
 
-    @Test("A file's context menu offers Open with, Edit Tags and a circle for each of the seven fixture tags, marking its own, selected or not",
+    @Test("A file's context menu offers Open With, Edit Tags and a circle for each of the seven fixture tags, marking its own, selected or not",
           arguments: [true, false])
     func itemMenuOffersTags(selected: Bool) async throws {
         for mode in BrowserViewMode.allCases {
@@ -172,11 +172,27 @@ struct BrowserMenuParityTests {
             let selection = fixture.state.selection
             let context = "\(mode), selected: \(selected)"
             let menu = fixture.itemMenu(for: file)
-            #expect(menu.items.first { $0.title == "Open with" }?.isEnabled == true, "\(context)")
+            #expect(menu.items.first { $0.title == "Open With" }?.isEnabled == true, "\(context)")
             try expectTagRow(in: menu, named: "Welcome.txt", context: context)
             // Building or reading the menu never changes the selection the toolbar acts on.
             #expect(fixture.state.selection == selection, "\(context)")
             #expect(fixture.state.canEditTags == selected, "\(context)")
+        }
+    }
+
+    @Test("A file's context menu titles follow macOS title case: Open With, Always Open With, Copy Pathname (D-116)")
+    func itemMenuTitlesUseTitleCase() async throws {
+        let fixture = try await BrowserMenuFixture(mode: .list)
+        defer { fixture.close() }
+        let file = try await fixture.select(.file)
+        let items = fixture.itemMenu(for: file).items
+        let titles = items.map(\.title)
+        for (title, isAlternate) in [("Open With", false), ("Always Open With", true), ("Copy Pathname", true)] {
+            let item = try #require(items.first { $0.title == title }, "Missing \(title): \(titles)")
+            #expect(item.isAlternate == isAlternate, "\(title)")
+        }
+        for lowercase in ["Open with", "Always open with", "Copy pathname"] {
+            #expect(!titles.contains(lowercase), "\(lowercase) breaks title case: \(titles)")
         }
     }
 

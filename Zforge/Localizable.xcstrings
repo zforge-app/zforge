@@ -7945,7 +7945,7 @@
         }
       }
     },
-    "Always open with" : {
+    "Always Open With" : {
       "localizations" : {
         "bn" : {
           "stringUnit" : {
@@ -7974,7 +7974,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Always open with"
+            "value" : "Always Open With"
           }
         },
         "es" : {
@@ -19565,7 +19565,7 @@
         }
       }
     },
-    "Copy pathname" : {
+    "Copy Pathname" : {
       "localizations" : {
         "bn" : {
           "stringUnit" : {
@@ -19594,7 +19594,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Copy pathname"
+            "value" : "Copy Pathname"
           }
         },
         "es" : {
@@ -24365,136 +24365,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "連按兩次"
-          }
-        }
-      }
-    },
-    "Double-clicking an archive whose type opens with Zforge asks, opens it, or extracts it into a folder named after it, next to it, showing only the progress. Open With always opens." : {
-      "localizations" : {
-        "bn" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "যে আর্কাইভের ধরন Zforge দিয়ে খোলে সেটিতে ডাবল-ক্লিক করলে জিজ্ঞাসা করা হয়, সেটি খোলে, অথবা তার পাশে তার নামের একটি ফোল্ডারে এক্সট্র্যাক্ট করে এবং শুধু অগ্রগতি দেখায়। “এটি দিয়ে খুলুন” সবসময় খোলে।"
-          }
-        },
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dvojité kliknutí na archiv, jehož typ se otevírá v Zforge, se zeptá, archiv otevře, nebo ho rozbalí do složky s jeho názvem vedle něj a zobrazí jen průběh. Otevřít v aplikaci vždy otevírá."
-          }
-        },
-        "da" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Et dobbeltklik på et arkiv, hvis type åbnes med Zforge, spørger, åbner det eller pakker det ud i en mappe med dets navn ved siden af det og viser kun status. Åbn med åbner altid."
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ein Doppelklick auf ein Archiv, dessen Typ mit Zforge geöffnet wird, fragt nach, öffnet es oder entpackt es in einen Ordner mit seinem Namen daneben und zeigt nur den Fortschritt. „Öffnen mit“ öffnet es immer."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Double-clicking an archive whose type opens with Zforge asks, opens it, or extracts it into a folder named after it, next to it, showing only the progress. Open With always opens."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Al hacer doble clic en un archivo comprimido cuyo tipo se abre con Zforge, se pregunta qué hacer, se abre o se extrae en una carpeta con su nombre, junto a él, mostrando solo el progreso. «Abrir con» siempre lo abre."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Un double-clic sur une archive dont le type s’ouvre avec Zforge demande quoi faire, l’ouvre ou l’extrait dans un dossier portant son nom, à côté d’elle, en n’affichant que la progression. « Ouvrir avec » l’ouvre toujours."
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "जिस आर्काइव का प्रकार Zforge से खुलता है, उस पर डबल-क्लिक करने पर पूछा जाता है, वह खुलता है, या उसके बगल में उसके नाम के फ़ोल्डर में एक्सट्रैक्ट होता है और केवल प्रगति दिखती है। “इससे खोलें” हमेशा खोलता है।"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Con un doppio clic su un archivio il cui tipo si apre con Zforge viene chiesto cosa fare, oppure l’archivio viene aperto o estratto in una cartella con il suo nome, accanto a esso, mostrando solo l’avanzamento. “Apri con” lo apre sempre."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Zforgeで開く種類のアーカイブをダブルクリックすると、確認するか、開くか、アーカイブの横にある同じ名前のフォルダに展開して進行状況だけを表示します。“このアプリケーションで開く”では常に開きます。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Zforge로 열리는 유형의 압축 파일을 이중 클릭하면 묻거나, 열거나, 압축 파일 옆에 같은 이름의 폴더로 압축을 풀고 진행 상황만 표시합니다. ‘다음으로 열기’는 항상 엽니다."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dubbelklikken op een archief waarvan het type met Zforge opent, vraagt wat er moet gebeuren, opent het of pakt het uit in een map met de naam ervan, ernaast, en toont alleen de voortgang. ‘Open met’ opent altijd."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dwukrotne kliknięcie archiwum, którego typ otwiera się w Zforge, wyświetla pytanie, otwiera je lub rozpakowuje do folderu o jego nazwie obok niego, pokazując tylko postęp. „Otwórz w aplikacji” zawsze otwiera."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Clicar duas vezes em um arquivo compactado cujo tipo abre com o Zforge pergunta, abre ou extrai o conteúdo em uma pasta com o nome dele, ao lado dele, mostrando apenas o progresso. Abrir com sempre abre."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Двойной щелчок по архиву, тип которого открывается в Zforge, вызывает вопрос, открывает архив или распаковывает его в папку с его именем рядом с ним, показывая только ход выполнения. «Открыть в программе» всегда открывает."
-          }
-        },
-        "sv" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ett dubbelklick på ett arkiv vars typ öppnas med Zforge frågar, öppnar det eller packar upp det i en mapp med dess namn bredvid det och visar bara förloppet. Öppna med öppnar alltid."
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "การคลิกสองครั้งที่ไฟล์บีบอัดประเภทที่เปิดด้วย Zforge จะถาม เปิด หรือคลายไฟล์ไปยังโฟลเดอร์ที่ตั้งชื่อตามไฟล์นั้นไว้ข้างๆ โดยแสดงเพียงความคืบหน้า “เปิดด้วย” จะเปิดเสมอ"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Türü Zforge ile açılan bir arşive çift tıklandığında ne yapılacağı sorulur, arşiv açılır ya da yanında onun adını taşıyan bir klasöre çıkarılır ve yalnızca ilerleme gösterilir. Birlikte Aç her zaman açar."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Подвійне клацання архіву, тип якого відкривається в Zforge, викликає запитання, відкриває архів або розпаковує його в папку з його назвою поруч із ним, показуючи лише перебіг. «Відкрити у програмі» завжди відкриває."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "连按以 Zforge 打开的类型的压缩文件时，会询问、打开，或解压到其旁边以其命名的文件夹并仅显示进度。“打开方式”始终会打开。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "按兩下以 Zforge 打開之類型的壓縮檔案時，會詢問、打開，或解壓縮到其旁邊以其命名的檔案夾並只顯示進度。「打開方式」一律會打開。"
           }
         }
       }
@@ -43122,7 +42992,7 @@
         }
       }
     },
-    "New tab" : {
+    "New Tab" : {
       "localizations" : {
         "bn" : {
           "stringUnit" : {
@@ -43151,7 +43021,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "New tab"
+            "value" : "New Tab"
           }
         },
         "es" : {
@@ -47041,7 +46911,7 @@
         }
       }
     },
-    "Open with" : {
+    "Open With" : {
       "localizations" : {
         "bn" : {
           "stringUnit" : {
@@ -47070,7 +46940,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Open with"
+            "value" : "Open With"
           }
         },
         "es" : {
@@ -52385,7 +52255,7 @@
         }
       }
     },
-    "Restore defaults" : {
+    "Restore Defaults" : {
       "localizations" : {
         "bn" : {
           "stringUnit" : {
@@ -52414,7 +52284,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Restore defaults"
+            "value" : "Restore Defaults"
           }
         },
         "es" : {
@@ -61526,138 +61396,6 @@
         }
       }
     },
-    "This archive item is larger than 10 MB." : {
-      "comment" : "A description of the action to load the preview.",
-      "isCommentAutoGenerated" : true,
-      "localizations" : {
-        "bn" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "আর্কাইভের এই আইটেম 10 MB-এর চেয়ে বড়।"
-          }
-        },
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tato položka archivu je větší než 10 MB."
-          }
-        },
-        "da" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dette emne i arkivet er større end 10 MB."
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dieses Objekt im Archiv ist größer als 10 MB."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "This archive item is larger than 10 MB."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Este ítem del archivo comprimido ocupa más de 10 MB."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cet élément de l’archive dépasse 10 Mo."
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "इस आर्काइव का आइटम 10 MB से बड़ा है।"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Questo elemento dell’archivio supera 10 MB."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "このアーカイブ内の項目は 10 MB を超えています。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "이 압축 파일 항목은 10 MB보다 큽니다."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dit archiefonderdeel is groter dan 10 MB."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ta rzecz w archiwum jest większa niż 10 MB."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Este item do arquivo compactado é maior que 10 MB."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Размер этого объекта архива превышает 10 МБ."
-          }
-        },
-        "sv" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Det här arkivobjektet är större än 10 MB."
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "รายการในไฟล์บีบอัดนี้มีขนาดใหญ่กว่า 10 MB"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bu arşiv öğesi 10 MB'den büyük."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Розмір цього об’єкта архіву перевищує 10 МБ."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "此压缩文件项目大于 10 MB。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "此壓縮檔案項目大於 10 MB。"
-          }
-        }
-      }
-    },
     "This listing exceeds the automation limit of 10,000 items. Choose a smaller folder." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -68452,6 +68190,3091 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "繁體中文"
+          }
+        }
+      }
+    },
+    "Enter the password to extract “%@”." : {
+      "comment" : "Password sheet: extracting the named archive file.",
+      "localizations" : {
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” এক্সট্র্যাক্ট করতে পাসওয়ার্ড লিখুন।"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zadejte heslo pro rozbalení „%@“."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Indtast adgangskoden for at pakke “%@” ud."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gib das Passwort ein, um „%@“ zu entpacken."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter the password to extract “%@”."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Introduce la contraseña para extraer “%@”."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saisissez le mot de passe pour extraire « %@ »."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” को एक्सट्रैक्ट करने के लिए पासवर्ड दर्ज करें।"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inserisci la password per estrarre “%@”."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@”を展開するパスワードを入力してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@”의 압축을 풀려면 암호를 입력하십시오."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voer het wachtwoord in om ‘%@’ uit te pakken."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wpisz hasło, aby rozpakować „%@”."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Digite a senha para extrair “%@”."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Введите пароль, чтобы распаковать «%@»."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ange lösenordet för att packa upp ”%@”."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ป้อนรหัสผ่านเพื่อคลายไฟล์ “%@”"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” arşivinden çıkarmak için parolayı girin."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Введіть пароль, щоб розпакувати «%@»."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "输入密码以解压“%@”。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "輸入密碼以解壓縮「%@」。"
+          }
+        }
+      }
+    },
+    "Enter the password to validate “%@”." : {
+      "comment" : "Password sheet: validating the named archive file.",
+      "localizations" : {
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” যাচাই করতে পাসওয়ার্ড লিখুন।"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zadejte heslo pro ověření „%@“."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Indtast adgangskoden for at validere “%@”."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gib das Passwort ein, um „%@“ zu prüfen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter the password to validate “%@”."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Introduce la contraseña para verificar “%@”."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saisissez le mot de passe pour vérifier « %@ »."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” को सत्यापित करने के लिए पासवर्ड दर्ज करें।"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inserisci la password per verificare “%@”."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@”を検証するパスワードを入力してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@”을(를) 검증하려면 암호를 입력하십시오."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voer het wachtwoord in om ‘%@’ te controleren."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wpisz hasło, aby sprawdzić „%@”."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Digite a senha para validar “%@”."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Введите пароль, чтобы проверить «%@»."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ange lösenordet för att kontrollera ”%@”."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ป้อนรหัสผ่านเพื่อตรวจสอบ “%@”"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” arşivini doğrulamak için parolayı girin."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Введіть пароль, щоб перевірити «%@»."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "输入密码以验证“%@”。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "輸入密碼以驗證「%@」。"
+          }
+        }
+      }
+    },
+    "Enter the password to extract “%@”. It stays in memory only for this window." : {
+      "comment" : "Password sheet: extracting one item of an open archive.",
+      "localizations" : {
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” এক্সট্র্যাক্ট করতে পাসওয়ার্ড লিখুন। তা শুধু এই উইন্ডোর মেমরিতে থাকবে।"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zadejte heslo pro rozbalení „%@“. Zůstane v paměti pouze pro toto okno."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Indtast adgangskoden for at pakke “%@” ud. Den gemmes kun i hukommelsen for dette vindue."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gib das Passwort ein, um „%@“ zu entpacken. Es bleibt nur für dieses Fenster im Arbeitsspeicher."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter the password to extract “%@”. It stays in memory only for this window."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Introduce la contraseña para extraer “%@”. Permanecerá en memoria solo para esta ventana."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saisissez le mot de passe pour extraire « %@ ». Il reste en mémoire uniquement pour cette fenêtre."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” को एक्सट्रैक्ट करने के लिए पासवर्ड दर्ज करें। वह केवल इस विंडो की मेमोरी में रहेगा।"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inserisci la password per estrarre “%@”. Resterà in memoria solo per questa finestra."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@”を展開するパスワードを入力してください。パスワードはこのウインドウでのみメモリに保持されます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@”의 압축을 풀려면 암호를 입력하십시오. 이 윈도우의 메모리에만 유지됩니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voer het wachtwoord in om ‘%@’ uit te pakken. Het blijft alleen voor dit venster in het geheugen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wpisz hasło, aby rozpakować „%@”. Pozostanie w pamięci tylko dla tego okna."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Digite a senha para extrair “%@”. Ela permanece apenas na memória desta janela."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Введите пароль, чтобы распаковать «%@». Он хранится в памяти только для этого окна."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ange lösenordet för att packa upp ”%@”. Det finns kvar i minnet endast för det här fönstret."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ป้อนรหัสผ่านเพื่อคลายไฟล์ “%@” รหัสผ่านจะอยู่ในหน่วยความจำของหน้าต่างนี้เท่านั้น"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” arşivinden çıkarmak için parolayı girin. Parola yalnızca bu pencerenin belleğinde kalır."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Введіть пароль, щоб розпакувати «%@». Він залишатиметься в пам’яті лише для цього вікна."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "输入密码以解压“%@”。密码仅在此窗口打开期间保存在内存中。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "輸入密碼以解壓縮「%@」。密碼僅在此窗口打開期間儲存在記憶體中。"
+          }
+        }
+      }
+    },
+    "Enter the password to extract the selected items. It stays in memory only for this window." : {
+      "localizations" : {
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "নির্বাচিত আইটেমগুলো এক্সট্র্যাক্ট করতে পাসওয়ার্ড লিখুন। তা শুধু এই উইন্ডোর মেমরিতে থাকবে।"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zadejte heslo pro rozbalení vybraných položek. Zůstane v paměti pouze pro toto okno."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Indtast adgangskoden for at pakke de valgte emner ud. Den gemmes kun i hukommelsen for dette vindue."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gib das Passwort ein, um die ausgewählten Objekte zu entpacken. Es bleibt nur für dieses Fenster im Arbeitsspeicher."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter the password to extract the selected items. It stays in memory only for this window."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Introduce la contraseña para extraer los ítems seleccionados. Permanecerá en memoria solo para esta ventana."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saisissez le mot de passe pour extraire les éléments sélectionnés. Il reste en mémoire uniquement pour cette fenêtre."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "चयनित आइटम एक्सट्रैक्ट करने के लिए पासवर्ड दर्ज करें। वह केवल इस विंडो की मेमोरी में रहेगा।"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inserisci la password per estrarre gli elementi selezionati. Resterà in memoria solo per questa finestra."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選択した項目を展開するパスワードを入力してください。パスワードはこのウインドウでのみメモリに保持されます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "선택한 항목의 압축을 풀려면 암호를 입력하십시오. 이 윈도우의 메모리에만 유지됩니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voer het wachtwoord in om de geselecteerde onderdelen uit te pakken. Het blijft alleen voor dit venster in het geheugen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wpisz hasło, aby rozpakować zaznaczone rzeczy. Pozostanie w pamięci tylko dla tego okna."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Digite a senha para extrair os itens selecionados. Ela permanece apenas na memória desta janela."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Введите пароль, чтобы распаковать выбранные объекты. Он хранится в памяти только для этого окна."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ange lösenordet för att packa upp de markerade objekten. Det finns kvar i minnet endast för det här fönstret."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ป้อนรหัสผ่านเพื่อคลายรายการที่เลือก รหัสผ่านจะอยู่ในหน่วยความจำของหน้าต่างนี้เท่านั้น"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seçili öğeleri arşivden çıkarmak için parolayı girin. Parola yalnızca bu pencerenin belleğinde kalır."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Введіть пароль, щоб розпакувати вибрані об’єкти. Він залишатиметься в пам’яті лише для цього вікна."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "输入密码以解压所选项目。密码仅在此窗口打开期间保存在内存中。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "輸入密碼以解壓縮所選項目。密碼僅在此窗口打開期間儲存在記憶體中。"
+          }
+        }
+      }
+    },
+    "Enter the password to open “%@”. It stays in memory only for this window." : {
+      "comment" : "Password sheet: opening an item whose contents are encrypted.",
+      "localizations" : {
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” খুলতে পাসওয়ার্ড লিখুন। তা শুধু এই উইন্ডোর মেমরিতে থাকবে।"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zadejte heslo pro otevření „%@“. Zůstane v paměti pouze pro toto okno."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Indtast adgangskoden for at åbne “%@”. Den gemmes kun i hukommelsen for dette vindue."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gib das Passwort ein, um „%@“ zu öffnen. Es bleibt nur für dieses Fenster im Arbeitsspeicher."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter the password to open “%@”. It stays in memory only for this window."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Introduce la contraseña para abrir “%@”. Permanecerá en memoria solo para esta ventana."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saisissez le mot de passe pour ouvrir « %@ ». Il reste en mémoire uniquement pour cette fenêtre."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” खोलने के लिए पासवर्ड दर्ज करें। वह केवल इस विंडो की मेमोरी में रहेगा।"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inserisci la password per aprire “%@”. Resterà in memoria solo per questa finestra."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@”を開くパスワードを入力してください。パスワードはこのウインドウでのみメモリに保持されます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@”을(를) 열려면 암호를 입력하십시오. 이 윈도우의 메모리에만 유지됩니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voer het wachtwoord in om ‘%@’ te openen. Het blijft alleen voor dit venster in het geheugen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wpisz hasło, aby otworzyć „%@”. Pozostanie w pamięci tylko dla tego okna."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Digite a senha para abrir “%@”. Ela permanece apenas na memória desta janela."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Введите пароль, чтобы открыть «%@». Он хранится в памяти только для этого окна."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ange lösenordet för att öppna ”%@”. Det finns kvar i minnet endast för det här fönstret."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ป้อนรหัสผ่านเพื่อเปิด “%@” รหัสผ่านจะอยู่ในหน่วยความจำของหน้าต่างนี้เท่านั้น"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” öğesini açmak için parolayı girin. Parola yalnızca bu pencerenin belleğinde kalır."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Введіть пароль, щоб відкрити «%@». Він залишатиметься в пам’яті лише для цього вікна."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "输入密码以打开“%@”。密码仅在此窗口打开期间保存在内存中。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "輸入密碼以打開「%@」。密碼僅在此窗口打開期間儲存在記憶體中。"
+          }
+        }
+      }
+    },
+    "Enter the password to open the selected items. It stays in memory only for this window." : {
+      "localizations" : {
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "নির্বাচিত আইটেমগুলো খুলতে পাসওয়ার্ড লিখুন। তা শুধু এই উইন্ডোর মেমরিতে থাকবে।"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zadejte heslo pro otevření vybraných položek. Zůstane v paměti pouze pro toto okno."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Indtast adgangskoden for at åbne de valgte emner. Den gemmes kun i hukommelsen for dette vindue."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gib das Passwort ein, um die ausgewählten Objekte zu öffnen. Es bleibt nur für dieses Fenster im Arbeitsspeicher."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter the password to open the selected items. It stays in memory only for this window."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Introduce la contraseña para abrir los ítems seleccionados. Permanecerá en memoria solo para esta ventana."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saisissez le mot de passe pour ouvrir les éléments sélectionnés. Il reste en mémoire uniquement pour cette fenêtre."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "चयनित आइटम खोलने के लिए पासवर्ड दर्ज करें। वह केवल इस विंडो की मेमोरी में रहेगा।"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inserisci la password per aprire gli elementi selezionati. Resterà in memoria solo per questa finestra."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選択した項目を開くパスワードを入力してください。パスワードはこのウインドウでのみメモリに保持されます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "선택한 항목을 열려면 암호를 입력하십시오. 이 윈도우의 메모리에만 유지됩니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voer het wachtwoord in om de geselecteerde onderdelen te openen. Het blijft alleen voor dit venster in het geheugen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wpisz hasło, aby otworzyć zaznaczone rzeczy. Pozostanie w pamięci tylko dla tego okna."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Digite a senha para abrir os itens selecionados. Ela permanece apenas na memória desta janela."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Введите пароль, чтобы открыть выбранные объекты. Он хранится в памяти только для этого окна."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ange lösenordet för att öppna de markerade objekten. Det finns kvar i minnet endast för det här fönstret."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ป้อนรหัสผ่านเพื่อเปิดรายการที่เลือก รหัสผ่านจะอยู่ในหน่วยความจำของหน้าต่างนี้เท่านั้น"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seçili öğeleri açmak için parolayı girin. Parola yalnızca bu pencerenin belleğinde kalır."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Введіть пароль, щоб відкрити вибрані об’єкти. Він залишатиметься в пам’яті лише для цього вікна."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "输入密码以打开所选项目。密码仅在此窗口打开期间保存在内存中。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "輸入密碼以打開所選項目。密碼僅在此窗口打開期間儲存在記憶體中。"
+          }
+        }
+      }
+    },
+    "Enter the password to preview “%@”. It stays in memory only for this window." : {
+      "comment" : "Password sheet: previewing an item whose contents are encrypted.",
+      "localizations" : {
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” প্রিভিউ করতে পাসওয়ার্ড লিখুন। তা শুধু এই উইন্ডোর মেমরিতে থাকবে।"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zadejte heslo pro zobrazení náhledu „%@“. Zůstane v paměti pouze pro toto okno."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Indtast adgangskoden for at vise et eksempel på “%@”. Den gemmes kun i hukommelsen for dette vindue."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gib das Passwort ein, um „%@“ in der Vorschau zu zeigen. Es bleibt nur für dieses Fenster im Arbeitsspeicher."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter the password to preview “%@”. It stays in memory only for this window."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Introduce la contraseña para previsualizar “%@”. Permanecerá en memoria solo para esta ventana."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saisissez le mot de passe pour afficher l’aperçu de « %@ ». Il reste en mémoire uniquement pour cette fenêtre."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” का प्रीव्यू देखने के लिए पासवर्ड दर्ज करें। वह केवल इस विंडो की मेमोरी में रहेगा।"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inserisci la password per mostrare l’anteprima di “%@”. Resterà in memoria solo per questa finestra."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@”をプレビューするパスワードを入力してください。パスワードはこのウインドウでのみメモリに保持されます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@”을(를) 미리 보려면 암호를 입력하십시오. 이 윈도우의 메모리에만 유지됩니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voer het wachtwoord in om een voorvertoning van ‘%@’ te tonen. Het blijft alleen voor dit venster in het geheugen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wpisz hasło, aby wyświetlić podgląd „%@”. Pozostanie w pamięci tylko dla tego okna."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Digite a senha para pré-visualizar “%@”. Ela permanece apenas na memória desta janela."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Введите пароль, чтобы просмотреть «%@». Он хранится в памяти только для этого окна."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ange lösenordet för att förhandsvisa ”%@”. Det finns kvar i minnet endast för det här fönstret."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ป้อนรหัสผ่านเพื่อแสดงตัวอย่าง “%@” รหัสผ่านจะอยู่ในหน่วยความจำของหน้าต่างนี้เท่านั้น"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” öğesini önizlemek için parolayı girin. Parola yalnızca bu pencerenin belleğinde kalır."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Введіть пароль, щоб переглянути «%@». Він залишатиметься в пам’яті лише для цього вікна."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "输入密码以预览“%@”。密码仅在此窗口打开期间保存在内存中。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "輸入密碼以預覽「%@」。密碼僅在此窗口打開期間儲存在記憶體中。"
+          }
+        }
+      }
+    },
+    "Enter the password to preview the selected items. It stays in memory only for this window." : {
+      "localizations" : {
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "নির্বাচিত আইটেমগুলো প্রিভিউ করতে পাসওয়ার্ড লিখুন। তা শুধু এই উইন্ডোর মেমরিতে থাকবে।"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zadejte heslo pro zobrazení náhledu vybraných položek. Zůstane v paměti pouze pro toto okno."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Indtast adgangskoden for at vise eksempler på de valgte emner. Den gemmes kun i hukommelsen for dette vindue."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gib das Passwort ein, um die ausgewählten Objekte in der Vorschau zu zeigen. Es bleibt nur für dieses Fenster im Arbeitsspeicher."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter the password to preview the selected items. It stays in memory only for this window."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Introduce la contraseña para previsualizar los ítems seleccionados. Permanecerá en memoria solo para esta ventana."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saisissez le mot de passe pour afficher l’aperçu des éléments sélectionnés. Il reste en mémoire uniquement pour cette fenêtre."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "चयनित आइटम का प्रीव्यू देखने के लिए पासवर्ड दर्ज करें। वह केवल इस विंडो की मेमोरी में रहेगा।"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inserisci la password per mostrare l’anteprima degli elementi selezionati. Resterà in memoria solo per questa finestra."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選択した項目をプレビューするパスワードを入力してください。パスワードはこのウインドウでのみメモリに保持されます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "선택한 항목을 미리 보려면 암호를 입력하십시오. 이 윈도우의 메모리에만 유지됩니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voer het wachtwoord in om een voorvertoning van de geselecteerde onderdelen te tonen. Het blijft alleen voor dit venster in het geheugen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wpisz hasło, aby wyświetlić podgląd zaznaczonych rzeczy. Pozostanie w pamięci tylko dla tego okna."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Digite a senha para pré-visualizar os itens selecionados. Ela permanece apenas na memória desta janela."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Введите пароль, чтобы просмотреть выбранные объекты. Он хранится в памяти только для этого окна."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ange lösenordet för att förhandsvisa de markerade objekten. Det finns kvar i minnet endast för det här fönstret."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ป้อนรหัสผ่านเพื่อแสดงตัวอย่างรายการที่เลือก รหัสผ่านจะอยู่ในหน่วยความจำของหน้าต่างนี้เท่านั้น"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seçili öğeleri önizlemek için parolayı girin. Parola yalnızca bu pencerenin belleğinde kalır."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Введіть пароль, щоб переглянути вибрані об’єкти. Він залишатиметься в пам’яті лише для цього вікна."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "输入密码以预览所选项目。密码仅在此窗口打开期间保存在内存中。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "輸入密碼以預覽所選項目。密碼僅在此窗口打開期間儲存在記憶體中。"
+          }
+        }
+      }
+    },
+    "Enter the password to share “%@”. It stays in memory only for this window." : {
+      "comment" : "Password sheet: sharing an item whose contents are encrypted.",
+      "localizations" : {
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” শেয়ার করতে পাসওয়ার্ড লিখুন। তা শুধু এই উইন্ডোর মেমরিতে থাকবে।"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zadejte heslo pro sdílení „%@“. Zůstane v paměti pouze pro toto okno."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Indtast adgangskoden for at dele “%@”. Den gemmes kun i hukommelsen for dette vindue."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gib das Passwort ein, um „%@“ zu teilen. Es bleibt nur für dieses Fenster im Arbeitsspeicher."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter the password to share “%@”. It stays in memory only for this window."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Introduce la contraseña para compartir “%@”. Permanecerá en memoria solo para esta ventana."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saisissez le mot de passe pour partager « %@ ». Il reste en mémoire uniquement pour cette fenêtre."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” शेयर करने के लिए पासवर्ड दर्ज करें। वह केवल इस विंडो की मेमोरी में रहेगा।"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inserisci la password per condividere “%@”. Resterà in memoria solo per questa finestra."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@”を共有するパスワードを入力してください。パスワードはこのウインドウでのみメモリに保持されます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@”을(를) 공유하려면 암호를 입력하십시오. 이 윈도우의 메모리에만 유지됩니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voer het wachtwoord in om ‘%@’ te delen. Het blijft alleen voor dit venster in het geheugen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wpisz hasło, aby udostępnić „%@”. Pozostanie w pamięci tylko dla tego okna."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Digite a senha para compartilhar “%@”. Ela permanece apenas na memória desta janela."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Введите пароль, чтобы поделиться «%@». Он хранится в памяти только для этого окна."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ange lösenordet för att dela ”%@”. Det finns kvar i minnet endast för det här fönstret."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ป้อนรหัสผ่านเพื่อแชร์ “%@” รหัสผ่านจะอยู่ในหน่วยความจำของหน้าต่างนี้เท่านั้น"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” öğesini paylaşmak için parolayı girin. Parola yalnızca bu pencerenin belleğinde kalır."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Введіть пароль, щоб поширити «%@». Він залишатиметься в пам’яті лише для цього вікна."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "输入密码以共享“%@”。密码仅在此窗口打开期间保存在内存中。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "輸入密碼以共享「%@」。密碼僅在此窗口打開期間儲存在記憶體中。"
+          }
+        }
+      }
+    },
+    "Enter the password to share the selected items. It stays in memory only for this window." : {
+      "localizations" : {
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "নির্বাচিত আইটেমগুলো শেয়ার করতে পাসওয়ার্ড লিখুন। তা শুধু এই উইন্ডোর মেমরিতে থাকবে।"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zadejte heslo pro sdílení vybraných položek. Zůstane v paměti pouze pro toto okno."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Indtast adgangskoden for at dele de valgte emner. Den gemmes kun i hukommelsen for dette vindue."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gib das Passwort ein, um die ausgewählten Objekte zu teilen. Es bleibt nur für dieses Fenster im Arbeitsspeicher."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter the password to share the selected items. It stays in memory only for this window."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Introduce la contraseña para compartir los ítems seleccionados. Permanecerá en memoria solo para esta ventana."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saisissez le mot de passe pour partager les éléments sélectionnés. Il reste en mémoire uniquement pour cette fenêtre."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "चयनित आइटम शेयर करने के लिए पासवर्ड दर्ज करें। वह केवल इस विंडो की मेमोरी में रहेगा।"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inserisci la password per condividere gli elementi selezionati. Resterà in memoria solo per questa finestra."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選択した項目を共有するパスワードを入力してください。パスワードはこのウインドウでのみメモリに保持されます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "선택한 항목을 공유하려면 암호를 입력하십시오. 이 윈도우의 메모리에만 유지됩니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voer het wachtwoord in om de geselecteerde onderdelen te delen. Het blijft alleen voor dit venster in het geheugen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wpisz hasło, aby udostępnić zaznaczone rzeczy. Pozostanie w pamięci tylko dla tego okna."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Digite a senha para compartilhar os itens selecionados. Ela permanece apenas na memória desta janela."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Введите пароль, чтобы поделиться выбранными объектами. Он хранится в памяти только для этого окна."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ange lösenordet för att dela de markerade objekten. Det finns kvar i minnet endast för det här fönstret."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ป้อนรหัสผ่านเพื่อแชร์รายการที่เลือก รหัสผ่านจะอยู่ในหน่วยความจำของหน้าต่างนี้เท่านั้น"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seçili öğeleri paylaşmak için parolayı girin. Parola yalnızca bu pencerenin belleğinde kalır."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Введіть пароль, щоб поширити вибрані об’єкти. Він залишатиметься в пам’яті лише для цього вікна."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "输入密码以共享所选项目。密码仅在此窗口打开期间保存在内存中。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "輸入密碼以共享所選項目。密碼僅在此窗口打開期間儲存在記憶體中。"
+          }
+        }
+      }
+    },
+    "This item is larger than the %@ preview limit set in Settings." : {
+      "comment" : "Preview not loaded; %@ is the preview size limit, such as “512 MB”.",
+      "localizations" : {
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "এই আইটেমটি সেটিংসে নির্ধারিত %@ প্রিভিউ সীমার চেয়ে বড়।"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tato položka je větší než limit náhledu %@ nastavený v Nastavení."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dette emne er større end eksempelgrænsen på %@, der er angivet i Indstillinger."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieses Objekt ist größer als die in den Einstellungen festgelegte Vorschaugrenze von %@."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This item is larger than the %@ preview limit set in Settings."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este ítem ocupa más que el límite de previsualización de %@ definido en Ajustes."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cet élément dépasse la limite d’aperçu de %@ définie dans Réglages."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "यह आइटम सेटिंग्ज़ में तय %@ की प्रीव्यू सीमा से बड़ा है।"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questo elemento supera il limite di anteprima di %@ impostato in Impostazioni."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この項目は、“設定”で指定されたプレビューの上限 %@ を超えています。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 항목은 설정에서 지정한 미리보기 한도 %@보다 큽니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dit onderdeel is groter dan de voorvertoningslimiet van %@ in Instellingen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ta rzecz jest większa niż limit podglądu %@ ustawiony w Ustawieniach."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este item é maior que o limite de pré-visualização de %@ definido em Ajustes."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Этот объект больше предела просмотра %@, заданного в настройках."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Det här objektet är större än gränsen för förhandsvisning på %@ i Inställningar."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "รายการนี้มีขนาดใหญ่กว่าขีดจำกัดการแสดงตัวอย่าง %@ ที่ตั้งไว้ในการตั้งค่า"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu öğe, Ayarlar’da belirlenen %@ önizleme sınırından büyük."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Цей об’єкт більший за межу перегляду %@, задану в параметрах."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此项目大于“设置”中设定的 %@ 预览上限。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此項目大於「設定」中設定的 %@ 預覽上限。"
+          }
+        }
+      }
+    },
+    "Previewing this item reads more than the %@ preview limit set in Settings." : {
+      "comment" : "Preview not loaded: the item is read from a solid block or split set; %@ is the preview size limit.",
+      "localizations" : {
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "এই আইটেমটি প্রিভিউ করতে সেটিংসে নির্ধারিত %@ প্রিভিউ সীমার চেয়ে বেশি পড়তে হয়।"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Náhled této položky vyžaduje načíst víc než limit náhledu %@ nastavený v Nastavení."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Et eksempel på dette emne kræver, at der læses mere end eksempelgrænsen på %@, der er angivet i Indstillinger."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Für die Vorschau dieses Objekts muss mehr als die in den Einstellungen festgelegte Vorschaugrenze von %@ gelesen werden."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Previewing this item reads more than the %@ preview limit set in Settings."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Previsualizar este ítem requiere leer más que el límite de previsualización de %@ definido en Ajustes."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’aperçu de cet élément nécessite de lire plus que la limite d’aperçu de %@ définie dans Réglages."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "इस आइटम का प्रीव्यू देखने के लिए सेटिंग्ज़ में तय %@ की प्रीव्यू सीमा से ज़्यादा पढ़ना पड़ता है।"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’anteprima di questo elemento richiede di leggere più del limite di anteprima di %@ impostato in Impostazioni."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この項目をプレビューするには、“設定”で指定されたプレビューの上限 %@ を超えるデータを読み込む必要があります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 항목을 미리 보려면 설정에서 지정한 미리보기 한도 %@보다 많이 읽어야 합니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voor een voorvertoning van dit onderdeel moet meer worden gelezen dan de voorvertoningslimiet van %@ in Instellingen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Podgląd tej rzeczy wymaga odczytania więcej niż limit podglądu %@ ustawiony w Ustawieniach."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pré-visualizar este item exige ler mais que o limite de pré-visualização de %@ definido em Ajustes."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Для просмотра этого объекта нужно прочитать больше, чем предел просмотра %@, заданный в настройках."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "För att förhandsvisa det här objektet måste mer än gränsen för förhandsvisning på %@ i Inställningar läsas."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "การแสดงตัวอย่างรายการนี้ต้องอ่านข้อมูลมากกว่าขีดจำกัดการแสดงตัวอย่าง %@ ที่ตั้งไว้ในการตั้งค่า"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu öğeyi önizlemek, Ayarlar’da belirlenen %@ önizleme sınırından fazlasını okumayı gerektirir."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Для перегляду цього об’єкта потрібно прочитати більше, ніж межа перегляду %@, задана в параметрах."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "预览此项目需要读取的数据超过“设置”中设定的 %@ 预览上限。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "預覽此項目需要讀取的資料超過「設定」中設定的 %@ 預覽上限。"
+          }
+        }
+      }
+    },
+    "Previews of items in archives on removable drives are off in Settings." : {
+      "localizations" : {
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "অপসারণযোগ্য ড্রাইভে থাকা আর্কাইভের আইটেমের প্রিভিউ সেটিংসে বন্ধ আছে।"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Náhledy položek v archivech na vyjímatelných discích jsou v Nastavení vypnuté."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eksempler på emner i arkiver på flytbare drev er slået fra i Indstillinger."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vorschauen von Objekten in Archiven auf Wechsellaufwerken sind in den Einstellungen deaktiviert."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Previews of items in archives on removable drives are off in Settings."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las previsualizaciones de ítems de archivos comprimidos en unidades extraíbles están desactivadas en Ajustes."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les aperçus des éléments d’archives sur des disques amovibles sont désactivés dans Réglages."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "हटाने योग्य ड्राइव पर रखे आर्काइव के आइटम के प्रीव्यू सेटिंग्ज़ में बंद हैं।"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le anteprime degli elementi negli archivi sulle unità rimovibili sono disattivate in Impostazioni."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "取り外し可能なドライブにあるアーカイブ内の項目のプレビューは、“設定”でオフになっています。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이동식 드라이브에 있는 압축 파일 항목의 미리보기가 설정에서 꺼져 있습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voorvertoningen van onderdelen in archieven op verwisselbare schijven zijn uitgeschakeld in Instellingen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Podglądy rzeczy w archiwach na dyskach wymiennych są wyłączone w Ustawieniach."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "As pré-visualizações de itens em arquivos compactados em discos removíveis estão desativadas em Ajustes."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Просмотр объектов в архивах на съемных дисках выключен в настройках."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Förhandsvisningar av objekt i arkiv på flyttbara enheter är avstängda i Inställningar."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "การแสดงตัวอย่างรายการในไฟล์บีบอัดบนไดรฟ์แบบถอดได้ปิดอยู่ในการตั้งค่า"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Çıkarılabilir sürücülerdeki arşivlerin öğeleri için önizlemeler Ayarlar’da kapalı."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Перегляд об’єктів в архівах на знімних дисках вимкнено в параметрах."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“设置”中已关闭可移除驱动器上压缩文件内项目的预览。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「設定」中已關閉可移除磁碟機上壓縮檔案內項目的預覽。"
+          }
+        }
+      }
+    },
+    "Previews of items in archives on network volumes are off in Settings." : {
+      "localizations" : {
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "নেটওয়ার্ক ভলিউমে থাকা আর্কাইভের আইটেমের প্রিভিউ সেটিংসে বন্ধ আছে।"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Náhledy položek v archivech na síťových svazcích jsou v Nastavení vypnuté."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eksempler på emner i arkiver på netværksenheder er slået fra i Indstillinger."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vorschauen von Objekten in Archiven auf Netzwerkvolumes sind in den Einstellungen deaktiviert."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Previews of items in archives on network volumes are off in Settings."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las previsualizaciones de ítems de archivos comprimidos en volúmenes de red están desactivadas en Ajustes."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les aperçus des éléments d’archives sur des volumes réseau sont désactivés dans Réglages."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "नेटवर्क वॉल्यूम पर रखे आर्काइव के आइटम के प्रीव्यू सेटिंग्ज़ में बंद हैं।"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le anteprime degli elementi negli archivi sui volumi di rete sono disattivate in Impostazioni."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ネットワークボリュームにあるアーカイブ内の項目のプレビューは、“設定”でオフになっています。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "네트워크 볼륨에 있는 압축 파일 항목의 미리보기가 설정에서 꺼져 있습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voorvertoningen van onderdelen in archieven op netwerkvolumes zijn uitgeschakeld in Instellingen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Podglądy rzeczy w archiwach na woluminach sieciowych są wyłączone w Ustawieniach."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "As pré-visualizações de itens em arquivos compactados em volumes de rede estão desativadas em Ajustes."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Просмотр объектов в архивах на сетевых томах выключен в настройках."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Förhandsvisningar av objekt i arkiv på nätverksvolymer är avstängda i Inställningar."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "การแสดงตัวอย่างรายการในไฟล์บีบอัดบนโวลุ่มเครือข่ายปิดอยู่ในการตั้งค่า"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ağ birimlerindeki arşivlerin öğeleri için önizlemeler Ayarlar’da kapalı."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Перегляд об’єктів в архівах на мережевих томах вимкнено в параметрах."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“设置”中已关闭网络宗卷上压缩文件内项目的预览。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「設定」中已關閉網路卷宗上壓縮檔案內項目的預覽。"
+          }
+        }
+      }
+    },
+    "Previews of items in solid archives are off in Settings." : {
+      "localizations" : {
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "সলিড আর্কাইভের আইটেমের প্রিভিউ সেটিংসে বন্ধ আছে।"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Náhledy položek v pevných archivech jsou v Nastavení vypnuté."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eksempler på emner i solide arkiver er slået fra i Indstillinger."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vorschauen von Objekten in soliden Archiven sind in den Einstellungen deaktiviert."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Previews of items in solid archives are off in Settings."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las previsualizaciones de ítems de archivos comprimidos sólidos están desactivadas en Ajustes."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les aperçus des éléments d’archives solides sont désactivés dans Réglages."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "सॉलिड आर्काइव के आइटम के प्रीव्यू सेटिंग्ज़ में बंद हैं।"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le anteprime degli elementi negli archivi solidi sono disattivate in Impostazioni."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ソリッドアーカイブ内の項目のプレビューは、“設定”でオフになっています。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "솔리드 압축 파일 항목의 미리보기가 설정에서 꺼져 있습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voorvertoningen van onderdelen in solide archieven zijn uitgeschakeld in Instellingen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Podglądy rzeczy w archiwach ciągłych są wyłączone w Ustawieniach."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "As pré-visualizações de itens em arquivos compactados sólidos estão desativadas em Ajustes."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Просмотр объектов в непрерывных архивах выключен в настройках."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Förhandsvisningar av objekt i solida arkiv är avstängda i Inställningar."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "การแสดงตัวอย่างรายการในไฟล์บีบอัดแบบ solid ปิดอยู่ในการตั้งค่า"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Katı arşivlerin öğeleri için önizlemeler Ayarlar’da kapalı."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Перегляд об’єктів у суцільних архівах вимкнено в параметрах."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“设置”中已关闭固实压缩文件内项目的预览。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「設定」中已關閉固實壓縮檔案內項目的預覽。"
+          }
+        }
+      }
+    },
+    "The size of this item is unknown, so it is not previewed automatically." : {
+      "localizations" : {
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "এই আইটেমের আকার জানা নেই, তাই এটি স্বয়ংক্রিয়ভাবে প্রিভিউ করা হয় না।"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Velikost této položky není známá, proto se náhled nezobrazuje automaticky."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Størrelsen på dette emne er ukendt, så der vises ikke automatisk et eksempel."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Größe dieses Objekts ist unbekannt, daher wird es nicht automatisch in der Vorschau gezeigt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The size of this item is unknown, so it is not previewed automatically."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se desconoce el tamaño de este ítem, por lo que no se previsualiza automáticamente."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La taille de cet élément est inconnue ; son aperçu n’est donc pas affiché automatiquement."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "इस आइटम का आकार अज्ञात है, इसलिए इसका प्रीव्यू अपने-आप नहीं दिखता।"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le dimensioni di questo elemento non sono note, quindi l’anteprima non viene mostrata automaticamente."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この項目のサイズが不明なため、自動ではプレビューされません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 항목의 크기를 알 수 없으므로 자동으로 미리 보지 않습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De grootte van dit onderdeel is onbekend, dus er wordt niet automatisch een voorvertoning getoond."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rozmiar tej rzeczy jest nieznany, więc podgląd nie jest wyświetlany automatycznie."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O tamanho deste item é desconhecido, então ele não é pré-visualizado automaticamente."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Размер этого объекта неизвестен, поэтому он не просматривается автоматически."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Storleken på det här objektet är okänd, så det förhandsvisas inte automatiskt."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ไม่ทราบขนาดของรายการนี้ จึงไม่แสดงตัวอย่างโดยอัตโนมัติ"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu öğenin boyutu bilinmediği için otomatik olarak önizlenmez."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Розмір цього об’єкта невідомий, тому він не переглядається автоматично."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此项目的大小未知，因此不会自动预览。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此項目的大小不明，因此不會自動預覽。"
+          }
+        }
+      }
+    },
+    "This item is not previewed automatically." : {
+      "localizations" : {
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "এই আইটেমটি স্বয়ংক্রিয়ভাবে প্রিভিউ করা হয় না।"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Náhled této položky se nezobrazuje automaticky."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der vises ikke automatisk et eksempel på dette emne."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieses Objekt wird nicht automatisch in der Vorschau gezeigt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This item is not previewed automatically."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este ítem no se previsualiza automáticamente."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’aperçu de cet élément n’est pas affiché automatiquement."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "इस आइटम का प्रीव्यू अपने-आप नहीं दिखता।"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’anteprima di questo elemento non viene mostrata automaticamente."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この項目は自動ではプレビューされません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 항목은 자동으로 미리 보지 않습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Er wordt niet automatisch een voorvertoning van dit onderdeel getoond."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Podgląd tej rzeczy nie jest wyświetlany automatycznie."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este item não é pré-visualizado automaticamente."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Этот объект не просматривается автоматически."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Det här objektet förhandsvisas inte automatiskt."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "รายการนี้ไม่แสดงตัวอย่างโดยอัตโนมัติ"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu öğe otomatik olarak önizlenmez."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Цей об’єкт не переглядається автоматично."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此项目不会自动预览。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此項目不會自動預覽。"
+          }
+        }
+      }
+    },
+    "The contents of this item are encrypted. Load Preview asks for the password." : {
+      "localizations" : {
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "এই আইটেমের কনটেন্ট এনক্রিপ্ট করা। “প্রিভিউ লোড করুন” পাসওয়ার্ড চাইবে।"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Obsah této položky je zašifrovaný. Načíst náhled si vyžádá heslo."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Indholdet af dette emne er krypteret. Indlæs eksempel beder om adgangskoden."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Inhalt dieses Objekts ist verschlüsselt. „Vorschau laden“ fragt nach dem Passwort."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The contents of this item are encrypted. Load Preview asks for the password."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El contenido de este ítem está cifrado. «Cargar vista previa» pide la contraseña."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le contenu de cet élément est chiffré. « Charger l’aperçu » demande le mot de passe."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "इस आइटम की सामग्री एन्क्रिप्ट की हुई है। “प्रीव्यू लोड करें” पासवर्ड माँगेगा।"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il contenuto di questo elemento è codificato. “Carica anteprima” chiede la password."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この項目の内容は暗号化されています。“プレビューを読み込む”でパスワードを求められます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 항목의 내용은 암호화되어 있습니다. ‘미리보기 로드’를 누르면 암호를 묻습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De inhoud van dit onderdeel is versleuteld. ‘Laad voorvertoning’ vraagt om het wachtwoord."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zawartość tej rzeczy jest zaszyfrowana. „Wczytaj podgląd” poprosi o hasło."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O conteúdo deste item é criptografado. Carregar Pré-visualização pede a senha."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Содержимое этого объекта зашифровано. «Загрузить просмотр» запросит пароль."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Innehållet i det här objektet är krypterat. Läs in förhandsvisning frågar efter lösenordet."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เนื้อหาของรายการนี้ถูกเข้ารหัส “โหลดตัวอย่าง” จะขอรหัสผ่าน"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu öğenin içeriği şifreli. Önizlemeyi Yükle parolayı sorar."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вміст цього об’єкта зашифровано. «Завантажити перегляд» запитає пароль."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此项目的内容已加密。“载入预览”会要求输入密码。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此項目的內容已加密。「載入預覽」會要求輸入密碼。"
+          }
+        }
+      }
+    },
+    "When you double-click an archive whose type opens with Zforge, choose Zforge in Open With, or drop it on the Dock icon, Zforge asks, opens it, or extracts it into a folder named after it, next to it, showing only the progress. An archive whose type opens with another app always opens." : {
+      "comment" : "Settings ▸ General ▸ Archives Opened from Finder footer.",
+      "localizations" : {
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "যে আর্কাইভের ধরন Zforge দিয়ে খোলে সেটিতে ডাবল-ক্লিক করলে, “এটি দিয়ে খুলুন”-এ Zforge বেছে নিলে বা Dock আইকনে ছেড়ে দিলে Zforge জিজ্ঞাসা করে, সেটি খোলে, অথবা তার পাশে তার নামের একটি ফোল্ডারে এক্সট্র্যাক্ট করে এবং শুধু অগ্রগতি দেখায়। যে আর্কাইভের ধরন অন্য অ্যাপ দিয়ে খোলে, সেটি সবসময় খোলে।"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Když dvakrát kliknete na archiv, jehož typ se otevírá v Zforge, vyberete Zforge v nabídce Otevřít v aplikaci nebo ho přetáhnete na ikonu v Docku, Zforge se zeptá, archiv otevře, nebo ho rozbalí do složky s jeho názvem vedle něj a zobrazí jen průběh. Archiv, jehož typ se otevírá v jiné aplikaci, se vždy otevře."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Når du dobbeltklikker på et arkiv, hvis type åbnes med Zforge, vælger Zforge i Åbn med eller slipper det på ikonet i Dock, spørger Zforge, åbner det eller pakker det ud i en mappe med dets navn ved siden af det og viser kun status. Et arkiv, hvis type åbnes med en anden app, åbnes altid."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wenn du ein Archiv, dessen Typ mit Zforge geöffnet wird, doppelklickst, unter „Öffnen mit“ Zforge auswählst oder es auf das Symbol im Dock ziehst, fragt Zforge nach, öffnet es oder entpackt es in einen Ordner mit seinem Namen daneben und zeigt nur den Fortschritt. Ein Archiv, dessen Typ mit einer anderen App geöffnet wird, wird immer geöffnet."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "When you double-click an archive whose type opens with Zforge, choose Zforge in Open With, or drop it on the Dock icon, Zforge asks, opens it, or extracts it into a folder named after it, next to it, showing only the progress. An archive whose type opens with another app always opens."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Al hacer doble clic en un archivo comprimido cuyo tipo se abre con Zforge, elegir Zforge en «Abrir con» o soltarlo en el icono del Dock, Zforge pregunta qué hacer, lo abre o lo extrae en una carpeta con su nombre, junto a él, mostrando solo el progreso. Un archivo comprimido cuyo tipo se abre con otra app siempre se abre."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lorsque vous double-cliquez sur une archive dont le type s’ouvre avec Zforge, que vous choisissez Zforge dans « Ouvrir avec » ou que vous la déposez sur l’icône du Dock, Zforge demande quoi faire, l’ouvre ou l’extrait dans un dossier portant son nom, à côté d’elle, en n’affichant que la progression. Une archive dont le type s’ouvre avec une autre app s’ouvre toujours."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "जिस आर्काइव का प्रकार Zforge से खुलता है, उस पर डबल-क्लिक करने, “इससे खोलें” में Zforge चुनने या उसे Dock आइकन पर छोड़ने पर Zforge पूछता है, उसे खोलता है, या उसके बगल में उसके नाम के फ़ोल्डर में एक्सट्रैक्ट करता है और केवल प्रगति दिखाता है। जिस आर्काइव का प्रकार किसी दूसरी ऐप से खुलता है, वह हमेशा खुलता है।"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quando fai doppio clic su un archivio il cui tipo si apre con Zforge, scegli Zforge in “Apri con” o lo trascini sull’icona nel Dock, Zforge chiede cosa fare, lo apre o lo estrae in una cartella con il suo nome, accanto a esso, mostrando solo l’avanzamento. Un archivio il cui tipo si apre con un’altra app viene sempre aperto."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zforgeで開く種類のアーカイブをダブルクリックしたとき、“このアプリケーションで開く”でZforgeを選択したとき、またはDockのアイコンにドロップしたときは、Zforgeが確認するか、開くか、アーカイブの横にある同じ名前のフォルダに展開して進行状況だけを表示します。ほかのアプリで開く種類のアーカイブは常に開きます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zforge로 열리는 유형의 압축 파일을 이중 클릭하거나, ‘다음으로 열기’에서 Zforge를 선택하거나, Dock 아이콘에 놓으면 Zforge가 묻거나, 열거나, 압축 파일 옆에 같은 이름의 폴더로 압축을 풀고 진행 상황만 표시합니다. 다른 앱으로 열리는 유형의 압축 파일은 항상 열립니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Als je dubbelklikt op een archief waarvan het type met Zforge opent, Zforge kiest in ‘Open met’ of het op het symbool in het Dock zet, vraagt Zforge wat er moet gebeuren, opent het of pakt het uit in een map met de naam ervan, ernaast, en toont alleen de voortgang. Een archief waarvan het type met een andere app opent, wordt altijd geopend."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gdy dwukrotnie klikniesz archiwum, którego typ otwiera się w Zforge, wybierzesz Zforge w menu „Otwórz w aplikacji” lub upuścisz je na ikonę w Docku, Zforge wyświetli pytanie, otworzy je lub rozpakuje do folderu o jego nazwie obok niego, pokazując tylko postęp. Archiwum, którego typ otwiera się w innej aplikacji, zawsze zostanie otwarte."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ao clicar duas vezes em um arquivo compactado cujo tipo abre com o Zforge, escolher o Zforge em Abrir com ou soltá-lo no ícone do Dock, o Zforge pergunta, abre ou extrai o conteúdo em uma pasta com o nome dele, ao lado dele, mostrando apenas o progresso. Um arquivo compactado cujo tipo abre com outro app sempre abre."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Если дважды щелкнуть архив, тип которого открывается в Zforge, выбрать Zforge в меню «Открыть в программе» или перетянуть архив на значок в Dock, Zforge задаст вопрос, откроет архив или распакует его в папку с его именем рядом с ним, показывая только ход выполнения. Архив, тип которого открывается в другой программе, всегда открывается."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "När du dubbelklickar på ett arkiv vars typ öppnas med Zforge, väljer Zforge i Öppna med eller släpper det på symbolen i Dock frågar Zforge, öppnar det eller packar upp det i en mapp med dess namn bredvid det och visar bara förloppet. Ett arkiv vars typ öppnas med en annan app öppnas alltid."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เมื่อคุณคลิกสองครั้งที่ไฟล์บีบอัดประเภทที่เปิดด้วย Zforge เลือก Zforge ใน “เปิดด้วย” หรือวางไว้บนไอคอนใน Dock Zforge จะถาม เปิด หรือคลายไฟล์ไปยังโฟลเดอร์ที่ตั้งชื่อตามไฟล์นั้นไว้ข้างๆ โดยแสดงเพียงความคืบหน้า ไฟล์บีบอัดประเภทที่เปิดด้วยแอปอื่นจะเปิดเสมอ"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Türü Zforge ile açılan bir arşive çift tıkladığınızda, Birlikte Aç’ta Zforge’u seçtiğinizde ya da arşivi Dock’taki simgeye bıraktığınızda Zforge ne yapılacağını sorar, arşivi açar ya da yanında onun adını taşıyan bir klasöre çıkarır ve yalnızca ilerlemeyi gösterir. Türü başka bir uygulamayla açılan bir arşiv her zaman açılır."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Якщо двічі клацнути архів, тип якого відкривається в Zforge, вибрати Zforge у меню «Відкрити у програмі» або перетягнути архів на іконку в Dock, Zforge поставить запитання, відкриє архів або розпакує його в папку з його назвою поруч із ним, показуючи лише перебіг. Архів, тип якого відкривається в іншій програмі, завжди відкривається."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "连按以 Zforge 打开的类型的压缩文件、在“打开方式”中选取 Zforge 或将其拖放到程序坞图标上时，Zforge 会询问、打开，或解压到其旁边以其命名的文件夹并仅显示进度。以其他应用打开的类型的压缩文件始终会打开。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "按兩下以 Zforge 打開之類型的壓縮檔案、在「打開方式」中選擇 Zforge 或將其拖放到 Dock 圖像上時，Zforge 會詢問、打開，或解壓縮到其旁邊以其命名的檔案夾並只顯示進度。以其他 App 打開之類型的壓縮檔案一律會打開。"
+          }
+        }
+      }
+    },
+    "%lld Invalid Archives" : {
+      "localizations" : {
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lldটি অবৈধ আর্কাইভ"
+          }
+        },
+        "cs" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld neplatné archivy"
+                }
+              },
+              "many" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld neplatného archivu"
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld neplatný archiv"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld neplatných archivů"
+                }
+              }
+            }
+          }
+        },
+        "da" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld ugyldigt arkiv"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld ugyldige arkiver"
+                }
+              }
+            }
+          }
+        },
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld ungültiges Archiv"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld ungültige Archive"
+                }
+              }
+            }
+          }
+        },
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Invalid Archive"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Invalid Archives"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld archivo comprimido no válido"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld archivos comprimidos no válidos"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld archive non valide"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld archives non valides"
+                }
+              }
+            }
+          }
+        },
+        "hi" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld अमान्य आर्काइव"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld अमान्य आर्काइव"
+                }
+              }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld archivio non valido"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld archivi non validi"
+                }
+              }
+            }
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld個の無効なアーカイブ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "유효하지 않은 압축 파일 %lld개"
+          }
+        },
+        "nl" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld ongeldig archief"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld ongeldige archieven"
+                }
+              }
+            }
+          }
+        },
+        "pl" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld nieprawidłowe archiwa"
+                }
+              },
+              "many" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld nieprawidłowych archiwów"
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld nieprawidłowe archiwum"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld nieprawidłowego archiwum"
+                }
+              }
+            }
+          }
+        },
+        "pt-BR" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld arquivo compactado inválido"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld arquivos compactados inválidos"
+                }
+              }
+            }
+          }
+        },
+        "ru" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld недействительных архива"
+                }
+              },
+              "many" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld недействительных архивов"
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld недействительный архив"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld недействительного архива"
+                }
+              }
+            }
+          }
+        },
+        "sv" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld ogiltigt arkiv"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld ogiltiga arkiv"
+                }
+              }
+            }
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ไฟล์บีบอัดที่ไม่ถูกต้อง %lld ไฟล์"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld geçersiz arşiv"
+          }
+        },
+        "uk" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld недійсні архіви"
+                }
+              },
+              "many" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld недійсних архівів"
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld недійсний архів"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld недійсного архіву"
+                }
+              }
+            }
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld 个无效的压缩文件"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld 個無效的壓縮檔案"
+          }
+        }
+      }
+    },
+    "Every other archive is valid." : {
+      "localizations" : {
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "বাকি সব আর্কাইভ বৈধ।"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Všechny ostatní archivy jsou platné."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle andre arkiver er gyldige."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle anderen Archive sind gültig."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Every other archive is valid."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todos los demás archivos comprimidos son válidos."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toutes les autres archives sont valides."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "बाकी सभी आर्काइव मान्य हैं।"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tutti gli altri archivi sono validi."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "その他のアーカイブはすべて有効です。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "나머지 압축 파일은 모두 유효합니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle andere archieven zijn geldig."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wszystkie pozostałe archiwa są prawidłowe."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todos os outros arquivos compactados são válidos."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Все остальные архивы действительны."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alla andra arkiv är giltiga."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ไฟล์บีบอัดอื่นทั้งหมดถูกต้อง"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diğer tüm arşivler geçerli."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Усі інші архіви дійсні."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "其他压缩文件均有效。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "其他壓縮檔案均有效。"
+          }
+        }
+      }
+    },
+    "Validation was stopped before every archive was tested." : {
+      "localizations" : {
+        "bn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "সব আর্কাইভ পরীক্ষা করার আগেই যাচাই থামানো হয়েছে।"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ověřování bylo zastaveno dříve, než byly otestovány všechny archivy."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Valideringen blev stoppet, før alle arkiver var testet."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Prüfung wurde abgebrochen, bevor alle Archive getestet wurden."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Validation was stopped before every archive was tested."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La verificación se detuvo antes de comprobar todos los archivos comprimidos."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La vérification a été interrompue avant que toutes les archives soient testées."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "सभी आर्काइव की जाँच होने से पहले सत्यापन रोक दिया गया।"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La verifica è stata interrotta prima di testare tutti gli archivi."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "すべてのアーカイブをテストする前に検証が中止されました。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "모든 압축 파일을 테스트하기 전에 검증이 중지되었습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De controle is gestopt voordat alle archieven waren getest."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sprawdzanie zostało przerwane, zanim przetestowano wszystkie archiwa."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A validação foi interrompida antes de todos os arquivos compactados serem testados."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Проверка остановлена до того, как были проверены все архивы."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kontrollen avbröts innan alla arkiv hade testats."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "การตรวจสอบหยุดลงก่อนที่จะทดสอบไฟล์บีบอัดครบทั้งหมด"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Doğrulama, tüm arşivler test edilmeden durduruldu."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Перевірку зупинено до того, як було перевірено всі архіви."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "验证在测试完所有压缩文件之前已停止。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "驗證在測試完所有壓縮檔案之前已停止。"
           }
         }
       }

@@ -25,6 +25,17 @@ struct FinderArchiveOpeningTests {
             == FinderArchiveRouting(open: [explicit], extract: [byDefault]))
     }
 
+    static let footerEnglish = "When you double-click an archive whose type opens with Zforge, choose Zforge in Open With, or drop it on the Dock icon, Zforge asks, opens it, or extracts it into a folder named after it, next to it, showing only the progress. An archive whose type opens with another app always opens."
+
+    @Test("The Settings footer says Open With and a Dock drop follow the choice for types that open with Zforge (D-116)")
+    func settingsFooterCoversEveryWayOfOpening() {
+        #expect(FinderArchiveOpeningSettingsSection.footer(locale: Locale(identifier: "en")) == Self.footerEnglish)
+        for language in AppLanguagePreference.supportedLanguages where language != .english {
+            let text = FinderArchiveOpeningSettingsSection.footer(locale: language.locale)
+            #expect(text != Self.footerEnglish, "\(language) must be translated")
+        }
+    }
+
     @Test("The saved choice defaults to Ask, persists, and an unknown value falls back to Ask")
     func preference() throws {
         let suite = "ZforgeTestSuite.FinderArchiveOpening-\(UUID().uuidString)"
@@ -89,7 +100,7 @@ struct FinderArchiveOpeningTests {
 
     // MARK: AppDelegate
 
-    @Test("A saved choice opens or extracts without asking; Open With always opens")
+    @Test("A saved choice opens or extracts without asking; an archive of a type that opens with another app always opens")
     func savedChoice() async throws {
         let harness = try Harness()
         defer { harness.cleanUp() }

@@ -14,7 +14,13 @@ struct FinderArchiveOpeningSettingsSection: View {
                 }
             }
         } footer: {
-            Text("Double-clicking an archive whose type opens with Zforge asks, opens it, or extracts it into a folder named after it, next to it, showing only the progress. Open With always opens.")
+            Text(verbatim: Self.footer(locale: preferences.language.locale))
         }
+    }
+
+    /// What the choice covers (D-116): every way Finder opens an archive of a type that
+    /// opens with Zforge, not only a double click.
+    static func footer(locale: Locale?) -> String {
+        AppLocalization.string("When you double-click an archive whose type opens with Zforge, choose Zforge in Open With, or drop it on the Dock icon, Zforge asks, opens it, or extracts it into a folder named after it, next to it, showing only the progress. An archive whose type opens with another app always opens.", locale: locale)
     }
 }

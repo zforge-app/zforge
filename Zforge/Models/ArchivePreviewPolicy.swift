@@ -81,3 +81,49 @@ nonisolated struct ArchivePreviewLimits: Sendable, Equatable {
         return measure <= limit
     }
 }
+
+/// Why an item inside an archive waits for Load Preview instead of being previewed (D-116).
+nonisolated enum ArchiveManualPreviewReason: Sendable, Equatable {
+    /// Automatic previews are off for archives on this volume (removable or network).
+    case previewsOff(ArchiveVolumeKind)
+    /// Preview solid archives is off and the item shares a solid block.
+    case solidArchivesOff
+    /// The item's size, or the block it is read from, is unknown.
+    case unknownSize
+    /// Reading the item costs more than `limit`; `readsMoreThanItem` when the measure is its
+    /// solid block or split set rather than the item itself.
+    case overLimit(Int64, readsMoreThanItem: Bool)
+}
+
+nonisolated extension ArchivePreviewLimits {
+    /// Why the single-selection preview of `item` is not automatic; nil when it is.
+    func manualPreviewReason(of item: BrowserItem, on volume: ArchiveVolumeKind) -> ArchiveManualPreviewReason? {
+        guard case .archive = item.location else { return nil }
+        guard let limit = previewLimit(on: volume) else { return .previewsOff(volume) }
+        guard previewsSolidArchives || item.solidBlock == nil else { return .solidArchivesOff }
+        guard let measure = Self.measure(of: item) else { return .unknownSize }
+        guard measure > limit else { return nil }
+        return .overLimit(limit, readsMoreThanItem: item.archiveSetMeasure != nil || item.solidBlock != nil)
+    }
+
+    /// The text under “Preview not loaded”.
+    static func manualPreviewExplanation(_ reason: ArchiveManualPreviewReason?, locale: Locale?) -> String {
+        switch reason {
+        case let .overLimit(limit, readsMoreThanItem):
+            let size = AppLocalization.byteCount(limit, locale: locale)
+            return readsMoreThanItem
+                ? AppLocalization.string("Previewing this item reads more than the \(size) preview limit set in Settings.", locale: locale)
+                : AppLocalization.string("This item is larger than the \(size) preview limit set in Settings.", locale: locale)
+        case .previewsOff(.removable):
+            return AppLocalization.string("Previews of items in archives on removable drives are off in Settings.", locale: locale)
+        case .previewsOff(.network):
+            return AppLocalization.string("Previews of items in archives on network volumes are off in Settings.", locale: locale)
+        case .solidArchivesOff:
+            return AppLocalization.string("Previews of items in solid archives are off in Settings.", locale: locale)
+        case .unknownSize:
+            return AppLocalization.string("The size of this item is unknown, so it is not previewed automatically.", locale: locale)
+        case .previewsOff(.internalDisk), nil:
+            return AppLocalization.string("This item is not previewed automatically.", locale: locale)
+        }
+    }
+}

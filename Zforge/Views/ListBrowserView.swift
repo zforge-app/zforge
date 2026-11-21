@@ -262,7 +262,7 @@ private struct ListHeader: View {
                 .disabled(!BrowserListColumn.selectable.contains(candidate))
             }
             Divider()
-            Button("Restore defaults") {
+            Button("Restore Defaults") {
                 state.preferences.resetListColumns(for: state.location)
             }
             .disabled(!state.preferences.hasListColumnOverride(for: state.location))

@@ -544,7 +544,7 @@ private struct SelectionHero: View {
                     ContentUnavailableView {
                         Label("Preview not loaded", systemImage: "doc.badge.ellipsis")
                     } description: {
-                        Text("This archive item is larger than 10 MB.")
+                        Text(verbatim: state.manualPreviewExplanation(for: item))
                     } actions: {
                         Button("Load Preview") { state.updatePreview(manual: true) }
                     }

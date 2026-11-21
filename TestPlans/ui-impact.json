@@ -164,7 +164,9 @@
     {
       "name": "Window content and toolbar",
       "paths": [
-        "Zforge/ContentView.swift"
+        "Zforge/ContentView.swift",
+        "Zforge/Views/ArchiveValidationReportSheet.swift",
+        "Zforge/Models/ArchiveValidationReport.swift"
       ],
       "tests": [
         "ZforgeUITests/BrowserSearchUITests/testCommandFFocusesToolbarSearchAndEscapeCollapsesIt",
@@ -321,7 +323,6 @@
         "Zforge/Services/NativeSevenZipBackend.swift",
         "Zforge/Native/SevenZipBridge.*",
         "Zforge/Native/Zforge-Bridging-Header.h",
-        "Zforge/SevenZipHelper.entitlements",
         "Vendor/*",
         "Zforge/Services/ArchiveSessionClient.swift",
         "Zforge/Services/ArchiveVolumeReplacement.swift",
