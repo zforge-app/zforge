@@ -1304,7 +1304,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "無法解壓「%@」。"
+            "value" : "無法解壓縮「%@」。"
           }
         }
       }
@@ -4214,7 +4214,7 @@
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Uznání"
+            "value" : "Poděkování"
           }
         },
         "da" : {
@@ -4226,7 +4226,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Anmerkungen"
+            "value" : "Danksagungen"
           }
         },
         "en" : {
@@ -4268,7 +4268,7 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "승인서"
+            "value" : "감사의 글"
           }
         },
         "nl" : {
@@ -4292,7 +4292,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Подтверждения"
+            "value" : "Благодарности"
           }
         },
         "sv" : {
@@ -4344,7 +4344,7 @@
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Uznání…"
+            "value" : "Poděkování…"
           }
         },
         "da" : {
@@ -4356,7 +4356,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Anmerkungen…"
+            "value" : "Danksagungen…"
           }
         },
         "en" : {
@@ -4398,7 +4398,7 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "승인서…"
+            "value" : "감사의 글…"
           }
         },
         "nl" : {
@@ -4422,7 +4422,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Подтверждения…"
+            "value" : "Благодарности…"
           }
         },
         "sv" : {
@@ -4850,7 +4850,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "添加"
+            "value" : "加入"
           }
         }
       }
@@ -5088,7 +5088,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "將 %lld 個項目添加到 %@？這將修改壓縮檔案。"
+            "value" : "將 %lld 個項目加入 %@？這將修改壓縮檔案。"
           }
         }
       }
@@ -5326,7 +5326,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "將 %lld 個項目添加到 %@？這將修改壓縮檔案。"
+            "value" : "將 %lld 個項目加入 %@？這將修改壓縮檔案。"
           }
         }
       }
@@ -5457,7 +5457,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "在“捷徑”中添加並儲存 Zforge 操作，即可從“捷徑”或 Spotlight 執行。Siri 是否可用取決於 macOS 和系統支援。目前不支援引用屏幕上顯示的檔案。"
+            "value" : "在「捷徑」中加入並儲存 Zforge 操作，即可從「捷徑」或 Spotlight 執行。Siri 是否可用取決於 macOS 和系統支援。目前不支援引用螢幕上顯示的檔案。"
           }
         }
       }
@@ -5717,7 +5717,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "加入遠程…"
+            "value" : "加入遠端伺服器…"
           }
         }
       }
@@ -5850,7 +5850,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "添加標籤"
+            "value" : "加入標籤"
           }
         }
       }
@@ -5980,7 +5980,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "添加到壓縮檔案"
+            "value" : "加入壓縮檔案"
           }
         }
       }
@@ -6110,7 +6110,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "添加到壓縮檔案…"
+            "value" : "加入壓縮檔案…"
           }
         }
       }
@@ -6240,7 +6240,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "添加到側邊欄"
+            "value" : "加入側邊欄"
           }
         }
       }
@@ -6370,7 +6370,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "正在添加到壓縮檔案…"
+            "value" : "正在加入壓縮檔案…"
           }
         }
       }
@@ -8593,7 +8593,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "應用程序"
+            "value" : "應用程式"
           }
         }
       }
@@ -11603,7 +11603,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已成功解壓壓縮檔案。"
+            "value" : "已成功解壓縮壓縮檔案。"
           }
         }
       }
@@ -16041,7 +16041,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "分欄"
+            "value" : "直欄"
           }
         }
       }
@@ -20188,7 +20188,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "CPU 線程數"
+            "value" : "CPU 執行緒數"
           }
         }
       }
@@ -21101,7 +21101,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "添加日期"
+            "value" : "加入日期"
           }
         }
       }
@@ -22014,7 +22014,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "預設視圖"
+            "value" : "預設顯示方式"
           }
         }
       }
@@ -24494,7 +24494,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "按兩下以 Zforge 打開之類型的壓縮檔案時，會詢問、打開，或解壓到其旁邊以其命名的檔案夾並只顯示進度。「打開方式」一律會打開。"
+            "value" : "按兩下以 Zforge 打開之類型的壓縮檔案時，會詢問、打開，或解壓縮到其旁邊以其命名的檔案夾並只顯示進度。「打開方式」一律會打開。"
           }
         }
       }
@@ -27238,7 +27238,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "輸入「%@」的密碼以解壓。"
+            "value" : "輸入「%@」的密碼以解壓縮。"
           }
         }
       }
@@ -29077,7 +29077,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "解壓"
+            "value" : "解壓縮"
           }
         }
       }
@@ -29208,7 +29208,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "將 ${archive} 解壓到 ${destinationFolder} 中的 ${folderName}"
+            "value" : "將 ${archive} 解壓縮到 ${destinationFolder} 中的 ${folderName}"
           }
         }
       }
@@ -29338,7 +29338,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "全部解壓"
+            "value" : "全部解壓縮"
           }
         }
       }
@@ -29468,7 +29468,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "解壓所有所選壓縮檔案。"
+            "value" : "解壓縮所有所選壓縮檔案。"
           }
         }
       }
@@ -29599,7 +29599,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "將壓縮檔案解壓到新資料夾，該資料夾位於 Zforge 設定 > 自動化中允許取用的資料夾內。"
+            "value" : "將壓縮檔案解壓縮到新資料夾，該資料夾位於 Zforge 設定 > 自動化中允許取用的資料夾內。"
           }
         }
       }
@@ -29729,7 +29729,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "將壓縮檔案解壓到新資料夾。出現提示時，請授權取用源資料夾和目標資料夾。"
+            "value" : "將壓縮檔案解壓縮到新資料夾。出現提示時，請授權取用源資料夾和目標資料夾。"
           }
         }
       }
@@ -29860,7 +29860,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "解壓壓縮檔案"
+            "value" : "解壓縮壓縮檔案"
           }
         }
       }
@@ -29990,7 +29990,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "解壓會在壓縮檔案旁建立以其命名的檔案夾。你可以在「設定」▸「一般」中更改此選擇。"
+            "value" : "解壓縮會在壓縮檔案旁建立以其命名的檔案夾。你可以在「設定」▸「一般」中更改此選擇。"
           }
         }
       }
@@ -30120,7 +30120,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "解壓到此處"
+            "value" : "解壓縮到此處"
           }
         }
       }
@@ -30250,7 +30250,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "解壓所選項目"
+            "value" : "解壓縮所選項目"
           }
         }
       }
@@ -30380,7 +30380,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "解壓所選項目。"
+            "value" : "解壓縮所選項目。"
           }
         }
       }
@@ -30510,7 +30510,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "解壓到“%@”"
+            "value" : "解壓縮到「%@」"
           }
         }
       }
@@ -30640,7 +30640,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "解壓…"
+            "value" : "解壓縮…"
           }
         }
       }
@@ -30770,7 +30770,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "正在解壓「%@」…"
+            "value" : "正在解壓縮「%@」…"
           }
         }
       }
@@ -30902,7 +30902,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "解壓 %@ 可能需要超過 1 GB 的臨時磁碟空間。"
+            "value" : "解壓縮 %@ 可能需要超過 1 GB 的臨時磁碟空間。"
           }
         }
       }
@@ -31032,7 +31032,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "正在解壓壓縮檔案"
+            "value" : "正在解壓縮壓縮檔案"
           }
         }
       }
@@ -31162,7 +31162,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "正在解壓壓縮檔案…"
+            "value" : "正在解壓縮壓縮檔案…"
           }
         }
       }
@@ -31294,7 +31294,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "正在解壓項目…"
+            "value" : "正在解壓縮項目…"
           }
         }
       }
@@ -31424,7 +31424,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "正在解壓所選項目…"
+            "value" : "正在解壓縮所選項目…"
           }
         }
       }
@@ -31684,7 +31684,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "快速字節數"
+            "value" : "快速位元組數"
           }
         }
       }
@@ -33643,7 +33643,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "畫廊"
+            "value" : "圖庫"
           }
         }
       }
@@ -35468,7 +35468,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "圖標"
+            "value" : "圖像"
           }
         }
       }
@@ -36493,7 +36493,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已成功將項目添加到壓縮檔案。"
+            "value" : "已成功將項目加入壓縮檔案。"
           }
         }
       }
@@ -36625,7 +36625,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已成功解壓項目。"
+            "value" : "已成功解壓縮項目。"
           }
         }
       }
@@ -44818,7 +44818,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "只能將資料夾添加到個人收藏。"
+            "value" : "只能將資料夾加入個人收藏。"
           }
         }
       }
@@ -46646,7 +46646,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "要打開還是解壓「%@」？"
+            "value" : "要打開還是解壓縮「%@」？"
           }
         }
       }
@@ -46776,7 +46776,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "要打開還是解壓這些壓縮檔案？"
+            "value" : "要打開還是解壓縮這些壓縮檔案？"
           }
         }
       }
@@ -51077,7 +51077,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "遠程"
+            "value" : "遠端"
           }
         }
       }
@@ -54863,7 +54863,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已成功解壓所選項目。"
+            "value" : "已成功解壓縮所選項目。"
           }
         }
       }
@@ -55514,7 +55514,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "此 Mac 上的“捷徑”不可用。"
+            "value" : "此 Mac 上的「捷徑」不可用。"
           }
         }
       }
@@ -56561,7 +56561,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "在圖標視圖中顯示預覽"
+            "value" : "在圖像顯示方式中顯示預覽"
           }
         }
       }
@@ -59306,7 +59306,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "不能將壓縮檔案添加到其自身。"
+            "value" : "不能將壓縮檔案加入其自身。"
           }
         }
       }
@@ -59696,7 +59696,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "不能將壓縮檔案本身用作解壓目標。"
+            "value" : "不能將壓縮檔案本身用作解壓縮目標。"
           }
         }
       }
@@ -64397,7 +64397,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "分欄"
+            "value" : "直欄"
           }
         }
       }
@@ -64527,7 +64527,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "畫廊"
+            "value" : "圖庫"
           }
         }
       }
@@ -64657,7 +64657,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "圖標"
+            "value" : "圖像"
           }
         }
       }

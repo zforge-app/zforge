@@ -516,7 +516,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "添加到壓縮檔案…"
+            "value" : "加入壓縮檔案…"
           }
         }
       }
@@ -776,7 +776,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "解壓到此處"
+            "value" : "解壓縮到此處"
           }
         }
       }
@@ -906,7 +906,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "解壓到“%@”"
+            "value" : "解壓縮到「%@」"
           }
         }
       }
@@ -1036,7 +1036,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "解壓…"
+            "value" : "解壓縮…"
           }
         }
       }
