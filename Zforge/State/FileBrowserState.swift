@@ -276,6 +276,7 @@ final class FileBrowserState {
     @ObservationIgnored private var pendingExtractionDestination: ExtractionDestination = .named
     @ObservationIgnored private var pendingValidationItems: [BrowserItem] = []
     @ObservationIgnored private var pendingValidationIndex = 0
+    @ObservationIgnored private var pendingValidationFailures: [ArchiveValidationReport.Failure] = []
     @ObservationIgnored private let initialURL: URL?
     @ObservationIgnored private var initialAutomationAccessLease: AutomationAccessLease?
     /// Archives are read in place for the whole session (D-73): an archive opened with an
@@ -407,6 +408,8 @@ final class FileBrowserState {
         }
     }
     var passwordError: String?
+    /// The archives a batch Validate found invalid, listed in a sheet (OR-26).
+    var archiveValidationReport: ArchiveValidationReport?
     var previewURL: URL?
     var previewRequiresManualLoad = false
     var previewURLs: [BrowserItemID: URL] = [:]
@@ -692,6 +695,7 @@ final class FileBrowserState {
         case .validate:
             pendingValidationItems = Self.onePerArchiveSet(selected)
             pendingValidationIndex = 0
+            pendingValidationFailures = []
             return await processNextArchiveValidation(password: nil)
         }
     }
@@ -2358,6 +2362,18 @@ final class FileBrowserState {
         }
     }
 
+    /// Cancel in the password sheet (or Escape): closes it without the operation.
+    /// Cancel stops a batch Validate as the progress overlay's Cancel does, listing the invalid
+    /// archives found so far (OR-26).
+    func cancelPasswordEntry() {
+        let operation = passwordOperation
+        passwordOperation = nil
+        passwordError = nil
+        if case .validateArchive = operation, !pendingValidationItems.isEmpty {
+            _ = finishArchiveValidation()
+        }
+    }
+
     func submitPassword(_ password: String) async {
         guard let operation = passwordOperation else { return }
         let openingAccess = initialAutomationAccessLease
@@ -2975,19 +2991,40 @@ final class FileBrowserState {
                 passwordError = AppLocalization.string("Incorrect password. Try again.", locale: preferences.language.locale)
                 return nil
             } catch where Self.isCancellation(error) {
-                // Cancel stops the batch without an alert or a result message (D-116).
-                pendingValidationItems.removeAll()
-                pendingValidationIndex = 0
-                return nil
+                // Cancel stops the batch without an error or a result message (D-116); the
+                // invalid archives found before it are still listed (OR-26).
+                return finishArchiveValidation()
             } catch {
-                self.error = mapError(error)
-                pendingValidationItems.removeAll()
-                pendingValidationIndex = 0
-                return nil
+                guard pendingValidationItems.count > 1 else {
+                    self.error = mapError(error)
+                    _ = finishArchiveValidation()
+                    return nil
+                }
+                // With several archives, every one is tested and the invalid ones are listed
+                // at the end, by name and reason (OR-26).
+                pendingValidationFailures.append(
+                    ArchiveValidationReport.Failure(url: url, reason: mapError(error).localizedDescription))
+                pendingValidationIndex += 1
             }
         }
+        return finishArchiveValidation()
+    }
+
+    /// Ends a Validate: the success message when every archive was tested and is valid, the
+    /// report when any is invalid, nothing when it was stopped with none found invalid.
+    private func finishArchiveValidation() -> String? {
+        let failures = pendingValidationFailures
+        let archiveCount = pendingValidationItems.count
+        let testedCount = pendingValidationIndex
         pendingValidationItems.removeAll()
         pendingValidationIndex = 0
+        pendingValidationFailures.removeAll()
+        guard failures.isEmpty else {
+            archiveValidationReport = ArchiveValidationReport(
+                failures: failures, archiveCount: archiveCount, testedCount: testedCount)
+            return nil
+        }
+        guard testedCount == archiveCount else { return nil }
         return AppLocalization.string("Archives validated successfully.", locale: preferences.language.locale)
     }
 

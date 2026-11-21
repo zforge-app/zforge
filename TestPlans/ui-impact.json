@@ -164,7 +164,9 @@
     {
       "name": "Window content and toolbar",
       "paths": [
-        "Zforge/ContentView.swift"
+        "Zforge/ContentView.swift",
+        "Zforge/Views/ArchiveValidationReportSheet.swift",
+        "Zforge/Models/ArchiveValidationReport.swift"
       ],
       "tests": [
         "ZforgeUITests/BrowserSearchUITests/testCommandFFocusesToolbarSearchAndEscapeCollapsesIt",

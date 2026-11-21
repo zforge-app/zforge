@@ -660,9 +660,9 @@ User request (2026-11-20, in Portuguese): fix the D-116 items, with a test that 
 - [x] Content-only encryption: Open, Open With, Quick Look, Share and Load Preview ask for the password; 7z AES wrong passwords reported as incorrect passwords.
 - [x] Cancelling a batch extraction or validation is not an error.
 - [x] `Zforge/SevenZipHelper.entitlements` removed (unused).
-- [ ] Validate with several archives — reproduced; behavior awaits the user's decision (OR-26).
+- [x] Validate with several archives tests every archive and lists the invalid ones with their reasons (OR-26, decided by the user 2026-11-21).
 - [ ] Review and revoke folder access — design proposed; awaits the user's decision (OR-27).
-- [ ] The 31 selected UI tests (20 offscreen, 11 real): blocked on 2026-11-20 by a locked session; the full Unit plan passed except 4 `TagCatalogTests` that fail the same way on `main` (REGRESSION-COVERAGE).
+- [ ] The 31 selected UI tests: run 2026-11-21 — 20/20 offscreen and 10/11 real passed; `FinderExtensionUITests` failed because the enabled Finder extension is the installed `/Applications` beta's, not the Debug build's (REGRESSION-COVERAGE). Rerun pending with the Debug extension registered.
 - [ ] Real-window look of the password sheet's new texts and of the preview placeholder in a long language (offscreen evidence only).
 - [ ] Wiki pages updated after the merge into `main`.
 

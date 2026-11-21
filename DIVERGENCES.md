@@ -637,7 +637,7 @@ Cause: the offscreen sidebar starts at 144 pt with two-line rows until `SidebarS
 
 Correction (test only; scenario and the 28 pt assertion unchanged): the fixture's wait lays out the whole window between polls (`window.layoutIfNeeded()`, which updates constraints first, as the display cycle does), and the sidebar test waits until the rows exist, the table is 206 pt wide and neither the table nor any ancestor needs a constraint update or layout (`isLaidOut`). With the same `Task.yield()` injection the suite passed 50/50.
 
-### D-116 — Wording and behavior gaps found while writing the wiki (corrected 2026-11-20, ZF-92, except Validate with several archives and folder-access review, which await decisions)
+### D-116 — Wording and behavior gaps found while writing the wiki (corrected 2026-11-20/21, ZF-92, except folder-access review, which awaits a decision)
 
 Found by static reading of the code while the English GitHub wiki was drafted (2026-11-20); nothing below was changed or run in the app. Items marked *confirmed* were checked in the source; the others are readings of the code that still need a reproduction.
 
@@ -663,7 +663,8 @@ Correction (ZF-92, user request 2026-11-20, in Portuguese: fix items 1–5, 7, 8
 - **Encrypted contents:** confirmed with ZIP AES and 7z fixtures created by the engine. Open, Open With, Quick Look, Share and Load Preview now ask in the password sheet and run again with the password (`materialize(…password:)`; the session keeps a password that reads the item); the automatic preview waits for Load Preview instead of showing an alert. Found while fixing it: 7z AES has no password check, so a wrong password came back as a data error (“The archive is empty or unsupported.”); the bridge now reports a data or CRC error in an item it asked a password for as an incorrect password, as 7-Zip's UI does — this also applies to extraction and validation.
 - **Cancelling a batch:** confirmed (“The operation was cancelled.” as an error alert); extraction and validation now stop without an alert or result message, and extraction refreshes what was written. Not changed: a folder that Extract to “Name” created and the cancel left empty stays (the Finder Extract flow removes it).
 - **Leftover file:** `Zforge/SevenZipHelper.entitlements` removed with its `ui-impact.json` entry: no target, build setting or script referenced it, and the built app carried neither the file nor its `com.apple.security.inherit` entitlement.
-- **Open:** Validate with several archives (reproduced; OPEN-REQUIREMENTS OR-26) and reviewing/revoking folder access (OPEN-REQUIREMENTS OR-27) await the user's decisions.
+- **Validate with several archives (2026-11-21):** the user decided that the result must list the invalid files (a count alone says nothing). Every archive is tested; invalid ones are listed in a sheet with the engine's reason (`ArchiveValidationReport`, `ArchiveValidationReportSheet`); Cancel in the overlay or the password sheet stops the rest and still lists what was found; one selected archive keeps the alert. The reproduction test (a known issue) became the expectation `ArchiveBatchOperationTests` “Validate with several archives tests every one and lists each invalid archive with its reason”.
+- **Open:** reviewing/revoking folder access (OPEN-REQUIREMENTS OR-27) awaits the user's decision.
 
 ### D-115 — Dropping a folder on itself showed an error (corrected 2026-11-19, ZF-90)
 

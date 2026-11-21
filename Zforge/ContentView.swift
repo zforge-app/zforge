@@ -391,6 +391,15 @@ struct ContentView: View {
         .sheet(isPresented: passwordSheetBinding, onDismiss: restoreContentFocus) {
             ArchivePasswordSheet(state: browser)
         }
+        .sheet(
+            item: Binding(get: { browser.archiveValidationReport }, set: { browser.archiveValidationReport = $0 }),
+            onDismiss: restoreContentFocus
+        ) { report in
+            ArchiveValidationReportSheet(report: report, locale: browser.preferences.language.locale) {
+                browser.archiveValidationReport = nil
+            }
+            .environment(\.locale, browser.preferences.language.locale)
+        }
         .sheet(isPresented: permanentDeletionBinding, onDismiss: restoreContentFocus) {
             if let request = browser.pendingPermanentDeletion {
                 PermanentDeletionConfirmationSheet(
@@ -757,7 +766,7 @@ struct ContentView: View {
     private var passwordSheetBinding: Binding<Bool> {
         Binding(
             get: { browser.passwordOperation != nil },
-            set: { if !$0 { browser.passwordOperation = nil; browser.passwordError = nil } }
+            set: { if !$0 { browser.cancelPasswordEntry() } }
         )
     }
 
