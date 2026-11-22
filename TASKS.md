@@ -666,7 +666,7 @@ User request (2026-11-20, in Portuguese): fix the D-116 items, with a test that 
 - [x] Real-window look of the password sheet's new texts, the preview placeholder and the Validate report in German (2026-11-21; REGRESSION-COVERAGE).
 - [x] D-117: each engine failure names its cause (validation report, error alerts, extraction, opening, compression), 15 reasons in 21 languages; Base64 no longer probed for other extensions (2026-11-22, user request).
 - [ ] D-117: Extract Here cancelled at the password sheet leaves an empty file — fix pending the user's go-ahead.
-- [ ] Wiki pages updated after the merge into `main`.
+- [x] Wiki pages updated after the merge into `main` (2026-11-22, wiki commit `077ed1a`: Extracting and Testing, Finder Integration, Getting Started, Keyboard Shortcuts, Managing Files, Privacy and Permissions, Troubleshooting and FAQ).
 
 ### ZF-91 — Friends pre-release 0.1.0 beta 2 (2026-11-20, D-102)
 
