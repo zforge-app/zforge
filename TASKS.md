@@ -662,8 +662,9 @@ User request (2026-11-20, in Portuguese): fix the D-116 items, with a test that 
 - [x] `Zforge/SevenZipHelper.entitlements` removed (unused).
 - [x] Validate with several archives tests every archive and lists the invalid ones with their reasons (OR-26, decided by the user 2026-11-21).
 - [x] Review and revoke folder access — declined by the user 2026-11-21; not implemented (OR-27).
-- [ ] The 31 selected UI tests: run 2026-11-21 — 20/20 offscreen and 10/11 real passed; `FinderExtensionUITests` failed because the enabled Finder extension is the installed `/Applications` beta's, not the Debug build's (REGRESSION-COVERAGE). Rerun pending with the Debug extension registered.
-- [ ] Real-window look of the password sheet's new texts and of the preview placeholder in a long language (offscreen evidence only).
+- [x] The 31 selected UI tests: run 2026-11-21 — 20/20 offscreen and 10/11 real passed; `FinderExtensionUITests` then passed after its menu-item lookup was narrowed (the failure was the lookup's cost in a large Finder accessibility tree, not the elected extension; REGRESSION-COVERAGE).
+- [x] Real-window look of the password sheet's new texts, the preview placeholder and the Validate report in German (2026-11-21; REGRESSION-COVERAGE).
+- [ ] D-117: Validate report reasons say “empty or unsupported” for damaged archives; Extract Here cancelled at the password sheet leaves an empty file — fix pending the user's go-ahead.
 - [ ] Wiki pages updated after the merge into `main`.
 
 ### ZF-91 — Friends pre-release 0.1.0 beta 2 (2026-11-20, D-102)

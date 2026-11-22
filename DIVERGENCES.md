@@ -637,6 +637,13 @@ Cause: the offscreen sidebar starts at 144 pt with two-line rows until `SidebarS
 
 Correction (test only; scenario and the 28 pt assertion unchanged): the fixture's wait lays out the whole window between polls (`window.layoutIfNeeded()`, which updates constraints first, as the display cycle does), and the sidebar test waits until the rows exist, the table is 206 pt wide and neither the table nor any ancestor needs a constraint update or layout (`isLaidOut`). With the same `Task.yield()` injection the suite passed 50/50.
 
+### D-117 — Found in the real-window review of ZF-92 (2026-11-21, open)
+
+Found while reviewing the ZF-92 texts in a real window in German with real archives (REGRESSION-COVERAGE “Real-window review of the new texts in German”). Not changed yet.
+
+- *Confirmed.* Validate with several archives lists the reason “The archive is empty or unsupported.” for every invalid archive: `NativeSevenZipBackend.translate` maps every engine failure other than password, size, cancel, space, change and missing volume to `archive.empty_or_unsupported`, so a ZIP whose entry fails with a data error (7-Zip: “Data Error : Strand.txt”) and a truncated 7z (“Can't open as archive”) read the same. The report (OR-26) promises the reason for each archive; the same message also reaches the single-archive alert and extraction errors. The bridge already passes 7-Zip's per-item result (`itemResult`: data error, CRC error, unexpected end, headers error, unsupported method…) in the error's `userInfo`.
+- *Confirmed, reproduced twice.* Extract Here on a ZIP whose contents are encrypted creates the first item's file (0 bytes) before 7-Zip asks for the password; cancelling the password sheet leaves that empty file beside the archive. The Finder flow's extraction leaves nothing behind (`FinderArchiveOpeningTests`); the browser's Extract Here does not clean up.
+
 ### D-116 — Wording and behavior gaps found while writing the wiki (corrected 2026-11-20/21, ZF-92; folder-access review declined)
 
 Found by static reading of the code while the English GitHub wiki was drafted (2026-11-20); nothing below was changed or run in the app. Items marked *confirmed* were checked in the source; the others are readings of the code that still need a reproduction.

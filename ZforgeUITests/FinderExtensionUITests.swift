@@ -97,19 +97,18 @@ final class FinderExtensionUITests: XCTestCase {
         XCTAssertEqual(fixtures.count, 0, "Fixture windows left open in Finder")
     }
 
-    /// Finder's File > Open With menu also lists Zforge, closed and offscreen;
-    /// the shortcut menu's item is the visible one.
+    /// The shortcut menu's Zforge item, which must be visible. Only Finder Sync items run
+    /// `executePlugInCommand:`, so the query skips Open With's Zforge.app and the menu bar's
+    /// Recent Items named Zforge. Finder's accessibility tree on a Mac in daily use is large
+    /// (about 3,500 elements, 2026-11-21): resolving every match took about 2 s each and one
+    /// pass exceeded the wait, so the first match is awaited and then must be hittable.
     @MainActor
     private func visibleZforgeItem(in finder: XCUIApplication) throws -> XCUIElement {
-        let candidates = finder.menuItems.matching(NSPredicate(format: "title == %@", "Zforge"))
-        // XCTWaiter evaluates the predicate on the main thread, where XCUIElement lives.
-        let visible = XCTNSPredicateExpectation(predicate: NSPredicate { object, _ in
-            MainActor.assumeIsolated {
-                ((object as? XCUIElementQuery)?.allElementsBoundByIndex.contains { $0.isHittable }) == true
-            }
-        }, object: candidates)
-        XCTAssertEqual(XCTWaiter.wait(for: [visible], timeout: 5), .completed, "Is the Zforge Finder extension enabled?")
-        return try XCTUnwrap(candidates.allElementsBoundByIndex.first { $0.isHittable })
+        let item = finder.menuItems.matching(
+            NSPredicate(format: "identifier == %@ AND title == %@", "executePlugInCommand:", "Zforge")).firstMatch
+        XCTAssertTrue(item.waitForExistence(timeout: 5), "Is the Zforge Finder extension enabled?")
+        XCTAssertTrue(item.isHittable, "The Zforge item must be visible in the shortcut menu")
+        return item
     }
 
     /// Finder shows extension images as they are: each symbol must contrast with the
