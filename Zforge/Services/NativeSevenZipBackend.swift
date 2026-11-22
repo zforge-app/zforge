@@ -225,20 +225,29 @@ nonisolated final class NativeSevenZipBackend: @unchecked Sendable {
         }
     }
 
-    fileprivate static func prepareDirectory(_ directory: URL, under root: URL) throws {
+    /// Creates the missing folders of `directory` below `root`; returns the ones it created,
+    /// outermost first.
+    @discardableResult
+    fileprivate static func prepareDirectory(_ directory: URL, under root: URL) throws -> [URL] {
         let relative = directory.path == root.path ? "" : String(directory.path.dropFirst(root.path.count + 1))
         var descriptor = open(root.path, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC)
         guard descriptor >= 0 else { throw ArchiveEngineError.unsafePath }
         defer { close(descriptor) }
+        var created: [URL] = []
+        var current = root
         for component in relative.split(separator: "/") {
             let name = String(component)
-            if mkdirat(descriptor, name, 0o700) != 0 && errno != EEXIST {
+            current.appendPathComponent(name, isDirectory: true)
+            if mkdirat(descriptor, name, 0o700) == 0 {
+                created.append(current)
+            } else if errno != EEXIST {
                 throw errno == ENOSPC ? ArchiveEngineError.insufficientSpace : ArchiveEngineError.unsafePath
             }
             let child = openat(descriptor, name, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC)
             guard child >= 0 else { throw ArchiveEngineError.unsafePath }
             close(descriptor); descriptor = child
         }
+        return created
     }
 
     private static func changeLink(at output: URL, under root: URL, target: String?) throws {
@@ -273,6 +282,8 @@ nonisolated final class NativeSevenZipBackend: @unchecked Sendable {
         private var resolver = ContainmentResolver()
         private var outputFileAssigned = false
         private(set) var outputs: [(ZFSevenZipEntry, URL)] = []
+        /// Folders this extraction created, outermost first.
+        private var createdDirectories: [URL] = []
 
         init(root: URL, paths: [String], outputFile: URL?, fallback: String, base: String) {
             self.root = root; self.paths = paths; selection = ArchivePathSelection(paths)
@@ -301,16 +312,23 @@ nonisolated final class NativeSevenZipBackend: @unchecked Sendable {
             let output = root.appendingPathComponent(relative).standardizedFileURL
             guard resolver.resolvedPath(of: output).hasPrefix(root.path + "/") else { throw ArchiveEngineError.unsafePath }
             if record.directory {
-                if preparedDirectories.insert(output.path).inserted { try NativeSevenZipBackend.prepareDirectory(output, under: root) }
+                if preparedDirectories.insert(output.path).inserted { createdDirectories += try NativeSevenZipBackend.prepareDirectory(output, under: root) }
                 return nil
             }
             // Existing destinations were resolved by the Swift conflict policy. Keep means skip.
             if fileManager.fileExists(atPath: output.path) { return nil }
             let parent = output.deletingLastPathComponent()
-            if preparedDirectories.insert(parent.path).inserted { try NativeSevenZipBackend.prepareDirectory(parent, under: root) }
+            if preparedDirectories.insert(parent.path).inserted { createdDirectories += try NativeSevenZipBackend.prepareDirectory(parent, under: root) }
             if record.symbolicLink && (record.size?.uint64Value ?? 0) > 4096 { throw ArchiveEngineError.unsafePath }
             outputs.append((record, output))
             return output.path
+        }
+
+        /// After a failed extraction, removes the folders it created that are still empty, so
+        /// one that stopped at the password leaves nothing (D-117). Folders that were already
+        /// there, or that hold anything, stay.
+        func removeEmptyCreatedDirectories() {
+            for directory in createdDirectories.reversed() { rmdir(directory.path) }
         }
     }
 
@@ -338,6 +356,7 @@ nonisolated final class NativeSevenZipBackend: @unchecked Sendable {
                         }
                     }, ready: verify.map { check in { check() } }, operation: operation)
             } catch {
+                plan.removeEmptyCreatedDirectories()
                 throw plannerError ?? error
             }
             var links: [(URL, String)] = []

@@ -610,7 +610,7 @@ Z7_COM7F_IMF(ListCallback::GetStream(UInt32 index, ISequentialOutStream **stream
 }
 
 int OpenOutput(NSString *path, NSString *rootPath, int root,
-    std::map<std::string, int> &parents) {
+    std::map<std::string, int> &parents, int *createdIn) {
     NSString *prefix = [rootPath isEqualToString:@"/"] ? rootPath : [rootPath stringByAppendingString:@"/"];
     if (![path hasPrefix:prefix]) return -1;
     NSArray<NSString *> *components = [[path substringFromIndex:prefix.length] pathComponents];
@@ -637,6 +637,7 @@ int OpenOutput(NSString *path, NSString *rootPath, int root,
         }
         parents.emplace(key, parent);
     }
+    *createdIn = parent;
     return openat(parent, path.lastPathComponent.fileSystemRepresentation,
         O_WRONLY | O_CREAT | O_EXCL | O_NOFOLLOW | O_CLOEXEC, 0600);
 }
@@ -650,6 +651,9 @@ public:
     UInt32 mode = 0;
     bool hasMode = false;
     NSDate *modified = nil;
+    /// Where the file was created, to remove it when its item does not finish (D-117).
+    int parent = -1;
+    std::string name;
     ~Output() { if (fd >= 0) close(fd); }
 };
 Z7_COM7F_IMF(Output::Write(const void *data, UInt32 size, UInt32 *processed)) {
@@ -694,7 +698,23 @@ public:
     // The item 7-Zip is reading, named in the reason when it fails.
     UInt32 item = UINT32_MAX;
     bool stoppedEarly = false;
-    ~ExtractCallback() { for (auto &parent : parents) close(parent.second); if (root >= 0) close(root); }
+    /// 7-Zip creates an item's output before it asks for the password: an item that stops
+    /// there, or whose data a wrong password garbled, leaves no file behind (D-117). An item
+    /// that fails after writing data otherwise keeps what was written, as in 7-Zip.
+    void discardUnfinished() {
+        if (!file) return;
+        const bool password = context->failure == 1 || context->failure == 2;
+        if (file->written == 0 || password) {
+            if (file->parent >= 0) unlinkat(file->parent, file->name.c_str(), 0);
+            else if (exactPath) unlink(exactPath.fileSystemRepresentation);
+        }
+        file = nullptr; output.Release();
+    }
+    ~ExtractCallback() {
+        discardUnfinished();
+        for (auto &parent : parents) close(parent.second);
+        if (root >= 0) close(root);
+    }
 };
 Z7_COM7F_IMF(ExtractCallback::SetTotal(UInt64)) { return context->check(); }
 Z7_COM7F_IMF(ExtractCallback::SetCompleted(const UInt64 *)) { return context->check(); }
@@ -709,8 +729,9 @@ Z7_COM7F_IMF(ExtractCallback::SetOperationResult(Int32 result)) {
             if (futimens(file->fd, times) != 0) return E_FAIL;
         }
     }
-    file = nullptr; output.Release();
-    if (result != NArchive::NExtract::NOperationResult::kOK) {
+    if (result == NArchive::NExtract::NOperationResult::kOK) {
+        file = nullptr; output.Release();
+    } else {
         itemResult = result;
         NSString *path = nil;
         if (archive && item != UINT32_MAX) {
@@ -726,6 +747,7 @@ Z7_COM7F_IMF(ExtractCallback::SetOperationResult(Int32 result)) {
             && (result == NArchive::NExtract::NOperationResult::kDataError
                 || result == NArchive::NExtract::NOperationResult::kCRCError);
         if (result == NArchive::NExtract::NOperationResult::kWrongPassword || encryptedDataError) context->failure = 2;
+        discardUnfinished();
         return E_FAIL;
     }
     // Every requested entry is written: stop decompressing the rest of the stream.
@@ -733,7 +755,7 @@ Z7_COM7F_IMF(ExtractCallback::SetOperationResult(Int32 result)) {
     return context->check();
 }
 Z7_COM7F_IMF(ExtractCallback::GetStream(UInt32 index, ISequentialOutStream **stream, Int32 askMode)) {
-    *stream = nullptr; file = nullptr; output.Release(); item = index; RINOK(context->check())
+    *stream = nullptr; discardUnfinished(); item = index; RINOK(context->check())
     NSString *destination = nil;
     if (planner) {
         if (index > lastIndex) { stoppedEarly = true; return E_ABORT; }
@@ -755,8 +777,10 @@ Z7_COM7F_IMF(ExtractCallback::GetStream(UInt32 index, ISequentialOutStream **str
     }
     file = new Output;
     output = file; file->context = context; file->limit = limit;
-    if (root >= 0) file->fd = OpenOutput(destination, rootPath, root, parents);
-    else if (exactPath && [destination isEqualToString:exactPath])
+    if (root >= 0) {
+        file->fd = OpenOutput(destination, rootPath, root, parents, &file->parent);
+        file->name = destination.lastPathComponent.fileSystemRepresentation;
+    } else if (exactPath && [destination isEqualToString:exactPath])
         file->fd = open(destination.fileSystemRepresentation, O_WRONLY | O_CREAT | O_EXCL | O_NOFOLLOW | O_CLOEXEC, 0600);
     if (file->fd < 0) { file = nullptr; output.Release(); return E_FAIL; }
     auto mode = Property(archive, index, kpidPosixAttrib);
