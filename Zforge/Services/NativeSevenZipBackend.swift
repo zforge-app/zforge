@@ -25,6 +25,67 @@ nonisolated final class ArchiveSourceReadMeter: @unchecked Sendable {
     }
 }
 
+/// Why a native operation failed, from what the bridge reports (D-117, CURRENT-STATE “Failure
+/// reasons”): 7-Zip's result for the first item that failed (`NArchive::NExtract::NOperationResult`)
+/// with that item's path, else the error flags (`kpv_ErrorFlags_*`) of a handler that recognized
+/// the file but could not open it.
+nonisolated enum NativeFailureReason: Equatable {
+    case unsupportedMethod(item: String?), dataError(item: String?), crcError(item: String?)
+    case incomplete, unavailable, headers, dataAfterEnd, notArchive, unsupportedFeature, sparse
+    case unreadable, unwritable
+
+    /// Open error flags, most telling first: a missing end also breaks the headers after it.
+    private static let flagReasons: [(bit: Int, reason: NativeFailureReason)] = [
+        (5, .incomplete), (1, .headers), (2, .headers), (3, .unavailable), (4, .unavailable),
+        (7, .unsupportedMethod(item: nil)), (8, .unsupportedFeature), (9, .dataError(item: nil)),
+        (10, .crcError(item: nil)), (6, .dataAfterEnd), (0, .notArchive)
+    ]
+
+    init(userInfo: [String: Any], writing: Bool) {
+        let item = (userInfo["failedItem"] as? String).flatMap { $0.isEmpty ? nil : $0 }
+        switch (userInfo["extractResult"] as? NSNumber)?.intValue ?? 0 {
+        case 1: self = .unsupportedMethod(item: item); return
+        case 2: self = .dataError(item: item); return
+        case 3: self = .crcError(item: item); return
+        case 4: self = .unavailable; return
+        case 5: self = .incomplete; return
+        case 6: self = .dataAfterEnd; return
+        case 7: self = .notArchive; return
+        case 8: self = .headers; return
+        default: break
+        }
+        let flags = (userInfo["openErrorFlags"] as? NSNumber)?.uint32Value ?? 0
+        if let match = Self.flagReasons.first(where: { flags & (UInt32(1) << $0.bit) != 0 }) {
+            self = match.reason
+        } else if (userInfo["HRESULT"] as? NSNumber)?.int32Value == 1 {
+            // S_FALSE: no handler opened the file.
+            self = .notArchive
+        } else {
+            self = writing ? .unwritable : .unreadable
+        }
+    }
+
+    var message: String {
+        switch self {
+        case let .unsupportedMethod(item?): AppLocalization.string("archive.reason.unsupported_method \(item)")
+        case .unsupportedMethod: AppLocalization.string("archive.reason.unsupported_method")
+        case let .dataError(item?): AppLocalization.string("archive.reason.data_error \(item)")
+        case .dataError: AppLocalization.string("archive.reason.data_error")
+        case let .crcError(item?): AppLocalization.string("archive.reason.crc_error \(item)")
+        case .crcError: AppLocalization.string("archive.reason.crc_error")
+        case .incomplete: AppLocalization.string("archive.reason.incomplete")
+        case .unavailable: AppLocalization.string("archive.reason.unavailable")
+        case .headers: AppLocalization.string("archive.reason.headers")
+        case .dataAfterEnd: AppLocalization.string("archive.reason.data_after_end")
+        case .notArchive: AppLocalization.string("archive.reason.not_archive")
+        case .unsupportedFeature: AppLocalization.string("archive.reason.unsupported_feature")
+        case .sparse: AppLocalization.string("archive.reason.sparse")
+        case .unreadable: AppLocalization.string("archive.reason.unreadable")
+        case .unwritable: AppLocalization.string("archive.reason.unwritable")
+        }
+    }
+}
+
 /// Owns cancellation handles; the native calls run on workers and never hold the UI actor.
 nonisolated final class NativeSevenZipBackend: @unchecked Sendable {
     private final class Operation: @unchecked Sendable {
@@ -58,7 +119,7 @@ nonisolated final class NativeSevenZipBackend: @unchecked Sendable {
     }
 
     private func perform<T: Sendable>(
-        resource: URL, _ body: @escaping @Sendable (ZFSevenZipOperation) throws -> T
+        resource: URL, writing: Bool = false, _ body: @escaping @Sendable (ZFSevenZipOperation) throws -> T
     ) async throws -> T {
         let operation = Operation(resource: resource)
         if let readMeter { operation.native.readObserver = { readMeter.onRead?($0) } }
@@ -74,13 +135,13 @@ nonisolated final class NativeSevenZipBackend: @unchecked Sendable {
                     do {
                         let result = try autoreleasepool { try body(operation.native) }
                         continuation.resume(returning: result)
-                    } catch { continuation.resume(throwing: Self.translate(error)) }
+                    } catch { continuation.resume(throwing: Self.translate(error, writing: writing)) }
                 }
             }
         } onCancel: { operation.native.cancel() }
     }
 
-    private static func translate(_ error: Error) -> Error {
+    static func translate(_ error: Error, writing: Bool = false) -> Error {
         let native = error as NSError
         guard native.domain == "Zforge.SevenZip" else { return error }
         switch native.code {
@@ -92,7 +153,9 @@ nonisolated final class NativeSevenZipBackend: @unchecked Sendable {
         case 8: return ArchiveEngineError.archiveChangedSinceOpening
         case 9 where native.userInfo["missingVolume"] is String:
             return ArchiveEngineError.missingVolume(native.userInfo["missingVolume"] as? String ?? "")
-        default: return ArchiveEngineError.invalidArchive(AppLocalization.string("archive.empty_or_unsupported"))
+        case 10: return ArchiveEngineError.invalidArchive(NativeFailureReason.sparse.message)
+        default:
+            return ArchiveEngineError.invalidArchive(NativeFailureReason(userInfo: native.userInfo, writing: writing).message)
         }
     }
 
@@ -325,7 +388,7 @@ nonisolated final class NativeSevenZipBackend: @unchecked Sendable {
                password: String?, sources items: [WriteSource], excludingPaths: [String] = [],
                volumeSizes: [UInt64] = []) async throws {
         let options = options.normalized()
-        try await perform(resource: url) { operation in
+        try await perform(resource: url, writing: true) { operation in
             let properties = try options.nativeProperties(password: password)
             let fm = FileManager.default
             var sources: [ZFSevenZipSource] = []

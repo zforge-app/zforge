@@ -89,6 +89,16 @@ struct Context {
     NSString *missingVolume = nil;
     // Total size of the archive files opened by the successful handler (all volumes).
     UInt64 sourceSize = 0;
+    /// Why the operation failed, for the app's reason (D-117): 7-Zip's result for the first
+    /// item that failed (`NArchive::NExtract::NOperationResult`) and that item's path, and the
+    /// error flags (`kpv_ErrorFlags_*`) of a handler that recognized a file it could not open.
+    Int32 extractResult = NArchive::NExtract::NOperationResult::kOK;
+    NSString *failedItem = nil;
+    UInt32 openErrorFlags = 0;
+    void itemFailed(Int32 result, NSString *item) {
+        if (extractResult != NArchive::NExtract::NOperationResult::kOK) return;
+        extractResult = result; failedItem = item;
+    }
     HRESULT check() { return operation->stopped.load() ? E_ABORT : S_OK; }
     HRESULT secret(BSTR *result) {
         *result = nullptr;
@@ -267,16 +277,21 @@ HRESULT Open(NSString *path, Context &ctx, Archive &arc) {
     // Try extension matches first, then probe remaining registered handlers.
     NSString *extension = path.pathExtension.lowercaseString;
     if (extension.length >= 3 && extension.integerValue == 1) extension = path.stringByDeletingPathExtension.pathExtension.lowercaseString;
-    std::vector<UInt32> order;
+    std::vector<std::pair<UInt32, bool>> order;
     for (int match = 1; match >= 0; --match) {
         for (UInt32 i = 0; i < count; ++i) {
             CPropVariant ext; RINOK(GetHandlerProperty2(i, NArchive::NHandlerPropID::kExtension, &ext))
             NSString *extensions = ext.vt == VT_BSTR ? String(ext.bstrVal) : @"";
             bool matches = [[extensions componentsSeparatedByString:@" "] containsObject:extension];
-            if (matches == (bool)match) order.push_back(i);
+            if (matches != (bool)match) continue;
+            // As in 7-Zip, a handler with no signature (Base64) opens only its own extension:
+            // probed, it took any text file for an archive (D-117).
+            CPropVariant flags; RINOK(GetHandlerProperty2(i, NArchive::NHandlerPropID::kFlags, &flags))
+            if (!matches && flags.vt == VT_UI4 && (flags.ulVal & NArcInfoFlags::kByExtOnlyOpen)) continue;
+            order.push_back({i, matches});
         }
     }
-    for (UInt32 i : order) {
+    for (auto [i, matched] : order) {
         RINOK(ctx.check())
         CPropVariant id; RINOK(GetHandlerProperty2(i, NArchive::NHandlerPropID::kClassID, &id))
         if (id.vt != VT_BSTR || SysStringByteLen(id.bstrVal) != sizeof(GUID)) continue;
@@ -306,6 +321,13 @@ HRESULT Open(NSString *path, Context &ctx, Archive &arc) {
             arc.format = name.vt == VT_BSTR ? String(name.bstrVal) : @"";
             return S_OK;
         }
+        // The handler the extension names recognized the file but could not open it: its flags
+        // say why (7-Zip: “Cannot open the file as [7z] archive”, “Unexpected end of archive”).
+        CPropVariant flags;
+        if (matched && result == S_FALSE && !ctx.openErrorFlags
+            && handler->GetArchiveProperty(kpidErrorFlags, &flags) == S_OK && flags.vt == VT_UI4
+            && !(flags.ulVal & kpv_ErrorFlags_IsNotArc))
+            ctx.openErrorFlags = flags.ulVal;
         handler->Close();
     }
     return S_FALSE;
@@ -520,6 +542,12 @@ struct TarStream {
         }
         if (producer.joinable()) producer.join();
     }
+    /// A damaged outer stream also breaks the tar items read from it: its result is the cause.
+    void reportOuterResult(Context &ctx) {
+        std::lock_guard<std::mutex> lock(pipe->mutex);
+        if (pipe->itemResult == NArchive::NExtract::NOperationResult::kOK) return;
+        ctx.extractResult = pipe->itemResult; ctx.failedItem = nil;
+    }
     /// Reads the rest of the stream so the outer handler verifies its checksum.
     HRESULT drain() {
         std::vector<Byte> buffer(1 << 16);
@@ -575,7 +603,7 @@ Z7_COM7F_IMF(ListCallback::SetOperationResult(Int32)) { return context->check();
 Z7_COM7F_IMF(ListCallback::GetStream(UInt32 index, ISequentialOutStream **stream, Int32)) {
     *stream = nullptr; RINOK(context->check())
     try {
-        if (IsSparse(archive, index)) { context->failure = 5; return E_ABORT; }
+        if (IsSparse(archive, index)) { context->failure = 10; return E_ABORT; }
         [entries addObject:MakeEntry(archive, index)];
     } catch (...) { return E_FAIL; }
     return S_OK; // no stream: the handler skips the data
@@ -663,6 +691,8 @@ public:
     NSString * _Nullable (^planner)(ZFSevenZipEntry *, BOOL *) = nil;
     UInt32 lastIndex = UINT32_MAX;
     UInt32 current = UINT32_MAX;
+    // The item 7-Zip is reading, named in the reason when it fails.
+    UInt32 item = UINT32_MAX;
     bool stoppedEarly = false;
     ~ExtractCallback() { for (auto &parent : parents) close(parent.second); if (root >= 0) close(root); }
 };
@@ -682,6 +712,14 @@ Z7_COM7F_IMF(ExtractCallback::SetOperationResult(Int32 result)) {
     file = nullptr; output.Release();
     if (result != NArchive::NExtract::NOperationResult::kOK) {
         itemResult = result;
+        NSString *path = nil;
+        if (archive && item != UINT32_MAX) {
+            try {
+                auto name = Property(archive, item, kpidPath);
+                if (name.vt == VT_BSTR) path = String(name.bstrVal);
+            } catch (...) {}
+        }
+        context->itemFailed(result, path);
         // Formats without a password check (7z AES) report a wrong password as a data or CRC
         // error in the encrypted item; 7-Zip's own UI reads it as “Wrong password?” (D-116).
         bool encryptedDataError = context->passwordRequested && context->password
@@ -695,13 +733,13 @@ Z7_COM7F_IMF(ExtractCallback::SetOperationResult(Int32 result)) {
     return context->check();
 }
 Z7_COM7F_IMF(ExtractCallback::GetStream(UInt32 index, ISequentialOutStream **stream, Int32 askMode)) {
-    *stream = nullptr; file = nullptr; output.Release(); RINOK(context->check())
+    *stream = nullptr; file = nullptr; output.Release(); item = index; RINOK(context->check())
     NSString *destination = nil;
     if (planner) {
         if (index > lastIndex) { stoppedEarly = true; return E_ABORT; }
         ZFSevenZipEntry *entry = nil;
         try {
-            if (IsSparse(archive, index)) { context->failure = 5; return E_ABORT; }
+            if (IsSparse(archive, index)) { context->failure = 10; return E_ABORT; }
             entry = MakeEntry(archive, index);
         } catch (...) { return E_FAIL; }
         BOOL abort = NO;
@@ -806,8 +844,10 @@ Z7_COM7F_IMF(UpdateCallback::GetVolumeStream(UInt32, ISequentialOutStream **stre
 bool Finish(HRESULT result, Context &context, NSError **error, int itemResult = 0) {
     if (result == S_OK && !itemResult && !context.failure) return true;
     NSInteger code = context.operation->stopped.load() ? 4 : context.failure ?: 5;
-    NSMutableDictionary *info = [@{ @"HRESULT": @((int32_t)result), @"itemResult": @(itemResult) } mutableCopy];
+    NSMutableDictionary *info = [@{ @"HRESULT": @((int32_t)result), @"itemResult": @(itemResult),
+        @"extractResult": @(context.extractResult), @"openErrorFlags": @(context.openErrorFlags) } mutableCopy];
     if (context.missingVolume) info[@"missingVolume"] = context.missingVolume;
+    if (context.failedItem.length) info[@"failedItem"] = context.failedItem;
     if (error) *error = [NSError errorWithDomain:@"Zforge.SevenZip" code:code userInfo:info];
     return false;
 }
@@ -840,11 +880,14 @@ bool Finish(HRESULT result, Context &context, NSError **error, int itemResult = 
             HRESULT result = stream.tar->Extract(nullptr, (UInt32)-1, 0, owner);
             if (result == S_OK) result = stream.drain();
             stream.stop();
+            stream.reportOuterResult(ctx);
             if (result == S_OK && !stream.pipe->succeeded()) result = E_FAIL;
             if (result == S_OK && entries.count == 0) {
                 CPropVariant flags;
-                if (stream.tar->GetArchiveProperty(kpidErrorFlags, &flags) == S_OK && flags.vt == VT_UI4 && flags.ulVal)
+                if (stream.tar->GetArchiveProperty(kpidErrorFlags, &flags) == S_OK && flags.vt == VT_UI4 && flags.ulVal) {
                     result = S_FALSE;
+                    if (!(flags.ulVal & kpv_ErrorFlags_IsNotArc)) ctx.openErrorFlags = flags.ulVal;
+                }
             }
             if (!Finish(result, ctx, error)) return nil;
             for (ZFSevenZipEntry *entry in entries) { entry.solidBlock = YES; entry.solidBlockPackedSize = @(ctx.sourceSize); }
@@ -868,7 +911,7 @@ bool Finish(HRESULT result, Context &context, NSError **error, int itemResult = 
         Archive arc; if (!Finish(Open(path, ctx, arc), ctx, error)) return NO;
         ExtractCallback *callback = new ExtractCallback;
         CMyComPtr<IArchiveExtractCallback> owner = callback;
-        callback->context = &ctx;
+        callback->context = &ctx; callback->archive = arc.handler;
         HRESULT result = arc.handler->Extract(nullptr, (UInt32)-1, 1, owner);
         return Finish(result, ctx, error, callback->itemResult);
     } catch (...) { return Finish(E_FAIL, ctx, error); }
@@ -934,6 +977,7 @@ bool Finish(HRESULT result, Context &context, NSError **error, int itemResult = 
             // A full pass also verifies the outer stream (its checksum follows the tar data).
             else if (result == S_OK) result = stream.drain();
             stream.stop();
+            if (!early) stream.reportOuterResult(ctx);
             if (result == S_OK && !early && !stream.pipe->succeeded()) result = E_FAIL;
             return Finish(result, ctx, error, callback->itemResult);
         }
