@@ -111,10 +111,14 @@ Zforge does not accept code contributions, so only the project's maintainers can
 
 Bug reports and feature requests are welcome in [Issues](https://github.com/zforge-app/zforge/issues). For a bug, include your macOS version, the archive format, and the steps that lead to the problem.
 
-Zforge's own code is MIT licensed, so you are free to fork it and take it in your own direction.
+Zforge's own code is MIT licensed, so you are free to fork it and take it in your own direction, under your own name and branding (see [Trademarks and forks](#trademarks-and-forks)).
 
 ## License
 
 Zforge's own code is under the [MIT license](./LICENSE).
 
 The 7-Zip sources in `Vendor/7zip` keep their own licenses: mostly the GNU LGPL, with some BSD-licensed parts and the unRAR restriction. See [`Vendor/7zip/DOC/License.txt`](./Vendor/7zip/DOC/License.txt), or Zforge ▸ Acknowledgments… in the app. Learn more about 7-Zip at [7-zip.org](https://www.7-zip.org/).
+
+## Trademarks and forks
+
+The MIT license covers **only the source code**, not the **Zforge** name, icons, artwork or other branding. A fork or redistributed build must use its own name, icons and bundle identifiers, and make it unmistakably clear that it is unofficial and not affiliated with Zforge. **Any project indicating or implying that it is an official version of Zforge when it is not will be pursued to the full extent of the law.** See [TRADEMARK.md](./TRADEMARK.md) for the full policy and the official channels.
