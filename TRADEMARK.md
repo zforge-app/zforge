@@ -1,10 +1,10 @@
 # Trademark and Branding Policy
 
-The [MIT License](./LICENSE) in this repository applies **only to Zforge's source code**. It does not grant any rights to Felipe Liborio's trademarks, service marks, trade names, trade dress, or branding.
+The [MIT License](./LICENSE) in this repository applies **only to Zforge's source code**. It does not grant any rights to Felipe Libório's trademarks, service marks, trade names, trade dress, or branding.
 
 ## Protected marks and brand assets
 
-Felipe Liborio owns the following marks and brand assets, whether registered or unregistered:
+Felipe Libório owns the following marks and brand assets, whether registered or unregistered:
 
 - The name **Zforge**
 - The Zforge application icon (including [`Zforge/zforge_icon.icon`](./Zforge/zforge_icon.icon), the images in [`Zforge/Assets.xcassets`](./Zforge/Assets.xcassets) and [`.github/readme/icon.png`](./.github/readme/icon.png)), the archive icons and stamp artwork the app draws, and the app's visual trade dress
@@ -16,7 +16,7 @@ You are welcome to fork, modify, build, and redistribute the MIT-licensed source
 
 - **Use your own branding.** Remove and replace the Zforge name, application icon, archive icons and stamp artwork, and other Zforge branding with your own, in the app, its bundle, its menus and windows, and everything you publish about it.
 - **Use your own identifiers.** Replace the `io.libor.Zforge` bundle identifiers, including the Finder extension's, and the app group, so your build never installs, signs, or runs as the official app.
-- **Make it unmistakably clear that your project is unofficial.** You may not use the Zforge name, icon, or other branding in your own projects without being explicitly and prominently clear that your project is unofficial and is not affiliated with, endorsed by, or maintained by Felipe Liborio or the Zforge project.
+- **Make it unmistakably clear that your project is unofficial.** You may not use the Zforge name, icon, or other branding in your own projects without being explicitly and prominently clear that your project is unofficial and is not affiliated with, endorsed by, or maintained by Felipe Libório or the Zforge project.
 - **Keep references strictly factual.** You may include a truthful, plain-text attribution statement noting that your project is derived from this repository (for example, "An unofficial fork based on the Zforge source code"), provided you do not use Zforge icons or artwork, do not adopt "Zforge" as or within your project's name, domain, or bundle identifier, and prominently state that your project is unofficial.
 
 ## Prohibited uses and enforcement

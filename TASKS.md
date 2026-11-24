@@ -847,7 +847,7 @@ User report (installed build 26): opening a ZIP from Finder with Zforge closed s
 ### ZF-75 — License notices and the Acknowledgments window (2026-11-10, D-93)
 
 Requested: resolve the license gaps found by ZF-74 before publication. The user left the window's placement and the copyright holder to the recommendation: a menu item below About Zforge (the standard About panel cannot hold a button) and the author's name.
-- [x] `LICENSE` (MIT, Copyright (c) 2026 Felipe Liborio).
+- [x] `LICENSE` (MIT, Copyright (c) 2026 Felipe Libório).
 - [x] `Scripts/update-notices.py` (+ `--check`) writes the notices of Zforge, 7-Zip and the four linked packages and `Acknowledgments.json`; refuses checkouts not at the pinned revision and unclassified pins. `Scripts/update-7zip.py` refreshes and `--verify` checks the 7-Zip notices. `Vendor/7-Zip-License.txt` (console package license) removed.
 - [x] Acknowledgments window and Zforge ▸ Acknowledgments…; strings in the 21 languages (own drafts).
 - [x] Tests: script tests, `AcknowledgmentsTests` (bundle contents, 7-Zip texts and versions against the vendored release and `Package.resolved`, toolbar title, 7-Zip page snapshot light/dark), UI test `testAcknowledgmentsOpenFromTheAppMenu`.
